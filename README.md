@@ -4,12 +4,13 @@ Real-time discussion board enabling users to dive into deep and interactive disc
 
 ## Setup
 
-#### 1. Install Node.js (includes npm)
+#### 1. Install Node.js and Angular
 * Node: https://nodejs.org/
+* Angular: ```npm install -g @angular/cli ```
 
 #### 2. Clone the repository
 ```shell
-$ git clone git@github.encorelab/ck-board.git
+$ git clone https://github.com/encorelab/ck-board.git
 ```
 
 #### 3. Install required dependencies

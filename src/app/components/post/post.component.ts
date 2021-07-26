@@ -11,18 +11,20 @@ export class PostComponent extends fabric.Group {
   constructor(@Inject(Object) options:any) { 
     var text = new fabric.Textbox(options.userID + '\n\n' + options.message, {
       width: 300,
-      left: 0,
-      top: 0,
+      left: 18,
+      top: 18,
       fontSize: 18,
+      fontFamily: 'Helvetica',
       fill: '#000000',
       splitByGrapheme: true
     });
   
     var rectangle = new fabric.Rect({
-      width: 300,
-      height: text.getScaledHeight(),
-      fill: '#ffcc12',
-      opacity: 1
+      width: 330,
+      height: text.getScaledHeight() + 30,
+      fill: '#F4D74B',
+      rx: 20, 
+      ry: 20,
     });
 
     const groupOptions = {

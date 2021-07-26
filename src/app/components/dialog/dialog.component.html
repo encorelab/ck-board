@@ -1,12 +1,11 @@
-<h1 mat-dialog-title>Add New Post</h1>
+<h1 mat-dialog-title>{{ data.header }}</h1>
 <div mat-dialog-content>
-  <p>What's your message?</p>
-  <mat-form-field appearance="fill">
-    <mat-label>Message</mat-label>
-    <input matInput [(ngModel)]="data.object">
+  <p>{{ data.label }}</p>
+  <mat-form-field appearance="fill" style="width:100%">
+    <input matInput [(ngModel)]="message">
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button [mat-dialog-close]="data.object" cdkFocusInitial>Add Post</button>
+  <button mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Add Post</button>
 </div>

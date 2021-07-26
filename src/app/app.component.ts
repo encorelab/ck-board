@@ -8,6 +8,9 @@ import { first, skip } from 'rxjs/operators';
 import { Canvas } from 'fabric/fabric-impl';
 import { PostComponent } from './components/post/post.component';
 import Post from './models/post';
+import { DialogInterface } from './interfaces/dialog.interface';
+import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
+import { TaskModalComponent } from './components/task-modal/task-modal.component';
 
 // hard-coded for now
 const USER_ID = 'Ammar-T'
@@ -20,7 +23,6 @@ const GROUP_ID = 'Science Group'
 })
 export class AppComponent {
   canvas: Canvas;
-  message: any;
   postsService: PostService
 
   constructor(db: AngularFireDatabase, public dialog: MatDialog) {
@@ -28,7 +30,7 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    this.canvas = new fabric.Canvas('canvas');
+    this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.9, height: window.innerHeight * 0.8 });
     this.retrievePosts();
     this.addObjectListener();
     this.removeObjectListener();
@@ -74,18 +76,34 @@ export class AppComponent {
   }
 
   // open dialog to get message for a new post
-  openDialog() {
-    const dialogRef = this.dialog.open(DialogComponent, {
-      width: '250px',
-      data: { message: '' }
-    });
+  openNewPostDialog() {
+    const dialogData: DialogInterface = {
+      header: 'Add New Post',
+      label: "What's your message?",
+      callBack: (message:string) => {
+        var newPost = new PostComponent({ userID: USER_ID, message: message });
+        this.canvas.add(newPost);
+      }
+    }
 
-    dialogRef.afterClosed().subscribe((message: any) => {
-      var newPost = new PostComponent({ userID: USER_ID, message: message });
-      this.canvas.add(newPost);
+    this.dialog.open(DialogComponent, {
+      width: '250px',
+      data: dialogData
     });
   }
   
+  openSettingsDialog() {
+    this.dialog.open(ConfigurationModalComponent, {
+      width: '500px',
+    });
+  }
+
+  openTaskDialog() {
+    this.dialog.open(TaskModalComponent, {
+      width: '500px',
+    });
+  }
+
   // remove post from board
   removePost() {
     var obj = this.canvas.getActiveObject();

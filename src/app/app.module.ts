@@ -18,13 +18,19 @@ import { DialogComponent } from './components/dialog/dialog.component';
 import { MatDialogModule  } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { ReactiveFormsModule } from '@angular/forms'
 import { PostComponent } from './components/post/post.component';
+import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
+import { TaskModalComponent } from './components/task-modal/task-modal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DialogComponent,
-    PostComponent
+    PostComponent,
+    ConfigurationModalComponent,
+    TaskModalComponent
   ],
   imports: [
     BrowserModule,
@@ -34,7 +40,7 @@ import { PostComponent } from './components/post/post.component';
     AngularFireAuthModule, // auth
     AngularFireStorageModule, // storage
     FormsModule, BrowserAnimationsModule,
-    MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule
+    MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

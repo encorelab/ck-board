@@ -10,11 +10,11 @@ import Post from '../models/post';
 })
 export class PostService {
 
-  private dbPath : string = '/posts/';
+  private dbPath : string = '/posts';
   postsRef: AngularFireList<Post>;
 
   constructor(private db: AngularFireDatabase, @Inject(String) private groupID: string) {
-    this.postsRef = db.list(this.dbPath + groupID);
+    this.postsRef = db.list(groupID + this.dbPath);
   }
 
   observable(): Observable<Post[]> {

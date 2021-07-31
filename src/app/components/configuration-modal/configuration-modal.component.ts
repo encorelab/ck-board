@@ -15,19 +15,22 @@ export class ConfigurationModalComponent {
   constructor(
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any, fb: FormBuilder) {
+      console.log(data.allowStudentMoveAny)
       this.permissions = fb.group({
-        studentMoveAnyPost: true,
-        studentEditAnyPost: true,
-        studentDeleteAnyPost: true,
+        studentMoveAnyPost: data.allowStudentMoveAny,
       });
     }
 
   handleDialogSubmit() {
-    this.data.callBack(this.data.message);
     this.dialogRef.close();
   }
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  updatePermission(value) {
+    const status = this.permissions.get(value)?.value
+    this.data.updatePermissions(!status)
   }
 }

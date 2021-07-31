@@ -34,6 +34,8 @@ export class PostComponent extends fabric.Group {
       hasControls: false,
       transparentCorners: false,
       cornerSize: 7,
+      lockMovementX: options.lock,
+      lockMovementY: options.lock
     }
 
     super([rectangle, text], groupOptions);

@@ -4,6 +4,8 @@
   <mat-form-field appearance="fill" style="width:100%">
     <input matInput [(ngModel)]="boardName">
   </mat-form-field>
+  <h4>Set Background Image:</h4>
+  <input ng-hide id="input-file-id" type="file" (change)="handleImageUpload($event)"/>
   <section class="permissions-section" [formGroup]="permissions">
     <h4>Board Permissions:</h4>
     <p><mat-checkbox (change)="updatePermission('studentMoveAnyPost')" formControlName="studentMoveAnyPost">Students can move any post?</mat-checkbox></p>

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { DataSnapshot, SnapshotAction } from '@angular/fire/database/interfaces';
 import { Observable } from 'rxjs';
+import { first } from 'rxjs/operators';
 import Post from '../models/post';
 
 @Injectable({
@@ -10,11 +11,11 @@ import Post from '../models/post';
 })
 export class PostService {
 
-  private dbPath : string = '/posts';
+  private postsPath : string = '/posts';
   postsRef: AngularFireList<Post>;
 
   constructor(private db: AngularFireDatabase, @Inject(String) private groupID: string) {
-    this.postsRef = db.list(groupID + this.dbPath);
+    this.postsRef = db.list(groupID + this.postsPath);
   }
 
   observable(): Observable<Post[]> {

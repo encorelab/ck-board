@@ -6,9 +6,7 @@
   </mat-form-field>
   <section class="permissions-section" [formGroup]="permissions">
     <h4>Board Permissions:</h4>
-    <p><mat-checkbox formControlName="studentMoveAnyPost">Students can move any post?</mat-checkbox></p>
-    <p><mat-checkbox formControlName="studentEditAnyPost">Students can edit any post?</mat-checkbox></p>
-    <p><mat-checkbox formControlName="studentDeleteAnyPost">Students can delete any post?</mat-checkbox></p>
+    <p><mat-checkbox (change)="updatePermission('studentMoveAnyPost')" formControlName="studentMoveAnyPost">Students can move any post?</mat-checkbox></p>
   </section>
 </div>
 <div mat-dialog-actions>

@@ -11,9 +11,11 @@ import Post from './models/post';
 import { DialogInterface } from './interfaces/dialog.interface';
 import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
+import { ConfigService } from './services/config.service';
 
 // hard-coded for now
 const USER_ID = 'Ammar-T'
+const USER_TYPE = 'STUDENT'
 const GROUP_ID = 'Science Group'
 
 @Component({
@@ -24,41 +26,46 @@ const GROUP_ID = 'Science Group'
 export class AppComponent {
   canvas: Canvas;
   postsService: PostService
+  configService: ConfigService
 
   constructor(db: AngularFireDatabase, public dialog: MatDialog) {
     this.postsService = new PostService(db, GROUP_ID);
+    this.configService = new ConfigService(db, GROUP_ID);
   }
 
   ngOnInit() {
     this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.9, height: window.innerHeight * 0.8 });
-    this.retrievePosts();
+    this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
     this.movingObjectListener();
-    this.groupListener();
+    this.groupPostsListener();
+    this.configListener();
   }
 
-  // pull current posts
-  retrievePosts() {
+  // configure board
+  configureBoard() {
     this.postsService.observable().pipe(first()).subscribe((data:any) => {
       data.map((post) => {
         var obj = JSON.parse(post.object); 
         this.syncBoard(obj, post.postID);
       })
+      this.applySettings();
     });
   }
 
-  // listen to changes from group members
-  groupListener() {
-    this.postsService.observable().pipe(skip(1)).subscribe((data:any) => {
-      data.map((post) => {
-        if (post) {
-          var obj = JSON.parse(post.object);
-          this.syncBoard(obj, post.postID);
-        }
-      })
-    });
+  // apply board settings/configuration
+  applySettings() {
+    this.configService.get().then((config) => {
+      if (config.allowStudentMoveAny) {
+        this.lockPostsMovement(false)
+      } else {
+        this.lockPostsMovement(true)
+      }
+    })
   }
+
+  
 
   // render JSON objects when queried from firebase storage
   renderPostFromJSON(post:any) {
@@ -92,10 +99,26 @@ export class AppComponent {
     });
   }
   
-  openSettingsDialog() {
+  async openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
       width: '500px',
+      data: {
+        updatePermissions: this.updatePostPermissions,
+        allowStudentMoveAny: await this.configService.get().then((value) => value.allowStudentMoveAny)
+      }
     });
+  }
+
+  updatePostPermissions = (value) => {
+    this.configService.update({ allowStudentMoveAny: !value })
+    this.lockPostsMovement(value)
+  }
+  
+  lockPostsMovement(value) {
+    this.canvas.getObjects().map(obj => {
+      obj.set({lockMovementX: value, lockMovementY: value});
+    });
+    this.canvas.renderAll()
   }
 
   openTaskDialog() {
@@ -117,6 +140,7 @@ export class AppComponent {
   sendObjectToGroup(pObject: any){
     const post:Post = {
       userID: USER_ID,
+      userType: USER_TYPE,
       postID: pObject.postID,
       groupID: GROUP_ID,
       object: JSON.stringify(pObject.toJSON(['postID', 'hasControls', 'removed']))
@@ -157,6 +181,25 @@ export class AppComponent {
       this.renderPostFromJSON(obj)
     }
     
+  }
+
+  // listen to configuration/permission changes
+  configListener() {
+    this.configService.observable().pipe(skip(1)).subscribe((config:any) => {
+      this.lockPostsMovement(!config.allowStudentMoveAny)
+    });
+  }
+
+  // listen to changes from group members
+  groupPostsListener() {
+    this.postsService.observable().pipe(skip(1)).subscribe((data:any) => {
+      data.map((post) => {
+        if (post) {
+          var obj = JSON.parse(post.object);
+          this.syncBoard(obj, post.postID);
+        }
+      })
+    });
   }
 
   // perform actions when new post is added

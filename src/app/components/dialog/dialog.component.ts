@@ -17,7 +17,7 @@ export class DialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogInterface) {}
 
   handleDialogSubmit() {
-    this.data.callBack(this.message);
+    this.data.addPost(this.message);
     this.dialogRef.close();
   }
 

@@ -27,6 +27,7 @@ export class AppComponent {
   canvas: Canvas;
   postsService: PostService
   configService: ConfigService
+  config: any
 
   constructor(db: AngularFireDatabase, public dialog: MatDialog) {
     this.postsService = new PostService(db, GROUP_ID);
@@ -57,6 +58,7 @@ export class AppComponent {
   // apply board settings/configuration
   applySettings() {
     this.configService.get().then((config) => {
+      this.config = config
       if (config.allowStudentMoveAny) {
         this.lockPostsMovement(false)
       } else {
@@ -64,8 +66,6 @@ export class AppComponent {
       }
     })
   }
-
-  
 
   // render JSON objects when queried from firebase storage
   renderPostFromJSON(post:any) {
@@ -87,10 +87,7 @@ export class AppComponent {
     const dialogData: DialogInterface = {
       header: 'Add New Post',
       label: "What's your message?",
-      callBack: (message:string) => {
-        var newPost = new PostComponent({ userID: USER_ID, message: message });
-        this.canvas.add(newPost);
-      }
+      addPost: this.addPost
     }
 
     this.dialog.open(DialogComponent, {
@@ -99,6 +96,11 @@ export class AppComponent {
     });
   }
   
+  addPost = (message: string) => {
+    var newPost = new PostComponent({ userID: USER_ID, message: message, lock: !this.config.allowStudentMoveAny });
+    this.canvas.add(newPost);
+  }
+
   async openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
       width: '500px',
@@ -186,6 +188,7 @@ export class AppComponent {
   // listen to configuration/permission changes
   configListener() {
     this.configService.observable().pipe(skip(1)).subscribe((config:any) => {
+      this.config = config
       this.lockPostsMovement(!config.allowStudentMoveAny)
     });
   }

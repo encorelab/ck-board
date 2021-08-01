@@ -61,11 +61,8 @@ export class AppComponent {
   applySettings() {
     this.configService.get().then((config) => {
       this.config = config
-      if (config.allowStudentMoveAny) {
-        this.lockPostsMovement(false)
-      } else {
-        this.lockPostsMovement(true)
-      }
+      config.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
+      config.bgImage ? this.updateBackground(config.bgImage) : null
     })
   }
 
@@ -108,7 +105,26 @@ export class AppComponent {
       width: '500px',
       data: {
         updatePermissions: this.updatePostPermissions,
+        updateBackground: this.updateBackground,
+        updateBoardName: this.updateBoardName,
         allowStudentMoveAny: await this.configService.get().then((value) => value.allowStudentMoveAny)
+      }
+    });
+  }
+
+  updateBoardName = (name) => {
+    this.config.boardName = name
+    this.configService.update({ boardName: name })
+  }
+
+  updateBackground = (data) => {
+    fabric.Image.fromURL(data, (img) => {
+      if (img) {
+        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), {
+            scaleX: this.canvas.getWidth() / (img.width ?? 0),
+            scaleY: this.canvas.getHeight() / (img.height ?? 0)
+        });
+        this.configService.update({ bgImage: data })
       }
     });
   }
@@ -192,6 +208,8 @@ export class AppComponent {
     this.configService.observable().pipe(skip(1)).subscribe((config:any) => {
       this.config = config
       this.lockPostsMovement(!config.allowStudentMoveAny)
+      config.bgImage ? this.updateBackground(config.bgImage) : null
+      config.boardName ? this.updateBoardName(config.boardName) : null
     });
   }
 

@@ -40,6 +40,8 @@ export class AppComponent {
     this.addObjectListener();
     this.removeObjectListener();
     this.movingObjectListener();
+    this.zoomListener();
+    this.panningListener();
     this.groupPostsListener();
     this.configListener();
   }
@@ -60,7 +62,7 @@ export class AppComponent {
     this.configService.get().then((config) => {
       this.config = config
       config.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
-      config.bgImage ? this.updateBackground(config.bgImage) : null
+      config.bgImage ? this.updateBackground(config.bgImage.url, config.bgImage.imgSettings) : null
     })
   }
 
@@ -115,14 +117,28 @@ export class AppComponent {
     this.configService.update({ boardName: name })
   }
 
-  updateBackground = (data) => {
-    fabric.Image.fromURL(data, (img) => {
-      if (img) {
-        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), {
-            scaleX: this.canvas.getWidth() / (img.width ?? 0),
-            scaleY: this.canvas.getHeight() / (img.height ?? 0)
-        });
-        this.configService.update({ bgImage: data })
+  updateBackground = (url, settings?) => {
+    fabric.Image.fromURL(url, (img) => {
+      if (img && settings) {
+        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
+      } else if (img) {
+        var vptCoords = this.canvas.vptCoords
+        var width = this.canvas.getWidth(), height = this.canvas.getHeight()
+        if (vptCoords) {
+          width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
+          height = Math.abs(vptCoords.br.y - vptCoords.tr.y)
+        }
+
+        const imgSettings = {
+          top: vptCoords?.tl.y,
+          left: vptCoords?.tl.x,
+          width: width,
+          height: height,
+          scaleX: width / (img.width ?? 0),
+          scaleY: height / (img.height ?? 0)
+        }
+        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
+        this.configService.update({ bgImage: { url: url, imgSettings: imgSettings } })
       }
     });
   }
@@ -206,7 +222,7 @@ export class AppComponent {
     this.configService.observable().pipe(skip(1)).subscribe((config:any) => {
       this.config = config
       this.lockPostsMovement(!config.allowStudentMoveAny)
-      config.bgImage ? this.updateBackground(config.bgImage) : null
+      config.bgImage ? this.updateBackground(config.bgImage.url, config.bgImage.imgSettings) : null
       config.boardName ? this.updateBoardName(config.boardName) : null
     });
   }
@@ -259,18 +275,59 @@ export class AppComponent {
   movingObjectListener() {
     this.canvas.on('object:moving', (options:any) => {
       if (options.target) {
-        var obj = options.target;	         
-        var coords = obj.calcCoords(); 
-        var left = coords.tl.x;
-        var top = coords.tl.y;
+        var obj = options.target;
 
-        obj.set({left: left, top: top})
+        var left = (Math.round((options.pointer.x - obj.getScaledWidth() / 2)));
+        var top = (Math.round((options.pointer.y - obj.getScaledHeight() / 2)));
+
+        obj.set({ left: left, top: top })
         obj.setCoords()
         this.canvas.renderAll()
 
         var id = obj.postID
         obj = JSON.stringify(obj.toJSON(['postID', 'hasControls', 'removed']))
         this.postsService.update(id, {object: obj})
+      }
+    })
+  }
+
+  zoomListener() {
+    this.canvas.on('mouse:wheel', (opt) => {
+      var options = (opt.e as unknown) as WheelEvent
+
+      var delta = options.deltaY;
+      var zoom = this.canvas.getZoom();
+
+      zoom *= 0.999 ** delta;
+      if (zoom > 20) zoom = 20;
+      if (zoom < 0.01) zoom = 0.01;
+
+      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), zoom);
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+    });
+  }
+
+  panningListener() {
+    var isPanning = false;
+
+    this.canvas.on("mouse:down", (opt) => {
+      if (opt.target == null) {
+        isPanning = true;
+        this.canvas.selection = false;
+      }
+    });
+      
+    this.canvas.on("mouse:up", (opt) => {
+      isPanning = false;
+      this.canvas.selection = true;
+    });
+
+    this.canvas.on("mouse:move", (opt) => {
+      var options = (opt.e as unknown) as WheelEvent
+      if (isPanning && options) {
+        let delta = new fabric.Point(options.movementX, options.movementY);
+        this.canvas.relativePan(delta);
       }
     })
   }

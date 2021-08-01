@@ -5,7 +5,7 @@ import { DialogComponent } from './components/dialog/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { PostService } from './services/post.service';
 import { first, skip } from 'rxjs/operators';
-import { Canvas, IStaticCanvasOptions } from 'fabric/fabric-impl';
+import { Canvas } from 'fabric/fabric-impl';
 import { PostComponent } from './components/post/post.component';
 import Post from './models/post';
 import { DialogInterface } from './interfaces/dialog.interface';
@@ -119,7 +119,9 @@ export class AppComponent {
 
   updateBackground = (url, settings?) => {
     fabric.Image.fromURL(url, (img) => {
-      if (img) {
+      if (img && settings) {
+        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
+      } else if (img) {
         var vptCoords = this.canvas.vptCoords
         var width = this.canvas.getWidth(), height = this.canvas.getHeight()
         if (vptCoords) {
@@ -135,8 +137,8 @@ export class AppComponent {
           scaleX: width / (img.width ?? 0),
           scaleY: height / (img.height ?? 0)
         }
-        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings ?? imgSettings);
-        if (!settings) this.configService.update({ bgImage: { url: url, imgSettings: imgSettings } })
+        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
+        this.configService.update({ bgImage: { url: url, imgSettings: imgSettings } })
       }
     });
   }

@@ -5,7 +5,7 @@ import { DialogComponent } from './components/dialog/dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { PostService } from './services/post.service';
 import { first, skip } from 'rxjs/operators';
-import { Canvas } from 'fabric/fabric-impl';
+import { Canvas, IStaticCanvasOptions } from 'fabric/fabric-impl';
 import { PostComponent } from './components/post/post.component';
 import Post from './models/post';
 import { DialogInterface } from './interfaces/dialog.interface';
@@ -62,7 +62,7 @@ export class AppComponent {
     this.configService.get().then((config) => {
       this.config = config
       config.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
-      config.bgImage ? this.updateBackground(config.bgImage) : null
+      config.bgImage ? this.updateBackground(config.bgImage.url, config.bgImage.imgSettings) : null
     })
   }
 
@@ -117,14 +117,26 @@ export class AppComponent {
     this.configService.update({ boardName: name })
   }
 
-  updateBackground = (data) => {
-    fabric.Image.fromURL(data, (img) => {
+  updateBackground = (url, settings?) => {
+    fabric.Image.fromURL(url, (img) => {
       if (img) {
-        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), {
-            scaleX: this.canvas.getWidth() / (img.width ?? 0),
-            scaleY: this.canvas.getHeight() / (img.height ?? 0)
-        });
-        this.configService.update({ bgImage: data })
+        var vptCoords = this.canvas.vptCoords
+        var width = this.canvas.getWidth(), height = this.canvas.getHeight()
+        if (vptCoords) {
+          width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
+          height = Math.abs(vptCoords.br.y - vptCoords.tr.y)
+        }
+
+        const imgSettings = {
+          top: vptCoords?.tl.y,
+          left: vptCoords?.tl.x,
+          width: width,
+          height: height,
+          scaleX: width / (img.width ?? 0),
+          scaleY: height / (img.height ?? 0)
+        }
+        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings ?? imgSettings);
+        if (!settings) this.configService.update({ bgImage: { url: url, imgSettings: imgSettings } })
       }
     });
   }
@@ -208,7 +220,7 @@ export class AppComponent {
     this.configService.observable().pipe(skip(1)).subscribe((config:any) => {
       this.config = config
       this.lockPostsMovement(!config.allowStudentMoveAny)
-      config.bgImage ? this.updateBackground(config.bgImage) : null
+      config.bgImage ? this.updateBackground(config.bgImage.url, config.bgImage.imgSettings) : null
       config.boardName ? this.updateBoardName(config.boardName) : null
     });
   }

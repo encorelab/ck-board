@@ -40,6 +40,8 @@ export class AppComponent {
     this.addObjectListener();
     this.removeObjectListener();
     this.movingObjectListener();
+    this.zoomListener();
+    this.panningListener();
     this.groupPostsListener();
     this.configListener();
   }
@@ -241,18 +243,59 @@ export class AppComponent {
   movingObjectListener() {
     this.canvas.on('object:moving', (options:any) => {
       if (options.target) {
-        var obj = options.target;	         
-        var coords = obj.calcCoords(); 
-        var left = coords.tl.x;
-        var top = coords.tl.y;
+        var obj = options.target;
 
-        obj.set({left: left, top: top})
+        var left = (Math.round((options.pointer.x - obj.getScaledWidth() / 2)));
+        var top = (Math.round((options.pointer.y - obj.getScaledHeight() / 2)));
+
+        obj.set({ left: left, top: top })
         obj.setCoords()
         this.canvas.renderAll()
 
         var id = obj.postID
         obj = JSON.stringify(obj.toJSON(['postID', 'hasControls', 'removed']))
         this.postsService.update(id, {object: obj})
+      }
+    })
+  }
+
+  zoomListener() {
+    this.canvas.on('mouse:wheel', (opt) => {
+      var options = (opt.e as unknown) as WheelEvent
+
+      var delta = options.deltaY;
+      var zoom = this.canvas.getZoom();
+
+      zoom *= 0.999 ** delta;
+      if (zoom > 20) zoom = 20;
+      if (zoom < 0.01) zoom = 0.01;
+
+      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), zoom);
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+    });
+  }
+
+  panningListener() {
+    var isPanning = false;
+
+    this.canvas.on("mouse:down", (opt) => {
+      if (opt.target == null) {
+        isPanning = true;
+        this.canvas.selection = false;
+      }
+    });
+      
+    this.canvas.on("mouse:up", (opt) => {
+      isPanning = false;
+      this.canvas.selection = true;
+    });
+
+    this.canvas.on("mouse:move", (opt) => {
+      var options = (opt.e as unknown) as WheelEvent
+      if (isPanning && options) {
+        let delta = new fabric.Point(options.movementX, options.movementY);
+        this.canvas.relativePan(delta);
       }
     })
   }

@@ -84,19 +84,17 @@ export class AppComponent {
   // open dialog to get message for a new post
   openNewPostDialog() {
     const dialogData: DialogInterface = {
-      header: 'Add New Post',
-      label: "What's your message?",
       addPost: this.addPost
     }
 
     this.dialog.open(DialogComponent, {
-      width: '250px',
+      width: '500px',
       data: dialogData
     });
   }
   
-  addPost = (message: string) => {
-    var newPost = new PostComponent({ userID: USER_ID, message: message, lock: !this.config.allowStudentMoveAny });
+  addPost = (title: string, message = '') => {
+    var newPost = new PostComponent({ title: title, userID: USER_ID, message: message, lock: !this.config.allowStudentMoveAny });
     this.canvas.add(newPost);
   }
 

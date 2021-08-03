@@ -1,11 +1,18 @@
-<h1 mat-dialog-title>{{ data.header }}</h1>
+<h1 mat-dialog-title> Add Post </h1>
 <div mat-dialog-content>
-  <p>{{ data.label }}</p>
+  <h4> Title: </h4>
+  <mat-form-field appearance="fill" style="width:100%">
+    <input [formControl]="formControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="title">
+    <mat-error *ngIf="!title">
+      Title is <strong>required</strong>
+    </mat-error>
+  </mat-form-field>
+  <h4> Message: </h4>
   <mat-form-field appearance="fill" style="width:100%">
     <input matInput [(ngModel)]="message">
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Add Post</button>
+  <button type="submit" mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Add Post</button>
 </div>

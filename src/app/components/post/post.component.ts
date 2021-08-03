@@ -9,19 +9,40 @@ import { fabric } from 'fabric';
 export class PostComponent extends fabric.Group {
 
   constructor(@Inject(Object) options:any) { 
-    var text = new fabric.Textbox(options.userID + '\n\n' + options.message, {
+    var title = new fabric.Textbox(options.title, {
       width: 300,
       left: 18,
       top: 18,
       fontSize: 18,
+      fontWeight: 'bold',
       fontFamily: 'Helvetica',
       fill: '#000000',
       splitByGrapheme: true
     });
   
+    var author = new fabric.Textbox(options.userID, {
+      width: 300,
+      left: 18,
+      top: title.getScaledHeight() + 20,
+      fontSize: 13,
+      fontFamily: 'Helvetica',
+      fill: '#555555',
+      splitByGrapheme: true
+    });
+
+    var desc = new fabric.Textbox(options.message, {
+      width: 300,
+      left: 18,
+      top: 70,
+      fontSize: 15,
+      fontFamily: 'Helvetica',
+      fill: '#000000',
+      splitByGrapheme: true
+    });
+
     var rectangle = new fabric.Rect({
       width: 330,
-      height: text.getScaledHeight() + 30,
+      height: title.getScaledHeight() + desc.getScaledHeight() + 60,
       fill: '#F4D74B',
       rx: 20, 
       ry: 20,
@@ -38,6 +59,6 @@ export class PostComponent extends fabric.Group {
       lockMovementY: options.lock
     }
 
-    super([rectangle, text], groupOptions);
+    super([rectangle, title, author, desc], groupOptions);
   };
 }

@@ -36,7 +36,7 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.9, height: window.innerHeight * 0.8 });
+    this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.99, height: window.innerHeight * 0.9 });
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();

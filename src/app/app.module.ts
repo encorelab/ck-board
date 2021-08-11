@@ -19,6 +19,7 @@ import { MatDialogModule  } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatToolbarModule } from '@angular/material/toolbar'
 import { ReactiveFormsModule } from '@angular/forms'
 import { PostComponent } from './components/post/post.component';
 import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
@@ -42,7 +43,7 @@ import { PostModalComponent } from './components/post-modal/post-modal.component
     AngularFireAuthModule, // auth
     AngularFireStorageModule, // storage
     FormsModule, BrowserAnimationsModule,
-    MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, ReactiveFormsModule
+    MatButtonModule, MatIconModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatCheckboxModule, MatToolbarModule, ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

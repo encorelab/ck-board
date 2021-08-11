@@ -1,16 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { FormControl, FormGroupDirective, NgForm, Validators } from '@angular/forms';
-import { ErrorStateMatcher } from '@angular/material/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogInterface } from 'src/app/interfaces/dialog.interface';
-
-/** Error when invalid control is dirty, touched, or submitted. */
-export class MyErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || control.touched || isSubmitted));
-  }
-}
+import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 
 @Component({
   selector: 'app-dialog',
@@ -20,8 +12,9 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 export class DialogComponent {
 
   title: string 
-  message: string 
-  formControl = new FormControl('', [Validators.required]);
+  description: string 
+  titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
+  descControl = new FormControl('', [Validators.maxLength(1000)]);
   matcher = new MyErrorStateMatcher();
 
   constructor(
@@ -29,8 +22,7 @@ export class DialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogInterface) {}
 
   handleDialogSubmit() {
-    this.formControl.markAsTouched();
-    this.data.addPost(this.title, this.message);
+    this.data.addPost(this.title, this.description);
     this.dialogRef.close();
   }
 

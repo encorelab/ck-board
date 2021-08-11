@@ -1,0 +1,25 @@
+<h1 *ngIf="!isEditing" mat-dialog-title> {{ title }} </h1>
+<h4 *ngIf="!isEditing" style="overflow-wrap: break-word;"> {{ desc }} </h4>
+<mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%">
+  <mat-label>Title</mat-label>
+  <input [formControl]="titleControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="title">
+  <mat-error *ngIf="!title">
+    Title is <strong>required</strong>
+  </mat-error>
+  <mat-error *ngIf="title && title.length > 50">
+    Title is <strong>too long!</strong>
+  </mat-error>
+</mat-form-field>
+<mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%">
+  <mat-label>Description</mat-label>
+  <textarea [formControl]="descControl" [errorStateMatcher]="matcher" matInput rows="5" cols="40" [(ngModel)]='desc'></textarea>
+  <mat-error *ngIf="desc && desc.length > 1000">
+    Description is <strong>too long!</strong>
+  </mat-error>
+</mat-form-field>
+<div mat-dialog-actions>
+  <button *ngIf="!isEditing" mat-button (click)="toggleEdit()">Edit</button>
+  <button *ngIf="isEditing" [disabled]="!titleControl.valid || !descControl.valid" mat-button (click)="onUpdate()">Update</button>
+  <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
+  <button mat-button (click)="onDelete()">Delete</button>
+</div>

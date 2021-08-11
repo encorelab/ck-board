@@ -1,8 +1,10 @@
 export default class Post {
-    userID: string;
-    userType: string;
     postID: string;
     groupID: string;
-    object: string;
+    title: string;
+    desc: string;
+    author: string;
+    authorType: string;
+    fabricObject: string;
 }
   

@@ -1,26 +1,19 @@
 <div class="app">
-    <h1 id="heading">{{ config.boardName ?? 'Sample Board' }}</h1>
+    <mat-toolbar>
+        <span>{{config.boardName ?? 'Sample Board'}}</span>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-icon-button (click)="openNewPostDialog()">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button mat-icon-button (click)="openTaskDialog()">
+            <mat-icon>task</mat-icon>
+        </button>
+        <button mat-icon-button (click)="openSettingsDialog()">
+          <mat-icon>settings</mat-icon>
+        </button>
+    </mat-toolbar>
     <div class="canvas-area">
         <canvas id="canvas"></canvas>
-        <div class="toolSection">
-            <div class="toolField">
-                <button mat-fab color="primary" (click)="openNewPostDialog()">
-                    <mat-icon>add</mat-icon>
-                </button>
-                <button mat-fab color="primary" (click)="removePost()">
-                    <mat-icon>delete</mat-icon>
-                </button>
-                <button mat-fab color="primary">
-                    <mat-icon>edit</mat-icon>
-                </button>
-                <button mat-fab color="primary" (click)="openSettingsDialog()">
-                    <mat-icon>settings</mat-icon>
-                </button>
-                <button mat-fab color="primary" (click)="openTaskDialog()">
-                    <mat-icon>task</mat-icon>
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 

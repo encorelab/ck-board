@@ -23,6 +23,7 @@ import { ReactiveFormsModule } from '@angular/forms'
 import { PostComponent } from './components/post/post.component';
 import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
+import { PostModalComponent } from './components/post-modal/post-modal.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { TaskModalComponent } from './components/task-modal/task-modal.component
     DialogComponent,
     PostComponent,
     ConfigurationModalComponent,
-    TaskModalComponent
+    TaskModalComponent,
+    PostModalComponent
   ],
   imports: [
     BrowserModule,

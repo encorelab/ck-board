@@ -12,10 +12,11 @@ import { DialogInterface } from './interfaces/dialog.interface';
 import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
 import { ConfigService } from './services/config.service';
+import { PostModalComponent } from './components/post-modal/post-modal.component';
 
 // hard-coded for now
-const USER_ID = 'Ammar-T'
-const USER_TYPE = 'STUDENT'
+const AUTHOR = 'Ammar-T'
+const AUTHOR_TYPE = 'STUDENT'
 const GROUP_ID = 'Science Group'
 
 @Component({
@@ -50,7 +51,7 @@ export class AppComponent {
   configureBoard() {
     this.postsService.observable().pipe(first()).subscribe((data:any) => {
       data.map((post) => {
-        var obj = JSON.parse(post.object); 
+        var obj = JSON.parse(post.fabricObject); 
         this.syncBoard(obj, post.postID);
       })
       this.applySettings();
@@ -72,7 +73,8 @@ export class AppComponent {
       var origRenderOnAddRemove = this.canvas.renderOnAddRemove;
       this.canvas.renderOnAddRemove = false;
      
-      objects.forEach((o) => {
+      objects.forEach((o: fabric.Object) => {
+        this.popModalListener(o)
         this.canvas.add(o);
       });
     
@@ -93,9 +95,10 @@ export class AppComponent {
     });
   }
   
-  addPost = (title: string, message = '') => {
-    var newPost = new PostComponent({ title: title, userID: USER_ID, message: message, lock: !this.config.allowStudentMoveAny });
-    this.canvas.add(newPost);
+  addPost = (title: string, desc = '') => {
+    var fabricPost = new PostComponent({ title: title, author: AUTHOR, desc: desc, lock: !this.config.allowStudentMoveAny });
+    this.canvas.add(fabricPost);
+    this.popModalListener(fabricPost);
   }
 
   async openSettingsDialog() {
@@ -160,7 +163,7 @@ export class AppComponent {
   }
 
   // remove post from board
-  removePost() {
+  removePost = () => {
     var obj = this.canvas.getActiveObject();
     if (!obj || obj.type != 'group') return;
   
@@ -168,14 +171,49 @@ export class AppComponent {
     this.canvas.renderAll();
   };
 
+  updatePost = (postID, title, desc) => {
+    var obj: any = this.getObjectFromId(this.canvas, postID);
+    
+    obj = this.updateTitleDesc(obj, title, desc)
+    obj.set({ title: title, desc: desc })
+    this.canvas.renderAll()
+
+    obj = JSON.stringify(obj.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed']))
+    this.postsService.update(postID, { fabricObject: obj, title: title, desc: desc })
+  }
+
+  updateTitleDesc(obj: any, title: string, desc: string) {
+    var children: fabric.Object[] = obj.getObjects()
+    var titleObj: any = children.filter((obj) => obj.name == 'title').pop()
+    var authorObj: any = children.filter((obj) => obj.name == 'author').pop()
+    var descObj: any = children.filter((obj) => obj.name == 'desc').pop()
+    var contentObj: any = children.filter((obj) => obj.name == 'content').pop()
+
+    var oldTitleHeight = titleObj.height
+    var oldDescHeight = descObj.height
+    var oldAuthorHeight = authorObj.height
+    titleObj.set({ text: title, dirty: true })
+    descObj.set({ text: desc.length > 200 ? desc.substr(0, 200) + '...' : desc, dirty: true })
+    
+    authorObj.set({ top: authorObj.top + (titleObj.height - oldTitleHeight), dirty: true })
+    descObj.set({ top: descObj.top + (titleObj.height - oldTitleHeight) + (authorObj.height - oldAuthorHeight), dirty: true })
+    contentObj.set({ height: contentObj.height + (titleObj.height - oldTitleHeight) + (descObj.height - oldDescHeight), dirty: true })
+
+    obj.dirty = true
+    obj.addWithUpdate();
+    return obj
+  }
+
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any){
     const post:Post = {
-      userID: USER_ID,
-      userType: USER_TYPE,
+      title: pObject.title,
+      desc: pObject.desc,
+      author: AUTHOR,
+      authorType: AUTHOR_TYPE,
       postID: pObject.postID,
       groupID: GROUP_ID,
-      object: JSON.stringify(pObject.toJSON(['postID', 'hasControls', 'removed']))
+      fabricObject: JSON.stringify(pObject.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed']))
     }
     this.postsService.create(post);
   }
@@ -204,15 +242,46 @@ export class AppComponent {
     }
 
     if (existing) {
-      // update existing object
+      // if title or desc was updated, need to re-render with updated properties
+      if (obj.title != existing.title || obj.desc != existing.desc) {
+        existing = this.updateTitleDesc(existing, obj.title, obj.desc)
+        existing.desc = obj.desc
+        existing.title = obj.title
+      }
+      
       existing.set(obj)
       existing.setCoords()
       this.canvas.renderAll()
     } else {
-      // add new object to board
       this.renderPostFromJSON(obj)
     }
     
+  }
+
+  popModalListener(obj: fabric.Object) {
+    var _isDragging = false;
+    var _isMouseDown = false;
+
+    obj.on('mousedown', function () {
+        _isMouseDown = true;
+    });
+
+    obj.on('mousemove', function () {
+        _isDragging = _isMouseDown;
+    })
+
+    obj.on('mouseup', (e) => {
+        _isMouseDown = false;
+        var isDragEnd = _isDragging;
+        _isDragging = false;
+        if (!isDragEnd) {
+          this.canvas.discardActiveObject().renderAll();
+          this.dialog.open(PostModalComponent, {
+            width: '500px',
+            data: { post: obj, removePost: this.removePost, updatePost: this.updatePost }
+          });
+        }
+    });
   }
 
   // listen to configuration/permission changes
@@ -230,7 +299,7 @@ export class AppComponent {
     this.postsService.observable().pipe(skip(1)).subscribe((data:any) => {
       data.map((post) => {
         if (post) {
-          var obj = JSON.parse(post.object);
+          var obj = JSON.parse(post.fabricObject);
           this.syncBoard(obj, post.postID);
         }
       })
@@ -244,7 +313,7 @@ export class AppComponent {
         var obj = options.target;
         
         if (!obj.postID) {
-          obj.set('postID', Date.now() + '-' + USER_ID);
+          obj.set('postID', Date.now() + '-' + AUTHOR);
           fabric.util.object.extend(obj, { postID: obj.postID })
           this.sendObjectToGroup(obj)
 		    }
@@ -283,8 +352,8 @@ export class AppComponent {
         this.canvas.renderAll()
 
         var id = obj.postID
-        obj = JSON.stringify(obj.toJSON(['postID', 'hasControls', 'removed']))
-        this.postsService.update(id, {object: obj})
+        obj = JSON.stringify(obj.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed']))
+        this.postsService.update(id, { fabricObject: obj })
       }
     })
   }

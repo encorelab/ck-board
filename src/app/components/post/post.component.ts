@@ -1,5 +1,9 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { fabric } from 'fabric';
+
+const AUTHOR_OFFSET = 65
+const DESC_OFFSET = 80
+const CONTENT_EXTRA_HEIGHT = 50
 
 @Component({
   selector: 'app-post',
@@ -10,9 +14,10 @@ export class PostComponent extends fabric.Group {
 
   constructor(@Inject(Object) options:any) { 
     var title = new fabric.Textbox(options.title, {
-      width: 300,
+      name: 'title',
+      width: 280,
       left: 18,
-      top: 18,
+      top: 60,
       fontSize: 18,
       fontWeight: 'bold',
       fontFamily: 'Helvetica',
@@ -20,29 +25,39 @@ export class PostComponent extends fabric.Group {
       splitByGrapheme: true
     });
   
-    var author = new fabric.Textbox(options.userID, {
+    var author = new fabric.Textbox(options.author, {
+      name: 'author',
       width: 300,
       left: 18,
-      top: title.getScaledHeight() + 20,
+      top: title.getScaledHeight() + AUTHOR_OFFSET,
       fontSize: 13,
       fontFamily: 'Helvetica',
       fill: '#555555',
-      splitByGrapheme: true
+      splitByGrapheme: true,
     });
 
-    var desc = new fabric.Textbox(options.message, {
+    var desc = new fabric.Textbox(options.desc.length > 200 ? options.desc.substr(0, 200) + '...' : options.desc, {
+      name: 'desc',
       width: 300,
       left: 18,
-      top: 70,
+      top: author.getScaledHeight() + title.getScaledHeight() + DESC_OFFSET,
       fontSize: 15,
       fontFamily: 'Helvetica',
       fill: '#000000',
       splitByGrapheme: true
     });
+    
+    // var settings = new fabric.Rect({
+    //   width: 330,
+    //   height: 40,
+    //   fill: '#FFA500',
+    // });
 
-    var rectangle = new fabric.Rect({
+    var content = new fabric.Rect({
+      name: 'content',
+      top: 40,
       width: 330,
-      height: title.getScaledHeight() + desc.getScaledHeight() + 60,
+      height: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + CONTENT_EXTRA_HEIGHT,
       fill: '#F4D74B',
       rx: 20, 
       ry: 20,
@@ -56,9 +71,12 @@ export class PostComponent extends fabric.Group {
       transparentCorners: false,
       cornerSize: 7,
       lockMovementX: options.lock,
-      lockMovementY: options.lock
+      lockMovementY: options.lock,
+      title: options.title,
+      desc: options.desc,
+      author: options.author
     }
 
-    super([rectangle, title, author, desc], groupOptions);
+    super([content, title, author, desc], groupOptions);
   };
 }

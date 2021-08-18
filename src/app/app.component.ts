@@ -78,6 +78,7 @@ export class AppComponent {
      
       objects.forEach((o: fabric.Object) => {
         this.popModalListener(o)
+        this.likeListener(o);
         this.canvas.add(o);
       });
     
@@ -120,6 +121,7 @@ export class AppComponent {
     var fabricPost = new PostComponent({ title: title, author: AUTHOR, desc: desc, lock: !this.config.allowStudentMoveAny, left: left, top: top });
     this.canvas.add(fabricPost);
     this.popModalListener(fabricPost);
+    this.likeListener(fabricPost);
   }
 
   async openSettingsDialog() {
@@ -198,7 +200,7 @@ export class AppComponent {
     obj.set({ title: title, desc: desc })
     this.canvas.renderAll()
 
-    obj = JSON.stringify(obj.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed']))
+    obj = JSON.stringify(obj.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed', 'subTargetCheck']))
     this.postsService.update(postID, { fabricObject: obj, title: title, desc: desc })
   }
 
@@ -233,7 +235,7 @@ export class AppComponent {
       authorType: AUTHOR_TYPE,
       postID: pObject.postID,
       groupID: GROUP_ID,
-      fabricObject: JSON.stringify(pObject.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed']))
+      fabricObject: JSON.stringify(pObject.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed', 'subTargetCheck']))
     }
     this.postsService.create(post);
   }
@@ -304,6 +306,28 @@ export class AppComponent {
     });
   }
 
+  likeListener(obj: any) {
+    var children = obj.getObjects()
+    var likeObj: fabric.Image = children.filter((obj) => obj.name == 'like').pop()
+    
+    likeObj.on('mousedown', () => {
+      var src = likeObj.getSrc()
+      var newSrc = src.includes('likeFilled') ? 'likeOutline' : 'likeFilled'
+      likeObj.setSrc('assets/' + newSrc + '.png', () => {
+        if (newSrc == 'likeOutline') {
+           
+        } else {
+          
+        }
+        likeObj.set({ dirty: true })
+        obj.dirty = true
+        obj.addWithUpdate();
+        obj.setCoords()
+        this.canvas.renderAll()
+      })
+    })
+  }
+
   // listen to configuration/permission changes
   configListener() {
     this.configService.observable().pipe(skip(1)).subscribe((config:any) => {
@@ -372,7 +396,7 @@ export class AppComponent {
         this.canvas.renderAll()
 
         var id = obj.postID
-        obj = JSON.stringify(obj.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed']))
+        obj = JSON.stringify(obj.toJSON(['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed', 'subTargetCheck']))
         this.postsService.update(id, { fabricObject: obj })
       }
     })

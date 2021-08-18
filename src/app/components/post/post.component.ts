@@ -3,7 +3,7 @@ import { fabric } from 'fabric';
 
 const AUTHOR_OFFSET = 65
 const DESC_OFFSET = 80
-const CONTENT_EXTRA_HEIGHT = 50
+const CONTENT_EXTRA_HEIGHT = 55
 
 @Component({
   selector: 'app-post',
@@ -46,18 +46,22 @@ export class PostComponent extends fabric.Group {
       fill: '#000000',
       splitByGrapheme: true
     });
-    
-    // var settings = new fabric.Rect({
-    //   width: 330,
-    //   height: 40,
-    //   fill: '#FFA500',
-    // });
+  
+    var oImg = document.createElement("img");
+    oImg.setAttribute('src', 'assets/likeOutline.png');
+    var likeButton = new fabric.Image(oImg, {
+        name: 'like',
+        top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+        left: 18
+    });
+    likeButton.scaleToHeight(35)
+    likeButton.scaleToWidth(35)
 
     var content = new fabric.Rect({
       name: 'content',
       top: 40,
       width: 330,
-      height: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + CONTENT_EXTRA_HEIGHT,
+      height: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + likeButton.getScaledHeight() + CONTENT_EXTRA_HEIGHT,
       fill: '#F4D74B',
       rx: 20, 
       ry: 20,
@@ -74,9 +78,10 @@ export class PostComponent extends fabric.Group {
       lockMovementY: options.lock,
       title: options.title,
       desc: options.desc,
-      author: options.author
+      author: options.author,
+      subTargetCheck: true
     }
 
-    super([content, title, author, desc], groupOptions);
+    super([content, title, author, desc, likeButton], groupOptions);
   };
 }

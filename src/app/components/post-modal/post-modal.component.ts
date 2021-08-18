@@ -39,7 +39,7 @@ export class PostModalComponent {
   }
 
   onDelete() {
-    this.data.removePost()
+    this.data.removePost(this.data.post.postID)
     this.dialogRef.close();
   }
 }

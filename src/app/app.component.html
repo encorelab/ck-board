@@ -13,8 +13,11 @@
         <canvas id="canvas"></canvas>
         <div class="toolSection">
             <div class="toolField">
-                <button mat-fab color="primary" (click)="openNewPostDialog()">
+                <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="primary" (click)="handleCreatePost()">
                     <mat-icon>add</mat-icon>
+                </button>
+                <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" (click)="disableChooseLocation()">
+                    <mat-icon>close</mat-icon>
                 </button>
                 <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" (click)="enablePanMode()">
                     <mat-icon>edit</mat-icon>

@@ -39,7 +39,7 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.99, height: window.innerHeight * 0.9 });
+    this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.99, height: window.innerHeight * 0.9, fireRightClick: true, stopContextMenu: true });
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -87,19 +87,37 @@ export class AppComponent {
   }
 
   // open dialog to get message for a new post
-  openNewPostDialog() {
-    const dialogData: DialogInterface = {
-      addPost: this.addPost
-    }
-
-    this.dialog.open(DialogComponent, {
-      width: '500px',
-      data: dialogData
-    });
+  handleCreatePost() {
+    this.mode = Mode.CHOOSING_LOCATION
+    this.canvas.defaultCursor = 'copy'
+    this.canvas.hoverCursor = 'not-allowed'
+    this.canvas.on('mouse:down', this.handleChoosePostLocation);
   }
   
-  addPost = (title: string, desc = '') => {
-    var fabricPost = new PostComponent({ title: title, author: AUTHOR, desc: desc, lock: !this.config.allowStudentMoveAny });
+  handleChoosePostLocation = (opt) => {
+    if (opt.target == null) {
+      this.canvas.selection = false;
+      const dialogData: DialogInterface = {
+        addPost: this.addPost,
+        top: opt.pointer ? opt.pointer.y : 150,
+        left: opt.pointer ? opt.pointer.x : 150,
+      }
+      this.dialog.open(DialogComponent, {
+        width: '500px',
+        data: dialogData
+      });
+    }
+    this.canvas.off('mouse:down', this.handleChoosePostLocation)
+    this.enableEditMode()
+  }
+
+  disableChooseLocation() {
+    this.canvas.off('mouse:down', this.handleChoosePostLocation)
+    this.enableEditMode()
+  }
+
+  addPost = (title: string, desc = '', left: number, top: number) => {
+    var fabricPost = new PostComponent({ title: title, author: AUTHOR, desc: desc, lock: !this.config.allowStudentMoveAny, left: left, top: top });
     this.canvas.add(fabricPost);
     this.popModalListener(fabricPost);
   }
@@ -381,7 +399,7 @@ export class AppComponent {
     var isPanning = false;
 
     this.canvas.on("mouse:down", (opt) => {
-      if (opt.target == null || this.mode == Mode.PAN) {
+      if (opt.target == null && this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
       }
@@ -411,7 +429,7 @@ export class AppComponent {
   enableEditMode() {
     this.mode = Mode.EDIT
     this.lockPostsMovement(false)
-    this.canvas.defaultCursor = 'pointer'
+    this.canvas.defaultCursor = 'default'
     this.canvas.hoverCursor = 'move'
   }
 }

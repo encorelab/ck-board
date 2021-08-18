@@ -1,4 +1,5 @@
 export enum Mode {
     PAN,
-    EDIT
+    EDIT,
+    CHOOSING_LOCATION
 }

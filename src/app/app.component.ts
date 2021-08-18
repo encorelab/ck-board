@@ -163,10 +163,9 @@ export class AppComponent {
   }
 
   // remove post from board
-  removePost = () => {
-    var obj = this.canvas.getActiveObject();
+  removePost = (postID: string) => {
+    var obj = this.getObjectFromId(this.canvas, postID);
     if (!obj || obj.type != 'group') return;
-  
     this.canvas.remove(obj);
     this.canvas.renderAll();
   };

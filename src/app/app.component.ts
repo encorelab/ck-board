@@ -13,6 +13,7 @@ import { ConfigurationModalComponent } from './components/configuration-modal/co
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
 import { ConfigService } from './services/config.service';
 import { PostModalComponent } from './components/post-modal/post-modal.component';
+import { Mode } from './utils/Mode'
 
 // hard-coded for now
 const AUTHOR = 'Ammar-T'
@@ -29,6 +30,8 @@ export class AppComponent {
   postsService: PostService
   configService: ConfigService
   config: any
+  mode: Mode = Mode.EDIT
+  modeType = Mode
 
   constructor(db: AngularFireDatabase, public dialog: MatDialog) {
     this.postsService = new PostService(db, GROUP_ID);
@@ -273,7 +276,7 @@ export class AppComponent {
         _isMouseDown = false;
         var isDragEnd = _isDragging;
         _isDragging = false;
-        if (!isDragEnd) {
+        if (!isDragEnd && this.mode == Mode.EDIT) {
           this.canvas.discardActiveObject().renderAll();
           this.dialog.open(PostModalComponent, {
             width: '500px',
@@ -378,7 +381,7 @@ export class AppComponent {
     var isPanning = false;
 
     this.canvas.on("mouse:down", (opt) => {
-      if (opt.target == null) {
+      if (opt.target == null || this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
       }
@@ -396,5 +399,19 @@ export class AppComponent {
         this.canvas.relativePan(delta);
       }
     })
+  }
+
+  enablePanMode() {
+    this.mode = Mode.PAN
+    this.lockPostsMovement(true)
+    this.canvas.defaultCursor = 'grab'
+    this.canvas.hoverCursor = 'grab'
+  }
+
+  enableEditMode() {
+    this.mode = Mode.EDIT
+    this.lockPostsMovement(false)
+    this.canvas.defaultCursor = 'pointer'
+    this.canvas.hoverCursor = 'move'
   }
 }

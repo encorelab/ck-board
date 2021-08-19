@@ -399,7 +399,7 @@ export class AppComponent {
     var isPanning = false;
 
     this.canvas.on("mouse:down", (opt) => {
-      if (opt.target == null && this.mode == Mode.PAN) {
+      if (this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
       }

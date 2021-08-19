@@ -14,6 +14,7 @@ import { TaskModalComponent } from './components/task-modal/task-modal.component
 import { ConfigService } from './services/config.service';
 import { PostModalComponent } from './components/post-modal/post-modal.component';
 import { Mode } from './utils/Mode'
+import { LikesService } from './services/likes.service';
 
 // hard-coded for now
 const AUTHOR = 'Ammar-T'
@@ -28,6 +29,7 @@ const GROUP_ID = 'Science Group'
 export class AppComponent {
   canvas: Canvas;
   postsService: PostService
+  likesService: LikesService
   configService: ConfigService
   config: any
   mode: Mode = Mode.EDIT
@@ -35,6 +37,7 @@ export class AppComponent {
 
   constructor(db: AngularFireDatabase, public dialog: MatDialog) {
     this.postsService = new PostService(db, GROUP_ID);
+    this.likesService = new LikesService(db, GROUP_ID);
     this.configService = new ConfigService(db, GROUP_ID);
   }
 

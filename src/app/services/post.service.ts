@@ -22,8 +22,8 @@ export class PostService {
     return this.postsRef.valueChanges();
   }
 
-  getAll(): Observable<SnapshotAction<Post>[]>{
-    return this.postsRef.snapshotChanges();
+  getAll(): Promise<DataSnapshot>{
+    return this.postsRef.query.once('value', (value) => value.val())
   }
 
   create(post: any): any {

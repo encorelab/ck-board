@@ -1,18 +1,31 @@
 <div class="app">
-    <mat-toolbar>
-        <span>{{config && config.boardName ?? 'Sample Board'}}</span>
-        <span style="flex: 1 1 auto"></span>
-        <button mat-icon-button (click)="handleCreatePost()">
-          <mat-icon>add</mat-icon>
-        </button>
-        <button mat-icon-button (click)="openTaskDialog()">
-            <mat-icon>task</mat-icon>
-        </button>
-        <button mat-icon-button (click)="openSettingsDialog()">
-          <mat-icon>settings</mat-icon>
-        </button>
-    </mat-toolbar>
-    <div class="canvas-area">
-        <canvas id="canvas"></canvas>
-    </div>
+  <mat-toolbar>
+      <span>{{config.boardName ?? 'Sample Board'}}</span>
+      <span style="flex: 1 1 auto"></span>
+      <button mat-icon-button (click)="openTaskDialog()">
+          <mat-icon>task</mat-icon>
+      </button>
+      <button mat-icon-button (click)="openSettingsDialog()">
+        <mat-icon>settings</mat-icon>
+      </button>
+  </mat-toolbar>
+  <div class="canvas-area">
+      <canvas id="canvas"></canvas>
+      <div class="toolSection">
+          <div class="toolField">
+              <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="primary" (click)="handleCreatePost()">
+                  <mat-icon>add</mat-icon>
+              </button>
+              <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" (click)="disableChooseLocation()">
+                  <mat-icon>close</mat-icon>
+              </button>
+              <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" (click)="enablePanMode()">
+                  <mat-icon>edit</mat-icon>
+              </button>
+              <button *ngIf="mode == modeType.PAN" mat-fab color="primary" (click)="enableEditMode()">
+                  <mat-icon>pan_tool</mat-icon>
+              </button>
+          </div>
+        </div>
+  </div>
 </div>

@@ -8,6 +8,16 @@ export class FabricUtils {
         fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => callback(objects), "fabric");
     }
 
+    getObjectFromId(ctx: any, postID: string){
+        var currentObjects = ctx.getObjects();
+        
+        for (var i = currentObjects.length - 1; i >= 0; i-- ) {
+          if (currentObjects[i].postID == postID)
+            return currentObjects[i]
+        }
+        return null;
+    }
+
     updatePostTitleDesc(obj: any, title: string, desc: string) {
         var children: fabric.Object[] = obj.getObjects()
         var titleObj: any = children.filter((obj) => obj.name == 'title').pop()

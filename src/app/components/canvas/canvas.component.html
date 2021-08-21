@@ -1,6 +1,6 @@
 <div class="app">
   <mat-toolbar>
-      <span>{{config.boardName ?? 'Sample Board'}}</span>
+      <span>{{config && config.boardName ?? 'Sample Board'}}</span>
       <span style="flex: 1 1 auto"></span>
       <button mat-icon-button (click)="openTaskDialog()">
           <mat-icon>task</mat-icon>

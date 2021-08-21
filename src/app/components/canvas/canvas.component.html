@@ -1,0 +1,18 @@
+<div class="app">
+    <mat-toolbar>
+        <span>{{config && config.boardName ?? 'Sample Board'}}</span>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-icon-button (click)="handleCreatePost()">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button mat-icon-button (click)="openTaskDialog()">
+            <mat-icon>task</mat-icon>
+        </button>
+        <button mat-icon-button (click)="openSettingsDialog()">
+          <mat-icon>settings</mat-icon>
+        </button>
+    </mat-toolbar>
+    <div class="canvas-area">
+        <canvas id="canvas"></canvas>
+    </div>
+</div>

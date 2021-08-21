@@ -47,12 +47,6 @@ export class PostComponent extends fabric.Group {
       splitByGrapheme: true
     });
     
-    // var settings = new fabric.Rect({
-    //   width: 330,
-    //   height: 40,
-    //   fill: '#FFA500',
-    // });
-
     var content = new fabric.Rect({
       name: 'content',
       top: 40,

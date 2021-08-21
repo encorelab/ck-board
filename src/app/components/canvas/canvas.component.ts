@@ -172,14 +172,14 @@ export class CanvasComponent {
 
   // remove post from board
   removePost = (postID: string) => {
-    var obj = this.getObjectFromId(this.canvas, postID);
+    var obj = this.fabricUtils.getObjectFromId(this.canvas, postID);
     if (!obj || obj.type != 'group') return;
     this.canvas.remove(obj);
     this.canvas.renderAll();
   };
 
   updatePost = (postID, title, desc) => {
-    var obj: any = this.getObjectFromId(this.canvas, postID);
+    var obj: any = this.fabricUtils.getObjectFromId(this.canvas, postID);
     
     obj = this.fabricUtils.updatePostTitleDesc(obj, title, desc)
     obj.set({ title: title, desc: desc })
@@ -203,20 +203,9 @@ export class CanvasComponent {
     this.postsService.create(post);
   }
 
-  // get post object using the postID
-  getObjectFromId(ctx: any, postID: string){
-    var currentObjects = ctx.getObjects();
-    
-    for (var i = currentObjects.length - 1; i >= 0; i-- ) {
-      if (currentObjects[i].postID == postID)
-        return currentObjects[i]
-    }
-    return null;
-  }
-
   // sync board using incoming/outgoing posts
   syncBoard(obj:any, postID:any){
-    var existing = this.getObjectFromId(this.canvas, postID)
+    var existing = this.fabricUtils.getObjectFromId(this.canvas, postID)
 
     // delete object from board
     if (obj.removed) {

@@ -2,7 +2,7 @@
     <mat-toolbar>
         <span>{{config && config.boardName ?? 'Sample Board'}}</span>
         <span style="flex: 1 1 auto"></span>
-        <button mat-icon-button (click)="openNewPostDialog()">
+        <button mat-icon-button (click)="handleCreatePost()">
           <mat-icon>add</mat-icon>
         </button>
         <button mat-icon-button (click)="openTaskDialog()">

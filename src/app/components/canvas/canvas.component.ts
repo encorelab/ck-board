@@ -5,7 +5,7 @@ import { Canvas } from 'fabric/fabric-impl';
 import { MatDialog } from '@angular/material/dialog';
 import { AngularFireDatabase } from '@angular/fire/database';
 
-import { first, skip } from 'rxjs/operators';
+import { skip } from 'rxjs/operators';
 
 import Post from '../../models/post';
 import { DialogInterface } from '../../interfaces/dialog.interface';
@@ -53,6 +53,7 @@ export class CanvasComponent {
     this.movingObjectListener();
     this.zoomListener();
     this.panningListener();
+    this.expandPostListener();
     this.groupPostsListener();
     this.configListener();
   }
@@ -106,7 +107,6 @@ export class CanvasComponent {
   addPost = (title: string, desc = '', left: number, top: number) => {
     var fabricPost = new PostComponent({ title: title, author: AUTHOR, desc: desc, lock: !this.config.allowStudentMoveAny, left: left, top: top });
     this.canvas.add(fabricPost);
-    this.popModalListener(fabricPost);
   }
 
   openSettingsDialog() {
@@ -231,10 +231,7 @@ export class CanvasComponent {
         var origRenderOnAddRemove = this.canvas.renderOnAddRemove;
         this.canvas.renderOnAddRemove = false;
 
-        objects.forEach((o: fabric.Object) => {
-          this.popModalListener(o)
-          this.canvas.add(o);
-        });
+        objects.forEach((o: fabric.Object) => this.canvas.add(o));
 
         this.canvas.renderOnAddRemove = origRenderOnAddRemove;
         this.canvas.renderAll();
@@ -243,29 +240,30 @@ export class CanvasComponent {
     
   }
 
-  popModalListener(obj: fabric.Object) {
-    var _isDragging = false;
-    var _isMouseDown = false;
+  expandPostListener() {
+    var isDragging = false;
+    var isMouseDown = false;
 
-    obj.on('mousedown', function () {
-        _isMouseDown = true;
+    this.canvas.on('mouse:down', (e) => {
+      if (e.target?.name == 'post') isMouseDown = true;
     });
 
-    obj.on('mousemove', function () {
-        _isDragging = _isMouseDown;
+    this.canvas.on('mouse:move', (e) => {
+      if (e.target?.name == 'post') isDragging = isMouseDown;
     })
 
-    obj.on('mouseup', (e) => {
-        _isMouseDown = false;
-        var isDragEnd = _isDragging;
-        _isDragging = false;
-        if (!isDragEnd && this.mode == Mode.EDIT) {
-          this.canvas.discardActiveObject().renderAll();
-          this.dialog.open(PostModalComponent, {
-            width: '500px',
-            data: { post: obj, removePost: this.removePost, updatePost: this.updatePost }
-          });
-        }
+    this.canvas.on('mouse:up', (e) => {
+      var obj = e.target;
+      isMouseDown = false;
+      var isDragEnd = isDragging;
+      isDragging = false;
+      if (!isDragEnd && this.mode == Mode.EDIT && obj?.name == 'post') {
+        this.canvas.discardActiveObject().renderAll();
+        this.dialog.open(PostModalComponent, {
+          width: '500px',
+          data: { post: obj, removePost: this.removePost, updatePost: this.updatePost }
+        });
+      }
     });
   }
 

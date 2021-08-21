@@ -58,7 +58,7 @@ export class PostComponent extends fabric.Group {
     });
 
     const groupOptions = {
-      type: 'group',
+      name: 'post',
       left: options.left - (330 / 2),
       top: options.top - ((content.height ?? 0) / 2),
       hasControls: false,

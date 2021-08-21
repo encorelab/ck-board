@@ -14,7 +14,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { DialogComponent } from './components/dialog/dialog.component';
+import { AddPostComponent } from './components/add-post-modal/add-post.component';
 import { MatDialogModule  } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -25,15 +25,17 @@ import { PostComponent } from './components/post/post.component';
 import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
 import { PostModalComponent } from './components/post-modal/post-modal.component';
+import { CanvasComponent } from './components/canvas/canvas.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    DialogComponent,
+    AddPostComponent,
     PostComponent,
     ConfigurationModalComponent,
     TaskModalComponent,
-    PostModalComponent
+    PostModalComponent,
+    CanvasComponent
   ],
   imports: [
     BrowserModule,

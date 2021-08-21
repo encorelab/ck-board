@@ -19,6 +19,7 @@ import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { PostComponent } from '../post/post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
+import { Mode } from 'src/app/utils/Mode';
 
 // hard-coded for now
 const AUTHOR = 'Ammar-T'
@@ -35,6 +36,8 @@ export class CanvasComponent {
   postsService: PostService
   configService: ConfigService
   config: any
+  mode: Mode = Mode.EDIT
+  modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
   constructor(db: AngularFireDatabase, public dialog: MatDialog) {
@@ -43,7 +46,7 @@ export class CanvasComponent {
   }
 
   ngOnInit() {
-    this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.99, height: window.innerHeight * 0.9 });
+    this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.99, height: window.innerHeight * 0.9, fireRightClick: true, stopContextMenu: true });
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -71,17 +74,41 @@ export class CanvasComponent {
   }
 
   // open dialog to get message for a new post
-  openNewPostDialog() {
-    const dialogData: DialogInterface = {
-      addPost: this.addPost
-    }
-
-    this.dialog.open(AddPostComponent, {
-      width: '500px',
-      data: dialogData
-    });
+  handleCreatePost() {
+    this.mode = Mode.CHOOSING_LOCATION
+    this.canvas.defaultCursor = 'copy'
+    this.canvas.hoverCursor = 'not-allowed'
+    this.canvas.on('mouse:down', this.handleChoosePostLocation);
   }
   
+  handleChoosePostLocation = (opt) => {
+    if (opt.target == null) {
+      this.canvas.selection = false;
+      const dialogData: DialogInterface = {
+        addPost: this.addPost,
+        top: opt.pointer ? opt.pointer.y : 150,
+        left: opt.pointer ? opt.pointer.x : 150,
+      }
+      this.dialog.open(AddPostComponent, {
+        width: '500px',
+        data: dialogData
+      });
+    }
+    this.canvas.off('mouse:down', this.handleChoosePostLocation)
+    this.enableEditMode()
+  }
+
+  disableChooseLocation() {
+    this.canvas.off('mouse:down', this.handleChoosePostLocation)
+    this.enableEditMode()
+  }
+
+  addPost = (title: string, desc = '', left: number, top: number) => {
+    var fabricPost = new PostComponent({ title: title, author: AUTHOR, desc: desc, lock: !this.config.allowStudentMoveAny, left: left, top: top });
+    this.canvas.add(fabricPost);
+    this.popModalListener(fabricPost);
+  }
+
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
       width: '500px',
@@ -92,18 +119,6 @@ export class CanvasComponent {
         allowStudentMoveAny: this.config.allowStudentMoveAny
       }
     });
-  }
-
-  openTaskDialog() {
-    this.dialog.open(TaskModalComponent, {
-      width: '500px',
-    });
-  }
-
-  addPost = (title: string, desc = '') => {
-    var fabricPost = new PostComponent({ title: title, author: AUTHOR, desc: desc, lock: !this.config.allowStudentMoveAny });
-    this.canvas.add(fabricPost);
-    this.popModalListener(fabricPost);
   }
 
   updateBoardName = (name) => {
@@ -149,11 +164,16 @@ export class CanvasComponent {
     this.canvas.renderAll()
   }
 
+  openTaskDialog() {
+    this.dialog.open(TaskModalComponent, {
+      width: '500px',
+    });
+  }
+
   // remove post from board
-  removePost = () => {
-    var obj = this.canvas.getActiveObject();
+  removePost = (postID: string) => {
+    var obj = this.getObjectFromId(this.canvas, postID);
     if (!obj || obj.type != 'group') return;
-  
     this.canvas.remove(obj);
     this.canvas.renderAll();
   };
@@ -221,12 +241,12 @@ export class CanvasComponent {
       this.fabricUtils.renderPostFromJSON(obj, (objects) => {
         var origRenderOnAddRemove = this.canvas.renderOnAddRemove;
         this.canvas.renderOnAddRemove = false;
-      
+
         objects.forEach((o: fabric.Object) => {
           this.popModalListener(o)
           this.canvas.add(o);
         });
-      
+
         this.canvas.renderOnAddRemove = origRenderOnAddRemove;
         this.canvas.renderAll();
       })
@@ -250,7 +270,7 @@ export class CanvasComponent {
         _isMouseDown = false;
         var isDragEnd = _isDragging;
         _isDragging = false;
-        if (!isDragEnd) {
+        if (!isDragEnd && this.mode == Mode.EDIT) {
           this.canvas.discardActiveObject().renderAll();
           this.dialog.open(PostModalComponent, {
             width: '500px',
@@ -355,7 +375,7 @@ export class CanvasComponent {
     var isPanning = false;
 
     this.canvas.on("mouse:down", (opt) => {
-      if (opt.target == null) {
+      if (this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
       }
@@ -373,5 +393,19 @@ export class CanvasComponent {
         this.canvas.relativePan(delta);
       }
     })
+  }
+
+  enablePanMode() {
+    this.mode = Mode.PAN
+    this.lockPostsMovement(true)
+    this.canvas.defaultCursor = 'grab'
+    this.canvas.hoverCursor = 'grab'
+  }
+
+  enableEditMode() {
+    this.mode = Mode.EDIT
+    this.lockPostsMovement(false)
+    this.canvas.defaultCursor = 'default'
+    this.canvas.hoverCursor = 'move'
   }
 }

@@ -22,7 +22,7 @@ export class AddPostComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogInterface) {}
 
   handleDialogSubmit() {
-    this.data.addPost(this.title, this.description);
+    this.data.addPost(this.title, this.description, this.data.left, this.data.top);
     this.dialogRef.close();
   }
 

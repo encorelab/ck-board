@@ -1,0 +1,21 @@
+<div class="wrapper">
+    <div class="container">
+        <img src="../../assets/register.png" />
+        <div class="formContainer">
+            <div>
+                <h1 class="header">Join Us Today!</h1>
+                <p class="subheader">Become part of a growing community of students, teachers, and entrepreneurs</p>
+                <div class="credentialsContainer">
+                    <p class="label">Username</p>
+                    <input class="input" matInput [(ngModel)]="username"/>
+                    <p class="label">Password</p>
+                    <input type="password" class="input" matInput [(ngModel)]="password"/>
+                </div>
+                <div class="next" >
+                    <button mat-button (click)="onLogin()">Login</button>
+                </div>
+            </div>
+            <p class="alternate"><a routerLink="/register">Don't have an account? Sign up here!</a></p>
+        </div>
+    </div>
+</div>

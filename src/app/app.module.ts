@@ -18,6 +18,8 @@ import { ConfigurationModalComponent } from './components/configuration-modal/co
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
 import { PostModalComponent } from './components/post-modal/post-modal.component';
 import { CanvasComponent } from './components/canvas/canvas.component';
+import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +29,9 @@ import { CanvasComponent } from './components/canvas/canvas.component';
     ConfigurationModalComponent,
     TaskModalComponent,
     PostModalComponent,
-    CanvasComponent
+    CanvasComponent,
+    LoginComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,

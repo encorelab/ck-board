@@ -1,0 +1,48 @@
+<div class="wrapper">
+    <div class="container">
+        <img src="../../assets/register.png" />
+        <div class="formContainer">
+            <div>
+                <h1 class="header">Join Us Today!</h1>
+                <p class="subheader">Become part of a growing community of students, teachers, and entrepreneurs</p>
+                <div>
+                    <div *ngIf="step == 0">
+                        <h2>Which one are you?</h2>
+                        <div class="selectContainer">
+                            <div class="selectBox" [ngClass]="userType == 0 ? 'active' : ''" (click)="userType = 0">
+                                <h1 class="title">Student</h1>
+                                <div class="graphic">
+                                    <img src="../../assets/student.png" />
+                                </div>
+                            </div>
+                            <div class="selectBox" [ngClass]="userType == 1 ? 'active' : ''" (click)="userType = 1">
+                                <h1 class="title">Teacher</h1>
+                                <div class="graphic">
+                                    <img src="../../assets/teacher.png" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="step == 1" class="credentialsContainer">
+                        <p class="label">Username</p>
+                        <input class="input" [formControl]="usernameControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="username"/>
+                        <mat-error *ngIf="!username || username.length < 1 || username.length > 25">Username is required (1-25 characters)</mat-error>
+                        <p class="label">Password</p>
+                        <input type="password" class="input" [formControl]="passwordControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="password"/>
+                        <mat-error *ngIf="!password || password.length < 12 || password.length > 30">Password is required (12-30 characters)</mat-error>
+                    </div>
+                    <div *ngIf="step == 0" class="next" (click)="step = 1">
+                        <button class="enabled">Next</button>
+                    </div>
+                    <div *ngIf="step == 1" class="next" >
+                        <button [ngClass]="!usernameControl.valid || !passwordControl.valid ? 'disabled' : 'enabled'" [disabled]="!usernameControl.valid || !passwordControl.valid" mat-button (click)="onRegister()">Register</button>
+                    </div>
+                    <div *ngIf="step == 1" class="next" (click)="step = 0">
+                        <button class="enabled">Back</button>
+                    </div>
+                </div>
+            </div>
+            <p class="alternate"><a routerLink="/login">Already have an account?</a></p>
+        </div>
+    </div>
+</div>

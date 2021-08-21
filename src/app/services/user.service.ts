@@ -13,8 +13,8 @@ export class UserService {
   private usersPath : string = '/users';
   usersRef: AngularFireList<User>;
 
-  constructor(private db: AngularFireDatabase, @Inject(String) private groupID: string) {
-    this.usersRef = db.list(groupID + this.usersPath);
+  constructor(private db: AngularFireDatabase) {
+    this.usersRef = db.list(this.usersPath);
   }
 
   observable(): Observable<User[]> {
@@ -26,11 +26,13 @@ export class UserService {
   }
 
   getOneById(id: string): Promise<DataSnapshot> {
-    return this.usersRef.query.equalTo(id).once("value", (value) => value.val())
+    return this.usersRef.query.orderByChild("id").equalTo(id).once("value", (value) => value.val())
   }
 
   create(user: User): any {
-    return this.usersRef.push(user);
+    var push = this.usersRef.push(user) 
+    var key = push.key
+    push.set({ id: key });
   }
 
   delete(id: string): Promise<DataSnapshot> {

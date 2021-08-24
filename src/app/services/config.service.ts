@@ -1,10 +1,9 @@
 import { Inject } from '@angular/core';
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
-import { AngularFireObject, DataSnapshot, SnapshotAction } from '@angular/fire/database/interfaces';
+import { AngularFireDatabase } from '@angular/fire/database';
+import { AngularFireObject } from '@angular/fire/database/interfaces';
 import { Observable } from 'rxjs';
-import { first } from 'rxjs/operators';
-import Post from '../models/post';
+import { Config } from '../models/config';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +21,7 @@ export class ConfigService {
     return this.configRef.valueChanges();
   }
 
-  get(): Promise<any> {
+  get(): Promise<Config> {
     return this.configRef.query.once("value").then((value) => value.val())
   }
   

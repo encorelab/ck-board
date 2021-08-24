@@ -20,6 +20,9 @@ import { PostComponent } from '../post/post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { Mode } from 'src/app/utils/Mode';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { UserService } from 'src/app/services/user.service';
+import User from 'src/app/models/user';
 
 // hard-coded for now
 const AUTHOR = 'Ammar-T'
@@ -33,16 +36,25 @@ const GROUP_ID = 'Science Group'
 })
 export class CanvasComponent {
   canvas: Canvas;
+
+  user: any
+  config: any
+  
   postsService: PostService
   configService: ConfigService
-  config: any
+  userService: UserService
+
   mode: Mode = Mode.EDIT
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
-  constructor(db: AngularFireDatabase, public dialog: MatDialog) {
+  constructor(db: AngularFireDatabase, private afAuth: AngularFireAuth, public dialog: MatDialog) {
     this.postsService = new PostService(db, GROUP_ID);
     this.configService = new ConfigService(db, GROUP_ID);
+    this.userService = new UserService(db);
+    this.afAuth.onAuthStateChanged((user) => {
+      this.userService.getOneById(user?.uid ?? '').then((user) => this.user = Object.values(user.val())[0])
+    })
   }
 
   ngOnInit() {

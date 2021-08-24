@@ -8,6 +8,7 @@ import { AppComponent } from './app.component';
 
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireStorageModule } from '@angular/fire/storage';
+import { AngularFireAuthModule } from '@angular/fire/auth'
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
@@ -18,6 +19,8 @@ import { ConfigurationModalComponent } from './components/configuration-modal/co
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
 import { PostModalComponent } from './components/post-modal/post-modal.component';
 import { CanvasComponent } from './components/canvas/canvas.component';
+import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
 
 @NgModule({
   declarations: [
@@ -27,13 +30,16 @@ import { CanvasComponent } from './components/canvas/canvas.component';
     ConfigurationModalComponent,
     TaskModalComponent,
     PostModalComponent,
-    CanvasComponent
+    CanvasComponent,
+    LoginComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
     AngularFireStorageModule, // storage
+    AngularFireAuthModule,
     FormsModule, 
     BrowserAnimationsModule,
     ReactiveFormsModule,

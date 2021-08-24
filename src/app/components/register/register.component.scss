@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;1,100;1,300&display=swap');
+
+.wrapper{
+    background-color: #3F3D56;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.container{
+    width: 1395px;
+    height: 775px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+}
+
+.formContainer{
+    height: 730px;
+    width: 622px;
+    background-color: #EFEBEB;
+    padding-top: 45px;
+    padding-left: 25px;
+    padding-right: 25px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+
+    h2{
+        text-align: center;
+        font-family: "Roboto", sans-serif;
+        font-weight: 400;
+        margin-bottom: 20px;
+    }
+}
+
+.header{
+    font-family: "Roboto", sans-serif;
+    font-weight: normal;
+    margin-bottom: 10px;
+}
+
+.selectContainer{
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-bottom: 3em;
+}
+
+.next{
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+    
+    button {
+        font-family: "Roboto", sans-serif;
+        width: 370px;
+        height: 50px;
+        outline: none;
+        border: none;
+        font-size: 24px;
+        color: white;
+        opacity: 0.8;
+    }
+
+    button:hover {
+        cursor: pointer;
+        opacity: 1;
+        transition: 0.2s;
+    }
+
+}
+
+.label{
+    margin-bottom: 10px;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    text-align: left;
+    width: 80%;
+}
+
+.invalid-pass {
+    color: red
+}
+
+.credentialsContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 3em;
+}
+
+.alternate{
+    font-family: "Roboto", sans-serif;
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.selectBox{
+    width: 170px;
+    height: 170px;
+    background-color: #F4F4F4;
+    border-radius: 50px;
+    padding-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    border: 5px solid #F4F4F4;
+    z-index: 99999;
+}
+
+.selectBox:hover{
+    cursor: pointer;
+}
+
+.active{
+    border: 5px solid #6C63FF;
+}
+
+.enabled {
+    background-color: #6C63FF;
+}
+
+.disabled {
+    background-color: #9A9AAC;
+}
+
+.title{
+    font-family: "Robota", sans-serif;
+    font-weight: 200;
+    font-size: 18px;
+    text-align: center;
+    padding-top: 10px;
+}
+
+.graphic{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    img{
+        margin-bottom: 20px;
+    }
+}

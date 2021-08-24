@@ -27,6 +27,7 @@ export class RegisterComponent {
   usernameControl = new FormControl('', [Validators.required, Validators.maxLength(25)]);
   emailControl = new FormControl('', [Validators.required, Validators.email])
   passwordControl = new FormControl('', [Validators.required, Validators.minLength(12), Validators.maxLength(30)]);
+  invalidCredentials: boolean = false;
   matcher = new MyErrorStateMatcher();
 
   userService: UserService;
@@ -38,6 +39,7 @@ export class RegisterComponent {
   onRegister() {
     this.afAuth.createUserWithEmailAndPassword(this.email, this.password)
     .then((userCredential) => {
+      this.invalidCredentials = false
       var user = userCredential.user
       if (user) {
         var userModel: User = {
@@ -51,9 +53,7 @@ export class RegisterComponent {
       }
     })
     .catch((error) => {
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      console.log(errorCode + ': ' + errorMessage)
+      this.invalidCredentials = true
     });
   }
 }

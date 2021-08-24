@@ -41,6 +41,7 @@
                             <input type="password" [formControl]="passwordControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="password"/>
                             <mat-hint *ngIf="!password || password.length < 12 || password.length > 30">Password is required (12-30 characters)</mat-hint>
                         </mat-form-field>
+                        <p *ngIf="invalidCredentials" class="invalid-pass">Unable to register account!</p>
                     </div>
                     <div *ngIf="step == 0" class="next" (click)="step = 1">
                         <button class="enabled">Next</button>

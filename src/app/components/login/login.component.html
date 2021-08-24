@@ -16,7 +16,7 @@
                         <mat-label>Password</mat-label>
                         <input type="password" matInput [(ngModel)]="password"/>
                     </mat-form-field>
-                    <p *ngIf="invalidCredentials" class="invalid-pass">Invalid username or password!</p>
+                    <p *ngIf="invalidCredentials" class="invalid-pass">Invalid email or password!</p>
                 </div>
                 <div class="next" >
                     <button mat-button (click)="onLogin()">Login</button>

@@ -88,7 +88,6 @@ export class CanvasComponent {
 
   // open dialog to get message for a new post
   handleCreatePost() {
-    console.log(this.user)
     this.mode = Mode.CHOOSING_LOCATION
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'

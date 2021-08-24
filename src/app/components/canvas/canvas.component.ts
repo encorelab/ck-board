@@ -22,7 +22,7 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { Mode } from 'src/app/utils/Mode';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { UserService } from 'src/app/services/user.service';
-import User from 'src/app/models/user';
+import { Config } from 'src/app/models/config';
 
 // hard-coded for now
 const AUTHOR = 'Ammar-T'
@@ -38,7 +38,7 @@ export class CanvasComponent {
   canvas: Canvas;
 
   user: any
-  config: any
+  config: Config
   
   postsService: PostService
   configService: ConfigService

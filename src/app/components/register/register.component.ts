@@ -41,6 +41,7 @@ export class RegisterComponent {
       var user = userCredential.user
       if (user) {
         var userModel: User = {
+          id: user.uid,
           email: this.email,
           username: this.username,
           role: this.userType

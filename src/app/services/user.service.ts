@@ -1,5 +1,6 @@
 import { Inject } from '@angular/core';
 import { Injectable } from '@angular/core';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { DataSnapshot, SnapshotAction } from '@angular/fire/database/interfaces';
 import { Observable } from 'rxjs';
@@ -30,9 +31,7 @@ export class UserService {
   }
 
   create(user: User): any {
-    var push = this.usersRef.push(user) 
-    var key = push.key
-    push.update({ id: key });
+    return this.usersRef.push(user) 
   }
 
   delete(id: string): Promise<DataSnapshot> {

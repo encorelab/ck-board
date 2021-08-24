@@ -43,25 +43,17 @@
     margin-bottom: 10px;
 }
 
-.subheader{
-    font-family: "Roboto", sans-serif;
-    font-weight: normal;
-    margin-bottom: 30px;
-    font-size: 18px;
-
-}
-
 .selectContainer{
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
-    z-index: 9999;
+    margin-bottom: 3em;
 }
 
 .next{
     display: flex;
     justify-content: center;
-    margin-top: 30px;
+    margin-top: 15px;
     
     button {
         font-family: "Roboto", sans-serif;
@@ -85,28 +77,18 @@
 .label{
     margin-bottom: 10px;
     font-family: "Roboto", sans-serif;
-    font-size: 20px;
+    font-size: 15px;
     text-align: left;
-    width: 380px;
+    width: 80%;
 }
 
-.input{
-    background-color: white;
-    outline: none;
-    border: none;
-    width: 370px;
-    height: 47px;
-    font-size: 20px;
-    padding-left: 10px;
-    margin-bottom: 20px;
-    color: black;
-}
 
 .credentialsContainer{
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin-bottom: 3em;
 }
 
 .alternate{
@@ -114,12 +96,6 @@
     font-size: 20px;
     text-align: center;
     margin-bottom: 30px;
-}
-
-.sign{
-    text-decoration: none;
-    color: "#6C63FF";
-    font-weight: 500;
 }
 
 .selectBox{

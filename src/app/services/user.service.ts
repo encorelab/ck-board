@@ -32,7 +32,7 @@ export class UserService {
   create(user: User): any {
     var push = this.usersRef.push(user) 
     var key = push.key
-    push.set({ id: key });
+    push.update({ id: key });
   }
 
   delete(id: string): Promise<DataSnapshot> {

@@ -8,7 +8,7 @@ import { MatToolbarModule } from '@angular/material/toolbar'
 import { NgModule } from '@angular/core';
 
 @NgModule({
-  exports: [
+  imports: [
     MatButtonModule, 
     MatIconModule, 
     MatDialogModule, 
@@ -16,6 +16,15 @@ import { NgModule } from '@angular/core';
     MatInputModule, 
     MatCheckboxModule, 
     MatToolbarModule, 
+  ],
+  exports: [
+    MatButtonModule, 
+    MatIconModule, 
+    MatDialogModule, 
+    MatFormFieldModule, 
+    MatInputModule, 
+    MatCheckboxModule, 
+    MatToolbarModule,
   ]
 })
 export class MaterialModule {}

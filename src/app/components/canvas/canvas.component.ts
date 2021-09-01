@@ -3,14 +3,11 @@ import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
 import { MatDialog } from '@angular/material/dialog';
-import { AngularFireDatabase } from '@angular/fire/database';
-
-import { skip } from 'rxjs/operators';
 
 import Post from '../../models/post';
 import { DialogInterface } from '../../interfaces/dialog.interface';
 
-import { ConfigService } from '../../services/config.service';
+import { BoardService } from '../../services/board.service';
 import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
@@ -20,14 +17,14 @@ import { PostComponent } from '../post/post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { Mode } from 'src/app/utils/Mode';
-import { AngularFireAuth } from '@angular/fire/auth';
 import { UserService } from 'src/app/services/user.service';
-import { Config } from 'src/app/models/config';
+import { Board } from 'src/app/models/board';
+import User from 'src/app/models/user';
+import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 
 // hard-coded for now
-const AUTHOR = 'Ammar-T'
-const AUTHOR_TYPE = 'STUDENT'
-const GROUP_ID = 'Science Group'
+const BOARD_ID = '13n4jrf2r32fj'
 
 @Component({
   selector: 'app-canvas',
@@ -37,53 +34,49 @@ const GROUP_ID = 'Science Group'
 export class CanvasComponent {
   canvas: Canvas;
 
-  user: any
-  config: Config
-  
-  postsService: PostService
-  configService: ConfigService
-  userService: UserService
+  user: User
+  board: Board
 
   mode: Mode = Mode.EDIT
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
-  constructor(db: AngularFireDatabase, private afAuth: AngularFireAuth, public dialog: MatDialog) {
-    this.postsService = new PostService(db, GROUP_ID);
-    this.configService = new ConfigService(db, GROUP_ID);
-    this.userService = new UserService(db);
-    this.afAuth.onAuthStateChanged((user) => {
-      this.userService.getOneById(user?.uid ?? '').then((user) => this.user = Object.values(user.val())[0])
-    })
-  }
+  constructor(public postsService: PostService, public boardService: BoardService, 
+    public userService: UserService, public authService: AuthService, public dialog: MatDialog,
+    private route: Router) {}
 
   ngOnInit() {
-    this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.99, height: window.innerHeight * 0.9, fireRightClick: true, stopContextMenu: true });
-    this.configureBoard();
-    this.addObjectListener();
-    this.removeObjectListener();
-    this.movingObjectListener();
-    this.zoomListener();
-    this.panningListener();
-    this.expandPostListener();
-    this.groupPostsListener();
-    this.configListener();
+    this.authService.getAuthenticatedUser().then((user) => {
+      this.user = user
+      this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+      this.configureBoard();
+      this.addObjectListener();
+      this.removeObjectListener();
+      this.movingObjectListener();
+      this.zoomListener();
+      this.panningListener();
+      this.expandPostListener();
+      this.postsService.observable(BOARD_ID, this.handleAddFromGroup, this.handleModificationFromGroup);
+      this.boardService.observable(BOARD_ID, this.handleBoardChange);
+    }).catch((e) => this.route.navigate(['/login']))
   }
 
   // configure board
   configureBoard() {
-    this.postsService.getAll().then((data) => {
-      let posts = data.val() ?? {}
-      Object.values(posts).map((post: any) => {
+    this.postsService.getAll(BOARD_ID).then((data) => {
+      data.forEach((data) => {
+        let post = data.data() ?? {}
         var obj = JSON.parse(post.fabricObject); 
         this.syncBoard(obj, post.postID);
-      });
-      this.configService.get().then((config) => {
-        this.config = config
-        config.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
-        config.bgImage ? this.updateBackground(config.bgImage.url, config.bgImage.imgSettings) : null
       })
-    });
+      this.boardService.get(BOARD_ID).then((board) => {
+        if (board) {
+          this.board = board
+          board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
+          board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
+        } 
+      })
+    })
   }
 
   // open dialog to get message for a new post
@@ -117,7 +110,14 @@ export class CanvasComponent {
   }
 
   addPost = (title: string, desc = '', left: number, top: number) => {
-    var fabricPost = new PostComponent({ title: title, author: AUTHOR, desc: desc, lock: !this.config.allowStudentMoveAny, left: left, top: top });
+    var fabricPost = new PostComponent({ 
+      title: title, 
+      author: this.user.username, 
+      desc: desc, 
+      lock: !this.board.permissions.allowStudentMoveAny, 
+      left: left, 
+      top: top 
+    });
     this.canvas.add(fabricPost);
   }
 
@@ -128,14 +128,14 @@ export class CanvasComponent {
         updatePermissions: this.updatePostPermissions,
         updateBackground: this.updateBackground,
         updateBoardName: this.updateBoardName,
-        allowStudentMoveAny: this.config.allowStudentMoveAny
+        allowStudentMoveAny: this.board.permissions.allowStudentMoveAny
       }
     });
   }
 
   updateBoardName = (name) => {
-    this.config.boardName = name
-    this.configService.update({ boardName: name })
+    this.board.name = name
+    this.boardService.update(BOARD_ID, { name: name })
   }
 
   updateBackground = (url, settings?) => {
@@ -159,13 +159,13 @@ export class CanvasComponent {
           scaleY: height / (img.height ?? 0)
         }
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-        this.configService.update({ bgImage: { url: url, imgSettings: imgSettings } })
+        this.boardService.update(BOARD_ID, { bgImage: { url: url, imgSettings: imgSettings } })
       }
     });
   }
 
   updatePostPermissions = (value) => {
-    this.configService.update({ allowStudentMoveAny: !value })
+    this.boardService.update(BOARD_ID, { permissions: { allowStudentMoveAny: !value } })
     this.lockPostsMovement(value)
   }
   
@@ -204,12 +204,11 @@ export class CanvasComponent {
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any){
     const post:Post = {
+      postID: pObject.postID,
       title: pObject.title,
       desc: pObject.desc,
-      author: AUTHOR,
-      authorType: AUTHOR_TYPE,
-      postID: pObject.postID,
-      groupID: GROUP_ID,
+      userID: this.user.id,
+      boardID: BOARD_ID,
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties))
     }
     this.postsService.create(post);
@@ -280,25 +279,25 @@ export class CanvasComponent {
   }
 
   // listen to configuration/permission changes
-  configListener() {
-    this.configService.observable().pipe(skip(1)).subscribe((config:any) => {
-      this.config = config
-      this.lockPostsMovement(!config.allowStudentMoveAny)
-      config.bgImage ? this.updateBackground(config.bgImage.url, config.bgImage.imgSettings) : null
-      config.boardName ? this.updateBoardName(config.boardName) : null
-    });
+  handleBoardChange = (board) => {
+    this.board = board
+    this.lockPostsMovement(!board.permissions.allowStudentMoveAny)
+    board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
+    board.name ? this.updateBoardName(board.name) : null
   }
 
-  // listen to changes from group members
-  groupPostsListener() {
-    this.postsService.observable().pipe(skip(1)).subscribe((data:any) => {
-      data.map((post) => {
-        if (post) {
-          var obj = JSON.parse(post.fabricObject);
-          this.syncBoard(obj, post.postID);
-        }
-      })
-    });
+  handleAddFromGroup = (post) => {
+    if (post) {
+      var obj = JSON.parse(post.fabricObject);
+      this.syncBoard(obj, post.postID);
+    }
+  }
+
+  handleModificationFromGroup = (post) => {
+    if (post) {
+      var obj = JSON.parse(post.fabricObject);
+      this.syncBoard(obj, post.postID);
+    }
   }
 
   // perform actions when new post is added
@@ -308,7 +307,7 @@ export class CanvasComponent {
         var obj = options.target;
         
         if (!obj.postID) {
-          obj.set('postID', Date.now() + '-' + AUTHOR);
+          obj.set('postID', Date.now() + '-' + this.user.id);
           fabric.util.object.extend(obj, { postID: obj.postID })
           this.sendObjectToGroup(obj)
 		    }

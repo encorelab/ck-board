@@ -4,6 +4,13 @@ export class FabricUtils {
 
     serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed']
 
+    canvasConfig = {
+        width: window.innerWidth * 0.99, 
+        height: window.innerHeight * 0.9, 
+        fireRightClick: true, 
+        stopContextMenu: true
+    }
+
     renderPostFromJSON(post:any, callback: (objects) => any): void {
         fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => callback(objects), "fabric");
     }

@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/database';
-import { AngularFireAuth } from '@angular/fire/auth';
 import { FormControl, Validators } from '@angular/forms';
 import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import User from 'src/app/models/user';
 import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { AuthService } from 'src/app/services/auth.service';
 
 enum UserType { STUDENT = 'student', TEACHER = 'teacher' }
 enum Step { CHOOSE_TYPE, ADD_CREDENTIALS }
@@ -33,28 +31,14 @@ export class RegisterComponent {
 
   userService: UserService;
 
-  constructor(db: AngularFirestore, public afAuth: AngularFireAuth, private route: Router) {
+  constructor(db: AngularFirestore, public auth: AuthService, private route: Router) {
     this.userService = new UserService(db);
   }
 
   onRegister() {
-    this.afAuth.createUserWithEmailAndPassword(this.email, this.password)
-    .then((userCredential) => {
-      this.invalidCredentials = false
-      var user = userCredential.user
-      if (user) {
-        var userModel: User = {
-          id: user.uid,
-          email: this.email,
-          username: this.username,
-          role: this.userType
-        };
-        this.userService.create(userModel)
-        this.route.navigate(['/canvas'])
-      }
-    })
-    .catch((error) => {
-      this.invalidCredentials = true
-    });
+    this.invalidCredentials = false
+    this.auth.register(this.userType, this.username, this.email, this.password).then(() => {
+      this.route.navigate(['/canvas'])
+    }).catch(() => this.invalidCredentials = true)
   }
 }

@@ -3,7 +3,6 @@ import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
 import { MatDialog } from '@angular/material/dialog';
-import { AngularFireDatabase } from '@angular/fire/database';
 
 import Post from '../../models/post';
 import { DialogInterface } from '../../interfaces/dialog.interface';
@@ -18,11 +17,11 @@ import { PostComponent } from '../post/post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { Mode } from 'src/app/utils/Mode';
-import { AngularFireAuth } from '@angular/fire/auth';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
-import { AngularFirestore } from '@angular/fire/firestore';
 import User from 'src/app/models/user';
+import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 
 // hard-coded for now
 const BOARD_ID = '13n4jrf2r32fj'
@@ -37,25 +36,19 @@ export class CanvasComponent {
 
   user: User
   board: Board
-  
-  postsService: PostService
-  boardService: BoardService
-  userService: UserService
 
   mode: Mode = Mode.EDIT
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
-  constructor(public db: AngularFireDatabase, public fs: AngularFirestore, public afAuth: AngularFireAuth, public dialog: MatDialog) {
-    this.userService = new UserService(fs);
-    this.postsService = new PostService(fs);
-    this.boardService = new BoardService(fs);
-  }
+  constructor(public postsService: PostService, public boardService: BoardService, 
+    public userService: UserService, public authService: AuthService, public dialog: MatDialog,
+    private route: Router) {}
 
   ngOnInit() {
-    this.afAuth.onAuthStateChanged((user) => {
-      this.userService.getOneById(user?.uid ?? '').then((user) => {if (user) this.user = user})
-      this.canvas = new fabric.Canvas('canvas', { width: window.innerWidth * 0.99, height: window.innerHeight * 0.9, fireRightClick: true, stopContextMenu: true });
+    this.authService.getAuthenticatedUser().then((user) => {
+      this.user = user
+      this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
       this.configureBoard();
       this.addObjectListener();
       this.removeObjectListener();
@@ -65,7 +58,7 @@ export class CanvasComponent {
       this.expandPostListener();
       this.postsService.observable(BOARD_ID, this.handleAddFromGroup, this.handleModificationFromGroup);
       this.boardService.observable(BOARD_ID, this.handleBoardChange);
-    })
+    }).catch((e) => this.route.navigate(['/login']))
   }
 
   // configure board

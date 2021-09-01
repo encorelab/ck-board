@@ -40,7 +40,6 @@ import { RegisterComponent } from './components/register/register.component';
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
     AngularFirestoreModule,
-    AngularFireStorageModule, // storage
     AngularFireAuthModule,
     FormsModule, 
     BrowserAnimationsModule,

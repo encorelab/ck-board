@@ -1,10 +1,6 @@
 import { Component } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { AngularFireDatabase } from '@angular/fire/database';
-import { AngularFirestore } from '@angular/fire/firestore';
-import { FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { UserService } from 'src/app/services/user.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 
 @Component({
@@ -21,19 +17,13 @@ export class LoginComponent {
 
   invalidCredentials: boolean = false;
 
-  userService: UserService;
-
-  constructor(db: AngularFirestore, public afAuth: AngularFireAuth, private route: Router) {
-    this.userService = new UserService(db);
-  }
+  constructor(private auth: AuthService, private route: Router) {}
 
   onLogin() {
-    this.afAuth.signInWithEmailAndPassword(this.email, this.password)
-    .then((userCredential) => {
+    this.auth.login(this.email, this.password).then((userCredential) => {
       this.invalidCredentials = false;
       this.route.navigate(['/canvas'])
-    })
-    .catch((error) => {
+    }).catch((error) => {
       this.invalidCredentials = true;
     });
   }

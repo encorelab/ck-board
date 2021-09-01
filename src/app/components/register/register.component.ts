@@ -6,6 +6,7 @@ import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import User from 'src/app/models/user';
 import { Router } from '@angular/router';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 enum UserType { STUDENT = 'student', TEACHER = 'teacher' }
 enum Step { CHOOSE_TYPE, ADD_CREDENTIALS }
@@ -32,7 +33,7 @@ export class RegisterComponent {
 
   userService: UserService;
 
-  constructor(db: AngularFireDatabase, public afAuth: AngularFireAuth, private route: Router) {
+  constructor(db: AngularFirestore, public afAuth: AngularFireAuth, private route: Router) {
     this.userService = new UserService(db);
   }
 

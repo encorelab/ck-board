@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFireDatabase } from '@angular/fire/database';
+import { AngularFirestore } from '@angular/fire/firestore';
 import { FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
@@ -22,7 +23,7 @@ export class LoginComponent {
 
   userService: UserService;
 
-  constructor(db: AngularFireDatabase, public afAuth: AngularFireAuth, private route: Router) {
+  constructor(db: AngularFirestore, public afAuth: AngularFireAuth, private route: Router) {
     this.userService = new UserService(db);
   }
 

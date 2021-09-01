@@ -11,8 +11,8 @@ import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 })
 export class AddPostComponent {
 
-  title: string 
-  description: string 
+  title: string = ''
+  description: string = ''
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
   descControl = new FormControl('', [Validators.maxLength(1000)]);
   matcher = new MyErrorStateMatcher();

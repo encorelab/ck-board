@@ -1,8 +1,5 @@
-import { Inject } from '@angular/core';
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
-import { DataSnapshot, SnapshotAction } from '@angular/fire/database/interfaces';
+import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import User from '../models/user';
 
@@ -12,29 +9,31 @@ import User from '../models/user';
 export class UserService {
 
   private usersPath : string = '/users';
-  usersRef: AngularFireList<User>;
+  usersRef: AngularFirestoreCollection<User>;
 
-  constructor(private db: AngularFireDatabase) {
-    this.usersRef = db.list(this.usersPath);
+  constructor(private db: AngularFirestore) {
+    this.usersRef = db.collection<User>(this.usersPath)
   }
 
   observable(): Observable<User[]> {
     return this.usersRef.valueChanges();
   }
 
-  getAll(): Promise<DataSnapshot> {
-    return this.usersRef.query.once("value").then((value) => value.val())
+  getAll() {
+    // return this.usersRef.query.once("value").then((value) => value.val())
+    return this.usersRef.ref.get().then((snapshot) => snapshot)
   }
 
-  getOneById(id: string): Promise<DataSnapshot> {
-    return this.usersRef.query.orderByChild("id").equalTo(id).once("value", (value) => value.val())
+  getOneById(id: string) {
+    // return this.usersRef.query.orderByChild("id").equalTo(id).once("value", (value) => value.val())
+    return this.usersRef.ref.doc(id).get().then((snapshot) => snapshot.data())
   }
 
-  create(user: User): any {
-    return this.usersRef.push(user) 
+  create(user: User) {
+    return this.usersRef.doc(user.id).set(user) 
   }
 
-  delete(id: string): Promise<DataSnapshot> {
-    return this.usersRef.query.equalTo(id).once("value", (value) => value.ref.remove())
+  delete(id: string) {
+    return this.usersRef.ref.doc(id).delete()
   }
 }

@@ -1,6 +1,6 @@
 <div class="app">
   <mat-toolbar>
-      <span>{{config && config.boardName ?? 'Sample Board'}}</span>
+      <span *ngIf="board && board.name">{{ board.name }}</span>
       <span style="flex: 1 1 auto"></span>
       <button mat-icon-button (click)="openTaskDialog()">
           <mat-icon>task</mat-icon>
@@ -8,6 +8,7 @@
       <button mat-icon-button (click)="openSettingsDialog()">
         <mat-icon>settings</mat-icon>
       </button>
+      <span style="margin-left: 1em" *ngIf="user && user.username">{{ user.username }}</span>
   </mat-toolbar>
   <div class="canvas-area">
       <canvas id="canvas"></canvas>

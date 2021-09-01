@@ -307,7 +307,7 @@ export class CanvasComponent {
         var obj = options.target;
         
         if (!obj.postID) {
-          obj.set('postID', Date.now() + '-' + this.user.username);
+          obj.set('postID', Date.now() + '-' + this.user.id);
           fabric.util.object.extend(obj, { postID: obj.postID })
           this.sendObjectToGroup(obj)
 		    }

@@ -56,7 +56,7 @@ export class PostComponent extends fabric.Group {
     });
     likeButton.scaleToHeight(35)
     likeButton.scaleToWidth(35)
-
+    
     var content = new fabric.Rect({
       name: 'content',
       top: 40,
@@ -68,7 +68,7 @@ export class PostComponent extends fabric.Group {
     });
 
     const groupOptions = {
-      type: 'group',
+      name: 'post',
       left: options.left - (330 / 2),
       top: options.top - ((content.height ?? 0) / 2),
       hasControls: false,

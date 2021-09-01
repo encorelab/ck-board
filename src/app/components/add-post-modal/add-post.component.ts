@@ -1,24 +1,24 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, FormGroupDirective, NgForm, Validators } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogInterface } from 'src/app/interfaces/dialog.interface';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 
 @Component({
   selector: 'app-dialog',
-  templateUrl: './dialog.component.html',
-  styleUrls: ['./dialog.component.scss']
+  templateUrl: './add-post.component.html',
+  styleUrls: ['./add-post.component.scss']
 })
-export class DialogComponent {
+export class AddPostComponent {
 
-  title: string 
-  description: string 
+  title: string = ''
+  description: string = ''
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
   descControl = new FormControl('', [Validators.maxLength(1000)]);
   matcher = new MyErrorStateMatcher();
 
   constructor(
-    public dialogRef: MatDialogRef<DialogComponent>,
+    public dialogRef: MatDialogRef<AddPostComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogInterface) {}
 
   handleDialogSubmit() {

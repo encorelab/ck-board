@@ -92,8 +92,8 @@ export class CanvasComponent {
       this.canvas.selection = false;
       const dialogData: DialogInterface = {
         addPost: this.addPost,
-        top: opt.pointer ? opt.pointer.y : 150,
-        left: opt.pointer ? opt.pointer.x : 150,
+        top: opt.absolutePointer ? opt.absolutePointer.y : 150,
+        left: opt.absolutePointer ? opt.absolutePointer.x : 150,
       }
       this.dialog.open(AddPostComponent, {
         width: '500px',

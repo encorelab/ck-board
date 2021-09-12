@@ -7,7 +7,8 @@ import { RegisterComponent } from './components/register/register.component';
 const routes: Routes = [
   { path: 'canvas', component: CanvasComponent },
   { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent }
+  { path: 'register', component: RegisterComponent },
+  { path: '**', redirectTo: 'login' }
 ];
 
 @NgModule({

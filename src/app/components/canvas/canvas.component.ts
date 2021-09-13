@@ -123,12 +123,13 @@ export class CanvasComponent {
 
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
-      width: '500px',
+      width: '700px',
       data: {
+        board: this.board,
         updatePermissions: this.updatePostPermissions,
+        updateTask: this.updateTask,
         updateBackground: this.updateBackground,
-        updateBoardName: this.updateBoardName,
-        allowStudentMoveAny: this.board.permissions.allowStudentMoveAny
+        updateBoardName: this.updateBoardName
       }
     });
   }
@@ -169,6 +170,10 @@ export class CanvasComponent {
     this.lockPostsMovement(value)
   }
   
+  updateTask = (title, message) => {
+    this.boardService.update(BOARD_ID, { task: { title: title, message: message } })
+  }
+
   lockPostsMovement(value) {
     this.canvas.getObjects().map(obj => {
       obj.set({lockMovementX: value, lockMovementY: value});
@@ -179,6 +184,10 @@ export class CanvasComponent {
   openTaskDialog() {
     this.dialog.open(TaskModalComponent, {
       width: '500px',
+      data: {
+        title: this.board.task.title,
+        message: this.board.task.message ?? ''
+      }
     });
   }
 

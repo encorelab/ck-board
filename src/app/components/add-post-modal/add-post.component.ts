@@ -12,9 +12,9 @@ import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 export class AddPostComponent {
 
   title: string = ''
-  description: string = ''
+  message: string = ''
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
-  descControl = new FormControl('', [Validators.maxLength(1000)]);
+  msgControl = new FormControl('', [Validators.maxLength(1000)]);
   matcher = new MyErrorStateMatcher();
 
   constructor(
@@ -22,7 +22,7 @@ export class AddPostComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogInterface) {}
 
   handleDialogSubmit() {
-    this.data.addPost(this.title, this.description, this.data.left, this.data.top);
+    this.data.addPost(this.title, this.message, this.data.left, this.data.top);
     this.dialogRef.close();
   }
 

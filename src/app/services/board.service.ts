@@ -25,7 +25,12 @@ export class BoardService {
   }
 
   get(boardID: string): Promise<any> {
-    return this.boardRef.ref.where("boardID", "==", boardID).get().then((snapshot) => snapshot.docs[0].data())
+    return this.boardRef.ref.where("boardID", "==", boardID).get().then((snapshot) => {
+      if (!snapshot.empty) {
+        return snapshot.docs[0].data()
+      } 
+      return null;
+    })
   }
 
   update(boardID: string, settings: any) {

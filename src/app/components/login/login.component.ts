@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 
@@ -17,12 +16,11 @@ export class LoginComponent {
 
   invalidCredentials: boolean = false;
 
-  constructor(private auth: AuthService, private route: Router) {}
+  constructor(private auth: AuthService) {}
 
   onLogin() {
     this.auth.login(this.email, this.password).then((userCredential) => {
       this.invalidCredentials = false;
-      this.route.navigate(['/canvas'])
     }).catch((error) => {
       this.invalidCredentials = true;
     });

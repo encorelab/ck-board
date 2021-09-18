@@ -24,7 +24,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
 
 // hard-coded for now
-const BOARD_ID = '13n4jrf2r32fj'
+// const this.boardID = '13n4jrf2r32fj'
 
 @Component({
   selector: 'app-canvas',
@@ -32,6 +32,7 @@ const BOARD_ID = '13n4jrf2r32fj'
   styleUrls: ['./canvas.component.scss']
 })
 export class CanvasComponent {
+  boardID: string
   canvas: Canvas;
 
   user: User
@@ -46,30 +47,30 @@ export class CanvasComponent {
     private route: Router) {}
 
   ngOnInit() {
-    this.authService.getAuthenticatedUser().then((user) => {
-      this.user = user
-      this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-      this.configureBoard();
-      this.addObjectListener();
-      this.removeObjectListener();
-      this.movingObjectListener();
-      this.zoomListener();
-      this.panningListener();
-      this.expandPostListener();
-      this.postsService.observable(BOARD_ID, this.handleAddFromGroup, this.handleModificationFromGroup);
-      this.boardService.observable(BOARD_ID, this.handleBoardChange);
-    }).catch((e) => this.route.navigate(['/login']))
+    // if user is already loaded in authService, else wait for firebase to send the user
+    this.user = this.authService.userData ?? this.authService.getAuthenticatedUser().then((user) => this.user = user)
+    this.boardID = this.route.url.replace('/canvas/', '')
+    this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+    this.configureBoard();
+    this.addObjectListener();
+    this.removeObjectListener();
+    this.movingObjectListener();
+    this.zoomListener();
+    this.panningListener();
+    this.expandPostListener();
+    this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
+    this.boardService.observable(this.boardID, this.handleBoardChange);
   }
 
   // configure board
   configureBoard() {
-    this.postsService.getAll(BOARD_ID).then((data) => {
+    this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
         var obj = JSON.parse(post.fabricObject); 
         this.syncBoard(obj, post.postID);
       })
-      this.boardService.get(BOARD_ID).then((board) => {
+      this.boardService.get(this.boardID).then((board) => {
         if (board) {
           this.board = board
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
@@ -136,7 +137,7 @@ export class CanvasComponent {
 
   updateBoardName = (name) => {
     this.board.name = name
-    this.boardService.update(BOARD_ID, { name: name })
+    this.boardService.update(this.boardID, { name: name })
   }
 
   updateBackground = (url, settings?) => {
@@ -160,18 +161,18 @@ export class CanvasComponent {
           scaleY: height / (img.height ?? 0)
         }
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-        this.boardService.update(BOARD_ID, { bgImage: { url: url, imgSettings: imgSettings } })
+        this.boardService.update(this.boardID, { bgImage: { url: url, imgSettings: imgSettings } })
       }
     });
   }
 
   updatePostPermissions = (value) => {
-    this.boardService.update(BOARD_ID, { permissions: { allowStudentMoveAny: !value } })
+    this.boardService.update(this.boardID, { permissions: { allowStudentMoveAny: !value } })
     this.lockPostsMovement(value)
   }
   
   updateTask = (title, message) => {
-    this.boardService.update(BOARD_ID, { task: { title: title, message: message } })
+    this.boardService.update(this.boardID, { task: { title: title, message: message } })
   }
 
   lockPostsMovement(value) {
@@ -217,7 +218,7 @@ export class CanvasComponent {
       title: pObject.title,
       desc: pObject.desc,
       userID: this.user.id,
-      boardID: BOARD_ID,
+      boardID: this.boardID,
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties))
     }
     this.postsService.create(post);

@@ -1,5 +1,6 @@
 export class Board {
-    boardID: string
+    boardID: string;
+    teacherID: string;
     name: string;
     task: {
         title: string;
@@ -12,5 +13,5 @@ export class Board {
     permissions: {
         allowStudentMoveAny: boolean;
     }; 
-    members: [string];
+    members: [];
 }

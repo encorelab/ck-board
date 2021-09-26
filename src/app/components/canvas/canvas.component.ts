@@ -113,7 +113,8 @@ export class CanvasComponent {
   addPost = (title: string, desc = '', left: number, top: number) => {
     var fabricPost = new PostComponent({ 
       title: title, 
-      author: this.user.username, 
+      author: this.user.username,
+      authorID: this.user.id,
       desc: desc, 
       lock: !this.board.permissions.allowStudentMoveAny, 
       left: left, 
@@ -274,7 +275,7 @@ export class CanvasComponent {
     })
 
     this.canvas.on('mouse:up', (e) => {
-      var obj = e.target;
+      var obj: any = e.target;
       isMouseDown = false;
       var isDragEnd = isDragging;
       isDragging = false;
@@ -282,7 +283,12 @@ export class CanvasComponent {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
           width: '500px',
-          data: { post: obj, removePost: this.removePost, updatePost: this.updatePost }
+          data: { 
+            user: this.user, 
+            post: obj, 
+            removePost: this.removePost, 
+            updatePost: this.updatePost 
+          }
         });
       }
     });

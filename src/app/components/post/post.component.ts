@@ -68,7 +68,8 @@ export class PostComponent extends fabric.Group {
       lockMovementY: options.lock,
       title: options.title,
       desc: options.desc,
-      author: options.author
+      author: options.author,
+      authorID: options.authorID
     }
 
     super([content, title, author, desc], groupOptions);

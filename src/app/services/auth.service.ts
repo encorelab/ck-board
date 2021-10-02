@@ -33,7 +33,7 @@ export class AuthService {
   login(email: string, password: string) {
     return this.auth.signInWithEmailAndPassword(email, password).then((result) => {
       this.ngZone.run(() => {
-        this.router.navigate(['canvas/13n4jrf2r32fj']);
+        this.router.navigate(['dashboard']);
       });
     })
   }
@@ -51,7 +51,7 @@ export class AuthService {
         this.userData = userModel
         this.userService.create(userModel)
         this.ngZone.run(() => {
-          this.router.navigate(['canvas/13n4jrf2r32fj']);
+          this.router.navigate(['dashboard']);
         });
       }
     })

@@ -278,7 +278,7 @@ export class CanvasComponent {
       isMouseDown = false;
       var isDragEnd = isDragging;
       isDragging = false;
-      if (!isDragEnd && this.mode == Mode.EDIT && obj?.name == 'post') {
+      if (!isDragEnd && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
           width: '500px',

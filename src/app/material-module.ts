@@ -6,6 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatToolbarModule } from '@angular/material/toolbar'
 import { MatTabsModule } from '@angular/material/tabs'
+import { MatCardModule } from '@angular/material/card'
+import { MatGridListModule } from '@angular/material/grid-list'
 import { NgModule } from '@angular/core';
 
 @NgModule({
@@ -17,7 +19,9 @@ import { NgModule } from '@angular/core';
     MatInputModule, 
     MatCheckboxModule, 
     MatToolbarModule,
-    MatTabsModule
+    MatTabsModule,
+    MatCardModule,
+    MatGridListModule
   ],
   exports: [
     MatButtonModule, 
@@ -27,7 +31,9 @@ import { NgModule } from '@angular/core';
     MatInputModule, 
     MatCheckboxModule, 
     MatToolbarModule,
-    MatTabsModule
+    MatTabsModule,
+    MatCardModule,
+    MatGridListModule
   ]
 })
 export class MaterialModule {}

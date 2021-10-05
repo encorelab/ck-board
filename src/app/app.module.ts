@@ -22,6 +22,8 @@ import { PostModalComponent } from './components/post-modal/post-modal.component
 import { CanvasComponent } from './components/canvas/canvas.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +35,9 @@ import { RegisterComponent } from './components/register/register.component';
     PostModalComponent,
     CanvasComponent,
     LoginComponent,
-    RegisterComponent
+    RegisterComponent,
+    DashboardComponent,
+    AddBoardModalComponent
   ],
   imports: [
     BrowserModule,

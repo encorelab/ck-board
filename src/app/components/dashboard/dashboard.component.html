@@ -1,0 +1,24 @@
+<div class="app">
+    <mat-toolbar>
+        <span>Common Knowledge Board</span>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-icon-button (click)="openCreateBoardDialog()">
+            <mat-icon>add</mat-icon>
+        </button>
+        <span style="margin-left: 1em" *ngIf="user && user.username">{{ user.username }}</span>
+    </mat-toolbar>
+    <mat-grid-list class="content" cols="4" rowHeight="200">
+      <mat-grid-tile *ngFor="let board of boards" height="100px">
+        <mat-card class="card" (click)="handleBoardClick(board.boardID)">
+          <mat-card-header>
+            <mat-card-title class="title">{{ board.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              {{ board.task.title }}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      </mat-grid-tile>
+    </mat-grid-list>
+</div>

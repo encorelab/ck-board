@@ -1,0 +1,32 @@
+<h1 mat-dialog-title>Board Configuration</h1>
+<div mat-dialog-content>
+  <mat-tab-group dynamicHeight animationDuration="0ms">
+    <mat-tab label="Board"> 
+      <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
+        <mat-label>Board Name</mat-label>
+        <input matInput [(ngModel)]="boardName">
+      </mat-form-field>
+      <h4>Set Background Image:</h4>
+      <input ng-hide id="input-file-id" type="file" (change)="handleImageUpload($event)" style="margin-bottom: 20px;"/>
+    </mat-tab>
+    <mat-tab label="Task">
+      <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
+        <mat-label>Task Title</mat-label>
+        <input matInput [(ngModel)]="taskTitle">
+      </mat-form-field>
+      <mat-form-field appearance="outline" style="width:100%">
+        <mat-label>Task Message</mat-label>
+        <textarea matInput rows="5" cols="40" [(ngModel)]='taskMessage'></textarea>
+      </mat-form-field>
+    </mat-tab>
+    <mat-tab label="Permissions">
+      <p>
+        <mat-checkbox [checked]="allowStudentMoveAny">Students can move any post?</mat-checkbox>
+      </p>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Cancel</button>
+  <button mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Create Board!</button>
+</div>

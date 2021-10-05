@@ -33,6 +33,10 @@ export class BoardService {
     })
   }
 
+  getAll(): Promise<any> {
+    return this.boardRef.ref.get().then((snapshot) => snapshot)
+  }
+
   update(boardID: string, settings: any) {
     return this.boardRef.ref.doc(boardID).update(settings)
   }

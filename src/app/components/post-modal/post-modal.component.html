@@ -18,9 +18,9 @@
   </mat-error>
 </mat-form-field>
 <div mat-dialog-actions>
-  <button *ngIf="!isEditing" mat-button (click)="toggleEdit()">Edit</button>
+  <button *ngIf="!isEditing && canEditDelete" mat-button (click)="toggleEdit()">Edit</button>
   <button *ngIf="isEditing" [disabled]="!titleControl.valid || !descControl.valid" mat-button (click)="onUpdate()">Update</button>
-  <button mat-button (click)="onDelete()">Delete</button>
+  <button *ngIf="canEditDelete" mat-button (click)="onDelete()">Delete</button>
   <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
   <button *ngIf="!isEditing" mat-button (click)="onNoClick()">Close</button>
 </div>

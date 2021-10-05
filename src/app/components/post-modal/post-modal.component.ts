@@ -13,6 +13,7 @@ export class PostModalComponent {
   title: string
   desc: string
   isEditing: boolean = false
+  canEditDelete: boolean
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
   descControl = new FormControl('', [Validators.maxLength(1000)]);
@@ -23,8 +24,10 @@ export class PostModalComponent {
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.title = data.post.title
       this.desc = data.post.desc
+      this.canEditDelete = this.data.post.authorID == this.data.user.id || this.data.user.role == 'teacher'
   }
 
+  
   onNoClick(): void {
     this.dialogRef.close();
   }

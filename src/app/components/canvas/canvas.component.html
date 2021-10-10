@@ -2,10 +2,13 @@
   <mat-toolbar>
       <span *ngIf="board && board.name">{{ board.name }}</span>
       <span style="flex: 1 1 auto"></span>
-      <button mat-icon-button (click)="openTaskDialog()">
+      <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
+        <mat-icon>keyboard_return</mat-icon>
+      </button>
+      <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
           <mat-icon>task</mat-icon>
       </button>
-      <button *ngIf="user && user.role == 'teacher'" mat-icon-button (click)="openSettingsDialog()">
+      <button *ngIf="user && user.role == 'teacher'" mat-icon-button (click)="openSettingsDialog()" matTooltip="Adjust Settings">
         <mat-icon>settings</mat-icon>
       </button>
       <span style="margin-left: 1em" *ngIf="user && user.username">{{ user.username }}</span>
@@ -14,16 +17,16 @@
       <canvas id="canvas"></canvas>
       <div class="toolSection">
           <div class="toolField">
-              <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="primary" (click)="handleCreatePost()">
+              <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Add Post" (click)="handleCreatePost()">
                   <mat-icon>add</mat-icon>
               </button>
-              <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" (click)="disableChooseLocation()">
+              <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Cancel Post" (click)="disableChooseLocation()">
                   <mat-icon>close</mat-icon>
               </button>
-              <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" (click)="enablePanMode()">
+              <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" matTooltip="Edit Mode" (click)="enablePanMode()">
                   <mat-icon>open_with</mat-icon>
               </button>
-              <button *ngIf="mode == modeType.PAN" mat-fab color="primary" (click)="enableEditMode()">
+              <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Mode" (click)="enableEditMode()">
                   <mat-icon>edit_note</mat-icon>
               </button>
           </div>

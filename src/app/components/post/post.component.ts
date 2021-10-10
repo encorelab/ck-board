@@ -47,16 +47,28 @@ export class PostComponent extends fabric.Group {
       splitByGrapheme: true
     });
   
-    var oImg = document.createElement("img");
-    oImg.setAttribute('src', 'assets/likeOutline.png');
-    var likeButton = new fabric.Image(oImg, {
-        name: 'like',
-        top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
-        left: 18
+    var likeButton = new fabric.Textbox('👍🏼', {
+      name: 'like',
+      width: 100,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      left: 18,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#000000',
+      splitByGrapheme: true
     });
-    likeButton.scaleToHeight(35)
-    likeButton.scaleToWidth(35)
-    
+
+    var likeCount = new fabric.Textbox('0', {
+      name: 'likeCount',
+      width: 100,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      left: 50,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#555555',
+      splitByGrapheme: true
+    });
+
     var content = new fabric.Rect({
       name: 'content',
       top: 40,
@@ -82,6 +94,6 @@ export class PostComponent extends fabric.Group {
       subTargetCheck: true
     }
 
-    super([content, title, author, desc, likeButton], groupOptions);
+    super([content, title, author, desc, likeButton, likeCount], groupOptions);
   };
 }

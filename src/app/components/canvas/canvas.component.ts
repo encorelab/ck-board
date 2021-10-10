@@ -22,6 +22,7 @@ import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import { LikesService } from 'src/app/services/likes.service';
 
 // hard-coded for now
 const BOARD_ID = '13n4jrf2r32fj'
@@ -42,7 +43,7 @@ export class CanvasComponent {
   fabricUtils: FabricUtils = new FabricUtils()
 
   constructor(public postsService: PostService, public boardService: BoardService, 
-    public userService: UserService, public authService: AuthService, public dialog: MatDialog,
+    public userService: UserService, public likesService: LikesService, public authService: AuthService, public dialog: MatDialog,
     private route: Router) {}
 
   ngOnInit() {
@@ -56,6 +57,7 @@ export class CanvasComponent {
       this.zoomListener();
       this.panningListener();
       this.expandPostListener();
+      this.addLikeListener();
       this.postsService.observable(BOARD_ID, this.handleAddFromGroup, this.handleModificationFromGroup);
       this.boardService.observable(BOARD_ID, this.handleBoardChange);
     }).catch((e) => this.route.navigate(['/login']))
@@ -233,7 +235,8 @@ export class CanvasComponent {
         existing.desc = obj.desc
         existing.title = obj.title
       }
-      
+
+      existing = this.fabricUtils.updateLikeCount(existing, obj)
       existing.set(obj)
       existing.setCoords()
       this.canvas.renderAll()
@@ -249,6 +252,36 @@ export class CanvasComponent {
       })
     }
     
+  }
+
+  addLikeListener() {
+    this.canvas.on('mouse:down', e => {
+      var post: any = e.target
+      var likeButton = e.subTargets?.find(o => o.name == 'like')
+      if (likeButton) {
+        this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
+          if (data.size == 0) {
+            post = this.fabricUtils.incrementLikes(post)
+            this.likesService.add({
+              likeID: Date.now() + '-' + this.user.id,
+              likerID: this.user.id,
+              postID: post.postID,
+              boardID: this.board.boardID
+            })
+          } else {
+            post = this.fabricUtils.decrementLikes(post)
+            data.forEach((data) => {
+              let like = data.data() ?? {}
+              this.likesService.remove(like.likeID)
+            })
+          }
+          
+          this.canvas.renderAll()
+          var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+          this.postsService.update(post.postID, { fabricObject: jsonPost })
+        })
+      }
+    });
   }
 
   expandPostListener() {
@@ -268,7 +301,8 @@ export class CanvasComponent {
       isMouseDown = false;
       var isDragEnd = isDragging;
       isDragging = false;
-      if (!isDragEnd && this.mode == Mode.EDIT && obj?.name == 'post') {
+      var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
+      if (!isDragEnd && this.mode == Mode.EDIT && !clickedLikeButton && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
           width: '500px',

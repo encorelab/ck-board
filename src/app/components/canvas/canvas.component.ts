@@ -25,7 +25,7 @@ import { Router } from '@angular/router';
 import { LikesService } from 'src/app/services/likes.service';
 
 // hard-coded for now
-const BOARD_ID = '13n4jrf2r32fj'
+// const this.boardID = '13n4jrf2r32fj'
 
 @Component({
   selector: 'app-canvas',
@@ -33,6 +33,7 @@ const BOARD_ID = '13n4jrf2r32fj'
   styleUrls: ['./canvas.component.scss']
 })
 export class CanvasComponent {
+  boardID: string
   canvas: Canvas;
 
   user: User
@@ -47,31 +48,31 @@ export class CanvasComponent {
     private route: Router) {}
 
   ngOnInit() {
-    this.authService.getAuthenticatedUser().then((user) => {
-      this.user = user
-      this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-      this.configureBoard();
-      this.addObjectListener();
-      this.removeObjectListener();
-      this.movingObjectListener();
-      this.zoomListener();
-      this.panningListener();
-      this.expandPostListener();
-      this.addLikeListener();
-      this.postsService.observable(BOARD_ID, this.handleAddFromGroup, this.handleModificationFromGroup);
-      this.boardService.observable(BOARD_ID, this.handleBoardChange);
-    }).catch((e) => this.route.navigate(['/login']))
+    // if user is already loaded in authService, else wait for firebase to send the user
+    this.user = this.authService.userData ?? this.authService.getAuthenticatedUser().then((user) => this.user = user)
+    this.boardID = this.route.url.replace('/canvas/', '')
+    this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+    this.configureBoard();
+    this.addObjectListener();
+    this.removeObjectListener();
+    this.movingObjectListener();
+    this.zoomListener();
+    this.panningListener();
+    this.expandPostListener();
+    this.addLikeListener();
+    this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
+    this.boardService.observable(this.boardID, this.handleBoardChange);
   }
 
   // configure board
   configureBoard() {
-    this.postsService.getAll(BOARD_ID).then((data) => {
+    this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
         var obj = JSON.parse(post.fabricObject); 
         this.syncBoard(obj, post.postID);
       })
-      this.boardService.get(BOARD_ID).then((board) => {
+      this.boardService.get(this.boardID).then((board) => {
         if (board) {
           this.board = board
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
@@ -94,8 +95,8 @@ export class CanvasComponent {
       this.canvas.selection = false;
       const dialogData: DialogInterface = {
         addPost: this.addPost,
-        top: opt.pointer ? opt.pointer.y : 150,
-        left: opt.pointer ? opt.pointer.x : 150,
+        top: opt.absolutePointer ? opt.absolutePointer.y : 150,
+        left: opt.absolutePointer ? opt.absolutePointer.x : 150,
       }
       this.dialog.open(AddPostComponent, {
         width: '500px',
@@ -114,7 +115,8 @@ export class CanvasComponent {
   addPost = (title: string, desc = '', left: number, top: number) => {
     var fabricPost = new PostComponent({ 
       title: title, 
-      author: this.user.username, 
+      author: this.user.username,
+      authorID: this.user.id,
       desc: desc, 
       lock: !this.board.permissions.allowStudentMoveAny, 
       left: left, 
@@ -125,19 +127,20 @@ export class CanvasComponent {
 
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
-      width: '500px',
+      width: '700px',
       data: {
+        board: this.board,
         updatePermissions: this.updatePostPermissions,
+        updateTask: this.updateTask,
         updateBackground: this.updateBackground,
-        updateBoardName: this.updateBoardName,
-        allowStudentMoveAny: this.board.permissions.allowStudentMoveAny
+        updateBoardName: this.updateBoardName
       }
     });
   }
 
   updateBoardName = (name) => {
     this.board.name = name
-    this.boardService.update(BOARD_ID, { name: name })
+    this.boardService.update(this.boardID, { name: name })
   }
 
   updateBackground = (url, settings?) => {
@@ -161,16 +164,20 @@ export class CanvasComponent {
           scaleY: height / (img.height ?? 0)
         }
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-        this.boardService.update(BOARD_ID, { bgImage: { url: url, imgSettings: imgSettings } })
+        this.boardService.update(this.boardID, { bgImage: { url: url, imgSettings: imgSettings } })
       }
     });
   }
 
   updatePostPermissions = (value) => {
-    this.boardService.update(BOARD_ID, { permissions: { allowStudentMoveAny: !value } })
+    this.boardService.update(this.boardID, { permissions: { allowStudentMoveAny: !value } })
     this.lockPostsMovement(value)
   }
   
+  updateTask = (title, message) => {
+    this.boardService.update(this.boardID, { task: { title: title, message: message } })
+  }
+
   lockPostsMovement(value) {
     this.canvas.getObjects().map(obj => {
       obj.set({lockMovementX: value, lockMovementY: value});
@@ -181,6 +188,10 @@ export class CanvasComponent {
   openTaskDialog() {
     this.dialog.open(TaskModalComponent, {
       width: '500px',
+      data: {
+        title: this.board.task.title,
+        message: this.board.task.message ?? ''
+      }
     });
   }
 
@@ -210,7 +221,7 @@ export class CanvasComponent {
       title: pObject.title,
       desc: pObject.desc,
       userID: this.user.id,
-      boardID: BOARD_ID,
+      boardID: this.boardID,
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties))
     }
     this.postsService.create(post);
@@ -297,16 +308,21 @@ export class CanvasComponent {
     })
 
     this.canvas.on('mouse:up', (e) => {
-      var obj = e.target;
+      var obj: any = e.target;
       isMouseDown = false;
       var isDragEnd = isDragging;
       isDragging = false;
       var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
-      if (!isDragEnd && this.mode == Mode.EDIT && !clickedLikeButton && obj?.name == 'post') {
+      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
           width: '500px',
-          data: { post: obj, removePost: this.removePost, updatePost: this.updatePost }
+          data: { 
+            user: this.user, 
+            post: obj, 
+            removePost: this.removePost, 
+            updatePost: this.updatePost 
+          }
         });
       }
     });

@@ -2,7 +2,7 @@ import { fabric } from 'fabric';
 
 export class FabricUtils {
 
-    serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'hasControls', 'removed', 'subTargetCheck']
+    serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'authorID', 'hasControls', 'subTargetCheck', 'removed']
 
     canvasConfig = {
         width: window.innerWidth * 0.99, 

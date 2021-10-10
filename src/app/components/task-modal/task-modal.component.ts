@@ -8,9 +8,15 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 })
 export class TaskModalComponent {
 
+  title: string
+  message: string
+
   constructor(
     public dialogRef: MatDialogRef<TaskModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any) {}
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+      this.title = data.title
+      this.message = data.message
+    }
 
   ngOnInit(): void {}
 

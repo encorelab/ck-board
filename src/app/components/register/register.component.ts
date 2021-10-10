@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { AuthService } from 'src/app/services/auth.service';
 
@@ -31,14 +30,13 @@ export class RegisterComponent {
 
   userService: UserService;
 
-  constructor(db: AngularFirestore, public auth: AuthService, private route: Router) {
+  constructor(db: AngularFirestore, public auth: AuthService) {
     this.userService = new UserService(db);
   }
 
   onRegister() {
     this.invalidCredentials = false
-    this.auth.register(this.userType, this.username, this.email, this.password).then(() => {
-      this.route.navigate(['/canvas'])
-    }).catch(() => this.invalidCredentials = true)
+    this.auth.register(this.userType, this.username, this.email, this.password)
+      .catch(() => this.invalidCredentials = true)
   }
 }

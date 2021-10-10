@@ -1,6 +1,11 @@
 export class Board {
-    boardID: string
+    boardID: string;
+    teacherID: string;
     name: string;
+    task: {
+        title: string;
+        message?: string;
+    }
     bgImage?: {
         url: string;
         imgSettings: {};
@@ -8,5 +13,5 @@ export class Board {
     permissions: {
         allowStudentMoveAny: boolean;
     }; 
-    members: [string];
+    members: [];
 }

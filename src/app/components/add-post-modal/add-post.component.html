@@ -1,7 +1,7 @@
 <h1 mat-dialog-title> Add Post </h1>
 <div mat-dialog-content>
-  <h4> Title: </h4>
   <mat-form-field appearance="fill" style="width:100%">
+    <mat-label>Title</mat-label>
     <input [formControl]="titleControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="title">
     <mat-error *ngIf="!title">
       Title is <strong>required</strong>
@@ -10,15 +10,15 @@
       Title is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>
-  <h4> Description: </h4>
   <mat-form-field appearance="fill" style="width:100%">
-    <input [formControl]="descControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="description">
-    <mat-error *ngIf="description && description.length > 1000">
-      Description is <strong>too long!</strong>
+    <mat-label>Message</mat-label>
+    <textarea [formControl]="msgControl" [errorStateMatcher]="matcher" matInput rows="5" cols="40" [(ngModel)]='message'></textarea>
+    <mat-error *ngIf="message && message.length > 1000">
+      Message is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button type="submit" [disabled]="!titleControl.valid || !descControl.valid" mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Add Post</button>
+  <button type="submit" [disabled]="!titleControl.valid || !msgControl.valid" mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Add Post</button>
 </div>

@@ -1,7 +1,7 @@
 <div class="wrapper">
     <div class="container">
-        <img src="../../assets/register.png" />
-        <div class="formContainer">
+        <img src="../../assets/Login.png" />
+        <form class="formContainer">
             <div>
                 <h1 class="header">Welcome Back!</h1>
                 <p class="subheader"></p>
@@ -9,20 +9,20 @@
                     <p class="label">Email</p>
                     <mat-form-field appearance="fill" style="width: 80%">
                         <mat-label>Email</mat-label>
-                        <input matInput [(ngModel)]="email"/>
+                        <input autocomplete="email" type="email" matInput [(ngModel)]="email"/>
                     </mat-form-field>
                     <p class="label">Password</p>
                     <mat-form-field appearance="fill" style="width: 80%">
                         <mat-label>Password</mat-label>
-                        <input type="password" matInput [(ngModel)]="password"/>
+                        <input autocomplete="current-password" type="password" matInput [(ngModel)]="password"/>
                     </mat-form-field>
                     <p *ngIf="invalidCredentials" class="invalid-pass">Invalid email or password!</p>
                 </div>
                 <div class="next" >
-                    <button mat-button (click)="onLogin()">Login</button>
+                    <button type="submit" mat-button (click)="onLogin()">Login</button>
                 </div>
             </div>
             <p class="alternate"><a routerLink="/register">Don't have an account? Sign up here!</a></p>
-        </div>
+        </form>
     </div>
 </div>

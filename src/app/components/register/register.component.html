@@ -4,7 +4,7 @@
         <div class="formContainer">
             <div>
                 <h1 class="header">Join Us Today!</h1> 
-                <div>
+                <form>
                     <div *ngIf="step == 0">
                         <h2>Which one are you?</h2>
                         <div class="selectContainer">
@@ -23,22 +23,22 @@
                         </div>
                     </div>
                     <div *ngIf="step == 1" class="credentialsContainer">
-                        <p class="label">Username</p>
+                        <p class="label">Display Name</p>
                         <mat-form-field appearance="fill" style="width: 80%">
-                            <mat-label>Username</mat-label>
+                            <mat-label>Display Name</mat-label>
                             <input [formControl]="usernameControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="username"/>
-                            <mat-hint *ngIf="!username || username.length < 1 || username.length > 25">Username is required (1-25 characters)</mat-hint>
+                            <mat-hint *ngIf="!username || username.length < 1 || username.length > 25">Display Name is required (1-25 characters)</mat-hint>
                         </mat-form-field>
                         <p class="label">Email</p>
                         <mat-form-field appearance="fill" style="width: 80%">
                             <mat-label>Email</mat-label>
-                            <input [formControl]="emailControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="email"/>
+                            <input autocomplete="email" type="email" [formControl]="emailControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="email"/>
                             <mat-hint *ngIf="!email">Valid email is required</mat-hint>
                         </mat-form-field>
                         <p class="label">Password</p>
                         <mat-form-field appearance="fill" style="width: 80%">
                             <mat-label>Password</mat-label>
-                            <input type="password" [formControl]="passwordControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="password"/>
+                            <input autocomplete="new-password" type="password" [formControl]="passwordControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="password"/>
                             <mat-hint *ngIf="!password || password.length < 12 || password.length > 30">Password is required (12-30 characters)</mat-hint>
                         </mat-form-field>
                         <p *ngIf="invalidCredentials" class="invalid-pass">Unable to register account!</p>
@@ -47,12 +47,12 @@
                         <button class="enabled">Next</button>
                     </div>
                     <div *ngIf="step == 1" class="next" >
-                        <button [ngClass]="!usernameControl.valid || !passwordControl.valid ? 'disabled' : 'enabled'" [disabled]="!usernameControl.valid || !passwordControl.valid" mat-button (click)="onRegister()">Register</button>
+                        <button type="submit" [ngClass]="!usernameControl.valid || !passwordControl.valid ? 'disabled' : 'enabled'" [disabled]="!usernameControl.valid || !passwordControl.valid" mat-button (click)="onRegister()">Register</button>
                     </div>
                     <div *ngIf="step == 1" class="next" (click)="step = 0">
                         <button class="enabled">Back</button>
                     </div>
-                </div>
+                </form>
             </div>
             <p class="alternate"><a routerLink="/login">Already have an account?</a></p>
         </div>

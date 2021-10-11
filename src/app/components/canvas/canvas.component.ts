@@ -5,6 +5,7 @@ import { Canvas } from 'fabric/fabric-impl';
 import { MatDialog } from '@angular/material/dialog';
 
 import Post from '../../models/post';
+import Comment from 'src/app/models/comment';
 import { DialogInterface } from '../../interfaces/dialog.interface';
 
 import { BoardService } from '../../services/board.service';
@@ -22,6 +23,7 @@ import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import { CommentService } from 'src/app/services/comment.service';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
@@ -43,8 +45,8 @@ export class CanvasComponent {
   fabricUtils: FabricUtils = new FabricUtils()
 
   constructor(public postsService: PostService, public boardService: BoardService, 
-    public userService: UserService, public authService: AuthService, public dialog: MatDialog,
-    private route: Router) {}
+    public userService: UserService, public authService: AuthService, public commentService: CommentService, 
+    public dialog: MatDialog, private route: Router) {}
 
   ngOnInit() {
     // if user is already loaded in authService, else wait for firebase to send the user
@@ -58,6 +60,7 @@ export class CanvasComponent {
     this.zoomListener();
     this.panningListener();
     this.expandPostListener();
+    this.addCommentListener();
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
   }
@@ -286,12 +289,25 @@ export class CanvasComponent {
           data: { 
             user: this.user, 
             post: obj, 
+            boardID: this.boardID,
             removePost: this.removePost, 
             updatePost: this.updatePost 
           }
         });
       }
     });
+  }
+
+  addCommentListener() {
+    this.commentService.observable(this.boardID, (comment: Comment) => {
+      var post = this.fabricUtils.getObjectFromId(this.canvas, comment.postID)
+      if (post) {
+        post = this.fabricUtils.incrementComments(post)
+        this.canvas.renderAll()
+        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+        this.postsService.update(post.postID, { fabricObject: jsonPost })
+      }
+    }, true)
   }
 
   // listen to configuration/permission changes
@@ -423,3 +439,4 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'move'
   }
 }
+

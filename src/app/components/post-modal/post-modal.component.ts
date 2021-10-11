@@ -63,6 +63,7 @@ export class PostModalComponent {
       commentID: Date.now() + '-' + this.data.user.id,
       userID: this.data.user.id,
       postID: this.data.post.postID,
+      boardID: this.data.boardID,
       author: this.data.user.username
     }
     this.commentService.add(comment).then(() => {

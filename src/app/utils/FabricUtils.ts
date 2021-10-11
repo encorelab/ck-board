@@ -2,7 +2,7 @@ import { fabric } from 'fabric';
 
 export class FabricUtils {
 
-    serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'authorID', 'hasControls', 'removed']
+    serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'authorID', 'hasControls', 'subTargetCheck', 'removed']
 
     canvasConfig = {
         width: window.innerWidth * 0.99, 
@@ -42,6 +42,41 @@ export class FabricUtils {
         authorObj.set({ top: authorObj.top + (titleObj.height - oldTitleHeight), dirty: true })
         descObj.set({ top: descObj.top + (titleObj.height - oldTitleHeight) + (authorObj.height - oldAuthorHeight), dirty: true })
         contentObj.set({ height: contentObj.height + (titleObj.height - oldTitleHeight) + (descObj.height - oldDescHeight), dirty: true })
+
+        obj.dirty = true
+        obj.addWithUpdate();
+        return obj
+    }
+
+    updateCommentCount(existing, obj) {
+        var commentCountExisting: any = existing.getObjects().find((obj) => obj.name == 'commentCount')
+        var commentCountObj: any = obj.objects.find((obj) => obj.name == 'commentCount')
+
+        commentCountExisting.set({ text: commentCountObj.text, dirty: true })
+
+        existing.dirty = true
+        existing.addWithUpdate();
+        return existing
+    }
+
+    incrementComments(obj: any) {
+        var children: fabric.Object[] = obj.getObjects()
+        var commentCountObj: any = children.find((obj) => obj.name == 'commentCount')
+
+        var numComments = parseInt(commentCountObj.text)
+        commentCountObj.set({ text: (numComments + 1).toString(), dirty: true })
+
+        obj.dirty = true
+        obj.addWithUpdate();
+        return obj
+    }
+
+    decrementComments(obj: any) {
+        var children: fabric.Object[] = obj.getObjects()
+        var commentCountObj: any = children.find((obj) => obj.name == 'commentCount')
+
+        var numComments = parseInt(commentCountObj.text)
+        commentCountObj.set({ text: (numComments - 1).toString(), dirty: true })
 
         obj.dirty = true
         obj.addWithUpdate();

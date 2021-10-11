@@ -3,7 +3,7 @@ import { fabric } from 'fabric';
 
 const AUTHOR_OFFSET = 65
 const DESC_OFFSET = 80
-const CONTENT_EXTRA_HEIGHT = 50
+const CONTENT_EXTRA_HEIGHT = 55
 
 @Component({
   selector: 'app-post',
@@ -47,11 +47,33 @@ export class PostComponent extends fabric.Group {
       splitByGrapheme: true
     });
     
+    var commentButton = new fabric.Textbox('💬', {
+      name: 'comment',
+      width: 100,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      left: 18,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#000000',
+      splitByGrapheme: true
+    });
+
+    var commentCount = new fabric.Textbox('0', {
+      name: 'commentCount',
+      width: 100,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      left: 50,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#555555',
+      splitByGrapheme: true
+    });
+
     var content = new fabric.Rect({
       name: 'content',
       top: 40,
       width: 330,
-      height: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + CONTENT_EXTRA_HEIGHT,
+      height: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + commentButton.getScaledHeight() + CONTENT_EXTRA_HEIGHT,
       fill: '#F4D74B',
       rx: 20, 
       ry: 20,
@@ -72,6 +94,6 @@ export class PostComponent extends fabric.Group {
       authorID: options.authorID
     }
 
-    super([content, title, author, desc], groupOptions);
+    super([content, title, author, desc, commentButton, commentCount], groupOptions);
   };
 }

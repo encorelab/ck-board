@@ -14,15 +14,17 @@ export class CommentService {
     this.commentCollection = db.collection<Comment>(this.commentsPath);
   }
 
-  observable(boardID: string, handleAdd: Function, handleRemove: Function) {
+  observable(boardID: string, handleAdd: Function, skipFirst: boolean) {
     return this.commentCollection.ref.where("boardID", "==", boardID).onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          handleAdd(change.doc.data())
-        } else if (change.type == "removed") {
-          handleRemove(change.doc.data())
-        }
-      })
+      if (!skipFirst) {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+            handleAdd(change.doc.data())
+          }
+        })
+      } else {
+        skipFirst = false
+      }
     })
   }
 

@@ -23,6 +23,7 @@ import User from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
 import { LikesService } from 'src/app/services/likes.service';
+import Like from 'src/app/models/like';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
@@ -60,6 +61,7 @@ export class CanvasComponent {
     this.panningListener();
     this.expandPostListener();
     this.addLikeListener();
+    this.handleLikeButtonClick()
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
   }
@@ -266,13 +268,25 @@ export class CanvasComponent {
   }
 
   addLikeListener() {
+    this.likesService.observable(this.boardID, (like: Like, change: string) => {
+      var post = this.fabricUtils.getObjectFromId(this.canvas, like.postID)
+      if (post) {
+        post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
+        console.log(post)
+        this.canvas.renderAll()
+        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+        this.postsService.update(post.postID, { fabricObject: jsonPost })
+      }
+    }, true)
+  }
+
+  handleLikeButtonClick() {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
       if (likeButton) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
-            post = this.fabricUtils.incrementLikes(post)
             this.likesService.add({
               likeID: Date.now() + '-' + this.user.id,
               likerID: this.user.id,
@@ -280,16 +294,11 @@ export class CanvasComponent {
               boardID: this.board.boardID
             })
           } else {
-            post = this.fabricUtils.decrementLikes(post)
             data.forEach((data) => {
-              let like = data.data() ?? {}
+              let like: Like = data.data() 
               this.likesService.remove(like.likeID)
             })
           }
-          
-          this.canvas.renderAll()
-          var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-          this.postsService.update(post.postID, { fabricObject: jsonPost })
         })
       }
     });

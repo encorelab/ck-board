@@ -14,15 +14,19 @@ export class LikesService {
     this.likesCollection = db.collection<Like>(this.likesPath);
   }
 
-  observable(boardID: string, handleAdd: Function, handleRemove: Function) {
+  observable(boardID: string, handleChange: Function, skipFirst: boolean) {
     return this.likesCollection.ref.where("boardID", "==", boardID).onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          handleAdd(change.doc.data())
-        } else if (change.type == "removed") {
-          handleRemove(change.doc.data())
-        }
-      })
+      if (!skipFirst) {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+            handleChange(change.doc.data(), "added")
+          } else if (change.type == "removed") {
+            handleChange(change.doc.data(), "removed")
+          }
+        })
+      } else {
+        skipFirst = false
+      }
     })
   }
 

@@ -48,6 +48,41 @@ export class FabricUtils {
         return obj
     }
 
+    updateLikeCount(existing, obj) {
+        var likeCountExisting: any = existing.getObjects().find((obj) => obj.name == 'likeCount')
+        var likeCountObj: any = obj.objects.find((obj) => obj.name == 'likeCount')
+
+        likeCountExisting.set({ text: likeCountObj.text, dirty: true })
+
+        existing.dirty = true
+        existing.addWithUpdate();
+        return existing
+    }
+
+    incrementLikes(obj: any) {
+        var children: fabric.Object[] = obj.getObjects()
+        var likeCountObj: any = children.find((obj) => obj.name == 'likeCount')
+
+        var numlikes = parseInt(likeCountObj.text)
+        likeCountObj.set({ text: (numlikes + 1).toString(), dirty: true })
+
+        obj.dirty = true
+        obj.addWithUpdate();
+        return obj
+    }
+
+    decrementLikes(obj: any) {
+        var children: fabric.Object[] = obj.getObjects()
+        var likeCountObj: any = children.find((obj) => obj.name == 'likeCount')
+
+        var numlikes = parseInt(likeCountObj.text)
+        likeCountObj.set({ text: (numlikes - 1).toString(), dirty: true })
+
+        obj.dirty = true
+        obj.addWithUpdate();
+        return obj
+    }
+    
     updateCommentCount(existing, obj) {
         var commentCountExisting: any = existing.getObjects().find((obj) => obj.name == 'commentCount')
         var commentCountObj: any = obj.objects.find((obj) => obj.name == 'commentCount')

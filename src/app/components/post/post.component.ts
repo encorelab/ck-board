@@ -47,6 +47,28 @@ export class PostComponent extends fabric.Group {
       splitByGrapheme: true
     });
     
+    var likeButton = new fabric.Textbox('👍🏼', {
+      name: 'like',
+      width: 100,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      left: 18,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#000000',
+      splitByGrapheme: true
+    });
+
+    var likeCount = new fabric.Textbox('0', {
+      name: 'likeCount',
+      width: 100,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      left: 50,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#555555',
+      splitByGrapheme: true
+    });
+    
     var commentButton = new fabric.Textbox('💬', {
       name: 'comment',
       width: 100,
@@ -91,9 +113,10 @@ export class PostComponent extends fabric.Group {
       title: options.title,
       desc: options.desc,
       author: options.author,
+      subTargetCheck: true,
       authorID: options.authorID
     }
 
-    super([content, title, author, desc, commentButton, commentCount], groupOptions);
+    super([content, title, author, desc, likeButton, likeCount, commentButton, commentCount], groupOptions);
   };
 }

@@ -68,12 +68,12 @@ export class PostComponent extends fabric.Group {
       fill: '#555555',
       splitByGrapheme: true
     });
-    
+
     var commentButton = new fabric.Textbox('💬', {
       name: 'comment',
       width: 100,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
-      left: 18,
+      left: (likeButton.left ?? 0) + (likeCount.left ?? 0) + 20,
       fontSize: 20,
       fontFamily: 'Helvetica',
       fill: '#000000',
@@ -84,7 +84,7 @@ export class PostComponent extends fabric.Group {
       name: 'commentCount',
       width: 100,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
-      left: 50,
+      left: (commentButton.left ?? 0) + 32,
       fontSize: 20,
       fontFamily: 'Helvetica',
       fill: '#555555',

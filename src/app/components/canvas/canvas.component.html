@@ -8,7 +8,10 @@
       <button *ngIf="user && user.role == 'teacher'" mat-icon-button (click)="openSettingsDialog()">
         <mat-icon>settings</mat-icon>
       </button>
-      <span style="margin-left: 1em" *ngIf="user && user.username">{{ user.username }}</span>
+      <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
+      </mat-menu>
   </mat-toolbar>
   <div class="canvas-area">
       <canvas id="canvas"></canvas>

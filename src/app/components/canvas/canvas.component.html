@@ -23,10 +23,10 @@
               <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Cancel Post" (click)="disableChooseLocation()">
                   <mat-icon>close</mat-icon>
               </button>
-              <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" matTooltip="Edit Mode" (click)="enablePanMode()">
+              <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" matTooltip="Move Posts - Mode" (click)="enablePanMode()">
                   <mat-icon>open_with</mat-icon>
               </button>
-              <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Mode" (click)="enableEditMode()">
+              <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Canvas - Mode" (click)="enableEditMode()">
                   <mat-icon>edit_note</mat-icon>
               </button>
           </div>

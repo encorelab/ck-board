@@ -11,7 +11,10 @@
       <button *ngIf="user && user.role == 'teacher'" mat-icon-button (click)="openSettingsDialog()" matTooltip="Adjust Settings">
         <mat-icon>settings</mat-icon>
       </button>
-      <span style="margin-left: 1em" *ngIf="user && user.username">{{ user.username }}</span>
+      <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
+      </mat-menu>
   </mat-toolbar>
   <div class="canvas-area">
       <canvas id="canvas"></canvas>
@@ -26,8 +29,8 @@
               <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" matTooltip="Move Posts - Mode" (click)="enablePanMode()">
                   <mat-icon>open_with</mat-icon>
               </button>
-              <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Canvas - Mode" (click)="enableEditMode()">
-                  <mat-icon>edit_note</mat-icon>
+              <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Canvas - Mode"  (click)="enableEditMode()">
+                  <mat-icon style="padding-right: 3px;">pan_tool</mat-icon>
               </button>
           </div>
         </div>

@@ -27,13 +27,13 @@
                             <p class="label">Display Name</p>
                             <mat-form-field appearance="fill" style="width: 80%">
                                 <mat-label>Display Name</mat-label>
-                                <input [formControl]="usernameControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="username" name="username"/>
+                                <input [formControl]="usernameControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="username"/>
                                 <mat-hint *ngIf="!username || username.length < 1 || username.length > 25">Display Name is required (1-25 characters)</mat-hint>
                             </mat-form-field>
                             <p class="label">Email</p>
                             <mat-form-field appearance="fill" style="width: 80%">
                                 <mat-label>Email</mat-label>
-                                <input autocomplete="email" type="email" [formControl]="emailControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="email" name="email"/>
+                                <input autocomplete="username" type="email" [formControl]="emailControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="email" name="username"/>
                                 <mat-hint *ngIf="!email">Valid email is required</mat-hint>
                             </mat-form-field>
                             <p class="label">Password</p>

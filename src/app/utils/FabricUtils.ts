@@ -30,18 +30,30 @@ export class FabricUtils {
         var titleObj: any = children.filter((obj) => obj.name == 'title').pop()
         var authorObj: any = children.filter((obj) => obj.name == 'author').pop()
         var descObj: any = children.filter((obj) => obj.name == 'desc').pop()
+        var likeObj: any = children.filter((obj) => obj.name == 'like').pop()
+        var likeCountObj: any = children.filter((obj) => obj.name == 'likeCount').pop()
+        var commentObj: any = children.filter((obj) => obj.name == 'comment').pop()
+        var commentCountObj: any = children.filter((obj) => obj.name == 'commentCount').pop()
         var contentObj: any = children.filter((obj) => obj.name == 'content').pop()
 
-        
         var oldTitleHeight = titleObj.height
         var oldDescHeight = descObj.height
         var oldAuthorHeight = authorObj.height
+
         titleObj.set({ text: title, dirty: true })
         descObj.set({ text: desc.length > 200 ? desc.substr(0, 200) + '...' : desc, dirty: true })
         
-        authorObj.set({ top: authorObj.top + (titleObj.height - oldTitleHeight), dirty: true })
-        descObj.set({ top: descObj.top + (titleObj.height - oldTitleHeight) + (authorObj.height - oldAuthorHeight), dirty: true })
-        contentObj.set({ height: contentObj.height + (titleObj.height - oldTitleHeight) + (descObj.height - oldDescHeight), dirty: true })
+        var titleDelta = titleObj.height - oldTitleHeight
+        var authorDelta = authorObj.height - oldAuthorHeight
+        var descDelta = descObj.height - oldDescHeight
+
+        authorObj.set({ top: authorObj.top + titleDelta, dirty: true })
+        descObj.set({ top: descObj.top + titleDelta + authorDelta, dirty: true })
+        likeObj.set({ top: likeObj.top + titleDelta + authorDelta + descDelta, dirty: true })
+        likeCountObj.set({ top: likeCountObj.top + titleDelta + authorDelta + descDelta, dirty: true })
+        commentObj.set({ top: commentObj.top + titleDelta + authorDelta + descDelta, dirty: true })
+        commentCountObj.set({ top: commentCountObj.top + titleDelta + authorDelta + descDelta, dirty: true })
+        contentObj.set({ height: contentObj.height + titleDelta + descDelta, dirty: true })
 
         obj.dirty = true
         obj.addWithUpdate();

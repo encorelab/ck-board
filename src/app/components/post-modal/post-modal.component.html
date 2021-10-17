@@ -1,46 +1,77 @@
-<mat-tab-group dynamicHeight animationDuration="0ms" mat-align-tabs="center">
-  <mat-tab label="Details"> 
-    <h1 *ngIf="!isEditing" mat-dialog-title style="margin-top: 20px;"> {{ title }} </h1>
-    <h4 *ngIf="!isEditing" style="overflow-wrap: break-word;"> {{ desc }} </h4>
-    <mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%; margin-top: 20px;">
-      <mat-label>Title</mat-label>
-      <input [formControl]="titleControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="title">
-      <mat-error *ngIf="!title">
-        Title is <strong>required</strong>
-      </mat-error>
-      <mat-error *ngIf="title && title.length > 50">
-        Title is <strong>too long!</strong>
-      </mat-error>
-    </mat-form-field>
-    <mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%">
-      <mat-label>Description</mat-label>
-      <textarea [formControl]="descControl" [errorStateMatcher]="matcher" matInput rows="5" cols="40" [(ngModel)]='desc'></textarea>
-      <mat-error *ngIf="desc && desc.length > 1000">
-        Description is <strong>too long!</strong>
-      </mat-error>
-    </mat-form-field>
-    <div mat-dialog-actions>
-      <button *ngIf="!isEditing && canEditDelete" mat-button (click)="toggleEdit()">Edit</button>
-      <button *ngIf="isEditing" [disabled]="!titleControl.valid || !descControl.valid" mat-button (click)="onUpdate()">Update</button>
-      <button *ngIf="canEditDelete" mat-button (click)="onDelete()">Delete</button>
-      <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
-      <button *ngIf="!isEditing" mat-button (click)="onNoClick()">Close</button>
-    </div>
-  </mat-tab>
-  <mat-tab label="Comments">
-    <div class="comment-box">
-      <mat-card *ngFor="let comment of comments">
-        <mat-card-subtitle>{{ comment.author }}</mat-card-subtitle>
-        <mat-card-content>
-          <p>{{ comment.comment }}</p>
-        </mat-card-content>
-      </mat-card>
-    </div>
-    <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
-      <mat-label>Add Comment</mat-label>
-      <textarea matInput [(ngModel)]='newComment' cdkTextareaAutosize cdkAutosizeMinRows="2" cdkAutosizeMaxRows="6"></textarea>
-      <button color="primary" mat-button (click)="addComment()">Comment!</button>
-    </mat-form-field>
-  </mat-tab>
-</mat-tab-group>
+<mat-card class="details" *ngIf="!isEditing">
+  <mat-card-header>
+    <div mat-card-avatar class="avatar"></div>
+    <mat-card-title>{{ title }}</mat-card-title>
+    <mat-card-subtitle>{{ user.username }}</mat-card-subtitle>
+    <span class="fill-remaining-space"></span>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item *ngIf="!isEditing && canEditDelete" (click)="toggleEdit()">
+        <mat-icon>edit</mat-icon>
+        <span>Edit Post</span>
+      </button>
+      <button mat-menu-item *ngIf="canEditDelete" (click)="onDelete()">
+        <mat-icon>delete</mat-icon>
+        <span>Delete Post</span>
+      </button>
+    </mat-menu>
+  </mat-card-header>
+  <mat-card-content>
+    <p style="overflow-wrap: break-word;"> {{ desc }} </p>
+  </mat-card-content>
+  <mat-card-actions align="end">
+    <button mat-button (click)="handleLikeClick()">
+      <mat-icon *ngIf="isLiked">thumb_up</mat-icon>
+      <i class="material-icons-outlined" *ngIf="!isLiked">thumb_up</i>
+      {{ likes.length }}
+    </button>
+  </mat-card-actions>
+</mat-card>
+<mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%; margin-top: 20px;">
+  <mat-label>Title</mat-label>
+  <input [formControl]="titleControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="title">
+  <mat-error *ngIf="!title">
+    Title is <strong>required</strong>
+  </mat-error>
+  <mat-error *ngIf="title && title.length > 50">
+    Title is <strong>too long!</strong>
+  </mat-error>
+</mat-form-field>
+<mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%">
+  <mat-label>Description</mat-label>
+  <textarea [formControl]="descControl" [errorStateMatcher]="matcher" matInput rows="5" cols="40" [(ngModel)]='desc'></textarea>
+  <mat-error *ngIf="desc && desc.length > 1000">
+    Description is <strong>too long!</strong>
+  </mat-error>
+</mat-form-field>
+<div mat-dialog-actions>
+  <button *ngIf="isEditing" [disabled]="!titleControl.valid || !descControl.valid" mat-button (click)="onUpdate()">Update</button>
+  <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
+</div>
+<div *ngIf="!isEditing">
+  <div class="comments-header">
+    <button class="comment-toggler" mat-button (click)="toggleComments()">
+      Comments ({{ comments.length }})
+      <mat-icon>{{ showComments ? "expand_less" : "expand_more"}}</mat-icon>
+    </button>
+  </div>
+  <div class="comment-box" *ngIf="showComments">
+    <mat-card class="comment" *ngFor="let comment of comments">
+      <mat-card-title style="font-size: small;">{{ comment.author }}</mat-card-title>
+      <mat-card-content>
+          {{ comment.comment }}
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments">
+    <mat-label>Add Comment</mat-label>
+    <textarea matInput [(ngModel)]='newComment' cdkTextareaAutosize cdkAutosizeMinRows="2" cdkAutosizeMaxRows="6"></textarea>
+    <button color="primary" mat-button (click)="addComment()">Comment!</button>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions align="end">
+  <button *ngIf="!isEditing" mat-button (click)="onNoClick()">Close</button>
+</div>
 

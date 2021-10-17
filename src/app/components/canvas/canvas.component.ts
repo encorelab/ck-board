@@ -275,7 +275,6 @@ export class CanvasComponent {
       var post = this.fabricUtils.getObjectFromId(this.canvas, like.postID)
       if (post) {
         post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
-        console.log(post)
         this.canvas.renderAll()
         var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
         this.postsService.update(post.postID, { fabricObject: jsonPost })
@@ -328,7 +327,8 @@ export class CanvasComponent {
       if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
-          width: '500px',
+          minWidth: '500px',
+          width: 'auto',
           data: { 
             user: this.user, 
             post: obj, 

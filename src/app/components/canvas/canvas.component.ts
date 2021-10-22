@@ -5,6 +5,7 @@ import { Canvas } from 'fabric/fabric-impl';
 import { MatDialog } from '@angular/material/dialog';
 
 import Post from '../../models/post';
+import Comment from 'src/app/models/comment';
 import { DialogInterface } from '../../interfaces/dialog.interface';
 
 import { BoardService } from '../../services/board.service';
@@ -22,6 +23,9 @@ import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import { CommentService } from 'src/app/services/comment.service';
+import { LikesService } from 'src/app/services/likes.service';
+import Like from 'src/app/models/like';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
@@ -43,8 +47,8 @@ export class CanvasComponent {
   fabricUtils: FabricUtils = new FabricUtils()
 
   constructor(public postsService: PostService, public boardService: BoardService, 
-    public userService: UserService, public authService: AuthService, public dialog: MatDialog,
-    private route: Router) {}
+    public userService: UserService, public authService: AuthService, public commentService: CommentService, 
+    public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
 
   ngOnInit() {
     // if user is already loaded in authService, else wait for firebase to send the user
@@ -58,6 +62,9 @@ export class CanvasComponent {
     this.zoomListener();
     this.panningListener();
     this.expandPostListener();
+    this.addCommentListener();
+    this.addLikeListener();
+    this.handleLikeButtonClick()
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
   }
@@ -244,7 +251,8 @@ export class CanvasComponent {
         existing.desc = obj.desc
         existing.title = obj.title
       }
-      
+
+      existing = this.fabricUtils.updateLikeCount(existing, obj)
       existing.set(obj)
       existing.setCoords()
       this.canvas.renderAll()
@@ -260,6 +268,42 @@ export class CanvasComponent {
       })
     }
     
+  }
+
+  addLikeListener() {
+    this.likesService.observable(this.boardID, (like: Like, change: string) => {
+      var post = this.fabricUtils.getObjectFromId(this.canvas, like.postID)
+      if (post) {
+        post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
+        this.canvas.renderAll()
+        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+        this.postsService.update(post.postID, { fabricObject: jsonPost })
+      }
+    }, true)
+  }
+
+  handleLikeButtonClick() {
+    this.canvas.on('mouse:down', e => {
+      var post: any = e.target
+      var likeButton = e.subTargets?.find(o => o.name == 'like')
+      if (likeButton) {
+        this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
+          if (data.size == 0) {
+            this.likesService.add({
+              likeID: Date.now() + '-' + this.user.id,
+              likerID: this.user.id,
+              postID: post.postID,
+              boardID: this.board.boardID
+            })
+          } else {
+            data.forEach((data) => {
+              let like: Like = data.data() 
+              this.likesService.remove(like.likeID)
+            })
+          }
+        })
+      }
+    });
   }
 
   expandPostListener() {
@@ -279,19 +323,34 @@ export class CanvasComponent {
       isMouseDown = false;
       var isDragEnd = isDragging;
       isDragging = false;
-      if (!isDragEnd && obj?.name == 'post') {
+      var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
+      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
-          width: '500px',
+          minWidth: '500px',
+          width: 'auto',
           data: { 
             user: this.user, 
             post: obj, 
+            boardID: this.boardID,
             removePost: this.removePost, 
             updatePost: this.updatePost 
           }
         });
       }
     });
+  }
+
+  addCommentListener() {
+    this.commentService.observable(this.boardID, (comment: Comment) => {
+      var post = this.fabricUtils.getObjectFromId(this.canvas, comment.postID)
+      if (post) {
+        post = this.fabricUtils.incrementComments(post)
+        this.canvas.renderAll()
+        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+        this.postsService.update(post.postID, { fabricObject: jsonPost })
+      }
+    }, true)
   }
 
   // listen to configuration/permission changes
@@ -423,3 +482,4 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'move'
   }
 }
+

@@ -1,5 +1,4 @@
-import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
@@ -8,12 +7,7 @@ import { CommentService } from 'src/app/services/comment.service';
 import User from 'src/app/models/user';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
-import { MatChipInputEvent } from '@angular/material/chips';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { PostService } from 'src/app/services/post.service';
-import Post from 'src/app/models/post';
-import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-post-modal',
@@ -21,12 +15,8 @@ import { map, startWith } from 'rxjs/operators';
   styleUrls: ['./post-modal.component.scss']
 })
 export class PostModalComponent {
-  readonly separatorKeysCodes = [ENTER, COMMA] as const;
-
   tags: string[] = []
   tagOptions: string[] = []
-  tagCtrl = new FormControl();
-  filteredTagOptions: Observable<string[]>;
 
   user: User
 
@@ -45,8 +35,6 @@ export class PostModalComponent {
 
   isLiked: Like | null
   likes: Like[] = []
-  
-  @ViewChild('tagInput') tagInput: ElementRef<HTMLInputElement>;
 
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
@@ -76,10 +64,6 @@ export class PostModalComponent {
           this.likes.push(likeObj)
         })
       })
-      this.filteredTagOptions = this.tagCtrl.valueChanges.pipe(
-        startWith(null),
-        map((fruit: string | null) => fruit ? this._filter(fruit) : this.tagOptions.slice())
-      );
   }
   
   onNoClick(): void {
@@ -104,11 +88,21 @@ export class PostModalComponent {
     this.dialogRef.close();
   }
 
-  selectedTag(event: MatAutocompleteSelectedEvent): void {
-    this.tags.push(event.option.viewValue);
+  addTag(event, tagOption): void {
+    event.stopPropagation()
+    this.tags.push(tagOption);
+    this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
     this.postsService.update(this.data.post.postID, { tags: this.tags })
-    this.tagInput.nativeElement.value = '';
-    this.tagCtrl.setValue(null);
+  }
+
+  removeTag(tag) {
+    const index = this.tags.indexOf(tag);
+    if (index >= 0) {
+      this.tags.splice(index, 1);
+    }
+
+    this.tagOptions.push(tag);
+    this.postsService.update(this.data.post.postID, { tags: this.tags })
   }
 
   addComment() {
@@ -143,11 +137,5 @@ export class PostModalComponent {
       this.isLiked = like
       this.likes.push(like)
     }
-  }
-
-  private _filter(name: string): string[] {
-    const filterValue = name.toLowerCase();
-
-    return this.tagOptions.filter(tagOption => tagOption.toLowerCase().includes(filterValue));
   }
 }

@@ -138,9 +138,14 @@ export class CanvasComponent {
         updatePermissions: this.updatePostPermissions,
         updateTask: this.updateTask,
         updateBackground: this.updateBackground,
-        updateBoardName: this.updateBoardName
+        updateBoardName: this.updateBoardName,
+        updateTags: this.updateTags
       }
     });
+  }
+
+  updateTags = (tags) => {
+    this.boardService.update(this.boardID, { tags: tags })
   }
 
   updateBoardName = (name) => {
@@ -225,6 +230,7 @@ export class CanvasComponent {
       postID: pObject.postID,
       title: pObject.title,
       desc: pObject.desc,
+      tags: [],
       userID: this.user.id,
       boardID: this.boardID,
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties))
@@ -327,12 +333,12 @@ export class CanvasComponent {
       if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
-          minWidth: '500px',
+          minWidth: '700px',
           width: 'auto',
           data: { 
             user: this.user, 
             post: obj, 
-            boardID: this.boardID,
+            board: this.board,
             removePost: this.removePost, 
             updatePost: this.updatePost 
           }

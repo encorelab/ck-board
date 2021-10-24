@@ -27,6 +27,26 @@
       <i class="material-icons-outlined" *ngIf="!isLiked">thumb_up</i>
       {{ likes.length }}
     </button>
+    <mat-form-field class="tag-form" appearance="standard">
+      <mat-chip-list #chipList>
+        <mat-chip style="background-color: #F4D74B" *ngFor="let tag of tags">
+          {{ tag }}
+        </mat-chip>
+        <input
+          matInput
+          placeholder="Add Tag..."
+          [matAutocomplete]="auto"
+          [matChipInputFor]="chipList"
+          #tagInput 
+          [formControl]="tagCtrl" />
+      </mat-chip-list>
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedTag($event)">
+        <mat-option *ngFor="let tagOption of filteredTagOptions | async" [value]="tagOption">
+          {{ tagOption }}
+        </mat-option>
+        <mat-option *ngIf="tagOptions.length == 0" [disabled]="true">No tags available.</mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
   </mat-card-actions>
 </mat-card>
 <mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%; margin-top: 20px;">

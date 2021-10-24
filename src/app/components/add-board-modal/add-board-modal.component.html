@@ -24,6 +24,22 @@
         <mat-checkbox [checked]="allowStudentMoveAny">Students can move any post?</mat-checkbox>
       </p>
     </mat-tab>
+    <mat-tab label="Tags">
+      <mat-form-field appearance="fill" style="width:100%; margin-top: 20px;">
+        <mat-label>Current Tags</mat-label>
+        <mat-chip-list #chipList>
+          <mat-chip *ngFor="let tag of tags">
+            {{ tag }}
+            <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
+          </mat-chip>
+          <input placeholder="New tag..."
+                 [matChipInputFor]="chipList"
+                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                 [matChipInputAddOnBlur]="true"
+                 (matChipInputTokenEnd)="addTag($event)">
+        </mat-chip-list>
+      </mat-form-field>
+    </mat-tab>
   </mat-tab-group>
 </div>
 <div mat-dialog-actions>

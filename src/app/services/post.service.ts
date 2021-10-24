@@ -26,6 +26,10 @@ export class PostService {
     })
   }
 
+  get(postID: string) {
+    return this.postsCollection.ref.where("postID", "==", postID).get().then((snapshot) => snapshot)
+  }
+
   getAll(boardID: string) {
     return this.postsCollection.ref.where("boardID", "==", boardID).get().then((snapshot) => snapshot)
   }

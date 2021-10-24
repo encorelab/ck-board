@@ -3,6 +3,7 @@ export default class Post {
     boardID: string;
     title: string;
     desc: string;
+    tags: string[];
     userID: string;
     fabricObject: string;
 }

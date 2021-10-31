@@ -21,12 +21,14 @@
   <mat-card-content>
     <p style="overflow-wrap: break-word;"> {{ desc }} </p>
   </mat-card-content>
-  <mat-card-actions align="end">
+  <mat-card-actions align="end" style="margin-bottom: -1.25em">
     <button mat-button (click)="handleLikeClick()">
       <mat-icon *ngIf="isLiked">thumb_up</mat-icon>
       <i class="material-icons-outlined" *ngIf="!isLiked">thumb_up</i>
       {{ likes.length }}
     </button>
+  </mat-card-actions>
+  <mat-card-actions style="margin-bottom: -1.25em">
     <mat-form-field class="tag-form" appearance="standard">
       <mat-chip-list #chipList>
         <mat-chip style="background-color: #78C2C0" [matMenuTriggerFor]="menu1">
@@ -66,7 +68,7 @@
   <button *ngIf="isEditing" [disabled]="!titleControl.valid || !descControl.valid" mat-button (click)="onUpdate()">Update</button>
   <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
 </div>
-<div *ngIf="!isEditing">
+<div class="comment-area" *ngIf="!isEditing">
   <div class="comments-header">
     <button class="comment-toggler" mat-button (click)="toggleComments()">
       Comments ({{ comments.length }})
@@ -83,11 +85,10 @@
   </div>
   <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments">
     <mat-label>Add Comment</mat-label>
-    <textarea matInput [(ngModel)]='newComment' cdkTextareaAutosize cdkAutosizeMinRows="2" cdkAutosizeMaxRows="6"></textarea>
-    <button color="primary" mat-button (click)="addComment()">Comment!</button>
+    <input matInput [(ngModel)]='newComment'>
+    <button color="primary" matSuffix mat-button (click)="addComment()">Comment!</button>
   </mat-form-field>
 </div>
 <div mat-dialog-actions align="end">
   <button *ngIf="!isEditing" mat-button (click)="onNoClick()">Close</button>
 </div>
-

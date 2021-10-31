@@ -19,6 +19,7 @@ export class AddBoardModalComponent implements OnInit {
   bgImgURL: any = ''
 
   tags: string[] = []
+  newTagText: string = ''
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
@@ -26,10 +27,9 @@ export class AddBoardModalComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  addTag(event: MatChipInputEvent) {
-    if (event.value)
-      this.tags.push(event.value)
-    event.chipInput!.clear();
+  addTag() {
+    this.tags.push(this.newTagText)
+    this.newTagText = ''
   }
 
   removeTag(tagRemove) {

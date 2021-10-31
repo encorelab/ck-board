@@ -21,6 +21,7 @@ export class ConfigurationModalComponent {
   allowStudentMoveAny: boolean
 
   tags: string[]
+  newTagText: string = ''
 
   constructor(
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
@@ -33,10 +34,9 @@ export class ConfigurationModalComponent {
       this.tags = data.board.tags ?? []
     }
 
-  addTag(event: MatChipInputEvent) {
-    if (event.value)
-      this.tags.push(event.value)
-    event.chipInput!.clear();
+  addTag() {
+    this.tags.push(this.newTagText)
+    this.newTagText = ''
   }
 
   removeTag(tagRemove) {

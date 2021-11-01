@@ -14,4 +14,5 @@ export class Board {
         allowStudentMoveAny: boolean;
     }; 
     members: [];
+    tags: [];
 }

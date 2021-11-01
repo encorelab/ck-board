@@ -39,7 +39,7 @@ export class DashboardComponent implements OnInit {
 
   openCreateBoardDialog() {
     this.dialog.open(AddBoardModalComponent, {
-      width: '600px',
+      width: '700px',
       data: {
         user: this.user,
         createBoard: this.createBoard

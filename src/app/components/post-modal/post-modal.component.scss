@@ -3,6 +3,11 @@
     background-size: cover;
 }
 
+.comment-area {
+    overflow-y: auto;
+    min-height: 110px;
+}
+
 .comment-box {
     overflow-y: auto;
     word-wrap: break-word;
@@ -21,7 +26,7 @@
 
 .add-comment {
     width: 100%; 
-    margin-bottom: -1.60em;
+    margin-bottom: -1.3em;
 }
 
 .fill-remaining-space {
@@ -35,4 +40,19 @@
 
 .mat-dialog-actions {
     min-height: 20px !important;
+}
+
+.tag-form {
+    width: 100%;
+}
+
+.cancel {
+    padding-left: 10px;
+    width: 12px;
+    height: 15px;
+    font-size: medium;
+}
+
+::ng-deep .mat-form-field-underline {
+    display: none;
 }

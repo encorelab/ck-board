@@ -9,7 +9,7 @@ import { BoardGuard } from './utils/board.guard';
 
 const routes: Routes = [
   { path: 'canvas/:boardID', component: CanvasComponent,
-    canActivate: [AuthGuard, BoardGuard] 
+    canActivate: [BoardGuard] 
   },
   { path: 'dashboard', component: DashboardComponent,
     canActivate: [AuthGuard]  

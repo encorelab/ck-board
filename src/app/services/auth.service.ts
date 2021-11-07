@@ -69,7 +69,7 @@ export class AuthService {
         } else {
           reject()
         }
-      }).catch((error) => reject())
+      }).catch(() => reject())
     });
   }
 

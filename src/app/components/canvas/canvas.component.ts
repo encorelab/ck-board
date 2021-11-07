@@ -51,9 +51,8 @@ export class CanvasComponent {
     public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
 
   ngOnInit() {
-    // if user is already loaded in authService, else wait for firebase to send the user
-    this.user = this.authService.userData ?? this.authService.getAuthenticatedUser().then((user) => this.user = user)
-    this.boardID = this.route.url.replace('/canvas/', '')
+    this.user = this.authService.userData;
+    this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.configureBoard();
     this.addObjectListener();
@@ -64,7 +63,7 @@ export class CanvasComponent {
     this.expandPostListener();
     this.addCommentListener();
     this.addLikeListener();
-    this.handleLikeButtonClick()
+    this.handleLikeButtonClick();
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
   }

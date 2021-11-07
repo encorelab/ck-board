@@ -22,7 +22,7 @@ export class DashboardComponent implements OnInit {
     public boardService: BoardService, public router: Router, public dialog: MatDialog) {}
 
   ngOnInit(): void {
-    this.user = this.authService.userData ?? this.authService.getAuthenticatedUser().then((user) => this.user = user)
+    this.user = this.authService.userData
     this.boardService.getAll().then(boards => {
       var a:any = []
       boards.forEach((data) => {

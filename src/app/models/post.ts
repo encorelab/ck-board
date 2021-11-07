@@ -1,7 +1,10 @@
 export default class Post {
-    userID: string;
     postID: string;
-    groupID: string;
-    object: string;
+    boardID: string;
+    title: string;
+    desc: string;
+    tags: string[];
+    userID: string;
+    fabricObject: string;
 }
   

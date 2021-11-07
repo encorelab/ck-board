@@ -1,5 +1,5 @@
 export interface DialogInterface {
-    header: string;
-    label: string;
-    callBack: (input:string) => void;
-  }
+    addPost: (title:string, message:string, left: number, top: number) => void;
+    top: number;
+    left: number;
+}

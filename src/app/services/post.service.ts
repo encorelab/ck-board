@@ -1,8 +1,5 @@
-import { Inject } from '@angular/core';
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
-import { DataSnapshot, SnapshotAction } from '@angular/fire/database/interfaces';
-import { Observable } from 'rxjs';
+import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Post from '../models/post';
 
 @Injectable({
@@ -10,44 +7,42 @@ import Post from '../models/post';
 })
 export class PostService {
 
-  private dbPath : string = '/posts';
-  postsRef: AngularFireList<Post>;
+  private postsPath : string = 'posts';
+  postsCollection: AngularFirestoreCollection<Post>;
 
-  constructor(private db: AngularFireDatabase, @Inject(String) private groupID: string) {
-    this.postsRef = db.list(groupID + this.dbPath);
+  constructor(private db: AngularFirestore) {
+    this.postsCollection = db.collection<Post>(this.postsPath)
   }
 
-  observable(): Observable<Post[]> {
-    return this.postsRef.valueChanges();
+  observable(boardID: string, handleAdd: Function, handleModification: Function) {
+    return this.postsCollection.ref.where("boardID", "==", boardID).onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          handleAdd(change.doc.data())
+        } else if (change.type === "modified") {
+          handleModification(change.doc.data())
+        }
+      })
+    })
   }
 
-  getAll(): Observable<SnapshotAction<Post>[]>{
-    return this.postsRef.snapshotChanges();
+  get(postID: string) {
+    return this.postsCollection.ref.where("postID", "==", postID).get().then((snapshot) => snapshot)
+  }
+
+  getAll(boardID: string) {
+    return this.postsCollection.ref.where("boardID", "==", boardID).get().then((snapshot) => snapshot)
   }
 
   create(post: any): any {
-    return this.postsRef.push(post);
+    return this.postsCollection.doc(post.postID).set(post)
   }
 
-  update(postID: string, value: any): Promise<DataSnapshot> {
-    var query = this.postsRef.query.orderByChild("postID").equalTo(postID);
-    return query.once("value", function(snapshot) {
-      snapshot.forEach(function(child) {
-        child.ref.update(value);
-      })
-    })
+  update(postID: string, value: any) {
+    return this.postsCollection.ref.doc(postID).update(value)
   }
 
-  delete(postID: string): Promise<DataSnapshot> {
-    var query = this.postsRef.query.orderByChild("postID").equalTo(postID);
-    return query.once("value", function(snapshot) {
-      snapshot.forEach(function(child) {
-        child.ref.remove();
-      })
-    })
-  }
-
-  deleteAll(): Promise<void> {
-    return this.postsRef.remove();
+  delete(postID: string) {
+    return this.postsCollection.ref.doc(postID).delete()
   }
 }

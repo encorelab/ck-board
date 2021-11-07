@@ -1,0 +1,27 @@
+.card {
+    width: 250px;
+    height: 100px;
+    padding: 16px;
+    cursor: pointer;
+}
+
+mat-toolbar {
+    justify-content: space-between;
+}
+
+.content {
+    padding: 1px;
+}
+
+.content > mat-card {
+    margin-bottom: 1px;
+}
+
+.column-label {
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+.title {
+    margin-left: -16px;
+}

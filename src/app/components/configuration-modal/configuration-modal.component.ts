@@ -1,6 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { BoardService } from 'src/app/services/board.service';
+import { MatChipInputEvent } from '@angular/material/chips';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -8,22 +10,55 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
   styleUrls: ['./configuration-modal.component.scss']
 })
 export class ConfigurationModalComponent {
+  readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
-  permissions: FormGroup;
   boardName: string
-  
+  bgImgURL: any
+
+  taskTitle: string
+  taskMessage: string
+
+  allowStudentMoveAny: boolean
+
+  tags: string[]
+  newTagText: string = ''
+
   constructor(
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any, fb: FormBuilder) {
-      this.permissions = fb.group({
-        studentMoveAnyPost: true,
-        studentEditAnyPost: true,
-        studentDeleteAnyPost: true,
-      });
+    public boardService: BoardService,
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+      this.allowStudentMoveAny = data.board.permissions.allowStudentMoveAny
+      this.boardName = data.board.name
+      this.taskTitle = data.board.task.title
+      this.taskMessage = data.board.task.message
+      this.tags = data.board.tags ?? []
     }
 
+  addTag() {
+    this.tags.push(this.newTagText)
+    this.newTagText = ''
+  }
+
+  removeTag(tagRemove) {
+    this.tags = this.tags.filter(tag => tag != tagRemove)
+  }
+
+  handleImageUpload(e) {
+    var file = e.target.files[0];
+    var reader = new FileReader();
+    reader.onload = (f) => {
+        this.bgImgURL = f.target?.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
   handleDialogSubmit() {
-    this.data.callBack(this.data.message);
+    if (this.bgImgURL) this.data.updateBackground(this.bgImgURL)
+    this.data.updateBoardName(this.boardName)
+    this.data.updateTask(this.taskTitle, this.taskMessage)
+    this.data.updatePermissions(this.allowStudentMoveAny)
+    this.data.updateTags(this.tags)
+
     this.dialogRef.close();
   }
 

@@ -1,0 +1,58 @@
+.avatar {
+    background-image: url('https://www.mtsolar.us/wp-content/uploads/2020/04/avatar-placeholder.png');
+    background-size: cover;
+}
+
+.comment-area {
+    overflow-y: auto;
+    min-height: 110px;
+}
+
+.comment-box {
+    overflow-y: auto;
+    word-wrap: break-word;
+    max-height: 300px;
+    margin-bottom: 3px;
+}
+
+.comment-toggler {
+    padding: 0 !important;
+}
+
+.comment {
+    background-color: #F5F5F5;
+    border-radius: 0%;
+}
+
+.add-comment {
+    width: 100%; 
+    margin-bottom: -1.3em;
+}
+
+.fill-remaining-space {
+    flex: 1 1 auto;
+}
+
+.details {
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.mat-dialog-actions {
+    min-height: 20px !important;
+}
+
+.tag-form {
+    width: 100%;
+}
+
+.cancel {
+    padding-left: 10px;
+    width: 12px;
+    height: 15px;
+    font-size: medium;
+}
+
+::ng-deep .mat-form-field-underline {
+    display: none;
+}

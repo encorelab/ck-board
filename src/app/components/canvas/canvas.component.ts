@@ -291,7 +291,7 @@ export class CanvasComponent {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      if (likeButton) {
+      if (likeButton &&  this.checkStudentEditingEnabled()) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
             this.likesService.add({
@@ -329,7 +329,7 @@ export class CanvasComponent {
       var isDragEnd = isDragging;
       isDragging = false;
       var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
-      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post' && ( (this.user.role =="student" && !this.board.permissions.isEditingLocked) || this.user.role =="teacher")) {
+      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post' &&  this.checkStudentEditingEnabled()) {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
           minWidth: '700px',
@@ -485,6 +485,13 @@ export class CanvasComponent {
     this.lockPostsMovement(false)
     this.canvas.defaultCursor = 'default'
     this.canvas.hoverCursor = 'move'
+  }
+  /**
+   * Return true if student editing enabled
+   * @returns boolean
+   */
+  checkStudentEditingEnabled(){
+    return (this.user.role =="student" && !this.board.permissions.isEditingLocked) || this.user.role =="teacher"
   }
 }
 

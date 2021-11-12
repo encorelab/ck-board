@@ -19,6 +19,7 @@ export class ConfigurationModalComponent {
   taskMessage: string
 
   allowStudentMoveAny: boolean
+  isEditingLocked: boolean
 
   tags: string[]
   newTagText: string = ''
@@ -28,6 +29,7 @@ export class ConfigurationModalComponent {
     public boardService: BoardService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.allowStudentMoveAny = data.board.permissions.allowStudentMoveAny
+      this.isEditingLocked = data.board.permissions.isEditingLocked
       this.boardName = data.board.name
       this.taskTitle = data.board.task.title
       this.taskMessage = data.board.task.message
@@ -56,7 +58,7 @@ export class ConfigurationModalComponent {
     if (this.bgImgURL) this.data.updateBackground(this.bgImgURL)
     this.data.updateBoardName(this.boardName)
     this.data.updateTask(this.taskTitle, this.taskMessage)
-    this.data.updatePermissions(this.allowStudentMoveAny)
+    this.data.updatePermissions(this.allowStudentMoveAny, this.isEditingLocked)
     this.data.updateTags(this.tags)
 
     this.dialogRef.close();

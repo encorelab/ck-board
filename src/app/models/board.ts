@@ -12,6 +12,7 @@ export class Board {
     };
     permissions: {
         allowStudentMoveAny: boolean;
+        isEditingLocked: boolean
     }; 
     members: [];
     tags: [];

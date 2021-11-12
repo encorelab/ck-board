@@ -178,9 +178,9 @@ export class CanvasComponent {
     });
   }
 
-  updatePostPermissions = (value) => {
-    this.boardService.update(this.boardID, { permissions: { allowStudentMoveAny: !value } })
-    this.lockPostsMovement(value)
+  updatePostPermissions = (allowStudentMoveAny, isEditingLocked) => {
+    this.boardService.update(this.boardID, { permissions: { allowStudentMoveAny: allowStudentMoveAny, isEditingLocked:isEditingLocked} })
+    this.lockPostsMovement(!allowStudentMoveAny)
   }
   
   updateTask = (title, message) => {
@@ -329,7 +329,7 @@ export class CanvasComponent {
       var isDragEnd = isDragging;
       isDragging = false;
       var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
-      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
+      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post' && ( (this.user.role =="student" && !this.board.permissions.isEditingLocked) || this.user.role =="teacher")) {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
           minWidth: '700px',

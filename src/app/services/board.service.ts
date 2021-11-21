@@ -33,6 +33,18 @@ export class BoardService {
     })
   }
 
+  getByJoinCode(code: string) {
+    return this.boardRef.ref.where("joinCode", "==", code).get().then((snapshot) => snapshot)
+  }
+
+  getByUserID(id: string): Promise<any> {
+    return this.boardRef.ref.where("members", "array-contains", id).get().then((snapshot) => snapshot)
+  }
+
+  getPublic() {
+    return this.boardRef.ref.where("public", "==", true).get().then((snapshot) => snapshot)
+  }
+
   getAll(): Promise<any> {
     return this.boardRef.ref.get().then((snapshot) => snapshot)
   }

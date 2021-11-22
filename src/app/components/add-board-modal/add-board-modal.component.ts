@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatChipInputEvent } from '@angular/material/chips';
+import { Permissions } from 'src/app/models/permissions';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -11,7 +12,7 @@ import { MatChipInputEvent } from '@angular/material/chips';
 export class AddBoardModalComponent implements OnInit {
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
-  allowStudentMoveAny: boolean = true
+  permissions:Permissions
 
   boardName: string = ''
   taskTitle: string = ''
@@ -23,7 +24,12 @@ export class AddBoardModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any) {}
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+      this.permissions={
+        allowStudentMoveAny:true,
+        isEditAddDeletePostLocked:false
+      }
+    }
 
   ngOnInit(): void {}
 
@@ -57,9 +63,7 @@ export class AddBoardModalComponent implements OnInit {
       bgImage: {
         url: this.bgImgURL
       },
-      permissions: {
-        allowStudentMoveAny: this.allowStudentMoveAny
-      },
+      permissions:this.permissions,
       members: [],
       tags: this.tags
     })

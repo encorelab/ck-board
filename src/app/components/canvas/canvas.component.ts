@@ -26,6 +26,7 @@ import { Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
+import { Permissions } from 'src/app/models/permissions';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
@@ -46,6 +47,8 @@ export class CanvasComponent {
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
+  showAddPost:boolean
+
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
     public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
@@ -54,6 +57,7 @@ export class CanvasComponent {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+   
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -66,6 +70,8 @@ export class CanvasComponent {
     this.handleLikeButtonClick();
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
+    this.showAddPost = true
+    
   }
 
   // configure board
@@ -81,6 +87,7 @@ export class CanvasComponent {
           this.board = board
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
+          this.updateShowAddPost(this.board.permissions)
         } 
       })
     })
@@ -178,9 +185,14 @@ export class CanvasComponent {
     });
   }
 
-  updatePostPermissions = (allowStudentMoveAny, isEditingLocked) => {
-    this.boardService.update(this.boardID, { permissions: { allowStudentMoveAny: allowStudentMoveAny, isEditingLocked:isEditingLocked} })
-    this.lockPostsMovement(!allowStudentMoveAny)
+  updatePostPermissions = (permissions:Permissions) => {
+    this.boardService.update(this.boardID, { permissions:permissions})
+    this.lockPostsMovement(!permissions.allowStudentMoveAny)
+    this.updateShowAddPost(permissions)
+  }
+
+  updateShowAddPost(permissions:Permissions) {
+    this.showAddPost = (this.user.role =="student" && !permissions.isEditAddDeletePostLocked) || this.user.role =="teacher"
   }
   
   updateTask = (title, message) => {
@@ -291,7 +303,7 @@ export class CanvasComponent {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      if (likeButton &&  this.checkStudentEditingEnabled()) {
+      if (likeButton) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
             this.likesService.add({
@@ -329,7 +341,7 @@ export class CanvasComponent {
       var isDragEnd = isDragging;
       isDragging = false;
       var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
-      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post' &&  this.checkStudentEditingEnabled()) {
+      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
           minWidth: '700px',
@@ -339,7 +351,7 @@ export class CanvasComponent {
             post: obj, 
             board: this.board,
             removePost: this.removePost, 
-            updatePost: this.updatePost 
+            updatePost: this.updatePost,
           }
         });
       }
@@ -486,12 +498,7 @@ export class CanvasComponent {
     this.canvas.defaultCursor = 'default'
     this.canvas.hoverCursor = 'move'
   }
-  /**
-   * Return true if student editing enabled
-   * @returns boolean
-   */
-  checkStudentEditingEnabled(){
-    return (this.user.role =="student" && !this.board.permissions.isEditingLocked) || this.user.role =="teacher"
-  }
+
+  
 }
 

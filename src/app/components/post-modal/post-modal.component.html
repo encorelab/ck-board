@@ -4,10 +4,10 @@
     <mat-card-title>{{ title }}</mat-card-title>
     <mat-card-subtitle>{{ data.post.author }}</mat-card-subtitle>
     <span class="fill-remaining-space"></span>
-    <button mat-icon-button [matMenuTriggerFor]="menu">
+    <button mat-icon-button [matMenuTriggerFor]="menu" *ngIf="showEditDelete">
       <mat-icon>more_vert</mat-icon>
     </button>
-    <mat-menu #menu="matMenu">
+    <mat-menu #menu="matMenu" >
       <button mat-menu-item *ngIf="!isEditing && canEditDelete" (click)="toggleEdit()">
         <mat-icon>edit</mat-icon>
         <span>Edit Post</span>

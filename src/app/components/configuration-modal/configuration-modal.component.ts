@@ -3,6 +3,7 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BoardService } from 'src/app/services/board.service';
 import { MatChipInputEvent } from '@angular/material/chips';
+import { Permissions } from 'src/app/models/permissions';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -18,8 +19,7 @@ export class ConfigurationModalComponent {
   taskTitle: string
   taskMessage: string
 
-  allowStudentMoveAny: boolean
-  isEditingLocked: boolean
+  permissions:Permissions
 
   tags: string[]
   newTagText: string = ''
@@ -28,12 +28,14 @@ export class ConfigurationModalComponent {
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
     public boardService: BoardService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
-      this.allowStudentMoveAny = data.board.permissions.allowStudentMoveAny
-      this.isEditingLocked = data.board.permissions.isEditingLocked
       this.boardName = data.board.name
       this.taskTitle = data.board.task.title
       this.taskMessage = data.board.task.message
       this.tags = data.board.tags ?? []
+      this.permissions= data.board.permissions ?? {
+        isEditingLocked:false,
+        isEditAddDeletePostLocked:false
+      }
     }
 
   addTag() {
@@ -58,7 +60,7 @@ export class ConfigurationModalComponent {
     if (this.bgImgURL) this.data.updateBackground(this.bgImgURL)
     this.data.updateBoardName(this.boardName)
     this.data.updateTask(this.taskTitle, this.taskMessage)
-    this.data.updatePermissions(this.allowStudentMoveAny, this.isEditingLocked)
+    this.data.updatePermissions(this.permissions)
     this.data.updateTags(this.tags)
 
     this.dialogRef.close();

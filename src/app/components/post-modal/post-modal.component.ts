@@ -23,6 +23,7 @@ export class PostModalComponent {
   title: string
   desc: string
   isEditing: boolean = false
+  showEditDelete: boolean = false
   canEditDelete: boolean
   showComments: boolean = false
 
@@ -49,7 +50,7 @@ export class PostModalComponent {
           this.desc = p.desc
           this.tags = p.tags
           this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
-          this.canEditDelete = this.data.post.userID == this.user.id || this.user.role == 'teacher'
+          this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == 'teacher'
         })
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
@@ -64,6 +65,7 @@ export class PostModalComponent {
           this.likes.push(likeObj)
         })
       })
+     this.showEditDelete = (this.user.role =="student" && !data.board.permissions.isEditAddDeletePostLocked) || this.user.role =="teacher"
   }
   
   onNoClick(): void {

@@ -303,7 +303,7 @@ export class CanvasComponent {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      if (likeButton) {
+      if (likeButton && ((this.user.role =="student" && !this.board.permissions.isLikingLocked) || this.user.role =="teacher") ) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
             this.likesService.add({

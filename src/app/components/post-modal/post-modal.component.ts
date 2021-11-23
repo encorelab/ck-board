@@ -123,6 +123,11 @@ export class PostModalComponent {
   }
 
   handleLikeClick() {
+    // if liking is locked just return (do nothing)
+    if(this.user.role =="student" && this.data.board.permissions.isLikingLocked){
+      return;
+    }
+      
     if (this.isLiked) {
       this.likesService.remove(this.isLiked.likeID).then(() => {
         this.isLiked = null

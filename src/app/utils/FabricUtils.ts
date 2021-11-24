@@ -5,7 +5,7 @@ export class FabricUtils {
     serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'authorID', 'hasControls', 'subTargetCheck', 'removed']
 
     canvasConfig = {
-        width: window.innerWidth * 0.99, 
+        width: window.innerWidth, 
         height: window.innerHeight * 0.9, 
         fireRightClick: true, 
         stopContextMenu: true

@@ -46,6 +46,8 @@ export class CanvasComponent {
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
+  showFiller = false;
+
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
     public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
@@ -70,6 +72,7 @@ export class CanvasComponent {
 
   // configure board
   configureBoard() {
+    this.canvas.on('mouse:down', (e) => console.log('hello'))
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}

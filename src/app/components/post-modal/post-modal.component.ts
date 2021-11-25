@@ -124,7 +124,7 @@ export class PostModalComponent {
 
   handleLikeClick() {
     // if liking is locked just return (do nothing)
-    if(this.user.role =="student" && this.data.board.permissions.isLikingLocked){
+    if(this.user.role =="student" && !this.data.board.permissions.allowStudentLiking){
       return;
     }
       

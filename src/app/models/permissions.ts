@@ -1,5 +1,5 @@
 export class Permissions{
     allowStudentMoveAny: boolean;
-    isEditAddDeletePostLocked: boolean;
-    isLikingLocked: boolean;
+    allowStudentLiking: boolean;
+    allowStudentEditAddDeletePost: boolean;
 }

@@ -192,7 +192,7 @@ export class CanvasComponent {
   }
 
   updateShowAddPost(permissions:Permissions) {
-    this.showAddPost = (this.user.role =="student" && !permissions.isEditAddDeletePostLocked) || this.user.role =="teacher"
+    this.showAddPost = (this.user.role =="student" && permissions.allowStudentEditAddDeletePost) || this.user.role =="teacher"
   }
   
   updateTask = (title, message) => {

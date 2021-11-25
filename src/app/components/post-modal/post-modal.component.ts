@@ -65,7 +65,7 @@ export class PostModalComponent {
           this.likes.push(likeObj)
         })
       })
-     this.showEditDelete = (this.user.role =="student" && !data.board.permissions.isEditAddDeletePostLocked) || this.user.role =="teacher"
+     this.showEditDelete = (this.user.role =="student" && data.board.permissions.allowStudentEditAddDeletePost) || this.user.role =="teacher"
   }
   
   onNoClick(): void {

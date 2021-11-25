@@ -32,10 +32,7 @@ export class ConfigurationModalComponent {
       this.taskTitle = data.board.task.title
       this.taskMessage = data.board.task.message
       this.tags = data.board.tags ?? []
-      this.permissions= data.board.permissions ?? {
-        isEditingLocked:false,
-        isEditAddDeletePostLocked:false
-      }
+      this.permissions= data.board.permissions
     }
 
   addTag() {

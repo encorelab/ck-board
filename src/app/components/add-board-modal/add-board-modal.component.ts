@@ -27,7 +27,7 @@ export class AddBoardModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.permissions={
         allowStudentMoveAny:true,
-        isEditAddDeletePostLocked:false
+        allowStudentEditAddDeletePost:true
       }
     }
 

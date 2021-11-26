@@ -25,6 +25,7 @@ export class PostModalComponent {
   isEditing: boolean = false
   showEditDelete: boolean = false
   canEditDelete: boolean
+  canStudentComment:boolean
   showComments: boolean = false
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
@@ -66,6 +67,7 @@ export class PostModalComponent {
         })
       })
      this.showEditDelete = (this.user.role =="student" && data.board.permissions.allowStudentEditAddDeletePost) || this.user.role =="teacher"
+     this.canStudentComment = (this.user.role =="student" && data.board.permissions.allowStudentCommenting) || this.user.role =="teacher"
   }
   
   onNoClick(): void {

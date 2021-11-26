@@ -83,7 +83,7 @@
       </mat-card-content>
     </mat-card>
   </div>
-  <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments">
+  <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments && canStudentComment">
     <mat-label>Add Comment</mat-label>
     <input matInput [(ngModel)]='newComment'>
     <button color="primary" matSuffix mat-button (click)="addComment()">Comment!</button>

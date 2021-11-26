@@ -26,6 +26,7 @@ export class PostModalComponent {
   showEditDelete: boolean = false
   canEditDelete: boolean
   canStudentComment:boolean
+  canStudentTag:boolean
   showComments: boolean = false
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
@@ -68,6 +69,7 @@ export class PostModalComponent {
       })
      this.showEditDelete = (this.user.role =="student" && data.board.permissions.allowStudentEditAddDeletePost) || this.user.role =="teacher"
      this.canStudentComment = (this.user.role =="student" && data.board.permissions.allowStudentCommenting) || this.user.role =="teacher"
+     this.canStudentTag = (this.user.role =="student" && data.board.permissions.allowStudentTagging) || this.user.role =="teacher"
   }
   
   onNoClick(): void {
@@ -100,6 +102,8 @@ export class PostModalComponent {
   }
 
   removeTag(tag) {
+    if(!this.canStudentTag)
+      return
     const index = this.tags.indexOf(tag);
     if (index >= 0) {
       this.tags.splice(index, 1);

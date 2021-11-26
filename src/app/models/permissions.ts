@@ -3,4 +3,5 @@ export class Permissions{
     allowStudentLiking: boolean;
     allowStudentEditAddDeletePost: boolean;
     allowStudentCommenting:boolean;
+    allowStudentTagging:boolean;
 }

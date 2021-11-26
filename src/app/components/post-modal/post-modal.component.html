@@ -28,10 +28,10 @@
       {{ likes.length }}
     </button>
   </mat-card-actions>
-  <mat-card-actions style="margin-bottom: -1.25em">
+  <mat-card-actions style="margin-bottom: -1.25em" >
     <mat-form-field class="tag-form" appearance="standard">
       <mat-chip-list #chipList>
-        <mat-chip style="background-color: #78C2C0" [matMenuTriggerFor]="menu1">
+        <mat-chip style="background-color: #78C2C0" [matMenuTriggerFor]="menu1" *ngIf="canStudentTag">
           Add Tag 
           <mat-icon>add</mat-icon>
         </mat-chip>

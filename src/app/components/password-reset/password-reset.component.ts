@@ -12,7 +12,7 @@ import { AuthService } from 'src/app/services/auth.service';
 export class PasswordResetComponent implements OnInit, OnDestroy{
 
     email: string
-    msg: string
+    emailMsg: string
     passwordMsg: string
 
     ngUnsubscribe: Subject<any> = new Subject<any>();
@@ -63,13 +63,13 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
         if(this.emailSubmitted) {
             console.log("SUBMITTED");
             if (!this.email) { 
-                this.msg = "Missing Email";
+                this.emailMsg = "Missing Email";
             }
             else {
             this.auth.resetPassword(this.email) 
             .then(
-                () => this.msg = "Success", 
-                () => this.msg = "Wrong Email"); 
+                () => this.emailMsg = "Success", 
+                () => this.emailMsg = "Wrong Email"); 
             }
         }
         else {

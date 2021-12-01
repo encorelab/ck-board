@@ -24,6 +24,9 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
 
     oobCodeChecked: boolean;
 
+    emailSubmitted: boolean;
+    passwordSubmitted: boolean;
+
     constructor(private auth: AuthService, private activatedRoute: ActivatedRoute, private router: Router) {}
 
     ngOnInit() {
@@ -51,22 +54,45 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
     }
     
     ngOnDestroy(): void {
-        throw new Error('Method not implemented.');
+        this.ngUnsubscribe.next();
+        this.ngUnsubscribe.complete();
     }
 
-    onReset() {
-        if (!this.email) { 
-            this.msg = "Missing Email";
-          }
+    onHandleEmail() {
+        if(this.emailSubmitted) {
+            console.log("SUBMITTED");
+            if (!this.email) { 
+                this.msg = "Missing Email";
+            }
+            else {
+            this.auth.resetPassword(this.email) 
+            .then(
+                () => this.msg = "Success", 
+                () => this.msg = "Wrong Email"); 
+            }
+        }
         else {
-          this.auth.resetPassword(this.email) 
-          .then(
-            () => this.msg = "Success", 
-            () => this.msg = "Wrong Email"); 
+            console.log("CANCELLED");
+            this.router.navigate(['/login']);
         }
     }
 
-    onHandleResetPassword(): void {
-        throw new Error('Method not implemented.');
+    onSubmitEmail() {
+        this.emailSubmitted = true;
+    }
+    onCancelEmail() {
+        this.emailSubmitted = false;
+    }
+
+
+    onHandleResetPassword() {
+        throw new Error('onHandleResetPassword method not implemented.');
+    }
+
+    onSubmitPassword() {
+        throw new Error('onSubmitPassword method not implemented.');
+    }
+    onCancelPassword() {
+        throw new Error('onCancelPassword method not implemented.');
     }
 }

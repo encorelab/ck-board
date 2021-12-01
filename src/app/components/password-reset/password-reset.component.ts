@@ -13,6 +13,7 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
 
     email: string
     msg: string
+    passwordMsg: string
 
     ngUnsubscribe: Subject<any> = new Subject<any>();
 
@@ -86,13 +87,23 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
 
 
     onHandleResetPassword() {
-        throw new Error('onHandleResetPassword method not implemented.');
+        if(this.newPassword != this.confirmPassword) {
+            this.passwordMsg = "The new password does not match the confirmed new password";
+            return;
+        } 
+
+        this.auth.getAuth().confirmPasswordReset(this.oobCode, this.newPassword)
+        .then(res => {
+            this.passwordMsg = "The new password has been saved";
+            this.router.navigate(['/login']);
+        })
+        .catch(() => this.passwordMsg = "An error has occurred");
     }
 
     onSubmitPassword() {
-        throw new Error('onSubmitPassword method not implemented.');
+        this.passwordSubmitted = true;
     }
     onCancelPassword() {
-        throw new Error('onCancelPassword method not implemented.');
+        this.passwordSubmitted = false;
     }
 }

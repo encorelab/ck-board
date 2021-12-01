@@ -79,4 +79,13 @@ export class AuthService {
       this.router.navigate(['/login']);
     })
   }
+
+  getAuth() { 
+    return this.auth; 
+  } 
+
+  resetPassword(email: string) {
+    return this.auth.sendPasswordResetEmail(email, 
+      { url: 'http://localhost:4200/password/reset' })
+  }
 }

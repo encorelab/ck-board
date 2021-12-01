@@ -1,30 +1,27 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { E } from '@angular/cdk/keycodes';
+import { Component } from '@angular/core';
+import { AuthService } from 'src/app/services/auth.service';
 
-@Component({ templateUrl: 'password-reset.component.html' })
-export class PasswordResetComponent implements OnInit {
-    form: FormGroup;
-    loading = false;
-    submitted = false;
+@Component({ 
+    templateUrl: 'password-reset.component.html', 
+    styleUrls: ['./password-reset.component.scss']
+})
+export class PasswordResetComponent{
 
-    constructor(
-        private formBuilder: FormBuilder,
-    ) { }
+    email: string
+    mode: string
 
-    ngOnInit() {
-        this.form = this.formBuilder.group({
-            email: ['', [Validators.required, Validators.email]]
-        });
-    }
+    constructor(private auth: AuthService) {}
 
-    onSubmit() {
-        this.submitted = true;
-
-        // stop here if form is invalid
-        if (this.form.invalid) {
-            return;
+    onReset() {
+        if (!this.email) { 
+            this.mode = "Missing Email";
+          }
+        else {
+          this.auth.resetPassword(this.email) 
+          .then(
+            () => this.mode = "Success", 
+            () => this.mode = "Wrong Email"); 
         }
-
-        this.loading = true;
     }
 }

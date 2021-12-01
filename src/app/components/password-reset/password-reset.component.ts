@@ -1,5 +1,6 @@
 import { E } from '@angular/cdk/keycodes';
 import { Component } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({ 
@@ -9,19 +10,19 @@ import { AuthService } from 'src/app/services/auth.service';
 export class PasswordResetComponent{
 
     email: string
-    mode: string
+    msg: string
 
     constructor(private auth: AuthService) {}
 
     onReset() {
         if (!this.email) { 
-            this.mode = "Missing Email";
+            this.msg = "Missing Email";
           }
         else {
           this.auth.resetPassword(this.email) 
           .then(
-            () => this.mode = "Success", 
-            () => this.mode = "Wrong Email"); 
+            () => this.msg = "Success", 
+            () => this.msg = "Wrong Email"); 
         }
     }
 }

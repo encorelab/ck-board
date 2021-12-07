@@ -30,7 +30,8 @@ export class AddBoardModalComponent implements OnInit {
         allowStudentLiking:true,
         allowStudentEditAddDeletePost:true,
         allowStudentCommenting:true,
-        allowStudentTagging:true
+        allowStudentTagging:true,
+        showAuthorName:true
       }
     }
 

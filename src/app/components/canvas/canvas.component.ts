@@ -72,6 +72,7 @@ export class CanvasComponent {
     this.boardService.observable(this.boardID, this.handleBoardChange);
     this.showAddPost = true
     
+    
   }
 
   // configure board
@@ -88,6 +89,9 @@ export class CanvasComponent {
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
           this.updateShowAddPost(this.board.permissions)
+          if(!((this.user.role =="student" && this.board.permissions.showAuthorName) || this.user.role =="teacher")){
+              this.hideAuthorNames()
+          }
         } 
       })
     })
@@ -202,6 +206,13 @@ export class CanvasComponent {
   lockPostsMovement(value) {
     this.canvas.getObjects().map(obj => {
       obj.set({lockMovementX: value, lockMovementY: value});
+    });
+    this.canvas.renderAll()
+  }
+
+  hideAuthorNames(){
+    this.canvas.getObjects().map(obj => {
+      this.fabricUtils.updateAuthor(obj, "Anonymous")
     });
     this.canvas.renderAll()
   }

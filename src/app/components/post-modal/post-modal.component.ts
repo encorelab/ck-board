@@ -28,6 +28,7 @@ export class PostModalComponent {
   canStudentComment:boolean
   canStudentTag:boolean
   showComments: boolean = false
+  showAuthorName:boolean
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
   descControl = new FormControl('', [Validators.maxLength(1000)]);
@@ -70,6 +71,7 @@ export class PostModalComponent {
      this.showEditDelete = (this.user.role =="student" && data.board.permissions.allowStudentEditAddDeletePost) || this.user.role =="teacher"
      this.canStudentComment = (this.user.role =="student" && data.board.permissions.allowStudentCommenting) || this.user.role =="teacher"
      this.canStudentTag = (this.user.role =="student" && data.board.permissions.allowStudentTagging) || this.user.role =="teacher"
+     this.showAuthorName = (this.user.role =="student" && data.board.permissions.showAuthorName) || this.user.role =="teacher"
   }
   
   onNoClick(): void {

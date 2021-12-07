@@ -42,6 +42,8 @@ export class CanvasComponent {
   user: User
   board: Board
 
+  canvasSize: number
+
   mode: Mode = Mode.EDIT
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
@@ -54,6 +56,7 @@ export class CanvasComponent {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+    this.canvasSize = 1;
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -485,6 +488,22 @@ export class CanvasComponent {
     this.lockPostsMovement(false)
     this.canvas.defaultCursor = 'default'
     this.canvas.hoverCursor = 'move'
+  }
+
+  handleZoomIn() {
+    let body = document.getElementById('canvas');
+    if(body != null) {
+      this.canvasSize += 0.05;
+      body.style.transform = `scale(${this.canvasSize})`;
+    }
+  }
+
+  handleZoomOut() {
+    let body = document.getElementById('canvas');
+    if(body != null) {
+      this.canvasSize -= 0.05;
+      body.style.transform = `scale(${this.canvasSize})`;
+    }
   }
 }
 

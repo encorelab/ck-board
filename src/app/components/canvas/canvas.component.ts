@@ -501,32 +501,20 @@ export class CanvasComponent {
     return {x: null, y: null};
   }
 
-  handleZoomIn() {
+  handleZoom(event) {
     let centerX = this.centerCoord().x;
     let centerY = this.centerCoord().y;
 
     if(centerX != null && centerY != null) {
-      this.currentZoom += 0.05;
-      this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.currentZoom);
-    }
-  }
-
-  handleZoomOut() {
-    let centerX = this.centerCoord().x;
-    let centerY = this.centerCoord().y;
-
-    if(centerX != null && centerY != null) {
-      this.currentZoom -= 0.05;
-      this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.currentZoom);
-    }
-  }
-
-  handleZoomReset() {
-    let centerX = this.centerCoord().x;
-    let centerY = this.centerCoord().y;
-
-    if(centerX != null && centerY != null) {
-      this.currentZoom = 1;
+      if(event === 'zoomIn') {
+        this.currentZoom += 0.05;
+      }
+      else if(event === 'zoomOut') {
+        this.currentZoom -= 0.05;
+      }
+      else if(event === 'reset') {
+        this.currentZoom = 1;
+      }
       this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.currentZoom);
     }
   }

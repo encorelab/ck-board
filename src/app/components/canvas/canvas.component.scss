@@ -25,11 +25,16 @@
   .zoom {
     position: fixed;
     background-color: whitesmoke;
-    bottom: 15px;
-    right: 15px;
+    bottom: 0px;
+    right: 0px;
     border-radius: 30px;
-    left: 93%;
+    left: 96%;
   }
+
+  .zoomButton {
+    border-radius: 50%;
+  }
+
   
   .toolField {
     width: 100%;

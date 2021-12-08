@@ -42,7 +42,7 @@ export class CanvasComponent {
   user: User
   board: Board
 
-  canvasSize: number
+  currentZoom: number
 
   mode: Mode = Mode.EDIT
   modeType = Mode
@@ -56,7 +56,7 @@ export class CanvasComponent {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-    this.canvasSize = 1;
+    this.currentZoom = 1;
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -490,19 +490,34 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'move'
   }
 
+  private centerCoord() {
+    let zoom = this.canvas.getZoom();
+    if(this.canvas.viewportTransform != null && this.canvas.width != null && this.canvas.height != null) {
+      return {
+        x:fabric.util.invertTransform(this.canvas.viewportTransform)[4]+(this.canvas.width/zoom)/2,
+        y:fabric.util.invertTransform(this.canvas.viewportTransform)[5]+(this.canvas.height/zoom)/2
+      };
+    }
+    return {x: null, y: null};
+  }
+
   handleZoomIn() {
-    let body = document.getElementById('canvas');
-    if(body != null) {
-      this.canvasSize += 0.05;
-      body.style.transform = `scale(${this.canvasSize})`;
+    let centerX = this.centerCoord().x;
+    let centerY = this.centerCoord().y;
+
+    if(centerX != null && centerY != null) {
+      this.currentZoom += 0.05;
+      this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.currentZoom);
     }
   }
 
   handleZoomOut() {
-    let body = document.getElementById('canvas');
-    if(body != null) {
-      this.canvasSize -= 0.05;
-      body.style.transform = `scale(${this.canvasSize})`;
+    let centerX = this.centerCoord().x;
+    let centerY = this.centerCoord().y;
+
+    if(centerX != null && centerY != null) {
+      this.currentZoom -= 0.05;
+      this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.currentZoom);
     }
   }
 }

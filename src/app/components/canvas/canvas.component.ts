@@ -520,5 +520,15 @@ export class CanvasComponent {
       this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.currentZoom);
     }
   }
+
+  handleZoomReset() {
+    let centerX = this.centerCoord().x;
+    let centerY = this.centerCoord().y;
+
+    if(centerX != null && centerY != null) {
+      this.currentZoom = 1;
+      this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.currentZoom);
+    }
+  }
 }
 

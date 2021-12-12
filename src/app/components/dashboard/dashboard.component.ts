@@ -7,6 +7,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { BoardService } from 'src/app/services/board.service';
 import { UserService } from 'src/app/services/user.service';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
+import { JoinBoardModalComponent } from '../join-board-modal/join-board-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,21 +16,41 @@ import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.compo
 })
 export class DashboardComponent implements OnInit {
 
+  isLoading: boolean = true
+
   user: User
-  boards: any
+
+  yourBoards: Board[] = []
+  publicBoards: Board[] = []
   
   constructor(public userService: UserService, public authService: AuthService, 
     public boardService: BoardService, public router: Router, public dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.user = this.authService.userData
-    this.boardService.getAll().then(boards => {
-      var a:any = []
+    this.authService.getAuthenticatedUser().then(user => {
+      this.user = user
+      this.getUsersBoards(this.user.id).then(_ => this.isLoading = false)
+    })
+  }
+
+  getUsersBoards(id) {
+    return this.boardService.getByUserID(id).then(boards => {
       boards.forEach((data) => {
         let board = data.data() ?? {}
-        a.push(board)
+        this.yourBoards.push(board)
       })
-      this.boards = a
+      this.getPublicBoards()
+    })
+  }
+  
+  getPublicBoards() {
+    this.boardService.getPublic().then(boards => {
+      boards.forEach((data) => {
+        let board = data.data() ?? {}
+        if (!this.yourBoards.includes(board))
+          this.publicBoards.push(board)
+      })
     })
   }
 
@@ -43,6 +64,15 @@ export class DashboardComponent implements OnInit {
       data: {
         user: this.user,
         createBoard: this.createBoard
+      }
+    });
+  }
+
+  openJoinBoardDialog() {
+    this.dialog.open(JoinBoardModalComponent, {
+      width: '700px',
+      data: {
+        user: this.user
       }
     });
   }

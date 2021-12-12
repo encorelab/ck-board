@@ -25,6 +25,7 @@ import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
 import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
+import { ErrorComponent } from './components/error/error.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { JoinBoardModalComponent } from './components/join-board-modal/join-boar
     RegisterComponent,
     DashboardComponent,
     AddBoardModalComponent,
-    JoinBoardModalComponent
+    JoinBoardModalComponent,
+    ErrorComponent
   ],
   imports: [
     BrowserModule,

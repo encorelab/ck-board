@@ -47,8 +47,7 @@ export class AuthService {
           id: user.uid,
           email: email,
           username: username,
-          role: type,
-          boards: []
+          role: type
         };
         this.userData = userModel
         this.userService.create(userModel)

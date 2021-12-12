@@ -5,7 +5,7 @@
         <button mat-icon-button (click)="openJoinBoardDialog()">
           <mat-icon>group_add</mat-icon>
         </button>
-        <button mat-icon-button (click)="openCreateBoardDialog()">
+        <button mat-icon-button (click)="openCreateBoardDialog()" *ngIf="user && user.role == 'teacher'">
             <mat-icon>add</mat-icon>
         </button>
         <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
@@ -13,7 +13,7 @@
           <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
         </mat-menu>
     </mat-toolbar>
-    <h3 class="header">Your Boards</h3>
+    <h3 class="header">My Boards</h3>
     <div class="no-boards" *ngIf="!isLoading && yourBoards.length == 0">
       <p>Create or join a new board now!</p>
       <div class="icons">

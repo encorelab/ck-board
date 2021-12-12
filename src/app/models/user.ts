@@ -3,6 +3,5 @@ export default class User {
     email: string;
     username: string;
     role: string;
-    boards: string[];
 }
   

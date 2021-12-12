@@ -45,10 +45,10 @@
       </mat-form-field>
       <button mat-button [disabled]="newTagText.length < 1" color="primary" (click)="addTag()">Add Tag</button>
     </mat-tab>
-    <mat-tab label="Users">
+    <mat-tab label="Members">
       <mat-list>
         <div mat-subheader>Invite Code: {{ data.board.joinCode }}</div>
-        <div mat-subheader>Current Users</div>
+        <div mat-subheader>Current Members</div>
         <mat-list-item *ngFor="let member of members">
           <mat-icon mat-list-icon>person</mat-icon>
           <div mat-line>{{ member }}</div>

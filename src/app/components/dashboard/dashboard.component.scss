@@ -5,6 +5,10 @@
     cursor: pointer;
 }
 
+.header {
+    margin-left: 3%;
+}
+
 mat-toolbar {
     justify-content: space-between;
 }
@@ -24,4 +28,19 @@ mat-toolbar {
 
 .title {
     margin-left: -16px;
+}
+
+.no-boards {
+    position: absolute;
+    transform: translate(-50%,-50%);
+    left: 50%;
+    top: 40%;
+    font-size: xx-large;
+    color: grey;
+}
+
+.icons {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 }

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 
@@ -16,7 +17,13 @@ export class LoginComponent {
 
   invalidCredentials: boolean = false;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private router: Router) {
+    this.auth.getAuthenticatedUser().then((user) => {
+      if (user) {
+        this.router.navigate(['/dashboard'])
+      }
+    })
+  }
 
   onLogin() {
     this.auth.login(this.email, this.password).then((userCredential) => {

@@ -32,6 +32,7 @@ export class AuthService {
 
   login(email: string, password: string) {
     return this.auth.signInWithEmailAndPassword(email, password).then((result) => {
+      this.userData = result.user
       this.ngZone.run(() => {
         this.router.navigate(['dashboard']);
       });

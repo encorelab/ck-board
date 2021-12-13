@@ -138,10 +138,11 @@ export class CanvasComponent {
 
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
-      width: '700px',
+      width: '850px',
       data: {
         board: this.board,
         updatePermissions: this.updatePostPermissions,
+        updatePublic: this.updatePublic,
         updateTask: this.updateTask,
         updateBackground: this.updateBackground,
         updateBoardName: this.updateBoardName,
@@ -197,6 +198,10 @@ export class CanvasComponent {
   
   updateTask = (title, message) => {
     this.boardService.update(this.boardID, { task: { title: title, message: message } })
+  }
+
+  updatePublic = (isPublic) => {
+    this.boardService.update(this.boardID, { public: isPublic })
   }
 
   lockPostsMovement(value) {

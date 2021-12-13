@@ -24,6 +24,8 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
+import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
+import { ErrorComponent } from './components/error/error.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +39,9 @@ import { AddBoardModalComponent } from './components/add-board-modal/add-board-m
     LoginComponent,
     RegisterComponent,
     DashboardComponent,
-    AddBoardModalComponent
+    AddBoardModalComponent,
+    JoinBoardModalComponent,
+    ErrorComponent
   ],
   imports: [
     BrowserModule,

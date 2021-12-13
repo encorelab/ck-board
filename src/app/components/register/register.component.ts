@@ -4,6 +4,7 @@ import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 
 enum UserType { STUDENT = 'student', TEACHER = 'teacher' }
 enum Step { CHOOSE_TYPE, ADD_CREDENTIALS }
@@ -30,7 +31,12 @@ export class RegisterComponent {
 
   userService: UserService;
 
-  constructor(db: AngularFirestore, public auth: AuthService) {
+  constructor(db: AngularFirestore, public auth: AuthService, private router: Router) {
+    this.auth.getAuthenticatedUser().then((user) => {
+      if (user) {
+        this.router.navigate(['/dashboard'])
+      }
+    })
     this.userService = new UserService(db);
   }
 

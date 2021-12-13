@@ -2,7 +2,10 @@
     <mat-toolbar>
         <span>Common Knowledge Board</span>
         <span style="flex: 1 1 auto"></span>
-        <button mat-icon-button (click)="openCreateBoardDialog()">
+        <button mat-icon-button (click)="openJoinBoardDialog()">
+          <mat-icon>group_add</mat-icon>
+        </button>
+        <button mat-icon-button (click)="openCreateBoardDialog()" *ngIf="user && user.role == 'teacher'">
             <mat-icon>add</mat-icon>
         </button>
         <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
@@ -10,8 +13,35 @@
           <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
         </mat-menu>
     </mat-toolbar>
+    <h3 class="header">My Boards</h3>
+    <div class="no-boards" *ngIf="!isLoading && yourBoards.length == 0">
+      <p>Create or join a new board now!</p>
+      <div class="icons">
+        <button mat-icon-button (click)="openCreateBoardDialog()">
+            <mat-icon style="font-size: 50px;">add</mat-icon>
+        </button>
+        <button mat-icon-button (click)="openJoinBoardDialog()">
+          <mat-icon style="font-size: 50px; padding-right: 70px;">group_add</mat-icon>
+        </button>
+      </div>
+    </div>
     <mat-grid-list class="content" cols="4" rowHeight="200">
-      <mat-grid-tile *ngFor="let board of boards" height="100px">
+      <mat-grid-tile *ngFor="let board of yourBoards" height="100px">
+        <mat-card class="card" (click)="handleBoardClick(board.boardID)">
+          <mat-card-header>
+            <mat-card-title class="title">{{ board.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              {{ board.task.title }}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      </mat-grid-tile>
+    </mat-grid-list>
+    <h3 class="header">Public Boards</h3>
+    <mat-grid-list class="content" cols="4" rowHeight="200">
+      <mat-grid-tile *ngFor="let board of publicBoards" height="100px">
         <mat-card class="card" (click)="handleBoardClick(board.boardID)">
           <mat-card-header>
             <mat-card-title class="title">{{ board.name }}</mat-card-title>

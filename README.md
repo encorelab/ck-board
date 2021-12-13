@@ -1,6 +1,6 @@
 ## Description
 
-Real-time discussion board enabling users to dive into deep and interactive discussions.
+This Common Knowledge (CK) Board is the latest rebuild of the ENCORE Lab's collaborative canvas for guiding collective inquiry and active learning activities. 
 
 ## Setup
 

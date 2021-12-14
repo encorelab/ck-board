@@ -138,7 +138,8 @@ export class CanvasComponent {
       desc: desc, 
       lock: !this.board.permissions.allowStudentMoveAny, 
       left: left, 
-      top: top 
+      top: top ,
+      tags:['1234567890123456','123456']
     });
     this.canvas.add(fabricPost);
   }

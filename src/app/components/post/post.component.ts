@@ -1,9 +1,13 @@
+import { M } from '@angular/cdk/keycodes';
 import { Component, Inject } from '@angular/core';
 import { fabric } from 'fabric';
 
 const AUTHOR_OFFSET = 65
 const DESC_OFFSET = 80
-const CONTENT_EXTRA_HEIGHT = 55
+const CONTENT_EXTRA_HEIGHT = 65
+const TAG_CONTAINER_WIDTH = 300
+const TAG_CHARACTER_LIMIT = 15
+const TAG_WIDTH = 140
 
 @Component({
   selector: 'app-post',
@@ -46,11 +50,69 @@ export class PostComponent extends fabric.Group {
       fill: '#000000',
       splitByGrapheme: true
     });
+    var tagGroups = new Array<fabric.Group>()
+
+    options.tags.forEach((tag, index) => {
+      // truncate tag if longer than tag character limit
+      let tagTruncated = tag
+      if(tag.length > TAG_CHARACTER_LIMIT){
+        tagTruncated = tag.substring(0,TAG_CHARACTER_LIMIT) + "..."
+      }
+
+      var tagBg = new fabric.Rect({
+        name: 'tagbg' + index,
+        width: TAG_WIDTH,
+        height:25,
+        originX: 'center',
+        originY: 'center',
+        rx:5,
+        ry:5,
+        fill:'#CCC',
+        stroke : 'black',
+        strokeWidth : 1
+      });
+  
+      var tagText = new fabric.Textbox(tagTruncated, {
+        name: 'tag' + index,
+        width:140,
+        originX: 'center',
+        originY: 'center',
+        fontSize: 14,
+        fontFamily: 'Helvetica',
+        fill: '#000000',
+        splitByGrapheme: true,
+        padding:10
+      });
+      let offset = 0
+      if(index % 2 == 1){
+        offset = 150
+      }
+      var tagGroup = new fabric.Group([ tagBg, tagText ], {
+        left: offset,
+        width: TAG_WIDTH,
+        height:25,
+        originX: 'left',
+      });
+      tagGroups.push(tagGroup)
+      
+    });
+
+    var tagContainer = new fabric.Group(tagGroups,{
+      left:18,
+      width:TAG_CONTAINER_WIDTH,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+
+    });
+
+
+    
+
+    
     
     var likeButton = new fabric.Textbox('👍🏼', {
       name: 'like',
       width: 100,
-      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() +tagContainer.getScaledHeight() + 100,
       left: 170,
       fontSize: 20,
       fontFamily: 'Helvetica',
@@ -61,7 +123,7 @@ export class PostComponent extends fabric.Group {
     var likeCount = new fabric.Textbox('0', {
       name: 'likeCount',
       width: 100,
-      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + tagContainer.getScaledHeight() + 100,
       left: (likeButton.left ?? 0) + 28,
       fontSize: 20,
       fontFamily: 'Helvetica',
@@ -72,7 +134,7 @@ export class PostComponent extends fabric.Group {
     var commentButton = new fabric.Textbox('💬', {
       name: 'comment',
       width: 100,
-      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + tagContainer.getScaledHeight() + 100,
       left: (likeCount.left ?? 0) + 45,
       fontSize: 20,
       fontFamily: 'Helvetica',
@@ -80,10 +142,12 @@ export class PostComponent extends fabric.Group {
       splitByGrapheme: true
     });
 
+    
+
     var commentCount = new fabric.Textbox('0', {
       name: 'commentCount',
       width: 100,
-      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + tagContainer.getScaledHeight() + 100,
       left: (commentButton.left ?? 0) + 28,
       fontSize: 20,
       fontFamily: 'Helvetica',
@@ -95,7 +159,7 @@ export class PostComponent extends fabric.Group {
       name: 'content',
       top: 40,
       width: 330,
-      height: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + commentButton.getScaledHeight() + CONTENT_EXTRA_HEIGHT,
+      height: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + commentButton.getScaledHeight() + tagContainer.getScaledHeight() + CONTENT_EXTRA_HEIGHT,
       fill: '#F4D74B',
       rx: 20, 
       ry: 20,
@@ -117,6 +181,6 @@ export class PostComponent extends fabric.Group {
       authorID: options.authorID
     }
 
-    super([content, title, author, desc, likeButton, likeCount, commentButton, commentCount], groupOptions);
+    super([content, title, author, desc, likeButton, likeCount, commentButton, commentCount,tagContainer], groupOptions);
   };
 }

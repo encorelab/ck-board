@@ -89,7 +89,10 @@ export class CanvasComponent {
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
           this.updateShowAddPost(this.board.permissions)
-          if(!((this.user.role =="student" && this.board.permissions.showAuthorName) || this.user.role =="teacher")){
+          if(!(
+                  (this.user.role =="student" && this.board.permissions.showAuthorNameStudent) 
+              ||  (this.user.role =="teacher" && this.board.permissions.showAuthorNameTeacher)
+              )){
               this.hideAuthorNames()
           }
         } 

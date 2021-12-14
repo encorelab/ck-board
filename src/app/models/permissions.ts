@@ -4,5 +4,6 @@ export class Permissions{
     allowStudentEditAddDeletePost: boolean;
     allowStudentCommenting:boolean;
     allowStudentTagging:boolean;
-    showAuthorName:boolean;
+    showAuthorNameStudent:boolean;
+    showAuthorNameTeacher:boolean;
 }

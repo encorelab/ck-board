@@ -39,7 +39,10 @@
         <mat-checkbox [(ngModel)]="permissions.allowStudentTagging" >Allow students to tag posts</mat-checkbox>
       </p>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.showAuthorName" >Show Author Names</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.showAuthorNameStudent" >Show author names to students</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.showAuthorNameTeacher" >Show author names to teachers</mat-checkbox>
       </p>
     </mat-tab>
     <mat-tab label="Tags">

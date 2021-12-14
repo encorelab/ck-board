@@ -37,7 +37,8 @@ export class AddBoardModalComponent implements OnInit {
         allowStudentEditAddDeletePost:true,
         allowStudentCommenting:true,
         allowStudentTagging:true,
-        showAuthorName:true
+        showAuthorNameStudent:true,
+        showAuthorNameTeacher:true
       }
     }
   ngOnInit(): void {}

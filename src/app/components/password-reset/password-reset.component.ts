@@ -96,7 +96,7 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
         .then(res => {
             this.passwordMsg = "Success";
             alert("Your password has been successfully updated");
-            this.router.navigate(['/login']);
+            this.router.navigate(['/reset-password']);
         })
         .catch(() => this.passwordMsg = "Error");
     }

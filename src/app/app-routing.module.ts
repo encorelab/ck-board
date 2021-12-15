@@ -16,7 +16,7 @@ const routes: Routes = [
     canActivate: [AuthGuard]  
   },
   { path: 'login', component: LoginComponent },
-  { path: 'password/reset', component: PasswordResetComponent},
+  { path: 'reset-password', component: PasswordResetComponent},
   { path: 'register', component: RegisterComponent },
   { path: '**', redirectTo: 'login' }
 ];

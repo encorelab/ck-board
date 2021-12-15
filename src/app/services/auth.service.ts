@@ -86,6 +86,6 @@ export class AuthService {
 
   resetPassword(email: string) {
     return this.auth.sendPasswordResetEmail(email, 
-      { url: 'http://localhost:4200/password/reset' })
+      { url: 'http://localhost:4200/reset-password' })
   }
 }

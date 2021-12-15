@@ -1,7 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +20,19 @@ export class AuthGuard implements CanActivate {
     
     const isLoggedIn = new Promise<boolean>((resolve, reject) => {
       this.authService.getAuthenticatedUser().then((user) => {
-        resolve(user != null)
+        if (user) {
+          resolve(true)
+          return true
+        } 
+        this.ngZone.run(() => {
+          this.router.navigate(['/error'], { state: { code: 403, message: 'Forbidden! Please sign in' }})
+        })
+        return false
+      }).catch(e => {
+        this.ngZone.run(() => {
+          this.router.navigate(['/error'], { state: { code: 403, message: 'Forbidden! Please sign in' }})
+          return false
+        })
       })
     })
 

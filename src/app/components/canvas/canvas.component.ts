@@ -27,9 +27,15 @@ import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
+import { ThrowStmt } from '@angular/compiler';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
+
+interface PostIDNamePair{
+  postID:string,
+  username:string
+}
 
 @Component({
   selector: 'app-canvas',
@@ -80,7 +86,7 @@ export class CanvasComponent {
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
-        var obj = JSON.parse(post.fabricObject); 
+        let obj = JSON.parse(post.fabricObject); 
         this.syncBoard(obj, post.postID);
       })
       this.boardService.get(this.boardID).then((board) => {
@@ -94,6 +100,18 @@ export class CanvasComponent {
               ||  (this.user.role =="teacher" && this.board.permissions.showAuthorNameTeacher)
               )){
               this.hideAuthorNames()
+          }
+          else{
+            let postIDNamePair= new Array<PostIDNamePair>()
+            data.forEach((data) => {
+              let post = data.data() ?? {}
+              let uid = post.userID; 
+              this.userService.getOneById(uid).then((user:any)=>{
+                postIDNamePair.push({postID:post.postID, username:user.username})
+              })
+            })
+            this.updateAuthorNames(postIDNamePair)
+
           }
         } 
       })
@@ -221,6 +239,20 @@ export class CanvasComponent {
   hideAuthorNames(){
     this.canvas.getObjects().map(obj => {
       this.fabricUtils.updateAuthor(obj, "Anonymous")
+    });
+    this.canvas.renderAll()
+  }
+
+  updateAuthorNames(postsToUpdate:Array<PostIDNamePair>){
+    postsToUpdate.forEach((pair)=>{
+      let obj = this.fabricUtils.getObjectFromId(this.canvas,pair.postID)
+      this.fabricUtils.updateAuthor(obj, pair.username)
+    })
+  }
+
+  showAuthorNames(){
+    this.canvas.getObjects().map(obj => {
+      this.fabricUtils.updateAuthor(obj, "Anonymous", true)
     });
     this.canvas.renderAll()
   }

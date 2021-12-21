@@ -41,7 +41,7 @@ import { ErrorComponent } from './components/error/error.component';
     RegisterComponent,
     DashboardComponent,
     AddBoardModalComponent,
-    PasswordResetComponent
+    PasswordResetComponent,
     JoinBoardModalComponent,
     ErrorComponent
   ],

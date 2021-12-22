@@ -102,16 +102,14 @@ export class CanvasComponent {
               this.hideAuthorNames()
           }
           else{
-            let postIDNamePair= new Array<PostIDNamePair>()
+            // update all the post names to to the poster's name rather than anonymous
             data.forEach((data) => {
               let post = data.data() ?? {}
               let uid = post.userID; 
               this.userService.getOneById(uid).then((user:any)=>{
-                postIDNamePair.push({postID:post.postID, username:user.username})
+                this.updateAuthorNames({postID:post.postID, username:user.username})
               })
             })
-            this.updateAuthorNames(postIDNamePair)
-
           }
         } 
       })
@@ -243,16 +241,15 @@ export class CanvasComponent {
     this.canvas.renderAll()
   }
 
-  updateAuthorNames(postsToUpdate:Array<PostIDNamePair>){
-    postsToUpdate.forEach((pair)=>{
-      let obj = this.fabricUtils.getObjectFromId(this.canvas,pair.postID)
-      this.fabricUtils.updateAuthor(obj, pair.username)
-    })
+  updateAuthorNames(postToUpdate:PostIDNamePair){
+    let obj = this.fabricUtils.getObjectFromId(this.canvas,postToUpdate.postID)
+    this.fabricUtils.updateAuthor(obj, postToUpdate.username)
+    this.canvas.renderAll()
   }
 
   showAuthorNames(){
     this.canvas.getObjects().map(obj => {
-      this.fabricUtils.updateAuthor(obj, "Anonymous", true)
+      this.fabricUtils.updateAuthor(obj, "Anonymous")
     });
     this.canvas.renderAll()
   }

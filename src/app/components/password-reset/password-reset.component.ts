@@ -85,18 +85,24 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
 
 
     onHandleResetPassword() {
-        if(this.newPassword != this.confirmPassword) {
-            this.passwordMsg = "Mismatch";
-            return;
-        } 
-
-        this.auth.getAuth().confirmPasswordReset(this.oobCode, this.newPassword)
-        .then(res => {
-            this.passwordMsg = "Success";
-            alert("Your password has been successfully updated");
+        if(this.passwordSubmitted) {
+            if(this.newPassword != this.confirmPassword) {
+                this.passwordMsg = "Mismatch";
+                return;
+            } 
+    
+            this.auth.getAuth().confirmPasswordReset(this.oobCode, this.newPassword)
+            .then(res => {
+                this.passwordMsg = "Success";
+                alert("Your password has been successfully updated");
+                this.router.navigate(['/login']);
+            })
+            .catch(() => this.passwordMsg = "Error");
+        }
+        else {
             this.router.navigate(['/login']);
-        })
-        .catch(() => this.passwordMsg = "Error");
+        }
+
     }
 
     onSubmitPassword() {

@@ -48,7 +48,7 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
                 })
                 .catch(e => {
                     alert(e);
-                    this.router.navigate(['/password/reset']);
+                    this.router.navigate(['/reset-password']);
                 });
             }
         })
@@ -61,7 +61,6 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
 
     onHandleEmail() {
         if(this.emailSubmitted) {
-            console.log("SUBMITTED");
             if (!this.email) { 
                 this.emailMsg = "Missing Email";
             }
@@ -73,7 +72,6 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
             }
         }
         else {
-            console.log("CANCELLED");
             this.router.navigate(['/login']);
         }
     }

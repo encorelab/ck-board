@@ -23,6 +23,7 @@ export class PostModalComponent {
 
   title: string
   desc: string
+  editingDesc: string
   isEditing: boolean = false
   canEditDelete: boolean
   showComments: boolean = false
@@ -47,7 +48,8 @@ export class PostModalComponent {
         item.forEach((post) => {
           var p = post.data()
           this.title = p.title
-          this.desc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
+          this.desc = p.desc
+          this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
           this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
           this.canEditDelete = this.data.post.userID == this.user.id || this.user.role == 'teacher'

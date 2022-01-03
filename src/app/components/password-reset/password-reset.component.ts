@@ -5,6 +5,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/services/auth.service';
 
+import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
+import { FormControl, Validators } from '@angular/forms';
 @Component({ 
     templateUrl: 'password-reset.component.html', 
     styleUrls: ['./password-reset.component.scss']
@@ -27,6 +29,9 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
 
     emailSubmitted: boolean;
     passwordSubmitted: boolean;
+
+    matcher = new MyErrorStateMatcher();
+    passwordControl = new FormControl('', [Validators.required, Validators.minLength(12), Validators.maxLength(30)]);
 
     constructor(private auth: AuthService, private activatedRoute: ActivatedRoute, private router: Router) {}
 

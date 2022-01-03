@@ -53,7 +53,7 @@ export class CanvasComponent {
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
-  showAddPost:boolean
+  showAddPost: boolean = true
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
@@ -76,7 +76,6 @@ export class CanvasComponent {
     this.handleLikeButtonClick();
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
-    this.showAddPost = true
     
     
   }
@@ -217,7 +216,9 @@ export class CanvasComponent {
   }
 
   updateShowAddPost(permissions:Permissions) {
-    this.showAddPost = (this.user.role =="student" && permissions.allowStudentEditAddDeletePost) || this.user.role =="teacher"
+    let isStudent  = this.user.role == "student"
+    let isTeacher = this.user.role =="teacher"
+    this.showAddPost = ( isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
   }
   
   updateTask = (title, message) => {
@@ -345,7 +346,10 @@ export class CanvasComponent {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      if (likeButton && ((this.user.role =="student" && this.board.permissions.allowStudentLiking) || this.user.role =="teacher") ) {
+      let isStudent  = this.user.role == "student"
+      let isTeacher = this.user.role =="teacher"
+      let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
+      if (likeButton && ( studentHasPerm || isTeacher) ) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
             this.likesService.add({

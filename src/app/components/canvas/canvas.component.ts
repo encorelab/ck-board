@@ -213,6 +213,7 @@ export class CanvasComponent {
     this.boardService.update(this.boardID, { permissions:permissions})
     this.lockPostsMovement(!permissions.allowStudentMoveAny)
     this.updateShowAddPost(permissions)
+    this.configureBoard()
   }
 
   updateShowAddPost(permissions:Permissions) {
@@ -244,13 +245,6 @@ export class CanvasComponent {
   updateAuthorNames(postToUpdate:PostIDNamePair){
     let obj = this.fabricUtils.getObjectFromId(this.canvas,postToUpdate.postID)
     this.fabricUtils.updateAuthor(obj, postToUpdate.username)
-    this.canvas.renderAll()
-  }
-
-  showAuthorNames(){
-    this.canvas.getObjects().map(obj => {
-      this.fabricUtils.updateAuthor(obj, "Anonymous")
-    });
     this.canvas.renderAll()
   }
 

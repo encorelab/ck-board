@@ -68,10 +68,12 @@ export class PostModalComponent {
           this.likes.push(likeObj)
         })
       })
-     this.showEditDelete = (this.user.role =="student" && data.board.permissions.allowStudentEditAddDeletePost) || this.user.role =="teacher"
-     this.canStudentComment = (this.user.role =="student" && data.board.permissions.allowStudentCommenting) || this.user.role =="teacher"
-     this.canStudentTag = (this.user.role =="student" && data.board.permissions.allowStudentTagging) || this.user.role =="teacher"
-     this.showAuthorName = (this.user.role =="student" && data.board.permissions.showAuthorNameStudent) || (this.user.role =="teacher"&& data.board.permissions.showAuthorNameTeacher)
+    let isStudent = this.user.role =="student"
+    let isTeacher = this.user.role =="teacher"
+    this.showEditDelete = (isStudent && data.board.permissions.allowStudentEditAddDeletePost) || isTeacher 
+    this.canStudentComment = (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher 
+    this.canStudentTag = (isStudent && data.board.permissions.allowStudentTagging) || isTeacher 
+    this.showAuthorName = (isStudent && data.board.permissions.showAuthorNameStudent) || (isTeacher && data.board.permissions.showAuthorNameTeacher)
   }
   
   onNoClick(): void {

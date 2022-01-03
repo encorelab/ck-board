@@ -26,6 +26,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
 import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
 import { ErrorComponent } from './components/error/error.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -52,7 +53,8 @@ import { ErrorComponent } from './components/error/error.component';
     FormsModule, 
     BrowserAnimationsModule,
     ReactiveFormsModule,
-    MaterialModule
+    MaterialModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]

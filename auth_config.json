@@ -1,0 +1,7 @@
+{
+    "domain": "dev-rhq2436t.us.auth0.com",
+    "clientId": "HWK42MOtzXE75r4ljNkY2n2ictO09c90",
+    "clientSecret": "uFz8YIJzlJ7Bpi1FA0Fu-Ia2G8YyvaESUhZNR_OOt2IvTlx4ut2V_5sJE9LZVaDZ",
+    "sessionSecret": "520cbb2ac70140e31c1bf2859dbc34fea83fb74c23c94769644f3794cee13b0a",
+    "callbackUrl": "http://localhost:3000/callback"
+  }

@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
@@ -17,7 +18,7 @@ export class LoginComponent {
 
   invalidCredentials: boolean = false;
 
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(private auth: AuthService, private router: Router, private http: HttpClient) {
     this.auth.getAuthenticatedUser().then((user) => {
       if (user) {
         this.router.navigate(['/dashboard'])

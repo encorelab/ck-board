@@ -27,9 +27,6 @@ import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 
-// hard-coded for now
-// const this.boardID = '13n4jrf2r32fj'
-
 @Component({
   selector: 'app-canvas',
   templateUrl: './canvas.component.html',
@@ -42,11 +39,11 @@ export class CanvasComponent {
   user: User
   board: Board
 
+  posts: Post[]
+
   mode: Mode = Mode.EDIT
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
-
-  showFiller = false;
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
@@ -72,7 +69,6 @@ export class CanvasComponent {
 
   // configure board
   configureBoard() {
-    this.canvas.on('mouse:down', (e) => console.log('hello'))
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
@@ -86,6 +82,13 @@ export class CanvasComponent {
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
         } 
       })
+    })
+  }
+
+  loadBucket() {
+    this.postsService.getAll(this.boardID).then((data) => {
+      this.posts = []
+      data.forEach((data) => this.posts.push(data.data()))
     })
   }
 

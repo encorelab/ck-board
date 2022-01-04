@@ -7,13 +7,13 @@
 }
   
 #canvas {
-  border: 1px solid #dddddd;
+  // border: 1px solid #dddddd;
   background-color: #cfe5ff;
-  border-radius: 10px;
-  box-shadow: 0px 0px 13px 0px;
-  margin-top: 10px;
+  // border-radius: 10px;
+  // box-shadow: 0px 0px 13px 0px;
+  // margin-top: 10px;
   height: 90vh; 
-  width:  100vw;
+  width:  99vw;
 }
 
 .toolSection {
@@ -37,21 +37,31 @@
   }
 }
 
-.example-container {
-  width: 100%;
+.side-container {
+  width: 30vw;
   height: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.5);
+
   position: absolute;
   visibility: hidden;
+  
+  overflow-y: auto;
+  overflow-x: auto;
 }
 
-.example-sidenav {
+.sidenav {
   padding: 20px;
 }
 
-.example-sidenav-content {
-  display: flex;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
+::ng-deep .mat-drawer-inner-container {
+  overflow-x: hidden !important;
+  width: 30vw !important;
+}
+
+.bucket-card {
+  width: 28vw;
+
+  padding: 8px 0px 15px 8px;
+  margin: 0px 0px 15px 0px;
+
+  word-wrap: break-word;
 }

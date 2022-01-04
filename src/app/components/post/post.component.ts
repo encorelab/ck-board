@@ -87,8 +87,11 @@ export class PostComponent extends fabric.Group {
       if(index % 2 == 1){
         offset = 150
       }
+
+      let verticalOffset = index %2 == 0 ? 20* index : 20* (index-1)
       var tagGroup = new fabric.Group([ tagBg, tagText ], {
         left: offset,
+        top:verticalOffset,
         width: TAG_WIDTH,
         height:25,
         originX: 'left',
@@ -97,7 +100,10 @@ export class PostComponent extends fabric.Group {
       
     });
 
+    
+
     var tagContainer = new fabric.Group(tagGroups,{
+      name:'tagContainer',
       left:18,
       width:TAG_CONTAINER_WIDTH,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,

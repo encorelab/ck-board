@@ -139,7 +139,7 @@ export class CanvasComponent {
       lock: !this.board.permissions.allowStudentMoveAny, 
       left: left, 
       top: top ,
-      tags:['1234567890123456','123456']
+      tags:[]
     });
     this.canvas.add(fabricPost);
   }
@@ -161,6 +161,19 @@ export class CanvasComponent {
 
   updateTags = (tags) => {
     this.boardService.update(this.boardID, { tags: tags })
+  }
+  createFabricTags =(postID, tags:[string])=>{
+    var obj = this.fabricUtils.getObjectFromId(this.canvas, postID);
+    if (!obj || obj.type != 'group') return;
+    var children: fabric.Object[] = obj.getObjects()
+    var tagContainer: any = children.filter((obj) => obj.name == 'tagContainer').pop()
+    if (tagContainer && tagContainer.type == 'group'){
+      var tagChildren: fabric.Object[] = tagContainer.getObjects()
+      tagChildren.forEach(child =>{tagContainer.removeWithUpdate(child)})
+    }
+      
+    this.fabricUtils.createTags(tagContainer,tags)
+    this.canvas.renderAll();
   }
 
   updateBoardName = (name) => {
@@ -372,6 +385,7 @@ export class CanvasComponent {
             board: this.board,
             removePost: this.removePost, 
             updatePost: this.updatePost,
+            createFabricTags:this.createFabricTags
           }
         });
       }

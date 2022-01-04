@@ -1,5 +1,9 @@
 import { fabric } from 'fabric';
 
+const TAG_CONTAINER_WIDTH = 300
+const TAG_CHARACTER_LIMIT = 15
+const TAG_WIDTH = 140
+
 export class FabricUtils {
 
     serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'authorID', 'hasControls', 'subTargetCheck', 'removed']
@@ -86,6 +90,78 @@ export class FabricUtils {
         obj.dirty = true
         obj.addWithUpdate();
         return obj
+    }
+
+    createTags(obj:any, tags:[string]){
+        var children: fabric.Object[] = obj.getObjects()
+        var titleObj: any = children.filter((obj) => obj.name == 'title').pop()
+        var authorObj: any = children.filter((obj) => obj.name == 'author').pop()
+        var descObj: any = children.filter((obj) => obj.name == 'desc').pop()
+        var likeCountObj: any = children.filter((obj) => obj.name == 'likeCount').pop()
+        var commentObj: any = children.filter((obj) => obj.name == 'comment').pop()
+        var commentCountObj: any = children.filter((obj) => obj.name == 'commentCount').pop()
+        var contentObj: any = children.filter((obj) => obj.name == 'content').pop()
+
+        var tagGroups = new Array<fabric.Group>()
+
+        tags.forEach((tag, index) => {
+        // truncate tag if longer than tag character limit
+        let tagTruncated = tag
+        if(tag.length > TAG_CHARACTER_LIMIT){
+            tagTruncated = tag.substring(0,TAG_CHARACTER_LIMIT) + "..."
+        }
+
+        var tagBg = new fabric.Rect({
+            name: 'tagbg' + index,
+            width: TAG_WIDTH,
+            height:25,
+            originX: 'center',
+            originY: 'center',
+            rx:5,
+            ry:5,
+            fill:'#CCC',
+            stroke : 'black',
+            strokeWidth : 1
+        });
+    
+        var tagText = new fabric.Textbox(tagTruncated, {
+            name: 'tag' + index,
+            width:140,
+            originX: 'center',
+            originY: 'center',
+            fontSize: 14,
+            fontFamily: 'Helvetica',
+            fill: '#000000',
+            splitByGrapheme: true,
+            padding:10
+        });
+        let offset = 0
+        if(index % 2 == 1){
+            offset = 150
+        }
+
+        let verticalOffset = index %2 == 0 ? 20* index : 20* (index-1)
+        var tagGroup = new fabric.Group([ tagBg, tagText ], {
+            left: offset,
+            top:verticalOffset,
+            width: TAG_WIDTH,
+            height:25,
+            originX: 'left',
+        });
+        tagGroups.push(tagGroup)
+        
+        });
+    tagGroups.forEach(elem =>{
+        obj.add(elem)
+    })
+    
+    obj.addWithUpdate();
+    obj.left = -210
+    obj.setCoords();
+
+
+
+
     }
 
     updateLikeCount(existing, obj) {

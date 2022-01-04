@@ -101,6 +101,7 @@ export class PostModalComponent {
     this.tags.push(tagOption);
     this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
     this.postsService.update(this.data.post.postID, { tags: this.tags })
+    this.data.createFabricTags(this.data.post.postID,this.tags)
   }
 
   removeTag(tag) {

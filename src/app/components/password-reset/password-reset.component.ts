@@ -7,6 +7,9 @@ import { AuthService } from 'src/app/services/auth.service';
 
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FormControl, Validators } from '@angular/forms';
+
+import { MatDialog } from '@angular/material/dialog';
+import { PasswordResetConfirmationModalComponent } from '../password-reset-confirmation-modal/password-reset-confirmation-modal.component';
 @Component({ 
     templateUrl: 'password-reset.component.html', 
     styleUrls: ['./password-reset.component.scss']
@@ -33,7 +36,8 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
     matcher = new MyErrorStateMatcher();
     passwordControl = new FormControl('', [Validators.required, Validators.minLength(12), Validators.maxLength(30)]);
 
-    constructor(private auth: AuthService, private activatedRoute: ActivatedRoute, private router: Router) {}
+    constructor(public dialog: MatDialog, private auth: AuthService, 
+        private activatedRoute: ActivatedRoute, private router: Router) {}
 
     ngOnInit() {
         this.activatedRoute.queryParams
@@ -62,6 +66,13 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
     ngOnDestroy(): void {
         this.ngUnsubscribe.next();
         this.ngUnsubscribe.complete();
+    }
+
+    openDialog() {
+        this.dialog.open(PasswordResetConfirmationModalComponent, {
+            width: '300px',
+            data: {}
+        });
     }
 
     onHandleEmail() {
@@ -99,8 +110,7 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
             this.auth.getAuth().confirmPasswordReset(this.oobCode, this.newPassword)
             .then(res => {
                 this.passwordMsg = "Success";
-                alert("Your password has been successfully updated");
-                this.router.navigate(['/login']);
+                this.openDialog();
             })
             .catch(() => this.passwordMsg = "Error");
         }

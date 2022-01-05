@@ -27,6 +27,7 @@ import { AddBoardModalComponent } from './components/add-board-modal/add-board-m
 import { PasswordResetComponent } from './components/password-reset/password-reset.component';
 import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
 import { ErrorComponent } from './components/error/error.component';
+import { PasswordResetConfirmationModalComponent } from './components/password-reset-confirmation-modal/password-reset-confirmation-modal.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { ErrorComponent } from './components/error/error.component';
     AddBoardModalComponent,
     PasswordResetComponent,
     JoinBoardModalComponent,
-    ErrorComponent
+    ErrorComponent,
+    PasswordResetConfirmationModalComponent
   ],
   imports: [
     BrowserModule,

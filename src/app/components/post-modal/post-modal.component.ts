@@ -22,6 +22,7 @@ export class PostModalComponent {
   user: User
 
   title: string
+  editingTitle: string
   desc: string
   editingDesc: string
   isEditing: boolean = false
@@ -48,6 +49,7 @@ export class PostModalComponent {
         item.forEach((post) => {
           var p = post.data()
           this.title = p.title
+          this.editingTitle = linkifyStr(p.title, { defaultProtocol: 'https', target: "_blank"})
           this.desc = p.desc
           this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags

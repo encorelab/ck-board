@@ -1,7 +1,7 @@
 <mat-card class="details" *ngIf="!isEditing">
   <mat-card-header>
     <div mat-card-avatar class="avatar"></div>
-    <mat-card-title>{{ title }}</mat-card-title>
+    <mat-card-title [innerHTML]="editingTitle">{{ editingTitle }}</mat-card-title>
     <mat-card-subtitle>{{ data.post.author }}</mat-card-subtitle>
     <span class="fill-remaining-space"></span>
     <button mat-icon-button [matMenuTriggerFor]="menu">

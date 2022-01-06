@@ -104,7 +104,9 @@ export class PostComponent extends fabric.Group {
 
     var tagContainer = new fabric.Group(tagGroups,{
       name:'tagContainer',
-      left:18,
+      originX: "left",
+      originY: "top",
+      left:30-(330 / 2),
       width:TAG_CONTAINER_WIDTH,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
 

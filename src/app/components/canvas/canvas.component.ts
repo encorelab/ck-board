@@ -162,17 +162,19 @@ export class CanvasComponent {
   updateTags = (tags) => {
     this.boardService.update(this.boardID, { tags: tags })
   }
-  createFabricTags =(postID, tags:[string])=>{
+  createFabricTags =(postID, tags:Array<string>)=>{
     var obj = this.fabricUtils.getObjectFromId(this.canvas, postID);
     if (!obj || obj.type != 'group') return;
     var children: fabric.Object[] = obj.getObjects()
     var tagContainer: any = children.filter((obj) => obj.name == 'tagContainer').pop()
     if (tagContainer && tagContainer.type == 'group'){
       var tagChildren: fabric.Object[] = tagContainer.getObjects()
-      tagChildren.forEach(child =>{tagContainer.removeWithUpdate(child)})
+      tagChildren.forEach(child =>{tagContainer.remove(child)})
+      this.canvas.renderAll();
     }
+    let tags1 = ['bob','joe']
       
-    this.fabricUtils.createTags(tagContainer,tags)
+    this.fabricUtils.createTags(tagContainer,tags1)
     this.canvas.renderAll();
   }
 

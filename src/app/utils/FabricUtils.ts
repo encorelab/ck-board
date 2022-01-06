@@ -92,7 +92,7 @@ export class FabricUtils {
         return obj
     }
 
-    createTags(obj:any, tags:[string]){
+    createTags(obj:any, tags:Array<string>){
         var children: fabric.Object[] = obj.getObjects()
         var titleObj: any = children.filter((obj) => obj.name == 'title').pop()
         var authorObj: any = children.filter((obj) => obj.name == 'author').pop()
@@ -154,9 +154,18 @@ export class FabricUtils {
     tagGroups.forEach(elem =>{
         obj.add(elem)
     })
-    
+
+    // var myRect = new fabric.Rect({
+    //     height:10,
+    //     width:10,
+    //     originX: "left",
+    //     originY: "top"
+
+
+    // })
+    // obj.add(myRect)
     obj.addWithUpdate();
-    obj.left = -210
+    // obj.left = -210
     obj.setCoords();
 
 

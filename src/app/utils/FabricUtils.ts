@@ -6,7 +6,7 @@ export class FabricUtils {
 
     canvasConfig = {
         width: window.innerWidth, 
-        height: window.innerHeight * 0.9, 
+        height: window.innerHeight - 64, 
         fireRightClick: true, 
         stopContextMenu: true
     }

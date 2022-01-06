@@ -45,6 +45,8 @@ export class CanvasComponent {
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
+  searchText: string
+
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
     public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
@@ -90,6 +92,11 @@ export class CanvasComponent {
       this.posts = []
       data.forEach((data) => this.posts.push(data.data()))
     })
+    .catch(err => this.posts = [])
+  }
+
+  handleSearch() {
+    console.log(this.searchText)
   }
 
   // open dialog to get message for a new post

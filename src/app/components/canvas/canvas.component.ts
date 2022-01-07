@@ -32,9 +32,9 @@ import { ThrowStmt } from '@angular/compiler';
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
 
-interface PostIDNamePair{
-  postID:string,
-  username:string
+interface PostIDNamePair {
+  postID: string,
+  username: string
 }
 
 @Component({
@@ -55,15 +55,15 @@ export class CanvasComponent {
 
   showAddPost: boolean = true
 
-  constructor(public postsService: PostService, public boardService: BoardService, 
-    public userService: UserService, public authService: AuthService, public commentService: CommentService, 
-    public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
+  constructor(public postsService: PostService, public boardService: BoardService,
+    public userService: UserService, public authService: AuthService, public commentService: CommentService,
+    public likesService: LikesService, public dialog: MatDialog, private route: Router) { }
 
   ngOnInit() {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-   
+
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -76,8 +76,8 @@ export class CanvasComponent {
     this.handleLikeButtonClick();
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
-    
-    
+
+
   }
 
   // configure board
@@ -85,7 +85,7 @@ export class CanvasComponent {
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
-        let obj = JSON.parse(post.fabricObject); 
+        let obj = JSON.parse(post.fabricObject);
         this.syncBoard(obj, post.postID);
       })
       this.boardService.get(this.boardID).then((board) => {
@@ -94,23 +94,8 @@ export class CanvasComponent {
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
           this.updateShowAddPost(this.board.permissions)
-          if(!(
-                  (this.user.role =="student" && this.board.permissions.showAuthorNameStudent) 
-              ||  (this.user.role =="teacher" && this.board.permissions.showAuthorNameTeacher)
-              )){
-              this.hideAuthorNames()
-          }
-          else{
-            // update all the post names to to the poster's name rather than anonymous
-            data.forEach((data) => {
-              let post = data.data() ?? {}
-              let uid = post.userID; 
-              this.userService.getOneById(uid).then((user:any)=>{
-                this.updateAuthorNames({postID:post.postID, username:user.username})
-              })
-            })
-          }
-        } 
+          this.setAuthorVisibilityAll()
+        }
       })
     })
   }
@@ -122,7 +107,7 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'not-allowed'
     this.canvas.on('mouse:down', this.handleChoosePostLocation);
   }
-  
+
   handleChoosePostLocation = (opt) => {
     if (opt.target == null) {
       this.canvas.selection = false;
@@ -146,14 +131,14 @@ export class CanvasComponent {
   }
 
   addPost = (title: string, desc = '', left: number, top: number) => {
-    var fabricPost = new PostComponent({ 
-      title: title, 
+    var fabricPost = new PostComponent({
+      title: title,
       author: this.user.username,
       authorID: this.user.id,
-      desc: desc, 
-      lock: !this.board.permissions.allowStudentMoveAny, 
-      left: left, 
-      top: top 
+      desc: desc,
+      lock: !this.board.permissions.allowStudentMoveAny,
+      left: left,
+      top: top
     });
     this.canvas.add(fabricPost);
   }
@@ -208,19 +193,19 @@ export class CanvasComponent {
     });
   }
 
-  updatePostPermissions = (permissions:Permissions) => {
-    this.boardService.update(this.boardID, { permissions:permissions})
+  updatePostPermissions = (permissions: Permissions) => {
+    this.boardService.update(this.boardID, { permissions: permissions })
     this.lockPostsMovement(!permissions.allowStudentMoveAny)
     this.updateShowAddPost(permissions)
     this.configureBoard()
   }
 
-  updateShowAddPost(permissions:Permissions) {
-    let isStudent  = this.user.role == "student"
-    let isTeacher = this.user.role =="teacher"
-    this.showAddPost = ( isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
+  updateShowAddPost(permissions: Permissions) {
+    let isStudent = this.user.role == "student"
+    let isTeacher = this.user.role == "teacher"
+    this.showAddPost = (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
   }
-  
+
   updateTask = (title, message) => {
     this.boardService.update(this.boardID, { task: { title: title, message: message } })
   }
@@ -231,22 +216,46 @@ export class CanvasComponent {
 
   lockPostsMovement(value) {
     this.canvas.getObjects().map(obj => {
-      obj.set({lockMovementX: value, lockMovementY: value});
+      obj.set({ lockMovementX: value, lockMovementY: value });
     });
     this.canvas.renderAll()
   }
 
-  hideAuthorNames(){
+  hideAuthorNames() {
     this.canvas.getObjects().map(obj => {
       this.fabricUtils.updateAuthor(obj, "Anonymous")
     });
     this.canvas.renderAll()
   }
 
-  updateAuthorNames(postToUpdate:PostIDNamePair){
-    let obj = this.fabricUtils.getObjectFromId(this.canvas,postToUpdate.postID)
+  updateAuthorNames(postToUpdate: PostIDNamePair) {
+    let obj = this.fabricUtils.getObjectFromId(this.canvas, postToUpdate.postID)
     this.fabricUtils.updateAuthor(obj, postToUpdate.username)
     this.canvas.renderAll()
+  }
+  setAuthorVisibilityOne(post){
+    let isStudentAndVisible = this.user.role == "student" && this.board.permissions.showAuthorNameStudent
+    let IsTeacherAndVisisble= this.user.role == "teacher" && this.board.permissions.showAuthorNameTeacher
+    if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
+      this.updateAuthorNames({ postID: post.postID, username: "Anonymous" })
+    }
+    else{
+      this.userService.getOneById(post.userID).then((user: any) => {
+        this.updateAuthorNames({ postID: post.postID, username: user.username })
+      })
+    }
+
+  }
+
+
+  setAuthorVisibilityAll() {
+    this.postsService.getAll(this.boardID).then((data) => {
+      // update all the post names to to the poster's name rather than anonymous
+      data.forEach((data) => {
+        let post = data.data() ?? {}
+        this.setAuthorVisibilityOne(post)
+      })
+    })
   }
 
   openTaskDialog() {
@@ -269,7 +278,7 @@ export class CanvasComponent {
 
   updatePost = (postID, title, desc) => {
     var obj: any = this.fabricUtils.getObjectFromId(this.canvas, postID);
-    
+
     obj = this.fabricUtils.updatePostTitleDesc(obj, title, desc)
     obj.set({ title: title, desc: desc })
     this.canvas.renderAll()
@@ -279,8 +288,8 @@ export class CanvasComponent {
   }
 
   // send your post to the rest of the group
-  sendObjectToGroup(pObject: any){
-    const post:Post = {
+  sendObjectToGroup(pObject: any) {
+    const post: Post = {
       postID: pObject.postID,
       title: pObject.title,
       desc: pObject.desc,
@@ -293,7 +302,7 @@ export class CanvasComponent {
   }
 
   // sync board using incoming/outgoing posts
-  syncBoard(obj:any, postID:any){
+  syncBoard(obj: any, postID: any) {
     var existing = this.fabricUtils.getObjectFromId(this.canvas, postID)
 
     // delete object from board
@@ -327,7 +336,7 @@ export class CanvasComponent {
         this.canvas.renderAll();
       })
     }
-    
+
   }
 
   addLikeListener() {
@@ -346,10 +355,10 @@ export class CanvasComponent {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      let isStudent  = this.user.role == "student"
-      let isTeacher = this.user.role =="teacher"
+      let isStudent = this.user.role == "student"
+      let isTeacher = this.user.role == "teacher"
       let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
-      if (likeButton && ( studentHasPerm || isTeacher) ) {
+      if (likeButton && (studentHasPerm || isTeacher)) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
             this.likesService.add({
@@ -360,7 +369,7 @@ export class CanvasComponent {
             })
           } else {
             data.forEach((data) => {
-              let like: Like = data.data() 
+              let like: Like = data.data()
               this.likesService.remove(like.likeID)
             })
           }
@@ -392,11 +401,11 @@ export class CanvasComponent {
         this.dialog.open(PostModalComponent, {
           minWidth: '700px',
           width: 'auto',
-          data: { 
-            user: this.user, 
-            post: obj, 
+          data: {
+            user: this.user,
+            post: obj,
             board: this.board,
-            removePost: this.removePost, 
+            removePost: this.removePost,
             updatePost: this.updatePost,
           }
         });
@@ -419,7 +428,10 @@ export class CanvasComponent {
   // listen to configuration/permission changes
   handleBoardChange = (board) => {
     this.board = board
+
     this.lockPostsMovement(!board.permissions.allowStudentMoveAny)
+    this.setAuthorVisibilityAll()
+
     board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
     board.name ? this.updateBoardName(board.name) : null
   }
@@ -428,6 +440,7 @@ export class CanvasComponent {
     if (post) {
       var obj = JSON.parse(post.fabricObject);
       this.syncBoard(obj, post.postID);
+      this.setAuthorVisibilityOne(post)
     }
   }
 
@@ -435,29 +448,30 @@ export class CanvasComponent {
     if (post) {
       var obj = JSON.parse(post.fabricObject);
       this.syncBoard(obj, post.postID);
+      this.setAuthorVisibilityOne(post)
     }
   }
 
   // perform actions when new post is added
   addObjectListener() {
-    this.canvas.on('object:added', (options:any) => {
+    this.canvas.on('object:added', (options: any) => {
       if (options.target) {
         var obj = options.target;
-        
+
         if (!obj.postID) {
           obj.set('postID', Date.now() + '-' + this.user.id);
           fabric.util.object.extend(obj, { postID: obj.postID })
           this.sendObjectToGroup(obj)
-		    }
+        }
       }
     });
   }
 
   // perform actions when post is removed
   removeObjectListener() {
-    this.canvas.on('object:removed', (options:any) => {
+    this.canvas.on('object:removed', (options: any) => {
       if (options.target) {
-        var obj = options.target;	         
+        var obj = options.target;
         if (obj.removed) {
           return // already removed
         }
@@ -465,14 +479,14 @@ export class CanvasComponent {
         this.postsService.delete(obj.postID)
         obj.set('removed', true);
         fabric.util.object.extend(obj, { removed: true })
-		    this.sendObjectToGroup(obj);   
+        this.sendObjectToGroup(obj);
       }
     });
   }
 
   // perform actions when post is moved
   movingObjectListener() {
-    this.canvas.on('object:moving', (options:any) => {
+    this.canvas.on('object:moving', (options: any) => {
       if (options.target) {
         var obj = options.target;
 
@@ -516,7 +530,7 @@ export class CanvasComponent {
         this.canvas.selection = false;
       }
     });
-      
+
     this.canvas.on("mouse:up", (opt) => {
       isPanning = false;
       this.canvas.selection = true;
@@ -545,6 +559,6 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'move'
   }
 
-  
+
 }
 

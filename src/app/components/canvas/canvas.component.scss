@@ -31,20 +31,34 @@
   }
 }
 
-.side-container {
-  width: 27.8vw;
+.drawer-container {
+  width: 27.9vw;
   height: 100vh;
 
   position: absolute;
   visibility: hidden;
 }
 
-.sidenav {
+.drawer {
+  width: 100%;
   background-color: #cfe5ff;
 }
 
+.drawer-content {
+  margin-left: 0px !important;
+
+  /* Firefox */
+  height: -moz-calc(100% - 64px);
+  /* WebKit */
+  height: -webkit-calc(100% - 64px);
+  /* Opera */
+  height: -o-calc(100% - 64px);
+  /* Standard */
+  height: calc(100% - 64px);
+}
+
 .bucket-card {
-  width: 25vw;
+  width: 24.9vw;
 
   padding: 8px 8px 15px 8px;
   margin-bottom: 15px;
@@ -54,9 +68,4 @@
   word-wrap: break-word;
 
   background-color: #f4d74b;
-}
-
-.search {
-  font-size: 12px;
-  margin: 10px 10px 0px 10px;
 }

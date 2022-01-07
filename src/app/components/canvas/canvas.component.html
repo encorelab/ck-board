@@ -6,7 +6,7 @@
       <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
         <mat-icon>keyboard_return</mat-icon>
       </button>
-      <button mat-icon-button (click)="loadBucket(); drawer.toggle()" matTooltip="List Posts">
+      <button mat-icon-button (click)="drawer.toggle();" matTooltip="List Posts">
         <mat-icon>list_alt</mat-icon>
       </button>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
@@ -40,8 +40,8 @@
           </div>
     </div>
   </div>
-  <mat-drawer-container class="side-container">
-    <mat-drawer #drawer class="sidenav">
+  <mat-drawer-container class="drawer-container">
+    <mat-drawer #drawer class="drawer" mode="side" (openedStart)="loadBucket()">
       <mat-toolbar>
         <h3>CK Bucket</h3>
         <span style="flex: 1 1 auto"></span>
@@ -49,15 +49,15 @@
           <mat-icon>close</mat-icon>
         </button>
       </mat-toolbar>
-      <form class="search" (ngSubmit)="handleSearch()">
-        <mat-form-field appearance="outline" style='width: 26vw'>
-          <mat-label>Search...</mat-label>
-          <input matInput name="searchText" [(ngModel)]="searchText">
-          <mat-icon matSuffix (click)="handleSearch()">search</mat-icon>
-        </mat-form-field>
-      </form>
-      <mat-drawer-content>
-        <div style='margin-top: 10px;'>
+      <mat-drawer-content class="drawer-content">
+        <div 
+          style='padding-top: 10px; height: calc(100% - 10px); overflow: scroll' 
+          data-infinite-scroll
+          [infiniteScrollDistance]="2"
+          [infiniteScrollThrottle]="150"
+          (scrolled)="loadNextPosts()"
+          [scrollWindow]="false"
+          >
           <mat-card class="bucket-card" *ngFor="let post of posts">
             <mat-card-title>{{ post.title }}</mat-card-title>
             <mat-card-content>

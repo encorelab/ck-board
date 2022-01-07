@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
@@ -26,6 +26,7 @@ import { Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
+import { MatDrawer } from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-canvas',
@@ -45,7 +46,7 @@ export class CanvasComponent {
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
-  searchText: string
+  lastItem: any = null
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
@@ -88,15 +89,18 @@ export class CanvasComponent {
   }
 
   loadBucket() {
-    this.postsService.getAll(this.boardID).then((data) => {
-      this.posts = []
-      data.forEach((data) => this.posts.push(data.data()))
-    })
-    .catch(err => this.posts = [])
+    this.posts = []
+    this.lastItem = null
+    this.loadNextPosts()
   }
 
-  handleSearch() {
-    console.log(this.searchText)
+  loadNextPosts() {
+    this.postsService.getPaginated(this.boardID, { lastItem: this.lastItem, pageSize: 15 })
+      .then(({newLastItem, data}) => {
+        data.forEach((data) => this.posts.push(data.data()))
+        this.lastItem = newLastItem;
+      })
+      .catch(err => console.log(err))
   }
 
   // open dialog to get message for a new post
@@ -245,7 +249,8 @@ export class CanvasComponent {
       tags: [],
       userID: this.user.id,
       boardID: this.boardID,
-      fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties))
+      fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
+      timestamp: new Date().getTime()
     }
     this.postsService.create(post);
   }

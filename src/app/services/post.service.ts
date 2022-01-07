@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Post from '../models/post';
 
+interface Options {
+  pageSize: number;
+  lastItem: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -32,6 +37,18 @@ export class PostService {
 
   getAll(boardID: string) {
     return this.postsCollection.ref.where("boardID", "==", boardID).get().then((snapshot) => snapshot)
+  }
+
+  getPaginated(boardID: string, opts: Options) {
+    return this.postsCollection.ref.where("boardID", "==", boardID)
+      .orderBy("timestamp")
+      .startAfter(opts.lastItem)
+      .limit(opts.pageSize)
+      .get()
+      .then(data => {
+        let newLastItem = data.docs[data.docs.length - 1]
+        return { newLastItem, data }
+      })
   }
 
   create(post: any): any {

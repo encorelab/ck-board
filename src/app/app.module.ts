@@ -25,6 +25,8 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
+import { CreateWorkflowModalComponent } from './components/create-workflow-modal/create-workflow-modal.component';
+import { BucketPostComponent } from './shared/bucket-post/bucket-post.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +40,9 @@ import { AddBoardModalComponent } from './components/add-board-modal/add-board-m
     LoginComponent,
     RegisterComponent,
     DashboardComponent,
-    AddBoardModalComponent
+    AddBoardModalComponent,
+    CreateWorkflowModalComponent,
+    BucketPostComponent
   ],
   imports: [
     BrowserModule,

@@ -49,20 +49,21 @@ export class CanvasComponent {
   buckets: any
 
   mode: Mode = Mode.EDIT
-  modeType = Mode
-  fabricUtils: FabricUtils = new FabricUtils()
+  modeType = Mode 
 
   lastItem: any = null
   activeBucket: any
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
-    public likesService: LikesService, public bucketService: BucketService, public dialog: MatDialog, private route: Router) {}
+    public likesService: LikesService, public bucketService: BucketService, public dialog: MatDialog, private route: Router,
+    protected fabricUtils: FabricUtils) {}
 
   ngOnInit() {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+    this.fabricUtils._canvas = this.canvas
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -178,9 +179,7 @@ export class CanvasComponent {
       data: { 
         user: this.user, 
         post: post, 
-        board: this.board,
-        removePost: this.removePost, 
-        updatePost: this.updatePost 
+        board: this.board
       }
     });
   }
@@ -260,25 +259,6 @@ export class CanvasComponent {
     });
   }
 
-  // remove post from board
-  removePost = (postID: string) => {
-    var obj = this.fabricUtils.getObjectFromId(this.canvas, postID);
-    if (!obj || obj.type != 'group') return;
-    this.canvas.remove(obj);
-    this.canvas.renderAll();
-  };
-
-  updatePost = (postID, title, desc) => {
-    var obj: any = this.fabricUtils.getObjectFromId(this.canvas, postID);
-    
-    obj = this.fabricUtils.updatePostTitleDesc(obj, title, desc)
-    obj.set({ title: title, desc: desc })
-    this.canvas.renderAll()
-
-    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
-    this.postsService.update(postID, { fabricObject: obj, title: title, desc: desc })
-  }
-
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any){
     const post:Post = {
@@ -296,7 +276,7 @@ export class CanvasComponent {
 
   // sync board using incoming/outgoing posts
   syncBoard(obj:any, postID:any){
-    var existing = this.fabricUtils.getObjectFromId(this.canvas, postID)
+    var existing = this.fabricUtils.getObjectFromId(postID)
 
     // delete object from board
     if (obj.removed) {
@@ -319,22 +299,14 @@ export class CanvasComponent {
       existing.setCoords()
       this.canvas.renderAll()
     } else {
-      this.fabricUtils.renderPostFromJSON(obj, (objects) => {
-        var origRenderOnAddRemove = this.canvas.renderOnAddRemove;
-        this.canvas.renderOnAddRemove = false;
-
-        objects.forEach((o: fabric.Object) => this.canvas.add(o));
-
-        this.canvas.renderOnAddRemove = origRenderOnAddRemove;
-        this.canvas.renderAll();
-      })
+      this.fabricUtils.renderPostFromJSON(obj)
     }
     
   }
 
   addLikeListener() {
     this.likesService.observable(this.boardID, (like: Like, change: string) => {
-      var post = this.fabricUtils.getObjectFromId(this.canvas, like.postID)
+      var post = this.fabricUtils.getObjectFromId(like.postID)
       if (post) {
         post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
         this.canvas.renderAll()
@@ -395,7 +367,7 @@ export class CanvasComponent {
 
   addCommentListener() {
     this.commentService.observable(this.boardID, (comment: Comment) => {
-      var post = this.fabricUtils.getObjectFromId(this.canvas, comment.postID)
+      var post = this.fabricUtils.getObjectFromId(comment.postID)
       if (post) {
         post = this.fabricUtils.incrementComments(post)
         this.canvas.renderAll()

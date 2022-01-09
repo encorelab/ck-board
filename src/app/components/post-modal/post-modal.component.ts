@@ -9,6 +9,8 @@ import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
+import { FabricUtils } from 'src/app/utils/FabricUtils';
+import Post from 'src/app/models/post';
 
 @Component({
   selector: 'app-post-modal',
@@ -20,6 +22,7 @@ export class PostModalComponent {
   tagOptions: string[] = []
 
   user: User
+  post: Post
   buckets: any[]
 
   title: string
@@ -42,16 +45,18 @@ export class PostModalComponent {
     public dialogRef: MatDialogRef<PostModalComponent>,
     public commentService: CommentService, public likesService: LikesService,
     public postsService: PostService, public bucketService: BucketService,
+    public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.user = data.user
       this.postsService.get(data.post.postID).then((item) => {
         item.forEach((post) => {
           var p = post.data()
+          this.post = p
           this.title = p.title
           this.desc = p.desc
           this.tags = p.tags
           this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
-          this.canEditDelete = this.data.post.userID == this.user.id || this.user.role == 'teacher'
+          this.canEditDelete = this.post.userID == this.user.id || this.user.role == 'teacher'
         })
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
@@ -69,7 +74,7 @@ export class PostModalComponent {
       this.bucketService.getAllByBoard(this.data.board.boardID).then(buckets => {
         this.buckets = []
         buckets.forEach(bucket => {
-          bucket.includesPost = bucket.posts.some(post => post.postID == this.data.post.postID)
+          bucket.includesPost = bucket.posts.some(post => post.postID == this.post.postID)
           this.buckets.push(bucket)
         })
       })
@@ -77,7 +82,7 @@ export class PostModalComponent {
   }
   
   onNoClick(): void {
-    this.dialogRef.close();
+    this.dialogRef.close(this.post);
   }
   
   updateBucket(event) {
@@ -85,11 +90,11 @@ export class PostModalComponent {
     const bucket: any = this.buckets.find(bucket => bucket.bucketID === bucketID)
 
     if (event.checked) {
-      bucket.posts.push(this.data.post)
+      bucket.posts.push(this.post)
       let ids = bucket.posts.map(post => post.postID)
       this.bucketService.update(bucketID, { posts: ids })
     } else {
-      bucket.posts = bucket.posts.filter(post => post.postID !== this.data.post.postID)
+      bucket.posts = bucket.posts.filter(post => post.postID !== this.post.postID)
       let ids = bucket.posts.map(post => post.postID)
       this.bucketService.update(bucket.bucketID, { posts: ids })
     }
@@ -104,22 +109,32 @@ export class PostModalComponent {
   }
 
   onUpdate() {
-    // this.data.updatePost(this.data.post.postID, this.title, this.desc)
-    this.postsService.update(this.data.post.postID, { title: this.title, desc: this.desc }).then(() => this.toggleEdit())
-    // this.toggleEdit()
+    var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
+    
+    obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
+    obj.set({ title: this.title, desc: this.desc })
+    this.fabricUtils._canvas.renderAll()
+
+    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+
+    this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
+      .then(() => this.toggleEdit())
   }
 
   onDelete() {
-    // this.data.removePost(this.data.post.postID)
-    this.postsService.delete(this.data.post.postID).then(() => this.dialogRef.close())
-    // this.dialogRef.close();
+    var obj = this.fabricUtils.getObjectFromId(this.post.postID);
+    if (!obj || obj.type != 'group') return;
+    this.fabricUtils._canvas.remove(obj);
+    this.fabricUtils._canvas.renderAll();
+
+    this.postsService.delete(this.post.postID).then(() => this.dialogRef.close(null))
   }
 
   addTag(event, tagOption): void {
     event.stopPropagation()
     this.tags.push(tagOption);
     this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
-    this.postsService.update(this.data.post.postID, { tags: this.tags })
+    this.postsService.update(this.post.postID, { tags: this.tags })
   }
 
   removeTag(tag) {
@@ -129,7 +144,7 @@ export class PostModalComponent {
     }
 
     this.tagOptions.push(tag);
-    this.postsService.update(this.data.post.postID, { tags: this.tags })
+    this.postsService.update(this.post.postID, { tags: this.tags })
   }
 
   addComment() {
@@ -137,7 +152,7 @@ export class PostModalComponent {
       comment: this.newComment,
       commentID: Date.now() + '-' + this.data.user.id,
       userID: this.data.user.id,
-      postID: this.data.post.postID,
+      postID: this.post.postID,
       boardID: this.data.board.boardID,
       author: this.data.user.username
     }
@@ -157,7 +172,7 @@ export class PostModalComponent {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
         likerID: this.user.id,
-        postID: this.data.post.postID,
+        postID: this.post.postID,
         boardID: this.data.board.boardID
       }
       this.likesService.add(like)

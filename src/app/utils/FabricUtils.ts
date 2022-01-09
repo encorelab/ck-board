@@ -1,6 +1,11 @@
+import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
+import { Canvas } from 'fabric/fabric-impl';
 
+@Injectable({providedIn: 'root'})
 export class FabricUtils {
+
+    _canvas: fabric.Canvas;
 
     serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'authorID', 'hasControls', 'subTargetCheck', 'removed']
 
@@ -11,14 +16,26 @@ export class FabricUtils {
         stopContextMenu: true
     }
 
-    renderPostFromJSON(post:any, callback: (objects) => any): void {
-        fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => callback(objects), "fabric");
+    public set canvas(surface: fabric.Canvas) {
+        this.canvas = surface;
     }
 
-    getObjectFromId(ctx: any, postID: string){
-        var currentObjects = ctx.getObjects();
+    renderPostFromJSON(post:any): void {
+        fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => {
+            var origRenderOnAddRemove = this._canvas.renderOnAddRemove;
+            this._canvas.renderOnAddRemove = false;
+
+            objects.forEach((o: fabric.Object) => this._canvas.add(o));
+                
+            this._canvas.renderOnAddRemove = origRenderOnAddRemove;
+            this._canvas.renderAll();
+        }, "fabric");
+    }
+
+    getObjectFromId(postID: string){
+        var currentObjects: any = this._canvas?.getObjects();
         
-        for (var i = currentObjects.length - 1; i >= 0; i-- ) {
+        for (var i = currentObjects.length - 1; i >= 0; i--) {
           if (currentObjects[i].postID == postID)
             return currentObjects[i]
         }

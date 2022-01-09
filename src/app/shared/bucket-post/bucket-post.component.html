@@ -1,4 +1,4 @@
-<mat-card class="bucket-card" (click)="openPostDialog()">
+<mat-card class="bucket-card" (click)="openPostDialog()" *ngIf="exists">
     <mat-card-title>{{ post.title }}</mat-card-title>
     <mat-card-subtitle>{{ post.userID }}</mat-card-subtitle>
     <mat-card-content>

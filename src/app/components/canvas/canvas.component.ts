@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
@@ -27,6 +27,9 @@ import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { MatDrawer } from '@angular/material/sidenav';
+import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { BucketService } from 'src/app/services/bucket.service';
+import Bucket from 'src/app/models/bucket';
 
 @Component({
   selector: 'app-canvas',
@@ -34,23 +37,27 @@ import { MatDrawer } from '@angular/material/sidenav';
   styleUrls: ['./canvas.component.scss']
 })
 export class CanvasComponent {
+  @ViewChild('drawer') drawer!: MatDrawer;
+
   boardID: string
   canvas: Canvas;
 
   user: User
   board: Board
 
-  posts: Post[]
+  posts: any[]
+  buckets: any
 
   mode: Mode = Mode.EDIT
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
   lastItem: any = null
+  activeBucket: any
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
-    public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
+    public likesService: LikesService, public bucketService: BucketService, public dialog: MatDialog, private route: Router) {}
 
   ngOnInit() {
     this.user = this.authService.userData;
@@ -88,19 +95,37 @@ export class CanvasComponent {
     })
   }
 
-  loadBucket() {
-    this.posts = []
-    this.lastItem = null
-    this.loadNextPosts()
+  openWorkflowDialog() {
+    this.dialog.open(CreateWorkflowModalComponent, {
+      width: '700px',
+      data: {
+        board: this.board,
+      }
+    });
   }
 
-  loadNextPosts() {
-    this.postsService.getPaginated(this.boardID, { lastItem: this.lastItem, pageSize: 15 })
-      .then(({newLastItem, data}) => {
-        data.forEach((data) => this.posts.push(data.data()))
-        this.lastItem = newLastItem;
+  fetchBuckets() {
+    this.drawer.toggle()
+    this.bucketService.getAllByBoard(this.boardID).then(buckets => {
+      this.buckets = buckets
+      if (buckets.length > 0) {
+        this.activeBucket = this.buckets[0] 
+        this.loadBucketPosts(this.activeBucket)
+      }
+    })
+  }
+
+  loadBucketPosts(bucket) {
+    this.bucketService.get(bucket.bucketID)
+      .then(bucket => {
+        if (bucket) {
+          this.activeBucket = bucket
+          this.posts = bucket.posts
+        } else {
+          this.posts = []
+        }
       })
-      .catch(err => console.log(err))
+      .catch(_err => this.posts = [])
   }
 
   // open dialog to get message for a new post
@@ -146,6 +171,20 @@ export class CanvasComponent {
     this.canvas.add(fabricPost);
   }
 
+  openPostDialog(post: any) {
+    this.dialog.open(PostModalComponent, {
+      minWidth: '700px',
+      width: 'auto',
+      data: { 
+        user: this.user, 
+        post: post, 
+        board: this.board,
+        removePost: this.removePost, 
+        updatePost: this.updatePost 
+      }
+    });
+  }
+  
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
       width: '700px',
@@ -349,17 +388,7 @@ export class CanvasComponent {
       var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
       if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
-        this.dialog.open(PostModalComponent, {
-          minWidth: '700px',
-          width: 'auto',
-          data: { 
-            user: this.user, 
-            post: obj, 
-            board: this.board,
-            removePost: this.removePost, 
-            updatePost: this.updatePost 
-          }
-        });
+        this.openPostDialog(obj)
       }
     });
   }

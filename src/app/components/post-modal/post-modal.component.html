@@ -4,6 +4,14 @@
     <mat-card-title>{{ title }}</mat-card-title>
     <mat-card-subtitle>{{ data.post.author }}</mat-card-subtitle>
     <span class="fill-remaining-space"></span>
+    <button mat-icon-button [matMenuTriggerFor]="bucketMenu">
+      <mat-icon>library_add</mat-icon>
+    </button>
+    <mat-menu #bucketMenu="matMenu">
+      <div mat-menu-item (click)="$event.stopPropagation();" *ngFor="let bucket of buckets">
+        <mat-checkbox id={{bucket.bucketID}} [checked]="bucket.includesPost" (change)="updateBucket($event)">{{ bucket.name }}</mat-checkbox>
+      </div>
+    </mat-menu>
     <button mat-icon-button [matMenuTriggerFor]="menu">
       <mat-icon>more_vert</mat-icon>
     </button>

@@ -8,6 +8,7 @@ import User from 'src/app/models/user';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
+import { BucketService } from 'src/app/services/bucket.service';
 
 @Component({
   selector: 'app-post-modal',
@@ -19,6 +20,7 @@ export class PostModalComponent {
   tagOptions: string[] = []
 
   user: User
+  buckets: any[]
 
   title: string
   desc: string
@@ -39,7 +41,7 @@ export class PostModalComponent {
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
     public commentService: CommentService, public likesService: LikesService,
-    public postsService: PostService,
+    public postsService: PostService, public bucketService: BucketService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.user = data.user
       this.postsService.get(data.post.postID).then((item) => {
@@ -64,10 +66,33 @@ export class PostModalComponent {
           this.likes.push(likeObj)
         })
       })
+      this.bucketService.getAllByBoard(this.data.board.boardID).then(buckets => {
+        this.buckets = []
+        buckets.forEach(bucket => {
+          bucket.includesPost = bucket.posts.some(post => post.postID == this.data.post.postID)
+          this.buckets.push(bucket)
+        })
+      })
+      
   }
   
   onNoClick(): void {
     this.dialogRef.close();
+  }
+  
+  updateBucket(event) {
+    const bucketID = event.source.id
+    const bucket: any = this.buckets.find(bucket => bucket.bucketID === bucketID)
+
+    if (event.checked) {
+      bucket.posts.push(this.data.post)
+      let ids = bucket.posts.map(post => post.postID)
+      this.bucketService.update(bucketID, { posts: ids })
+    } else {
+      bucket.posts = bucket.posts.filter(post => post.postID !== this.data.post.postID)
+      let ids = bucket.posts.map(post => post.postID)
+      this.bucketService.update(bucket.bucketID, { posts: ids })
+    }
   }
 
   toggleEdit() {
@@ -79,13 +104,15 @@ export class PostModalComponent {
   }
 
   onUpdate() {
-    this.data.updatePost(this.data.post.postID, this.title, this.desc)
-    this.toggleEdit()
+    // this.data.updatePost(this.data.post.postID, this.title, this.desc)
+    this.postsService.update(this.data.post.postID, { title: this.title, desc: this.desc }).then(() => this.toggleEdit())
+    // this.toggleEdit()
   }
 
   onDelete() {
-    this.data.removePost(this.data.post.postID)
-    this.dialogRef.close();
+    // this.data.removePost(this.data.post.postID)
+    this.postsService.delete(this.data.post.postID).then(() => this.dialogRef.close())
+    // this.dialogRef.close();
   }
 
   addTag(event, tagOption): void {

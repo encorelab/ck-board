@@ -27,6 +27,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
 import { CreateWorkflowModalComponent } from './components/create-workflow-modal/create-workflow-modal.component';
 import { BucketPostComponent } from './shared/bucket-post/bucket-post.component';
+import { BucketComponent } from './shared/bucket/bucket.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import { BucketPostComponent } from './shared/bucket-post/bucket-post.component'
     DashboardComponent,
     AddBoardModalComponent,
     CreateWorkflowModalComponent,
-    BucketPostComponent
+    BucketPostComponent,
+    BucketComponent
   ],
   imports: [
     BrowserModule,

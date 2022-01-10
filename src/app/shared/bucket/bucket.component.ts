@@ -17,6 +17,8 @@ export class BucketComponent implements OnChanges {
 
   @ViewChildren('drawer') ref: QueryList<any>
   
+  loading: boolean = true
+
   buckets: any
   activeBucket: any
 
@@ -30,6 +32,7 @@ export class BucketComponent implements OnChanges {
       this.fetchBuckets()
     } else if (this.ref && this.ref.length > 0) {
       this.ref.first.close()
+      this.loading = true
     }
   }
 
@@ -44,6 +47,7 @@ export class BucketComponent implements OnChanges {
   }
 
   loadBucketPosts(bucket) {
+    this.loading = true
     this.bucketService.get(bucket.bucketID)
       .then(bucket => {
         if (bucket) {
@@ -52,6 +56,7 @@ export class BucketComponent implements OnChanges {
         } else {
           this.posts = []
         }
+        this.loading = false
       })
       .catch(_err => this.posts = [])
   }
@@ -59,5 +64,6 @@ export class BucketComponent implements OnChanges {
   close() {
     this.visibleChange.emit(false)
     this.ref.first.close()
+    this.loading = true
   }
 }

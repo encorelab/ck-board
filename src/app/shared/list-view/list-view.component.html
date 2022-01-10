@@ -1,0 +1,26 @@
+<mat-drawer-container class="drawer-container">
+    <mat-drawer #drawer class="drawer" mode="side">
+      <mat-toolbar>
+        <h3>List View</h3>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-icon-button matTooltip="Close Bucket" (click)="close()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-toolbar>
+      <mat-drawer-content class="drawer-content">
+        <mat-spinner style="margin: 40% auto; background: transparent;" *ngIf="loading"></mat-spinner>
+        <div 
+          style='padding-top: 10px; height: calc(100% - 10px); overflow: scroll' 
+          data-infinite-scroll
+          [infiniteScrollDistance]="2"
+          [infiniteScrollThrottle]="150"
+          (scrolled)="fetchMorePosts()"
+          [scrollWindow]="false"
+          *ngIf="!loading"
+        >
+          <app-bucket-post [post]="post" *ngFor="let post of posts"></app-bucket-post>
+          
+        </div>
+      </mat-drawer-content>
+    </mat-drawer>
+</mat-drawer-container>

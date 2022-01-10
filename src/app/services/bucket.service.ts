@@ -86,6 +86,7 @@ export class BucketService {
                         posts.push(post)
                     }
                     if (index == arr.length - 1) {
+                        posts.sort((a, b) => a.timestamp - b.timestamp)
                         resolve(posts)
                     }
                 }).catch(_err => reject())

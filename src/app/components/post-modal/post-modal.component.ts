@@ -11,6 +11,7 @@ import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post from 'src/app/models/post';
+import { DELETE } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-post-modal',
@@ -91,13 +92,12 @@ export class PostModalComponent {
 
     if (event.checked) {
       bucket.posts.push(this.post)
-      let ids = bucket.posts.map(post => post.postID)
-      this.bucketService.update(bucketID, { posts: ids })
     } else {
       bucket.posts = bucket.posts.filter(post => post.postID !== this.post.postID)
-      let ids = bucket.posts.map(post => post.postID)
-      this.bucketService.update(bucket.bucketID, { posts: ids })
     }
+
+    let ids = bucket.posts.map(post => post.postID)
+    this.bucketService.update(bucketID, { posts: ids })
   }
 
   toggleEdit() {
@@ -127,7 +127,7 @@ export class PostModalComponent {
     this.fabricUtils._canvas.remove(obj);
     this.fabricUtils._canvas.renderAll();
 
-    this.postsService.delete(this.post.postID).then(() => this.dialogRef.close(null))
+    this.postsService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
   }
 
   addTag(event, tagOption): void {

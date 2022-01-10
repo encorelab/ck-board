@@ -28,6 +28,7 @@ import { AddBoardModalComponent } from './components/add-board-modal/add-board-m
 import { CreateWorkflowModalComponent } from './components/create-workflow-modal/create-workflow-modal.component';
 import { BucketPostComponent } from './shared/bucket-post/bucket-post.component';
 import { BucketComponent } from './shared/bucket/bucket.component';
+import { ListViewComponent } from './shared/list-view/list-view.component';
 
 @NgModule({
   declarations: [
@@ -44,7 +45,8 @@ import { BucketComponent } from './shared/bucket/bucket.component';
     AddBoardModalComponent,
     CreateWorkflowModalComponent,
     BucketPostComponent,
-    BucketComponent
+    BucketComponent,
+    ListViewComponent
   ],
   imports: [
     BrowserModule,

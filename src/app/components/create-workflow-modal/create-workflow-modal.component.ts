@@ -26,7 +26,8 @@ export class CreateWorkflowModalComponent implements OnInit {
       bucketID: Date.now() + '-' + this.data.board.boardID,
       boardID: this.data.board.boardID,
       name: this.bucketName,
-      posts: []
+      posts: [],
+      timestamp: new Date().getTime()
     }
     
     this.bucketService.create(bucket)

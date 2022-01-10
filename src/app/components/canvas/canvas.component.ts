@@ -43,6 +43,7 @@ export class CanvasComponent {
   mode: Mode = Mode.EDIT
   modeType = Mode 
 
+  showList: boolean = false
   showBuckets: boolean = false
 
   constructor(public postsService: PostService, public boardService: BoardService, 

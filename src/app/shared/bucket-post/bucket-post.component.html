@@ -5,8 +5,9 @@
       <p>{{ post.desc }}</p>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-button icon>
-        <mat-icon>thumb_up</mat-icon>
+      <button mat-button (click)="handleLike(); $event.stopPropagation()">
+        <mat-icon *ngIf="isLiked">thumb_up</mat-icon>
+        <i class="material-icons-outlined" *ngIf="!isLiked">thumb_up</i>
         {{numLikes}}
       </button>
       <button mat-button>

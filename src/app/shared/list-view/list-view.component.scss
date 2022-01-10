@@ -1,0 +1,25 @@
+.drawer-container {
+  width: 27.9vw;
+  height: 100vh;
+
+  position: absolute;
+  visibility: hidden;
+}
+
+.drawer {
+  width: 100%;
+  background-color: #cfe5ff;
+}
+
+.drawer-content {
+  margin-left: 0px !important;
+
+  /* Firefox */
+  height: -moz-calc(100% - 64px);
+  /* WebKit */
+  height: -webkit-calc(100% - 64px);
+  /* Opera */
+  height: -o-calc(100% - 64px);
+  /* Standard */
+  height: calc(100% - 64px);
+}

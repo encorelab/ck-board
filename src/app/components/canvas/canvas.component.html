@@ -10,6 +10,9 @@
         <mat-icon>timeline</mat-icon>
       </button>
       <button mat-icon-button (click)="showBuckets = !showBuckets" matTooltip="View Buckets">
+        <mat-icon>shopping_basket</mat-icon>
+      </button>
+      <button mat-icon-button (click)="showList = !showList" matTooltip="List Posts">
         <mat-icon>list_alt</mat-icon>
       </button>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
@@ -44,4 +47,5 @@
     </div>
   </div>
   <app-bucket [board]="board" [(visible)]="showBuckets"></app-bucket>
+  <app-list-view [board]="board" [(visible)]="showList"></app-list-view>
 </div>

@@ -17,6 +17,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { MatSelectModule } from '@angular/material/select'
 import { MatSidenavModule } from '@angular/material/sidenav'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { NgModule } from '@angular/core';
 
 @NgModule({
@@ -37,12 +38,10 @@ import { NgModule } from '@angular/core';
     MatChipsModule,
     MatOptionModule,
     MatAutocompleteModule,
-    MatSelectModule,
-    MatSidenavModule,
-    MatProgressSpinnerModule
+    MatSelectModule
   ],
   exports: [
-    MatButtonModule, 
+    MatButtonModule,
     MatIconModule, 
     MatDialogModule, 
     MatFormFieldModule, 
@@ -60,7 +59,8 @@ import { NgModule } from '@angular/core';
     MatAutocompleteModule,
     MatSelectModule,
     MatSidenavModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSlideToggleModule
   ]
 })
 export class MaterialModule {}

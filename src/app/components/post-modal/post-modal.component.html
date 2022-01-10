@@ -1,7 +1,7 @@
 <mat-card class="details" *ngIf="!isEditing">
   <mat-card-header>
     <div mat-card-avatar class="avatar"></div>
-    <mat-card-title>{{ title }}</mat-card-title>
+    <mat-card-title [innerHTML]="editingTitle">{{ editingTitle }}</mat-card-title>
     <mat-card-subtitle>{{ data.post.author }}</mat-card-subtitle>
     <span class="fill-remaining-space"></span>
     <button mat-icon-button [matMenuTriggerFor]="bucketMenu">
@@ -27,7 +27,7 @@
     </mat-menu>
   </mat-card-header>
   <mat-card-content>
-    <p style="overflow-wrap: break-word;"> {{ desc }} </p>
+    <p style="overflow-wrap: break-word;" [innerHTML]="editingDesc"> {{ editingDesc }} </p>
   </mat-card-content>
   <mat-card-actions align="end" style="margin-bottom: -1.25em">
     <button mat-button (click)="handleLikeClick()">

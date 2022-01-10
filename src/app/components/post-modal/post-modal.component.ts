@@ -13,6 +13,8 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 
+const linkifyStr = require('linkifyjs/lib/linkify-string');
+
 @Component({
   selector: 'app-post-modal',
   templateUrl: './post-modal.component.html',
@@ -27,7 +29,9 @@ export class PostModalComponent {
   buckets: any[]
 
   title: string
+  editingTitle: string
   desc: string
+  editingDesc: string
   isEditing: boolean = false
   canEditDelete: boolean
   showComments: boolean = false
@@ -54,7 +58,9 @@ export class PostModalComponent {
           var p = post.data()
           this.post = p
           this.title = p.title
+          this.editingTitle = linkifyStr(p.title, { defaultProtocol: 'https', target: "_blank"})
           this.desc = p.desc
+          this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
           this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
           this.canEditDelete = this.post.userID == this.user.id || this.user.role == 'teacher'

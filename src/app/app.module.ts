@@ -29,6 +29,10 @@ import { CreateWorkflowModalComponent } from './components/create-workflow-modal
 import { BucketPostComponent } from './shared/bucket-post/bucket-post.component';
 import { BucketComponent } from './shared/bucket/bucket.component';
 import { ListViewComponent } from './shared/list-view/list-view.component';
+import { PasswordResetComponent } from './components/password-reset/password-reset.component';
+import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
+import { ErrorComponent } from './components/error/error.component';
+import { PasswordResetConfirmationModalComponent } from './components/password-reset-confirmation-modal/password-reset-confirmation-modal.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +50,11 @@ import { ListViewComponent } from './shared/list-view/list-view.component';
     CreateWorkflowModalComponent,
     BucketPostComponent,
     BucketComponent,
-    ListViewComponent
+    ListViewComponent,
+    PasswordResetComponent,
+    JoinBoardModalComponent,
+    ErrorComponent,
+    PasswordResetConfirmationModalComponent
   ],
   imports: [
     BrowserModule,

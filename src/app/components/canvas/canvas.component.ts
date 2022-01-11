@@ -230,10 +230,15 @@ export class CanvasComponent {
 
   updateAuthorNames(postToUpdate: PostIDNamePair) {
     let obj = this.fabricUtils.getObjectFromId(this.canvas, postToUpdate.postID)
-    this.fabricUtils.updateAuthor(obj, postToUpdate.username)
-    this.canvas.renderAll()
+    if(obj){
+      this.fabricUtils.updateAuthor(obj, postToUpdate.username)
+      this.canvas.renderAll()
+    }
   }
   setAuthorVisibilityOne(post){
+    if(!this.board){
+      return
+    }
     let isStudentAndVisible = this.user.role == "student" && this.board.permissions.showAuthorNameStudent
     let IsTeacherAndVisisble= this.user.role == "teacher" && this.board.permissions.showAuthorNameTeacher
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {

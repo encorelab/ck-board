@@ -1,7 +1,10 @@
 <mat-card class="bucket-card" (click)="openPostDialog()" *ngIf="exists">
     <mat-card-title>{{ post.title }}</mat-card-title>
     <mat-card-subtitle>{{ post.userID }}</mat-card-subtitle>
-    <mat-card-content>
+    <mat-chip-list>
+      <mat-chip color="primary" selected *ngFor="let tag of post.tags">{{ tag }}</mat-chip>
+    </mat-chip-list>
+    <mat-card-content class="content">
       <p>{{ post.desc }}</p>
     </mat-card-content>
     <mat-card-actions>

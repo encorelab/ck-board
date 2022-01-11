@@ -42,6 +42,13 @@ export class CanvasComponent {
   user: User
   board: Board
 
+  centerX: number
+  centerY: number
+  initialClientX: number
+  initialClientY: number
+  finalClientX: number
+  finalClientY: number
+
   currentZoom: number
 
   mode: Mode = Mode.EDIT
@@ -57,6 +64,12 @@ export class CanvasComponent {
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.currentZoom = 1;
+    this.centerX = this.canvas.getWidth() / 2;
+    this.centerY = this.canvas.getHeight() / 2;
+    this.initialClientX = 0
+    this.initialClientY = 0;
+    this.finalClientX = 0;
+    this.finalClientY = 0;
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -459,6 +472,9 @@ export class CanvasComponent {
       if (this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
+        const options = (opt.e as unknown) as WheelEvent
+        this.initialClientX = options.clientX;
+        this.initialClientY = options.clientY;
       }
     });
       
@@ -472,6 +488,8 @@ export class CanvasComponent {
       if (isPanning && options) {
         let delta = new fabric.Point(options.movementX, options.movementY);
         this.canvas.relativePan(delta);
+        this.finalClientX = options.clientX;
+        this.finalClientY = options.clientY;
       }
     })
   }
@@ -490,6 +508,7 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'move'
   }
 
+  /*
   private centerCoord() {
     let zoom = this.canvas.getZoom();
     if(this.canvas.viewportTransform != null && this.canvas.width != null && this.canvas.height != null) {
@@ -500,10 +519,11 @@ export class CanvasComponent {
     }
     return {x: null, y: null};
   }
+  */
 
   handleZoom(event) {
-    let centerX = this.centerCoord().x;
-    let centerY = this.centerCoord().y;
+    let centerX = this.centerX + (this.finalClientX - this.initialClientX);
+    let centerY = this.centerY + (this.finalClientY - this.initialClientY);
 
     if(centerX != null && centerY != null) {
       if(event === 'zoomIn') {

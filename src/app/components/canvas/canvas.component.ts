@@ -49,7 +49,7 @@ export class CanvasComponent {
   finalClientX: number
   finalClientY: number
 
-  currentZoom: number
+  buttonZoom: number
 
   mode: Mode = Mode.EDIT
   modeType = Mode
@@ -63,7 +63,7 @@ export class CanvasComponent {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-    this.currentZoom = 1;
+    this.buttonZoom = 1;
     this.centerX = this.canvas.getWidth() / 2;
     this.centerY = this.canvas.getHeight() / 2;
     this.initialClientX = 0
@@ -459,6 +459,8 @@ export class CanvasComponent {
       if (zoom > 20) zoom = 20;
       if (zoom < 0.01) zoom = 0.01;
 
+      this.buttonZoom = zoom;
+
       this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), zoom);
       opt.e.preventDefault();
       opt.e.stopPropagation();
@@ -520,15 +522,15 @@ export class CanvasComponent {
     this.initialClientY = this.finalClientY;
 
     if(event === 'zoomIn') {
-      this.currentZoom += 0.05;
+      this.buttonZoom += 0.05;
     }
     else if(event === 'zoomOut') {
-      this.currentZoom -= 0.05;
+      this.buttonZoom -= 0.05;
     }
     else if(event === 'reset') {
-      this.currentZoom = 1;
+      this.buttonZoom = 1;
     }
-    this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.currentZoom);
+    this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.buttonZoom);
   }
 }
 

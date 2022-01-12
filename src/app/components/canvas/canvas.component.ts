@@ -26,6 +26,7 @@ import { Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
+import { E } from '@angular/cdk/keycodes';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
@@ -60,6 +61,7 @@ export class CanvasComponent {
     this.movingObjectListener();
     this.zoomListener();
     this.panningListener();
+    this.keyPanningListener();
     this.expandPostListener();
     this.addCommentListener();
     this.addLikeListener();
@@ -475,6 +477,30 @@ export class CanvasComponent {
         let delta = new fabric.Point(options.movementX, options.movementY);
         this.canvas.relativePan(delta);
       }
+    })
+  }
+
+  keyPanningListener() {
+    document.addEventListener('keydown', (event) => {
+      if(this.mode == Mode.PAN) {
+        this.canvas.selection = false;
+        if(event.key == 'ArrowUp') {
+          this.canvas.relativePan(new fabric.Point(0, -10 * this.canvas.getZoom()));
+        }
+        else if(event.key == 'ArrowDown') {
+          this.canvas.relativePan(new fabric.Point(0, 10 * this.canvas.getZoom()));
+        }
+        else if(event.key == 'ArrowLeft') {
+          this.canvas.relativePan(new fabric.Point(10 * this.canvas.getZoom(), 0));
+        }
+        else if(event.key == 'ArrowRight') {
+          this.canvas.relativePan(new fabric.Point(-10 * this.canvas.getZoom(), 0));
+        }
+      }
+    });
+
+    document.addEventListener('keyup', (event) => {
+      this.canvas.selection = true;
     })
   }
 

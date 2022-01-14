@@ -24,7 +24,19 @@
     </mat-tab>
     <mat-tab label="Permissions">
       <p>
-        <mat-checkbox [checked]="allowStudentMoveAny">Students can move any post?</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny">Allow students to move any post</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentEditAddDeletePost" >Allow students to create, edit, and delete posts</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentLiking" >Allow students to like posts</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentCommenting" >Allow students to comment on posts</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentTagging" >Allow students to tag posts</mat-checkbox>
       </p>
     </mat-tab>
     <mat-tab label="Tags">

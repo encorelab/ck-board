@@ -20,7 +20,7 @@
       <canvas id="canvas"></canvas>
       <div class="toolSection">
           <div class="toolField">
-              <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Add Post" (click)="handleCreatePost()">
+              <button *ngIf="mode != modeType.CHOOSING_LOCATION && showAddPost " mat-fab color="primary" matTooltip="Add Post" (click)="handleCreatePost()">
                   <mat-icon>add</mat-icon>
               </button>
               <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Cancel Post" (click)="disableChooseLocation()">

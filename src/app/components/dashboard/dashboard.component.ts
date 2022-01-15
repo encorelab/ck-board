@@ -8,6 +8,9 @@ import { BoardService } from 'src/app/services/board.service';
 import { UserService } from 'src/app/services/user.service';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { JoinBoardModalComponent } from '../join-board-modal/join-board-modal.component';
+import { ProjectService } from 'src/app/services/project.service';
+import { Project } from 'src/app/models/project';
+import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,15 +25,19 @@ export class DashboardComponent implements OnInit {
 
   yourBoards: Board[] = []
   publicBoards: Board[] = []
+
+  yourProjects:Project[]=[]
   
   constructor(public userService: UserService, public authService: AuthService, 
-    public boardService: BoardService, public router: Router, public dialog: MatDialog) {}
+    public boardService: BoardService, public router: Router, public dialog: MatDialog, public projectService:ProjectService) {}
 
   ngOnInit(): void {
     this.user = this.authService.userData
     this.authService.getAuthenticatedUser().then(user => {
       this.user = user
       this.getUsersBoards(this.user.id).then(_ => this.isLoading = false)
+      this.getUsersProjects(this.user.id).then(_ => this.isLoading = false)
+
     })
   }
 
@@ -41,6 +48,15 @@ export class DashboardComponent implements OnInit {
         this.yourBoards.push(board)
       })
       this.getPublicBoards()
+    })
+  }
+  
+  getUsersProjects(id){
+    return this.projectService.getByUserID(id).then(project => {
+      project.forEach((data) => {
+        let project = data.data() ?? {}
+        this.yourProjects.push(project)
+      })
     })
   }
   
@@ -68,6 +84,16 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  openCreateProjectDialog() {
+    this.dialog.open(AddProjectModalComponent, {
+      width: '700px',
+      data: {
+        user: this.user,
+        createProject: this.createProject
+      }
+    });
+  }
+
   openJoinBoardDialog() {
     this.dialog.open(JoinBoardModalComponent, {
       width: '700px',
@@ -80,6 +106,13 @@ export class DashboardComponent implements OnInit {
   createBoard = (board: Board) => {
     this.boardService.create(board).then(_ => {
       this.router.navigate(['canvas/' + board.boardID])
+    })
+  }
+
+  createProject = (project: Project) => {
+    this.projectService.create(project).then(_ => {
+      alert(project.name +"created!")
+      //this.router.navigate(['canvas/' + project.boardID])
     })
   }
 }

@@ -18,7 +18,7 @@ export class LoginComponent {
 
   invalidCredentials: boolean = false;
 
-  constructor(private auth: AuthService, private router: Router, private http: HttpClient) {
+  constructor(private auth: AuthService, private router: Router) {
     this.auth.getAuthenticatedUser().then((user) => {
       if (user) {
         this.router.navigate(['/dashboard'])

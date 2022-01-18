@@ -54,8 +54,9 @@ export class CanvasComponent {
     public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
 
   ngOnInit() {
+    alert(this.route.url)
     this.user = this.authService.userData;
-    this.boardID = this.route.url.replace('/canvas/', '');
+    this.boardID = this.route.url.substring(this.route.url.lastIndexOf('/')+1) ;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
    
     this.configureBoard();

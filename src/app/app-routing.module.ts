@@ -8,8 +8,14 @@ import { PasswordResetComponent } from './components/password-reset/password-res
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from './utils/auth.guard';
 import { BoardGuard } from './utils/board.guard';
+import { ProjectBoardGuard } from './utils/project.board.guard';
 
 const routes: Routes = [
+  { path: 'canvas/:projectID/:boardID',
+        component: CanvasComponent,
+        canActivate:[ProjectBoardGuard]
+      
+  },
   { path: 'canvas/:boardID', component: CanvasComponent,
     canActivate: [BoardGuard] 
   },

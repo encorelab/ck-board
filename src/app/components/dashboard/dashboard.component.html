@@ -11,6 +11,9 @@
         <button mat-button (click)="openCreateProjectDialog()" *ngIf="user && user.role == 'teacher'">
           Create Project
         </button>
+        <button mat-button (click)="openJoinProjectDialog()" >
+          Join Project
+        </button>
         <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
         <mat-menu #menu="matMenu">
           <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
@@ -26,6 +29,9 @@
           <mat-card-content>
             <p>
               {{ project.members.length + " members"}}
+            </p>
+            <p>
+              {{ project.boards.length + " boards"}}
             </p>
           </mat-card-content>
         </mat-card>

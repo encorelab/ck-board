@@ -6,6 +6,15 @@
         <mat-label>Board Name</mat-label>
         <input matInput [(ngModel)]="boardName">
       </mat-form-field>
+      <mat-form-field style="width:100%">
+        <mat-label>Project</mat-label>
+        <mat-select [(value)]="selectedProject" required>
+          <mat-option *ngFor="let project of projects" [value]="project.projectID">
+            {{project.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <p>{{selectedProject}}</p>
       <mat-slide-toggle [(ngModel)]="isPublic">
         Public Board
       </mat-slide-toggle>

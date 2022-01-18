@@ -11,6 +11,7 @@ import { JoinBoardModalComponent } from '../join-board-modal/join-board-modal.co
 import { ProjectService } from 'src/app/services/project.service';
 import { Project } from 'src/app/models/project';
 import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
+import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -79,7 +80,8 @@ export class DashboardComponent implements OnInit {
       width: '700px',
       data: {
         user: this.user,
-        createBoard: this.createBoard
+        createBoard: this.createBoard,
+        projects:this.yourProjects
       }
     });
   }
@@ -103,10 +105,23 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  createBoard = (board: Board) => {
+  openJoinProjectDialog() {
+    this.dialog.open(JoinProjectModalComponent, {
+      width: '700px',
+      data: {
+        user: this.user
+      }
+    });
+  }
+
+  createBoard = (board: Board, selectedProjectID:string) => {
     this.boardService.create(board).then(_ => {
       this.router.navigate(['canvas/' + board.boardID])
     })
+    let projectBoards = this.yourProjects.find(board=>board.projectID == selectedProjectID)?.boards
+    if(projectBoards){
+      this.projectService.update(selectedProjectID,{boards:[...projectBoards,board.boardID]})
+    }
   }
 
   createProject = (project: Project) => {

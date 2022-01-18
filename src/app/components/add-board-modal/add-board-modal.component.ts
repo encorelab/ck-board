@@ -5,6 +5,7 @@ import { Permissions } from 'src/app/models/permissions';
 import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { Utils } from 'src/app/utils/Utils';
+import { Project } from 'src/app/models/project';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -25,6 +26,8 @@ export class AddBoardModalComponent implements OnInit {
   
   tags: string[] = []
   newTagText: string = ''
+  projects:Project[]
+  selectedProject:string=''
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
@@ -38,6 +41,7 @@ export class AddBoardModalComponent implements OnInit {
         allowStudentCommenting:true,
         allowStudentTagging:true
       }
+      this.projects = data.projects
     }
   ngOnInit(): void {}
 
@@ -77,7 +81,7 @@ export class AddBoardModalComponent implements OnInit {
       members: [this.authService.userData.id],
       tags: this.tags,
       joinCode: Utils.generateCode(5).toString()
-    })
+    }, this.selectedProject)
     this.dialogRef.close();
   }
 

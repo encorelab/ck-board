@@ -27,9 +27,15 @@ import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
+import { ThrowStmt } from '@angular/compiler';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
+
+interface PostIDNamePair{
+  postID:string,
+  username:string
+}
 
 @Component({
   selector: 'app-canvas',
@@ -71,6 +77,7 @@ export class CanvasComponent {
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
     
+    
   }
 
   // configure board
@@ -78,7 +85,7 @@ export class CanvasComponent {
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
-        var obj = JSON.parse(post.fabricObject); 
+        let obj = JSON.parse(post.fabricObject); 
         this.syncBoard(obj, post.postID);
       })
       this.boardService.get(this.boardID).then((board) => {
@@ -87,6 +94,22 @@ export class CanvasComponent {
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
           this.updateShowAddPost(this.board.permissions)
+          if(!(
+                  (this.user.role =="student" && this.board.permissions.showAuthorNameStudent) 
+              ||  (this.user.role =="teacher" && this.board.permissions.showAuthorNameTeacher)
+              )){
+              this.hideAuthorNames()
+          }
+          else{
+            // update all the post names to to the poster's name rather than anonymous
+            data.forEach((data) => {
+              let post = data.data() ?? {}
+              let uid = post.userID; 
+              this.userService.getOneById(uid).then((user:any)=>{
+                this.updateAuthorNames({postID:post.postID, username:user.username})
+              })
+            })
+          }
         } 
       })
     })
@@ -189,6 +212,7 @@ export class CanvasComponent {
     this.boardService.update(this.boardID, { permissions:permissions})
     this.lockPostsMovement(!permissions.allowStudentMoveAny)
     this.updateShowAddPost(permissions)
+    this.configureBoard()
   }
 
   updateShowAddPost(permissions:Permissions) {
@@ -209,6 +233,19 @@ export class CanvasComponent {
     this.canvas.getObjects().map(obj => {
       obj.set({lockMovementX: value, lockMovementY: value});
     });
+    this.canvas.renderAll()
+  }
+
+  hideAuthorNames(){
+    this.canvas.getObjects().map(obj => {
+      this.fabricUtils.updateAuthor(obj, "Anonymous")
+    });
+    this.canvas.renderAll()
+  }
+
+  updateAuthorNames(postToUpdate:PostIDNamePair){
+    let obj = this.fabricUtils.getObjectFromId(this.canvas,postToUpdate.postID)
+    this.fabricUtils.updateAuthor(obj, postToUpdate.username)
     this.canvas.renderAll()
   }
 

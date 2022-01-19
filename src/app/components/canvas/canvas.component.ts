@@ -26,6 +26,7 @@ import { Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
+import { Permissions } from 'src/app/models/permissions';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
@@ -55,6 +56,8 @@ export class CanvasComponent {
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
 
+  showAddPost: boolean = true
+
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
     public likesService: LikesService, public dialog: MatDialog, private route: Router) {}
@@ -83,6 +86,7 @@ export class CanvasComponent {
     this.handleLikeButtonClick();
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
+    
   }
 
   // configure board
@@ -98,6 +102,7 @@ export class CanvasComponent {
           this.board = board
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
+          this.updateShowAddPost(this.board.permissions)
         } 
       })
     })
@@ -148,10 +153,11 @@ export class CanvasComponent {
 
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
-      width: '700px',
+      width: '850px',
       data: {
         board: this.board,
         updatePermissions: this.updatePostPermissions,
+        updatePublic: this.updatePublic,
         updateTask: this.updateTask,
         updateBackground: this.updateBackground,
         updateBoardName: this.updateBoardName,
@@ -195,13 +201,24 @@ export class CanvasComponent {
     });
   }
 
-  updatePostPermissions = (value) => {
-    this.boardService.update(this.boardID, { permissions: { allowStudentMoveAny: !value } })
-    this.lockPostsMovement(value)
+  updatePostPermissions = (permissions:Permissions) => {
+    this.boardService.update(this.boardID, { permissions:permissions})
+    this.lockPostsMovement(!permissions.allowStudentMoveAny)
+    this.updateShowAddPost(permissions)
+  }
+
+  updateShowAddPost(permissions:Permissions) {
+    let isStudent  = this.user.role == "student"
+    let isTeacher = this.user.role =="teacher"
+    this.showAddPost = ( isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
   }
   
   updateTask = (title, message) => {
     this.boardService.update(this.boardID, { task: { title: title, message: message } })
+  }
+
+  updatePublic = (isPublic) => {
+    this.boardService.update(this.boardID, { public: isPublic })
   }
 
   lockPostsMovement(value) {
@@ -308,7 +325,10 @@ export class CanvasComponent {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      if (likeButton) {
+      let isStudent  = this.user.role == "student"
+      let isTeacher = this.user.role =="teacher"
+      let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
+      if (likeButton && ( studentHasPerm || isTeacher) ) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
             this.likesService.add({
@@ -356,7 +376,7 @@ export class CanvasComponent {
             post: obj, 
             board: this.board,
             removePost: this.removePost, 
-            updatePost: this.updatePost 
+            updatePost: this.updatePost,
           }
         });
       }
@@ -544,4 +564,3 @@ export class CanvasComponent {
     return Math.floor(this.zoom * 100);
   }
 }
-

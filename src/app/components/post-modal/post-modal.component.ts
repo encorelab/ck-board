@@ -8,6 +8,7 @@ import User from 'src/app/models/user';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
+const linkifyStr = require('linkifyjs/lib/linkify-string');
 
 @Component({
   selector: 'app-post-modal',
@@ -21,9 +22,14 @@ export class PostModalComponent {
   user: User
 
   title: string
+  editingTitle: string
   desc: string
+  editingDesc: string
   isEditing: boolean = false
+  showEditDelete: boolean = false
   canEditDelete: boolean
+  canStudentComment:boolean
+  canStudentTag:boolean
   showComments: boolean = false
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
@@ -46,10 +52,12 @@ export class PostModalComponent {
         item.forEach((post) => {
           var p = post.data()
           this.title = p.title
+          this.editingTitle = linkifyStr(p.title, { defaultProtocol: 'https', target: "_blank"})
           this.desc = p.desc
+          this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
           this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
-          this.canEditDelete = this.data.post.userID == this.user.id || this.user.role == 'teacher'
+          this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == 'teacher'
         })
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
@@ -64,6 +72,9 @@ export class PostModalComponent {
           this.likes.push(likeObj)
         })
       })
+     this.showEditDelete = (this.user.role =="student" && data.board.permissions.allowStudentEditAddDeletePost) || this.user.role =="teacher"
+     this.canStudentComment = (this.user.role =="student" && data.board.permissions.allowStudentCommenting) || this.user.role =="teacher"
+     this.canStudentTag = (this.user.role =="student" && data.board.permissions.allowStudentTagging) || this.user.role =="teacher"
   }
   
   onNoClick(): void {
@@ -96,6 +107,8 @@ export class PostModalComponent {
   }
 
   removeTag(tag) {
+    if(!this.canStudentTag)
+      return
     const index = this.tags.indexOf(tag);
     if (index >= 0) {
       this.tags.splice(index, 1);
@@ -121,6 +134,11 @@ export class PostModalComponent {
   }
 
   handleLikeClick() {
+    // if liking is locked just return (do nothing)
+    if(this.user.role =="student" && !this.data.board.permissions.allowStudentLiking){
+      return;
+    }
+      
     if (this.isLiked) {
       this.likesService.remove(this.isLiked.likeID).then(() => {
         this.isLiked = null

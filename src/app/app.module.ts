@@ -24,6 +24,10 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
+import { PasswordResetComponent } from './components/password-reset/password-reset.component';
+import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
+import { ErrorComponent } from './components/error/error.component';
+import { PasswordResetConfirmationModalComponent } from './components/password-reset-confirmation-modal/password-reset-confirmation-modal.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +41,11 @@ import { AddBoardModalComponent } from './components/add-board-modal/add-board-m
     LoginComponent,
     RegisterComponent,
     DashboardComponent,
-    AddBoardModalComponent
+    AddBoardModalComponent,
+    PasswordResetComponent,
+    JoinBoardModalComponent,
+    ErrorComponent,
+    PasswordResetConfirmationModalComponent
   ],
   imports: [
     BrowserModule,

@@ -1,6 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Permissions } from 'src/app/models/permissions';
 import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { Utils } from 'src/app/utils/Utils';
@@ -13,7 +14,7 @@ import { Utils } from 'src/app/utils/Utils';
 export class AddBoardModalComponent implements OnInit {
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
-  allowStudentMoveAny: boolean = true
+  permissions:Permissions
 
   boardName: string = ''
   isPublic: boolean = false
@@ -29,8 +30,15 @@ export class AddBoardModalComponent implements OnInit {
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
     public authService: AuthService,
     public userService: UserService,
-    @Inject(MAT_DIALOG_DATA) public data: any) {}
-
+    @Inject(MAT_DIALOG_DATA) public data: any) {
+      this.permissions={
+        allowStudentMoveAny:true,
+        allowStudentLiking:true,
+        allowStudentEditAddDeletePost:true,
+        allowStudentCommenting:true,
+        allowStudentTagging:true
+      }
+    }
   ngOnInit(): void {}
 
   addTag() {
@@ -65,9 +73,7 @@ export class AddBoardModalComponent implements OnInit {
       bgImage: {
         url: this.bgImgURL
       },
-      permissions: {
-        allowStudentMoveAny: this.allowStudentMoveAny
-      },
+      permissions:this.permissions,
       members: [this.authService.userData.id],
       tags: this.tags,
       joinCode: Utils.generateCode(5).toString()

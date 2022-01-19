@@ -4,10 +4,10 @@
     <mat-card-title [innerHTML]="editingTitle">{{ editingTitle }}</mat-card-title>
     <mat-card-subtitle>{{ data.post.author }}</mat-card-subtitle>
     <span class="fill-remaining-space"></span>
-    <button mat-icon-button [matMenuTriggerFor]="menu">
+    <button mat-icon-button [matMenuTriggerFor]="menu" *ngIf="showEditDelete">
       <mat-icon>more_vert</mat-icon>
     </button>
-    <mat-menu #menu="matMenu">
+    <mat-menu #menu="matMenu" >
       <button mat-menu-item *ngIf="!isEditing && canEditDelete" (click)="toggleEdit()">
         <mat-icon>edit</mat-icon>
         <span>Edit Post</span>
@@ -28,10 +28,10 @@
       {{ likes.length }}
     </button>
   </mat-card-actions>
-  <mat-card-actions style="margin-bottom: -1.25em">
+  <mat-card-actions style="margin-bottom: -1.25em" >
     <mat-form-field class="tag-form" appearance="standard">
       <mat-chip-list #chipList>
-        <mat-chip style="background-color: #78C2C0" [matMenuTriggerFor]="menu1">
+        <mat-chip style="background-color: #78C2C0" [matMenuTriggerFor]="menu1" *ngIf="canStudentTag">
           Add Tag 
           <mat-icon>add</mat-icon>
         </mat-chip>
@@ -83,7 +83,7 @@
       </mat-card-content>
     </mat-card>
   </div>
-  <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments">
+  <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments && canStudentComment">
     <mat-label>Add Comment</mat-label>
     <input matInput [(ngModel)]='newComment'>
     <button color="primary" matSuffix mat-button (click)="addComment()">Comment!</button>

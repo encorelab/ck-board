@@ -1,3 +1,4 @@
+import { Permissions } from "./permissions";
 export class Board {
     boardID: string;
     teacherID: string;
@@ -11,9 +12,7 @@ export class Board {
         url: string;
         imgSettings: {};
     };
-    permissions: {
-        allowStudentMoveAny: boolean;
-    }; 
+    permissions: Permissions; 
     members: [];
     tags: [];
     joinCode: string;

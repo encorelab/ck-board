@@ -35,12 +35,18 @@
               </button>
           </div>
         </div>
-      <div class="zoom">
-        <div class = "toolField"> 
-          <button (click) = "handleZoom('zoomIn')" class = "zoomButton"><i class="fas fa-search-plus"></i></button>
-          <button (click) = "handleZoom('zoomOut')" class = "zoomButton"><i class="fas fa-search-minus"></i></button>
-          <button (click) = "handleZoom('reset')" class = "zoomButton"><i class="fas fa-recycle"></i></button>
-        </div>
+
+      <div class = "zoomField">
+        <button (click) = "handleZoom('zoomOut')" class = "zoomButton" mat-button color = "basic">
+          <mat-icon>remove</mat-icon>
+        </button>
+        <p> {{displayZoomValue()}}%</p>
+        <button (click) = "handleZoom('zoomIn')" class = "zoomButton" mat-button color = "basic">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button (click) = "handleZoom('reset')" class = "zoomButton" mat-button color = "basic">
+          <mat-icon>refresh</mat-icon>
+        </button>
       </div>
   </div>
 </div>

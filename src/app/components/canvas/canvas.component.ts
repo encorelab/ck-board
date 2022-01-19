@@ -49,7 +49,7 @@ export class CanvasComponent {
   finalClientX: number
   finalClientY: number
 
-  buttonZoom: number
+  zoom: number
 
   mode: Mode = Mode.EDIT
   modeType = Mode
@@ -63,13 +63,14 @@ export class CanvasComponent {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-    this.buttonZoom = 1;
+    this.zoom = 1;
     this.centerX = this.canvas.getWidth() / 2;
     this.centerY = this.canvas.getHeight() / 2;
     this.initialClientX = 0
     this.initialClientY = 0;
     this.finalClientX = 0;
     this.finalClientY = 0;
+    this.displayZoomValue();
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -453,15 +454,13 @@ export class CanvasComponent {
       var options = (opt.e as unknown) as WheelEvent
 
       var delta = options.deltaY;
-      var zoom = this.canvas.getZoom();
+      //var zoom = this.canvas.getZoom();
 
-      zoom *= 0.999 ** delta;
-      if (zoom > 20) zoom = 20;
-      if (zoom < 0.01) zoom = 0.01;
+      this.zoom *= 0.999 ** delta;
+      if (this.zoom > 20) this.zoom = 20;
+      if (this.zoom < 0.01) this.zoom = 0.01;
 
-      this.buttonZoom = zoom;
-
-      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), zoom);
+      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
       opt.e.preventDefault();
       opt.e.stopPropagation();
     });
@@ -522,15 +521,27 @@ export class CanvasComponent {
     this.initialClientY = this.finalClientY;
 
     if(event === 'zoomIn') {
-      this.buttonZoom += 0.05;
+      this.zoom += 0.05;
     }
     else if(event === 'zoomOut') {
-      this.buttonZoom -= 0.05;
+      this.zoom -= 0.05;
     }
     else if(event === 'reset') {
-      this.buttonZoom = 1;
+      this.zoom = 1;
     }
-    this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.buttonZoom);
+
+    if(this.zoom > 20) {
+      this.zoom = 20;
+    }
+    else if(this.zoom < 0.01) {
+      this.zoom = 0.01;
+    }
+
+    this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.zoom);
+  }
+
+  displayZoomValue() {
+    return Math.floor(this.zoom * 100);
   }
 }
 

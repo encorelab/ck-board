@@ -6,6 +6,9 @@
         <mat-label>Project Name</mat-label>
         <input matInput [(ngModel)]="name">
       </mat-form-field>
+      <mat-slide-toggle [(ngModel)]="isPublic">
+        Public Project
+      </mat-slide-toggle>
     </mat-tab>
   </mat-tab-group>
 </div>

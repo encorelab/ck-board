@@ -4,19 +4,17 @@ import { BoardService } from '../services/board.service';
 import { Observable } from 'rxjs';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
-import { Board } from '../models/board';
 import { ProjectService } from '../services/project.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ProjectBoardGuard implements CanActivate {
+export class ProjectGuard implements CanActivate {
   
   board: any
   project:any
 
   constructor(
-    public boardService: BoardService,
     public projectService: ProjectService,
     public authService: AuthService,
     public router: Router,
@@ -25,10 +23,7 @@ export class ProjectBoardGuard implements CanActivate {
   ){ }
 
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
-    const boardID = next.params.boardID
     const projectID = next.params.projectID
-    
-
     return this.authGuard
         .canActivate(next, state)
         .then((isLoggedIn) => {
@@ -37,17 +32,11 @@ export class ProjectBoardGuard implements CanActivate {
           }
           return false
         })
-        .then(isValid=>{
-          if(isValid){
-            return this.isValidBoard(boardID) 
-          }
-          return false
-        })
         .then(isValid => {
-          if (isValid && this.board.public) {
+          if (isValid && this.project.public) {
             return true
           } else if (isValid) {
-            return this.isBoardMember()
+            return this.isProjectMember()
           }
           return false
         })
@@ -76,34 +65,12 @@ export class ProjectBoardGuard implements CanActivate {
     return projectExists;
   }
 
-  isValidBoard(boardID) {
-    const boardExists = new Promise<boolean>((resolve, _reject) => {
-      this.boardService.get(boardID).then((board) => {
-          if (board) {
-              this.board = board
-              resolve(true)
-           
-              return true
-          } else {
-            this.ngZone.run(() => {
-              this.router.navigate(['/error'], { state: { code: 404, message: 'This board does not exist!' }})
-            });
-          }
-          return false
-      }).catch((e) => {
-        this.router.navigate(['/error'], { state: { code: 404, message: 'This board does not exist!' }})
-        return false
-      })
-    })
-
-    return boardExists;
-  }
-
-  isBoardMember(): Promise<boolean> {
-    const isBoardMember = new Promise<boolean>((resolve, _reject) => {
+  isProjectMember(): Promise<boolean> {
+    const isProjectMember = new Promise<boolean>((resolve, _reject) => {
       this.authService.getAuthenticatedUser().then(user => {
         if (user && this.project.members.includes(user.id)) {
           resolve(true)
+          alert("ran")
           return true
         } else {
           console.log('here')
@@ -118,6 +85,6 @@ export class ProjectBoardGuard implements CanActivate {
       })
     })
 
-    return isBoardMember;
+    return isProjectMember;
   }
 }

@@ -1,0 +1,37 @@
+<div class="app">
+    <mat-toolbar>
+        <span>Common Knowledge Board</span>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
+            <mat-icon>keyboard_return</mat-icon>
+          </button>
+        <button mat-icon-button [matMenuTriggerFor]="addMenu" >
+            <mat-icon>add</mat-icon>
+          </button>
+          <mat-menu #addMenu="matMenu" >
+            <button mat-menu-item >
+                Create Board
+            </button>
+          </mat-menu>
+        <button 
+            style="margin-left: 1em" 
+            mat-button
+        >
+            {{ user.username }}
+        </button>
+    </mat-toolbar>
+
+    <h3 class="header">Boards for {{ project.name }}</h3>
+    <mat-grid-list class="content" cols="4" rowHeight="200">
+        <mat-grid-tile *ngFor="let board of boards" height="100px">
+            <mat-card class="card" (click) = "handleBoardClick(board.boardID)">
+                <mat-card-header>
+                    <mat-card-title class="title">
+                        {{board.name}}
+                    </mat-card-title>
+                </mat-card-header>
+            </mat-card>
+        </mat-grid-tile>
+    </mat-grid-list>
+
+</div>

@@ -30,6 +30,7 @@ import { ErrorComponent } from './components/error/error.component';
 import { PasswordResetConfirmationModalComponent } from './components/password-reset-confirmation-modal/password-reset-confirmation-modal.component';
 import { JoinProjectModalComponent } from './components/join-project-modal/join-project-modal.component';
 import { AddProjectModalComponent } from './components/add-project-modal/add-project-modal.component';
+import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +50,8 @@ import { AddProjectModalComponent } from './components/add-project-modal/add-pro
     ErrorComponent,
     PasswordResetConfirmationModalComponent,
     JoinProjectModalComponent,
-    AddProjectModalComponent
+    AddProjectModalComponent,
+    ProjectDashboardComponent
   ],
   imports: [
     BrowserModule,

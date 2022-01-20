@@ -2,17 +2,19 @@
     <mat-toolbar>
         <span>Common Knowledge Board</span>
         <span style="flex: 1 1 auto"></span>
-        <button mat-icon-button (click)="openJoinBoardDialog()">
-          <mat-icon>group_add</mat-icon>
+        <button mat-icon-button [matMenuTriggerFor]="addMenu" >
+          <mat-icon>add</mat-icon>
         </button>
-        <button mat-icon-button (click)="openCreateBoardDialog()" *ngIf="user && user.role == 'teacher'">
-            <mat-icon>add</mat-icon>
-        </button>
-        <button mat-button (click)="openCreateProjectDialog()" *ngIf="user && user.role == 'teacher'">
-          Create Project
-        </button>
+        <mat-menu #addMenu="matMenu" >
+          <button mat-menu-item  (click)="openCreateProjectDialog()" *ngIf="user && user.role == 'teacher'">
+            Create Project
+          </button>
+          <button mat-menu-item (click)="openCreateBoardDialog()" *ngIf="user && user.role == 'teacher'">
+              Create Board
+          </button>
+        </mat-menu>
         <button mat-button (click)="openJoinProjectDialog()" >
-          Join Project
+          <mat-icon>group_add</mat-icon>
         </button>
         <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
         <mat-menu #menu="matMenu">
@@ -22,7 +24,26 @@
     <h3 class="header">My Projects</h3>
     <mat-grid-list class="content" cols="4" rowHeight="200">
       <mat-grid-tile *ngFor="let project of yourProjects" height="100px">
-        <mat-card class="card" >
+        <mat-card class="card" (click)="handleProjectClick(project.projectID)">
+          <mat-card-header>
+            <mat-card-title class="title">{{ project.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              {{ project.members.length + " members"}}
+            </p>
+            <p>
+              {{ project.boards.length + " boards"}}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      </mat-grid-tile>
+    </mat-grid-list>
+
+    <h3 class="header">Public Projects</h3>
+    <mat-grid-list class="content" cols="4" rowHeight="200">
+      <mat-grid-tile *ngFor="let project of publicProjects" height="100px">
+        <mat-card class="card" (click)="handleProjectClick(project.projectID)">
           <mat-card-header>
             <mat-card-title class="title">{{ project.name }}</mat-card-title>
           </mat-card-header>

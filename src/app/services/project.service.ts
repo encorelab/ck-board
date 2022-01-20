@@ -31,6 +31,10 @@ export class ProjectService {
     })
   }
 
+  getPublic() {
+    return this.projectRef.ref.where("public", "==", true).get().then((snapshot) => snapshot)
+  }
+
   getByJoinCode(code: string) {
     return this.projectRef.ref.where("joinCode", "==", code).get().then((snapshot) => snapshot)
   }

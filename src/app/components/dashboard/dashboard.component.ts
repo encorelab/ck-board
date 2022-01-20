@@ -28,6 +28,7 @@ export class DashboardComponent implements OnInit {
   publicBoards: Board[] = []
 
   yourProjects:Project[]=[]
+  publicProjects:Project[]=[]
   
   constructor(public userService: UserService, public authService: AuthService, 
     public boardService: BoardService, public router: Router, public dialog: MatDialog, public projectService:ProjectService) {}
@@ -58,6 +59,7 @@ export class DashboardComponent implements OnInit {
         let project = data.data() ?? {}
         this.yourProjects.push(project)
       })
+      this.getPublicProjects()
     })
   }
   
@@ -71,8 +73,22 @@ export class DashboardComponent implements OnInit {
     })
   }
 
+  getPublicProjects() {
+    this.projectService.getPublic().then(projects => {
+      projects.forEach((data) => {
+        let project = data.data() ?? {}
+        if (!this.yourProjects.includes(project))
+          this.publicProjects.push(project)
+      })
+    })
+  }
+
   handleBoardClick(boardID) {
     this.router.navigate(['canvas/' + boardID]);
+  }
+
+  handleProjectClick(projectID) {
+    this.router.navigate(['project/' + projectID]);
   }
 
   openCreateBoardDialog() {

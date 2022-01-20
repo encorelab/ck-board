@@ -5,12 +5,19 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
 import { PasswordResetComponent } from './components/password-reset/password-reset.component';
+import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from './utils/auth.guard';
 import { BoardGuard } from './utils/board.guard';
 import { ProjectBoardGuard } from './utils/project.board.guard';
+import {ProjectGuard} from './utils/project.guard'
 
 const routes: Routes = [
+  {
+    path:'project/:projectID',
+    component:ProjectDashboardComponent,
+    canActivate:[ProjectGuard]
+  },
   { path: 'canvas/:projectID/:boardID',
         component: CanvasComponent,
         canActivate:[ProjectBoardGuard]

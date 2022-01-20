@@ -5,5 +5,6 @@ export class Project{
     boards:[];
     members:[];
     joinCode: string;
+    public: boolean;
 
 }

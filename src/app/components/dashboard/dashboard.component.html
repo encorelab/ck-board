@@ -2,21 +2,36 @@
     <mat-toolbar>
         <span>Common Knowledge Board</span>
         <span style="flex: 1 1 auto"></span>
-        <button mat-icon-button [matMenuTriggerFor]="addMenu" >
+        <button 
+          mat-icon-button 
+          [matMenuTriggerFor]="addMenu" 
+          *ngIf="user && user.role == 'teacher'" 
+          matTooltip="Create Project or Board">
           <mat-icon>add</mat-icon>
         </button>
         <mat-menu #addMenu="matMenu" >
-          <button mat-menu-item  (click)="openCreateProjectDialog()" *ngIf="user && user.role == 'teacher'">
-            Create Project
+          <button 
+            mat-menu-item  
+            (click)="openCreateProjectDialog()">
+              Create Project
           </button>
-          <button mat-menu-item (click)="openCreateBoardDialog()" *ngIf="user && user.role == 'teacher'">
+          <button mat-menu-item (click)="openCreateBoardDialog()" >
               Create Board
           </button>
         </mat-menu>
-        <button mat-button (click)="openJoinProjectDialog()" >
-          <mat-icon>group_add</mat-icon>
+        <button 
+          mat-button 
+          (click)="openJoinProjectDialog()"
+          matTooltip="Join Project" >
+            <mat-icon>group_add</mat-icon>
         </button>
-        <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
+        <button 
+          style="margin-left: 1em" 
+          *ngIf="user && user.username" 
+          mat-button [matMenuTriggerFor]="menu"
+          matTooltip="Account">
+            {{ user.username }}
+        </button>
         <mat-menu #menu="matMenu">
           <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
         </mat-menu>

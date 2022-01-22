@@ -134,7 +134,7 @@ export class DashboardComponent implements OnInit {
     this.boardService.create(board).then(_ => {
       this.router.navigate(['canvas/' + board.boardID])
     })
-    let projectBoards = this.yourProjects.find(board=>board.projectID == selectedProjectID)?.boards
+    let projectBoards = this.yourProjects.find(project=>project.projectID == selectedProjectID)?.boards
     if(projectBoards){
       this.projectService.update(selectedProjectID,{boards:[...projectBoards,board.boardID]})
     }

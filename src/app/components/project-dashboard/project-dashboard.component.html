@@ -1,24 +1,41 @@
 <div class="app">
     <mat-toolbar>
-        <span>Common Knowledge Board</span>
+        <span>{{project.name}}</span>
         <span style="flex: 1 1 auto"></span>
-        <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
-            <mat-icon>keyboard_return</mat-icon>
-          </button>
-        <button mat-icon-button [matMenuTriggerFor]="addMenu" >
+        <button 
+            mat-icon-button 
+            routerLink="/dashboard" 
+            matTooltip="Return to dashboard">
+                <mat-icon>keyboard_return</mat-icon>
+        </button>
+        <button 
+            mat-icon-button 
+            [matMenuTriggerFor]="addMenu"
+            *ngIf="user && user.role == 'teacher'"
+            matTooltip="Create Board">
             <mat-icon>add</mat-icon>
-          </button>
-          <mat-menu #addMenu="matMenu" >
-            <button mat-menu-item >
-                Create Board
+        </button>
+        <mat-menu #addMenu="matMenu" >
+            <button 
+                mat-menu-item
+                (click) ="openCreateBoardDialog()">
+                    Create Board
             </button>
-          </mat-menu>
+        </mat-menu>
         <button 
             style="margin-left: 1em" 
             mat-button
-        >
-            {{ user.username }}
+            mat-button [matMenuTriggerFor]="logoutMenu"
+            matTooltip="Account">
+                {{ user.username }}
         </button>
+        <mat-menu #logoutMenu="matMenu">
+            <button 
+                mat-menu-item 
+                (click)="this.authService.signOut()">
+                    Log Out
+            </button>
+          </mat-menu>
     </mat-toolbar>
 
     <h3 class="header">Boards for {{ project.name }}</h3>

@@ -42,6 +42,7 @@ export class AddBoardModalComponent implements OnInit {
         allowStudentTagging:true
       }
       this.projects = data.projects
+      this.selectedProject = data.defaultProject || ''
     }
   ngOnInit(): void {}
 

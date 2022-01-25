@@ -561,6 +561,6 @@ export class CanvasComponent {
   }
 
   displayZoomValue() {
-    return Math.floor(this.zoom * 100);
+    return Math.round(this.zoom * 100);
   }
 }

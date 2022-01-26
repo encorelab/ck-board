@@ -16,12 +16,13 @@ export class ConfigurationModalComponent {
 
   boardName: string
   isPublic: boolean = false
-  bgImgURL: any
+
+  currentBgImage: any 
 
   taskTitle: string
   taskMessage: string
 
-  permissions:Permissions
+  permissions: Permissions
 
   tags: string[]
   newTagText: string = ''
@@ -35,6 +36,7 @@ export class ConfigurationModalComponent {
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.boardName = data.board.name
       this.isPublic = data.board.public
+      this.currentBgImage = data.board.bgImage
       this.taskTitle = data.board.task.title
       this.taskMessage = data.board.task.message
       this.tags = data.board.tags ?? []
@@ -61,13 +63,18 @@ export class ConfigurationModalComponent {
     var file = e.target.files[0];
     var reader = new FileReader();
     reader.onload = (f) => {
-        this.bgImgURL = f.target?.result;
+        this.currentBgImage = { url: f.target?.result };
+        this.data.updateBackground(this.currentBgImage.url)
     };
     reader.readAsDataURL(file);
   }
 
+  removeImage() {
+    this.currentBgImage = null
+    this.data.updateBackground(null)
+  }
+
   handleDialogSubmit() {
-    if (this.bgImgURL) this.data.updateBackground(this.bgImgURL)
     this.data.updateBoardName(this.boardName)
     this.data.updateTask(this.taskTitle, this.taskMessage)
     this.data.updatePermissions(this.permissions)

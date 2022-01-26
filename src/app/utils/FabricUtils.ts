@@ -157,4 +157,24 @@ export class FabricUtils {
         obj.addWithUpdate();
         return obj
     }
+
+    createImageSettings(canvas, img) {
+        let vptCoords = canvas.vptCoords
+        let width = canvas.getWidth()
+        let height = canvas.getHeight()
+
+        if (vptCoords) {
+          width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
+          height = Math.abs(vptCoords.br.y - vptCoords.tr.y)
+        }
+
+        return {
+          top: vptCoords?.tl.y,
+          left: vptCoords?.tl.x,
+          width: width,
+          height: height,
+          scaleX: width / (img.width ?? 0),
+          scaleY: height / (img.height ?? 0)
+        }
+    }
 }

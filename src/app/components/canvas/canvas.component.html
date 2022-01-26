@@ -9,10 +9,10 @@
       <button mat-icon-button (click)="openWorkflowDialog()" matTooltip="Workflows">
         <mat-icon>timeline</mat-icon>
       </button>
-      <button mat-icon-button (click)="showBuckets = !showBuckets" matTooltip="View Buckets">
+      <button mat-icon-button (click)="showList = false; showBuckets = !showBuckets" matTooltip="View Buckets">
         <mat-icon>shopping_basket</mat-icon>
       </button>
-      <button mat-icon-button (click)="showList = !showList" matTooltip="List Posts">
+      <button mat-icon-button (click)="showBuckets = false; showList = !showList" matTooltip="List Posts">
         <mat-icon>list_alt</mat-icon>
       </button>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">

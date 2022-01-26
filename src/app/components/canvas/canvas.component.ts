@@ -187,23 +187,12 @@ export class CanvasComponent {
       if (img && settings) {
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
       } else if (img) {
-        var vptCoords = this.canvas.vptCoords
-        var width = this.canvas.getWidth(), height = this.canvas.getHeight()
-        if (vptCoords) {
-          width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
-          height = Math.abs(vptCoords.br.y - vptCoords.tr.y)
-        }
-
-        const imgSettings = {
-          top: vptCoords?.tl.y,
-          left: vptCoords?.tl.x,
-          width: width,
-          height: height,
-          scaleX: width / (img.width ?? 0),
-          scaleY: height / (img.height ?? 0)
-        }
+        const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
         this.boardService.update(this.boardID, { bgImage: { url: url, imgSettings: imgSettings } })
+      } else {
+        this.canvas.setBackgroundImage('', this.canvas.renderAll.bind(this.canvas))
+        this.boardService.update(this.boardID, { bgImage: null })
       }
     });
   }

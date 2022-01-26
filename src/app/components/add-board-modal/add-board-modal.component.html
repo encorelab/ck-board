@@ -14,9 +14,6 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-slide-toggle [(ngModel)]="isPublic">
-        Public Board
-      </mat-slide-toggle>
       <h4>Set Background Image:</h4>
       <input ng-hide id="input-file-id" type="file" accept=".jpeg,.jpg,.png,.svg" (change)="handleImageUpload($event)" style="margin-bottom: 20px;"/>
     </mat-tab>

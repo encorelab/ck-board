@@ -8,7 +8,6 @@ import { PasswordResetComponent } from './components/password-reset/password-res
 import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from './utils/auth.guard';
-import { BoardGuard } from './utils/board.guard';
 import { ProjectBoardGuard } from './utils/project.board.guard';
 import {ProjectGuard} from './utils/project.guard'
 
@@ -22,9 +21,6 @@ const routes: Routes = [
         component: CanvasComponent,
         canActivate:[ProjectBoardGuard]
       
-  },
-  { path: 'canvas/:boardID', component: CanvasComponent,
-    canActivate: [BoardGuard] 
   },
   { path: 'dashboard', component: DashboardComponent,
     canActivate: [AuthGuard]  

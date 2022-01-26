@@ -8,6 +8,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import {Router} from '@angular/router'
 import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
+import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 
 
 @Component({
@@ -76,6 +77,21 @@ export class ProjectDashboardComponent implements OnInit {
     if(projectBoards){
       this.projectService.update(selectedProjectID,{boards:[...projectBoards,board.boardID]})
     }
+  }
+
+  updateProjectName = (name) =>{
+    this.project.name = name
+    this.projectService.update(this.projectID,{name:name})
+
+  }
+
+  openSettingsDialog(){
+    this.dialog.open(ProjectConfigurationModalComponent, {
+      data:{
+        project:this.project,
+        updateProjectName:this.updateProjectName
+      }
+    })
   }
 
 

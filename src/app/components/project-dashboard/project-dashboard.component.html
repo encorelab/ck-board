@@ -13,7 +13,7 @@
             [matMenuTriggerFor]="addMenu"
             *ngIf="user && user.role == 'teacher'"
             matTooltip="Create Board">
-            <mat-icon>add</mat-icon>
+                <mat-icon>add</mat-icon>
         </button>
         <mat-menu #addMenu="matMenu" >
             <button 
@@ -22,6 +22,12 @@
                     Create Board
             </button>
         </mat-menu>
+        <button 
+            *ngIf="user && user.role == 'teacher'" 
+            mat-icon-button (click)="openSettingsDialog()" 
+            matTooltip="Adjust Settings">
+                <mat-icon>settings</mat-icon>
+        </button>
         <button 
             style="margin-left: 1em" 
             mat-button

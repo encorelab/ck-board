@@ -13,7 +13,6 @@ import { Utils } from 'src/app/utils/Utils';
 export class AddProjectModalComponent implements OnInit {
 
   name:string = ''
-  isPublic:boolean = false
 
 
   constructor(
@@ -34,7 +33,6 @@ export class AddProjectModalComponent implements OnInit {
       name: this.name,
       members: [this.authService.userData.id],
       boards:[],
-      public:this.isPublic,
       joinCode: Utils.generateCode(5).toString()
     })
     this.dialogRef.close();

@@ -18,7 +18,6 @@ export class AddBoardModalComponent implements OnInit {
   permissions:Permissions
 
   boardName: string = ''
-  isPublic: boolean = false
   bgImgURL: any = ''
 
   taskTitle: string = ''
@@ -70,7 +69,6 @@ export class AddBoardModalComponent implements OnInit {
       boardID: boardID,
       teacherID: this.data.user.id,
       name: this.boardName,
-      public: this.isPublic,
       task: {
         title: this.taskTitle,
         message: this.taskMessage

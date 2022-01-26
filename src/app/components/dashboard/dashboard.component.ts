@@ -24,11 +24,7 @@ export class DashboardComponent implements OnInit {
 
   user: User
 
-  yourBoards: Board[] = []
-  publicBoards: Board[] = []
-
   yourProjects:Project[]=[]
-  publicProjects:Project[]=[]
   
   constructor(public userService: UserService, public authService: AuthService, 
     public boardService: BoardService, public router: Router, public dialog: MatDialog, public projectService:ProjectService) {}
@@ -37,19 +33,8 @@ export class DashboardComponent implements OnInit {
     this.user = this.authService.userData
     this.authService.getAuthenticatedUser().then(user => {
       this.user = user
-      this.getUsersBoards(this.user.id).then(_ => this.isLoading = false)
       this.getUsersProjects(this.user.id).then(_ => this.isLoading = false)
 
-    })
-  }
-
-  getUsersBoards(id) {
-    return this.boardService.getByUserID(id).then(boards => {
-      boards.forEach((data) => {
-        let board = data.data() ?? {}
-        this.yourBoards.push(board)
-      })
-      this.getPublicBoards()
     })
   }
   
@@ -59,29 +44,9 @@ export class DashboardComponent implements OnInit {
         let project = data.data() ?? {}
         this.yourProjects.push(project)
       })
-      this.getPublicProjects()
-    })
-  }
-  
-  getPublicBoards() {
-    this.boardService.getPublic().then(boards => {
-      boards.forEach((data) => {
-        let board = data.data() ?? {}
-        if (!this.yourBoards.includes(board))
-          this.publicBoards.push(board)
-      })
     })
   }
 
-  getPublicProjects() {
-    this.projectService.getPublic().then(projects => {
-      projects.forEach((data) => {
-        let project = data.data() ?? {}
-        if (!this.yourProjects.includes(project))
-          this.publicProjects.push(project)
-      })
-    })
-  }
 
   handleBoardClick(boardID) {
     this.router.navigate(['canvas/' + boardID]);

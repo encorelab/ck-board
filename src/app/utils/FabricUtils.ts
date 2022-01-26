@@ -173,8 +173,8 @@ export class FabricUtils {
           left: vptCoords?.tl.x,
           width: width,
           height: height,
-          scaleX: width / (img.width ?? 0),
-          scaleY: height / (img.height ?? 0)
+          scaleX: width / (img.width ?? 1),
+          scaleY: height / (img.height ?? 1)
         }
     }
 }

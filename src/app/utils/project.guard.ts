@@ -70,7 +70,6 @@ export class ProjectGuard implements CanActivate {
       this.authService.getAuthenticatedUser().then(user => {
         if (user && this.project.members.includes(user.id)) {
           resolve(true)
-          alert("ran")
           return true
         } else {
           console.log('here')

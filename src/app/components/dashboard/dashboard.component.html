@@ -15,7 +15,7 @@
             (click)="openCreateProjectDialog()">
               Create Project
           </button>
-          <button mat-menu-item (click)="openCreateBoardDialog()" >
+          <button mat-menu-item (click)="openCreateBoardDialog()" *ngIf="yourProjects.length >0" >
               Create Board
           </button>
         </mat-menu>

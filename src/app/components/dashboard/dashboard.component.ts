@@ -107,8 +107,7 @@ export class DashboardComponent implements OnInit {
 
   createProject = (project: Project) => {
     this.projectService.create(project).then(_ => {
-      alert(project.name +"created!")
-      //this.router.navigate(['canvas/' + project.boardID])
+      this.router.navigate(['project/' + project.projectID])
     })
   }
 }

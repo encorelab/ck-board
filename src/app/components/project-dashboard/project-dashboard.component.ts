@@ -70,13 +70,18 @@ export class ProjectDashboardComponent implements OnInit {
   }
 
   createBoard = (board: Board, selectedProjectID:string) => {
-    this.boardService.create(board).then(_ => {
-      this.router.navigate(['canvas/' + board.boardID])
-    })
     let projectBoards = this.yourProjects.find(project=>project.projectID == selectedProjectID)?.boards
     if(projectBoards){
       this.projectService.update(selectedProjectID,{boards:[...projectBoards,board.boardID]})
+      .then(_=>{
+        return this.boardService.create(board)
+      })
+      .then(_ => {
+        this.router.navigate(['canvas/' + board.boardID])
+      })
     }
+    
+    
   }
 
   updateProjectName = (name) =>{

@@ -40,7 +40,7 @@ export class JoinProjectModalComponent implements OnInit {
           this.projectService.update(project.projectID, { members: members })
             .then(_ => {
               this.dialogRef.close(); 
-              alert("added you to project: "+project.name)})
+             })
             .catch(_ => this.showError('Something went wrong trying to join!'))
         }
       }

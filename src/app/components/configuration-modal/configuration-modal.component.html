@@ -6,9 +6,6 @@
         <mat-label>Board Name</mat-label>
         <input matInput [(ngModel)]="boardName">
       </mat-form-field>
-      <mat-slide-toggle [(ngModel)]="isPublic">
-        Public Board
-      </mat-slide-toggle>
       <h4>Set Background Image:</h4>
       <input ng-hide id="input-file-id" type="file" accept=".jpeg,.jpg,.png,.svg" (change)="handleImageUpload($event)" style="margin-bottom: 20px;"/>
     </mat-tab>
@@ -56,17 +53,6 @@
         </mat-chip-list>
       </mat-form-field>
       <button mat-button [disabled]="newTagText.length < 1" color="primary" (click)="addTag()">Add Tag</button>
-    </mat-tab>
-    <mat-tab label="Members">
-      <mat-list>
-        <div mat-subheader>Invite Code: {{ data.board.joinCode }}</div>
-        <div mat-subheader>Current Members</div>
-        <mat-list-item *ngFor="let member of members">
-          <mat-icon mat-list-icon>person</mat-icon>
-          <div mat-line>{{ member }}</div>
-        </mat-list-item>
-        <mat-divider></mat-divider>
-      </mat-list>
     </mat-tab>
   </mat-tab-group>
 </div>

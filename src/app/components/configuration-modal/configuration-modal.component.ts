@@ -15,7 +15,6 @@ export class ConfigurationModalComponent {
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
   boardName: string
-  isPublic: boolean = false
   bgImgURL: any
 
   taskTitle: string
@@ -34,7 +33,6 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.boardName = data.board.name
-      this.isPublic = data.board.public
       this.taskTitle = data.board.task.title
       this.taskMessage = data.board.task.message
       this.tags = data.board.tags ?? []
@@ -72,7 +70,6 @@ export class ConfigurationModalComponent {
     this.data.updateTask(this.taskTitle, this.taskMessage)
     this.data.updatePermissions(this.permissions)
     this.data.updateTags(this.tags)
-    this.data.updatePublic(this.isPublic)
     this.dialogRef.close();
   }
 

@@ -16,6 +16,7 @@ router.get(
 
 router.get("/callback", (req, res, next) => {
   passport.authenticate("auth0", (err, user, info) => {
+    console.log(user);
     if (err) {
       return next(err);
     }
@@ -51,7 +52,6 @@ router.get("/logout", (req, res) => {
   });
   logoutURL.search = searchString;
 
-  console.log(logoutURL);
   res.redirect(logoutURL);
 });
 

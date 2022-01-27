@@ -1,0 +1,22 @@
+<div class="app">
+    <mat-toolbar>
+        <span *ngIf="board && board.name">{{ board.name }}</span>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
+          <mat-icon>keyboard_return</mat-icon>
+        </button>
+        <!-- <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
+            <mat-icon>task</mat-icon>
+        </button>
+        <button *ngIf="user && user.role == 'teacher'" mat-icon-button (click)="openSettingsDialog()" matTooltip="Adjust Settings">
+          <mat-icon>settings</mat-icon>
+        </button>
+        <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
+        </mat-menu> -->
+    </mat-toolbar>
+    <div class="canvas-area">
+        <canvas id="canvas"></canvas>
+    </div>
+  </div>

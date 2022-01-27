@@ -52,6 +52,7 @@ export class PostModalComponent {
     public postsService: PostService, public bucketService: BucketService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
+      dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
       this.postsService.get(data.post.postID).then((item) => {
         item.forEach((post) => {
@@ -88,7 +89,7 @@ export class PostModalComponent {
       
   }
   
-  onNoClick(): void {
+  close(): void {
     this.dialogRef.close(this.post);
   }
   

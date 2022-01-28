@@ -74,11 +74,9 @@ export class ProjectDashboardComponent implements OnInit {
     if(projectBoards){
       this.projectService.update(selectedProjectID,{boards:[...projectBoards,board.boardID]})
       .then(_=>{
-        alert("ran1")
         return this.boardService.create(board)
       })
       .then(_ => {
-        alert("ran2")
         this.router.navigate(['canvas/' +selectedProjectID+"/"+ board.boardID])
       })
     }

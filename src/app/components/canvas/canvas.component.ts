@@ -38,6 +38,7 @@ import { Permissions } from 'src/app/models/permissions';
 })
 export class CanvasComponent {
   boardID: string
+  projectID:string
   canvas: Canvas;
 
   user: User
@@ -55,7 +56,9 @@ export class CanvasComponent {
 
   ngOnInit() {
     this.user = this.authService.userData;
-    this.boardID = this.route.url.substring(this.route.url.lastIndexOf('/')+1) ;
+    let urlArr = this.route.url.split('/')
+    this.boardID = urlArr[urlArr.length-1];
+    this.projectID = urlArr[urlArr.length-2];
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
    
     this.configureBoard();

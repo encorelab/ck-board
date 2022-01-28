@@ -79,7 +79,6 @@ export class AddBoardModalComponent implements OnInit {
       permissions:this.permissions,
       members: [this.authService.userData.id],
       tags: this.tags,
-      joinCode: Utils.generateCode(5).toString()
     }, this.selectedProject)
     this.dialogRef.close();
   }

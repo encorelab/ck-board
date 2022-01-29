@@ -40,6 +40,7 @@ export class JoinProjectModalComponent implements OnInit {
           this.projectService.update(project.projectID, { members: members })
             .then(_ => {
               this.dialogRef.close(); 
+              this.router.navigate(['project/' + project.projectID])
              })
             .catch(_ => this.showError('Something went wrong trying to join!'))
         }

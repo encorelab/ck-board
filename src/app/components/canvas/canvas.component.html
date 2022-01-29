@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
 <div class="app">
   <mat-toolbar>
       <span *ngIf="board && board.name">{{ board.name }}</span>
@@ -34,5 +35,18 @@
               </button>
           </div>
         </div>
+
+      <div class = "zoomField">
+        <button (click) = "handleZoom('zoomOut')" class = "zoomButton" mat-button color = "basic">
+          <mat-icon>remove</mat-icon>
+        </button>
+        <p> {{displayZoomValue()}}%</p>
+        <button (click) = "handleZoom('zoomIn')" class = "zoomButton" mat-button color = "basic">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button (click) = "handleZoom('reset')" class = "zoomButton" mat-button color = "basic">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
   </div>
 </div>

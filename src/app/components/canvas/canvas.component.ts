@@ -49,6 +49,15 @@ export class CanvasComponent {
   user: User
   board: Board
 
+  centerX: number
+  centerY: number
+  initialClientX: number
+  initialClientY: number
+  finalClientX: number
+  finalClientY: number
+
+  zoom: number
+
   mode: Mode = Mode.EDIT
   modeType = Mode
   fabricUtils: FabricUtils = new FabricUtils()
@@ -63,7 +72,14 @@ export class CanvasComponent {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-   
+    this.zoom = 1;
+    this.centerX = this.canvas.getWidth() / 2;
+    this.centerY = this.canvas.getHeight() / 2;
+    this.initialClientX = 0
+    this.initialClientY = 0;
+    this.finalClientX = 0;
+    this.finalClientY = 0;
+    this.displayZoomValue();
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -484,13 +500,13 @@ export class CanvasComponent {
       var options = (opt.e as unknown) as WheelEvent
 
       var delta = options.deltaY;
-      var zoom = this.canvas.getZoom();
+      //var zoom = this.canvas.getZoom();
 
-      zoom *= 0.999 ** delta;
-      if (zoom > 20) zoom = 20;
-      if (zoom < 0.01) zoom = 0.01;
+      this.zoom *= 0.999 ** delta;
+      if (this.zoom > 20) this.zoom = 20;
+      if (this.zoom < 0.01) this.zoom = 0.01;
 
-      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), zoom);
+      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
       opt.e.preventDefault();
       opt.e.stopPropagation();
     });
@@ -503,12 +519,18 @@ export class CanvasComponent {
       if (this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
+        const options = (opt.e as unknown) as WheelEvent
+        this.initialClientX = options.clientX;
+        this.initialClientY = options.clientY;
       }
     });
       
     this.canvas.on("mouse:up", (opt) => {
       isPanning = false;
       this.canvas.selection = true;
+      const options = (opt.e as unknown) as WheelEvent
+      this.initialClientX = options.clientX;
+      this.initialClientY = options.clientY;
     });
 
     this.canvas.on("mouse:move", (opt) => {
@@ -516,6 +538,8 @@ export class CanvasComponent {
       if (isPanning && options) {
         let delta = new fabric.Point(options.movementX, options.movementY);
         this.canvas.relativePan(delta);
+        this.finalClientX = options.clientX;
+        this.finalClientY = options.clientY;
       }
     })
   }
@@ -534,6 +558,35 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'move'
   }
 
-  
-}
+  handleZoom(event) {
 
+    let centerX = this.centerX + (this.finalClientX - this.initialClientX);
+    let centerY = this.centerY + (this.finalClientY - this.initialClientY);
+
+    this.initialClientX = this.finalClientX;
+    this.initialClientY = this.finalClientY;
+
+    if(event === 'zoomIn') {
+      this.zoom += 0.05;
+    }
+    else if(event === 'zoomOut') {
+      this.zoom -= 0.05;
+    }
+    else if(event === 'reset') {
+      this.zoom = 1;
+    }
+
+    if(this.zoom > 20) {
+      this.zoom = 20;
+    }
+    else if(this.zoom < 0.01) {
+      this.zoom = 0.01;
+    }
+
+    this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.zoom);
+  }
+
+  displayZoomValue() {
+    return Math.round(this.zoom * 100);
+  }
+}

@@ -27,9 +27,15 @@ import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
+import { ThrowStmt } from '@angular/compiler';
 
 // hard-coded for now
 // const this.boardID = '13n4jrf2r32fj'
+
+interface PostIDNamePair{
+  postID:string,
+  username:string
+}
 
 @Component({
   selector: 'app-canvas',
@@ -42,6 +48,15 @@ export class CanvasComponent {
 
   user: User
   board: Board
+
+  centerX: number
+  centerY: number
+  initialClientX: number
+  initialClientY: number
+  finalClientX: number
+  finalClientY: number
+
+  zoom: number
 
   mode: Mode = Mode.EDIT
   modeType = Mode
@@ -57,7 +72,14 @@ export class CanvasComponent {
     this.user = this.authService.userData;
     this.boardID = this.route.url.replace('/canvas/', '');
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-   
+    this.zoom = 1;
+    this.centerX = this.canvas.getWidth() / 2;
+    this.centerY = this.canvas.getHeight() / 2;
+    this.initialClientX = 0
+    this.initialClientY = 0;
+    this.finalClientX = 0;
+    this.finalClientY = 0;
+    this.displayZoomValue();
     this.configureBoard();
     this.addObjectListener();
     this.removeObjectListener();
@@ -72,6 +94,7 @@ export class CanvasComponent {
     this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
     
+    
   }
 
   // configure board
@@ -79,7 +102,7 @@ export class CanvasComponent {
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
-        var obj = JSON.parse(post.fabricObject); 
+        let obj = JSON.parse(post.fabricObject); 
         this.syncBoard(obj, post.postID);
       })
       this.boardService.get(this.boardID).then((board) => {
@@ -88,6 +111,22 @@ export class CanvasComponent {
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
           this.updateShowAddPost(this.board.permissions)
+          if(!(
+                  (this.user.role =="student" && this.board.permissions.showAuthorNameStudent) 
+              ||  (this.user.role =="teacher" && this.board.permissions.showAuthorNameTeacher)
+              )){
+              this.hideAuthorNames()
+          }
+          else{
+            // update all the post names to to the poster's name rather than anonymous
+            data.forEach((data) => {
+              let post = data.data() ?? {}
+              let uid = post.userID; 
+              this.userService.getOneById(uid).then((user:any)=>{
+                this.updateAuthorNames({postID:post.postID, username:user.username})
+              })
+            })
+          }
         } 
       })
     })
@@ -165,23 +204,12 @@ export class CanvasComponent {
       if (img && settings) {
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
       } else if (img) {
-        var vptCoords = this.canvas.vptCoords
-        var width = this.canvas.getWidth(), height = this.canvas.getHeight()
-        if (vptCoords) {
-          width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
-          height = Math.abs(vptCoords.br.y - vptCoords.tr.y)
-        }
-
-        const imgSettings = {
-          top: vptCoords?.tl.y,
-          left: vptCoords?.tl.x,
-          width: width,
-          height: height,
-          scaleX: width / (img.width ?? 0),
-          scaleY: height / (img.height ?? 0)
-        }
+        const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
         this.boardService.update(this.boardID, { bgImage: { url: url, imgSettings: imgSettings } })
+      } else {
+        this.canvas.setBackgroundImage('', this.canvas.renderAll.bind(this.canvas))
+        this.boardService.update(this.boardID, { bgImage: null })
       }
     });
   }
@@ -190,6 +218,7 @@ export class CanvasComponent {
     this.boardService.update(this.boardID, { permissions:permissions})
     this.lockPostsMovement(!permissions.allowStudentMoveAny)
     this.updateShowAddPost(permissions)
+    this.configureBoard()
   }
 
   updateShowAddPost(permissions:Permissions) {
@@ -210,6 +239,19 @@ export class CanvasComponent {
     this.canvas.getObjects().map(obj => {
       obj.set({lockMovementX: value, lockMovementY: value});
     });
+    this.canvas.renderAll()
+  }
+
+  hideAuthorNames(){
+    this.canvas.getObjects().map(obj => {
+      this.fabricUtils.updateAuthor(obj, "Anonymous")
+    });
+    this.canvas.renderAll()
+  }
+
+  updateAuthorNames(postToUpdate:PostIDNamePair){
+    let obj = this.fabricUtils.getObjectFromId(this.canvas,postToUpdate.postID)
+    this.fabricUtils.updateAuthor(obj, postToUpdate.username)
     this.canvas.renderAll()
   }
 
@@ -459,13 +501,13 @@ export class CanvasComponent {
       var options = (opt.e as unknown) as WheelEvent
 
       var delta = options.deltaY;
-      var zoom = this.canvas.getZoom();
+      //var zoom = this.canvas.getZoom();
 
-      zoom *= 0.999 ** delta;
-      if (zoom > 20) zoom = 20;
-      if (zoom < 0.01) zoom = 0.01;
+      this.zoom *= 0.999 ** delta;
+      if (this.zoom > 20) this.zoom = 20;
+      if (this.zoom < 0.01) this.zoom = 0.01;
 
-      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), zoom);
+      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
       opt.e.preventDefault();
       opt.e.stopPropagation();
     });
@@ -478,12 +520,18 @@ export class CanvasComponent {
       if (this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
+        const options = (opt.e as unknown) as WheelEvent
+        this.initialClientX = options.clientX;
+        this.initialClientY = options.clientY;
       }
     });
       
     this.canvas.on("mouse:up", (opt) => {
       isPanning = false;
       this.canvas.selection = true;
+      const options = (opt.e as unknown) as WheelEvent
+      this.initialClientX = options.clientX;
+      this.initialClientY = options.clientY;
     });
 
     this.canvas.on("mouse:move", (opt) => {
@@ -491,6 +539,8 @@ export class CanvasComponent {
       if (isPanning && options) {
         let delta = new fabric.Point(options.movementX, options.movementY);
         this.canvas.relativePan(delta);
+        this.finalClientX = options.clientX;
+        this.finalClientY = options.clientY;
       }
     })
   }
@@ -526,6 +576,35 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'move'
   }
 
-  
-}
+  handleZoom(event) {
 
+    let centerX = this.centerX + (this.finalClientX - this.initialClientX);
+    let centerY = this.centerY + (this.finalClientY - this.initialClientY);
+
+    this.initialClientX = this.finalClientX;
+    this.initialClientY = this.finalClientY;
+
+    if(event === 'zoomIn') {
+      this.zoom += 0.05;
+    }
+    else if(event === 'zoomOut') {
+      this.zoom -= 0.05;
+    }
+    else if(event === 'reset') {
+      this.zoom = 1;
+    }
+
+    if(this.zoom > 20) {
+      this.zoom = 20;
+    }
+    else if(this.zoom < 0.01) {
+      this.zoom = 0.01;
+    }
+
+    this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.zoom);
+  }
+
+  displayZoomValue() {
+    return Math.round(this.zoom * 100);
+  }
+}

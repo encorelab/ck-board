@@ -25,6 +25,34 @@ export class FabricUtils {
         return null;
     }
 
+    updateAuthor(obj: any, author: string) {
+        var children: fabric.Object[] = obj.getObjects()
+        var authorObj: any = children.filter((obj) => obj.name == 'author').pop()
+        var descObj: any = children.filter((obj) => obj.name == 'desc').pop()
+        var likeObj: any = children.filter((obj) => obj.name == 'like').pop()
+        var likeCountObj: any = children.filter((obj) => obj.name == 'likeCount').pop()
+        var commentObj: any = children.filter((obj) => obj.name == 'comment').pop()
+        var commentCountObj: any = children.filter((obj) => obj.name == 'commentCount').pop()
+        var contentObj: any = children.filter((obj) => obj.name == 'content').pop()
+
+        var oldAuthorHeight = authorObj.height
+
+        authorObj.set({ text: author, dirty: true })
+        
+        var authorDelta = authorObj.height - oldAuthorHeight
+
+        descObj.set({ top: descObj.top + authorDelta, dirty: true })
+        likeObj.set({ top: likeObj.top + authorDelta, dirty: true })
+        likeCountObj.set({ top: likeCountObj.top + authorDelta, dirty: true })
+        commentObj.set({ top: commentObj.top + authorDelta, dirty: true })
+        commentCountObj.set({ top: commentCountObj.top + authorDelta, dirty: true })
+        contentObj.set({ height: contentObj.height, dirty: true })
+
+        obj.dirty = true
+        obj.addWithUpdate();
+        return obj
+    }
+
     updatePostTitleDesc(obj: any, title: string, desc: string) {
         var children: fabric.Object[] = obj.getObjects()
         var titleObj: any = children.filter((obj) => obj.name == 'title').pop()
@@ -128,5 +156,25 @@ export class FabricUtils {
         obj.dirty = true
         obj.addWithUpdate();
         return obj
+    }
+
+    createImageSettings(canvas, img) {
+        let vptCoords = canvas.vptCoords
+        let width = canvas.getWidth()
+        let height = canvas.getHeight()
+
+        if (vptCoords) {
+          width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
+          height = Math.abs(vptCoords.br.y - vptCoords.tr.y)
+        }
+
+        return {
+          top: vptCoords?.tl.y,
+          left: vptCoords?.tl.x,
+          width: width,
+          height: height,
+          scaleX: width / (img.width ?? 1),
+          scaleY: height / (img.height ?? 1)
+        }
     }
 }

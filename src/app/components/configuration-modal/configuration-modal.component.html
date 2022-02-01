@@ -9,8 +9,17 @@
       <mat-slide-toggle [(ngModel)]="isPublic">
         Public Board
       </mat-slide-toggle>
-      <h4>Set Background Image:</h4>
-      <input ng-hide id="input-file-id" type="file" accept=".jpeg,.jpg,.png,.svg" (change)="handleImageUpload($event)" style="margin-bottom: 20px;"/>
+      <div class="image-form">
+        <mat-chip (click)="fileInput.click()" color="primary" selected>
+          <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
+          Upload New Background Image
+        </mat-chip>
+        <input hidden (change)="handleImageUpload($event)" #fileInput type="file" accept=".png,.svg" id="input-file-id">
+        <mat-chip *ngIf="currentBgImage && currentBgImage.url" color="warn" selected (click)="removeImage()">
+          <mat-icon class="chip-icon">cancel</mat-icon>
+          Remove Current Background Image
+        </mat-chip>
+      </div>
     </mat-tab>
     <mat-tab label="Task">
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
@@ -37,6 +46,12 @@
       </p>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentTagging" >Allow students to tag posts</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.showAuthorNameStudent" >Show author names to students</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.showAuthorNameTeacher" >Show author names to teachers</mat-checkbox>
       </p>
     </mat-tab>
     <mat-tab label="Tags">

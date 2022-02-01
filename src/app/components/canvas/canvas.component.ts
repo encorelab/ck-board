@@ -497,26 +497,19 @@ export class CanvasComponent {
 
   keyPanningListener() {
     document.addEventListener('keydown', (event) => {
-      if(this.mode == Mode.PAN) {
-        this.canvas.selection = false;
-        if(event.key == 'ArrowUp') {
-          this.canvas.relativePan(new fabric.Point(0, -10 * this.canvas.getZoom()));
-        }
-        else if(event.key == 'ArrowDown') {
-          this.canvas.relativePan(new fabric.Point(0, 10 * this.canvas.getZoom()));
-        }
-        else if(event.key == 'ArrowLeft') {
-          this.canvas.relativePan(new fabric.Point(10 * this.canvas.getZoom(), 0));
-        }
-        else if(event.key == 'ArrowRight') {
-          this.canvas.relativePan(new fabric.Point(-10 * this.canvas.getZoom(), 0));
-        }
+      if(event.key == 'ArrowUp') {
+        this.canvas.relativePan(new fabric.Point(0, 30 * this.canvas.getZoom()));
+      }
+      else if(event.key == 'ArrowDown') {
+        this.canvas.relativePan(new fabric.Point(0, -30 * this.canvas.getZoom()));
+      }
+      else if(event.key == 'ArrowLeft') {
+        this.canvas.relativePan(new fabric.Point(30 * this.canvas.getZoom(), 0));
+      }
+      else if(event.key == 'ArrowRight') {
+        this.canvas.relativePan(new fabric.Point(-30 * this.canvas.getZoom(), 0));
       }
     });
-
-    document.addEventListener('keyup', (event) => {
-      this.canvas.selection = true;
-    })
   }
 
   enablePanMode() {

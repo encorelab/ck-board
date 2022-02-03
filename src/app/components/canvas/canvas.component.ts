@@ -62,9 +62,7 @@ export class CanvasComponent {
 
   ngOnInit() {
     this.user = this.authService.userData;
-    let urlArr = this.route.url.split('/')
-    this.boardID = urlArr[urlArr.length-1];
-    this.projectID = urlArr[urlArr.length-2];
+    this.parseUrl(this.route.url);
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
    
     this.configureBoard();
@@ -124,6 +122,14 @@ export class CanvasComponent {
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'
     this.canvas.on('mouse:down', this.handleChoosePostLocation);
+  }
+
+  parseUrl =(url:string)=>{
+    // /project/[projectid]/board/[boardid]
+    let urlArr = url.split('/')
+    this.boardID = urlArr[urlArr.length-1];
+    this.projectID = urlArr[urlArr.length-3];
+
   }
   
   handleChoosePostLocation = (opt) => {

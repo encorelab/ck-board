@@ -12,15 +12,15 @@ import { ProjectBoardGuard } from './utils/project.board.guard';
 import {ProjectGuard} from './utils/project.guard'
 
 const routes: Routes = [
+  { path: 'project/:projectID/board/:boardID',
+  component: CanvasComponent,
+  canActivate:[ProjectBoardGuard]
+
+  },
   {
     path:'project/:projectID',
     component:ProjectDashboardComponent,
     canActivate:[ProjectGuard]
-  },
-  { path: 'canvas/:projectID/:boardID',
-        component: CanvasComponent,
-        canActivate:[ProjectBoardGuard]
-      
   },
   { path: 'dashboard', component: DashboardComponent,
     canActivate: [AuthGuard]  

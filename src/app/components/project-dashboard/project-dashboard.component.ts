@@ -77,7 +77,7 @@ export class ProjectDashboardComponent implements OnInit {
         return this.boardService.create(board)
       })
       .then(_ => {
-        this.router.navigate(['canvas/' +selectedProjectID+"/"+ board.boardID])
+        this.router.navigate(['project/' +selectedProjectID+"/board/"+ board.boardID])
       })
     }
     
@@ -101,7 +101,7 @@ export class ProjectDashboardComponent implements OnInit {
 
 
   handleBoardClick(boardID) {
-    this.router.navigate(['canvas/' + this.projectID + '/'+ boardID]);
+    this.router.navigate(['project/' + this.projectID + '/board/'+ boardID]);
   }
 
 }

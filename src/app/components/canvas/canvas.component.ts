@@ -86,6 +86,7 @@ export class CanvasComponent {
     this.movingObjectListener();
     this.zoomListener();
     this.panningListener();
+    this.panningBySwipingListener();
     this.expandPostListener();
     this.addCommentListener();
     this.addLikeListener();
@@ -499,16 +500,19 @@ export class CanvasComponent {
     this.canvas.on('mouse:wheel', (opt) => {
       var options = (opt.e as unknown) as WheelEvent
 
-      var delta = options.deltaY;
-      //var zoom = this.canvas.getZoom();
+      if(options.ctrlKey) {
 
-      this.zoom *= 0.999 ** delta;
-      if (this.zoom > 20) this.zoom = 20;
-      if (this.zoom < 0.01) this.zoom = 0.01;
+        var delta = options.deltaY;
+        //var zoom = this.canvas.getZoom();
 
-      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
-      opt.e.preventDefault();
-      opt.e.stopPropagation();
+        this.zoom *= 0.999 ** delta;
+        if (this.zoom > 20) this.zoom = 20;
+        if (this.zoom < 0.01) this.zoom = 0.01;
+
+        this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
+        opt.e.preventDefault();
+        opt.e.stopPropagation();
+      }
     });
   }
 
@@ -540,6 +544,20 @@ export class CanvasComponent {
         this.canvas.relativePan(delta);
         this.finalClientX = options.clientX;
         this.finalClientY = options.clientY;
+      }
+    })
+  }
+
+  panningBySwipingListener() {
+    this.canvas.on('mouse:wheel', (opt) => {
+      let options = (opt.e as unknown) as WheelEvent;
+
+      if(!(options.ctrlKey)) {
+        let vpt = this.canvas.viewportTransform;
+        if(!vpt) return;
+        vpt[4] += options.deltaX;
+        vpt[5] += options.deltaY;
+        this.canvas.requestRenderAll();
       }
     })
   }

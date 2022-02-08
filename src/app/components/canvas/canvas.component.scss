@@ -21,7 +21,7 @@
     border-radius: 30px;
     left: 93%;
   }
-  
+
   .toolField {
     width: 100%;
     display: flex;
@@ -32,5 +32,23 @@
   
     button {
       margin-bottom: 10px;
+    }
+  }
+
+  .zoomField {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: absolute;
+    bottom: 0.5em;
+    left: 82%;
+    background-color: white;
+    border-radius: 10px;
+
+    p {
+      overflow: hidden;
+      text-align: center;
+      width: 45px;
+      text-overflow: ellipsis;
     }
   }

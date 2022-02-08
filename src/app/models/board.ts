@@ -15,5 +15,4 @@ export class Board {
     permissions: Permissions; 
     members: [];
     tags: [];
-    joinCode: string;
 }

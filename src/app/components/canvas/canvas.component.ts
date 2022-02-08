@@ -44,6 +44,7 @@ interface PostIDNamePair{
 })
 export class CanvasComponent {
   boardID: string
+  projectID:string
   canvas: Canvas;
 
   user: User
@@ -70,7 +71,7 @@ export class CanvasComponent {
 
   ngOnInit() {
     this.user = this.authService.userData;
-    this.boardID = this.route.url.replace('/canvas/', '');
+    this.parseUrl(this.route.url);
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.zoom = 1;
     this.centerX = this.canvas.getWidth() / 2;
@@ -137,6 +138,14 @@ export class CanvasComponent {
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'
     this.canvas.on('mouse:down', this.handleChoosePostLocation);
+  }
+
+  parseUrl =(url:string)=>{
+    // /project/[projectid]/board/[boardid]
+    let urlArr = url.split('/')
+    this.boardID = urlArr[urlArr.length-1];
+    this.projectID = urlArr[urlArr.length-3];
+
   }
   
   handleChoosePostLocation = (opt) => {

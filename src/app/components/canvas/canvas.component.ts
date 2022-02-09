@@ -87,6 +87,7 @@ export class CanvasComponent {
     this.movingObjectListener();
     this.zoomListener();
     this.panningListener();
+    this.keyPanningListener();
     this.expandPostListener();
     this.addCommentListener();
     this.addLikeListener();
@@ -551,6 +552,27 @@ export class CanvasComponent {
         this.finalClientY = options.clientY;
       }
     })
+  }
+
+  keyPanningListener() {
+    document.addEventListener('keydown', (event) => {
+      if(event.key == 'ArrowUp') {
+        event.preventDefault();
+        this.canvas.relativePan(new fabric.Point(0, 30 * this.canvas.getZoom()));
+      }
+      else if(event.key == 'ArrowDown') {
+        event.preventDefault();
+        this.canvas.relativePan(new fabric.Point(0, -30 * this.canvas.getZoom()));
+      }
+      else if(event.key == 'ArrowLeft') {
+        event.preventDefault();
+        this.canvas.relativePan(new fabric.Point(30 * this.canvas.getZoom(), 0));
+      }
+      else if(event.key == 'ArrowRight') {
+        event.preventDefault();
+        this.canvas.relativePan(new fabric.Point(-30 * this.canvas.getZoom(), 0));
+      }
+    });
   }
 
   enablePanMode() {

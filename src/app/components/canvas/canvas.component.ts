@@ -548,15 +548,19 @@ export class CanvasComponent {
   keyPanningListener() {
     document.addEventListener('keydown', (event) => {
       if(event.key == 'ArrowUp') {
+        event.preventDefault();
         this.canvas.relativePan(new fabric.Point(0, 30 * this.canvas.getZoom()));
       }
       else if(event.key == 'ArrowDown') {
+        event.preventDefault();
         this.canvas.relativePan(new fabric.Point(0, -30 * this.canvas.getZoom()));
       }
       else if(event.key == 'ArrowLeft') {
+        event.preventDefault();
         this.canvas.relativePan(new fabric.Point(30 * this.canvas.getZoom(), 0));
       }
       else if(event.key == 'ArrowRight') {
+        event.preventDefault();
         this.canvas.relativePan(new fabric.Point(-30 * this.canvas.getZoom(), 0));
       }
     });

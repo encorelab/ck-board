@@ -501,12 +501,15 @@ export class CanvasComponent {
     this.canvas.on('mouse:wheel', (opt) => {
       var options = (opt.e as unknown) as WheelEvent
       
-      const trackpad_pinch =  ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
+      const trackpad_pinch = ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
       && (options.ctrlKey);
 
-      const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9)
+      const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9) 
+      && Math.abs(options.deltaX) < 1e-9
 
       if(trackpad_pinch || mousewheel) {  
+
+        console.log("HERE");
 
         var delta = options.deltaY;
         //var zoom = this.canvas.getZoom();
@@ -559,10 +562,17 @@ export class CanvasComponent {
       let options = (opt.e as unknown) as WheelEvent;
 
       const trackpad_twofinger = 
-      ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
+      (Number.isInteger(options.deltaY) && Number.isInteger(options.deltaX))
       && !(options.ctrlKey);
 
+      //console.log("Delta Y whole number", Number.isInteger(options.deltaY))
+      //console.log("Delta X not zero", Math.abs(options.deltaX) < 1e-9)
+      console.log("Delta Y value", options.deltaY)
+      console.log("Delta X value", options.deltaX)
+      console.log("Cond 2", !(options.ctrlKey))
+
       if(trackpad_twofinger) { 
+        console.log("HERE TOO");
         let vpt = this.canvas.viewportTransform;
         if(!vpt) return;
         vpt[4] += options.deltaX;

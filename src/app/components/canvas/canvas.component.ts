@@ -496,11 +496,17 @@ export class CanvasComponent {
     })
   }
 
+
   zoomListener() {
     this.canvas.on('mouse:wheel', (opt) => {
       var options = (opt.e as unknown) as WheelEvent
+      
+      const trackpad_pinch =  ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
+      && (options.ctrlKey);
 
-      if(options.ctrlKey) {
+      const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9)
+
+      if(trackpad_pinch || mousewheel) {  
 
         var delta = options.deltaY;
         //var zoom = this.canvas.getZoom();
@@ -552,7 +558,11 @@ export class CanvasComponent {
     this.canvas.on('mouse:wheel', (opt) => {
       let options = (opt.e as unknown) as WheelEvent;
 
-      if(!(options.ctrlKey)) {
+      const trackpad_twofinger = 
+      ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
+      && !(options.ctrlKey);
+
+      if(trackpad_twofinger) { 
         let vpt = this.canvas.viewportTransform;
         if(!vpt) return;
         vpt[4] += options.deltaX;

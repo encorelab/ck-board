@@ -510,13 +510,19 @@ export class CanvasComponent {
       // Condition for mousewheel:
       // 1. delta Y has trailing non-zero decimal points
       // 2. delta X is zero 
+      // 3. ctrl key is not triggered
       const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9) 
-      && Math.abs(options.deltaX) < 1e-9
+      && Math.abs(options.deltaX) < 1e-9 && !(options.ctrlKey);
 
       if(trackpad_pinch || mousewheel) {  
         var delta = options.deltaY;
 
-        this.zoom *= 0.999 ** delta;
+        if(mousewheel) {
+          this.zoom *= 0.999 ** delta;
+        }
+        else {
+          this.zoom *= 1.01 ** delta;
+        }
         if (this.zoom > 20) this.zoom = 20;
         if (this.zoom < 0.01) this.zoom = 0.01;
 
@@ -563,8 +569,10 @@ export class CanvasComponent {
     this.canvas.on('mouse:wheel', (opt) => {
       let options = (opt.e as unknown) as WheelEvent;
 
-      // Condition for two-finger swipe on trackpad: delta Y is an integer, delta X is an integer, and
-      // ctrl key is not triggered
+      // Condition for two-finger swipe on trackpad: 
+      // 1. delta Y is an integer, 
+      // 2. delta X is an integer,
+      // 3. ctrl key is not triggered
       const trackpad_twofinger = 
       Number.isInteger(options.deltaY) && Number.isInteger(options.deltaX)
       && !(options.ctrlKey);

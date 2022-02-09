@@ -500,19 +500,21 @@ export class CanvasComponent {
   zoomListener() {
     this.canvas.on('mouse:wheel', (opt) => {
       var options = (opt.e as unknown) as WheelEvent
-      
+
+      // Condition for pinch gesture on trackpad: 
+      // 1. delta Y is an integer or delta X is 0 
+      // 2. ctrl key is triggered
       const trackpad_pinch = ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
       && (options.ctrlKey);
 
+      // Condition for mousewheel:
+      // 1. delta Y has trailing non-zero decimal points
+      // 2. delta X is zero 
       const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9) 
       && Math.abs(options.deltaX) < 1e-9
 
       if(trackpad_pinch || mousewheel) {  
-
-        console.log("HERE");
-
         var delta = options.deltaY;
-        //var zoom = this.canvas.getZoom();
 
         this.zoom *= 0.999 ** delta;
         if (this.zoom > 20) this.zoom = 20;
@@ -561,18 +563,13 @@ export class CanvasComponent {
     this.canvas.on('mouse:wheel', (opt) => {
       let options = (opt.e as unknown) as WheelEvent;
 
+      // Condition for two-finger swipe on trackpad: delta Y is an integer, delta X is an integer, and
+      // ctrl key is not triggered
       const trackpad_twofinger = 
-      (Number.isInteger(options.deltaY) && Number.isInteger(options.deltaX))
+      Number.isInteger(options.deltaY) && Number.isInteger(options.deltaX)
       && !(options.ctrlKey);
 
-      //console.log("Delta Y whole number", Number.isInteger(options.deltaY))
-      //console.log("Delta X not zero", Math.abs(options.deltaX) < 1e-9)
-      console.log("Delta Y value", options.deltaY)
-      console.log("Delta X value", options.deltaX)
-      console.log("Cond 2", !(options.ctrlKey))
-
       if(trackpad_twofinger) { 
-        console.log("HERE TOO");
         let vpt = this.canvas.viewportTransform;
         if(!vpt) return;
         vpt[4] += options.deltaX;

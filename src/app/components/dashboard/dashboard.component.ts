@@ -8,6 +8,10 @@ import { BoardService } from 'src/app/services/board.service';
 import { UserService } from 'src/app/services/user.service';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { JoinBoardModalComponent } from '../join-board-modal/join-board-modal.component';
+import { ProjectService } from 'src/app/services/project.service';
+import { Project } from 'src/app/models/project';
+import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
+import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,42 +24,36 @@ export class DashboardComponent implements OnInit {
 
   user: User
 
-  yourBoards: Board[] = []
-  publicBoards: Board[] = []
+  yourProjects:Project[]=[]
   
   constructor(public userService: UserService, public authService: AuthService, 
-    public boardService: BoardService, public router: Router, public dialog: MatDialog) {}
+    public boardService: BoardService, public router: Router, public dialog: MatDialog, public projectService:ProjectService) {}
 
   ngOnInit(): void {
     this.user = this.authService.userData
     this.authService.getAuthenticatedUser().then(user => {
       this.user = user
-      this.getUsersBoards(this.user.id).then(_ => this.isLoading = false)
-    })
-  }
+      this.getUsersProjects(this.user.id).then(_ => this.isLoading = false)
 
-  getUsersBoards(id) {
-    return this.boardService.getByUserID(id).then(boards => {
-      boards.forEach((data) => {
-        let board = data.data() ?? {}
-        this.yourBoards.push(board)
-      })
-      this.getPublicBoards()
     })
   }
   
-  getPublicBoards() {
-    this.boardService.getPublic().then(boards => {
-      boards.forEach((data) => {
-        let board = data.data() ?? {}
-        if (!this.yourBoards.includes(board))
-          this.publicBoards.push(board)
+  getUsersProjects(id){
+    return this.projectService.getByUserID(id).then(project => {
+      project.forEach((data) => {
+        let project = data.data() ?? {}
+        this.yourProjects.push(project)
       })
     })
   }
 
+
   handleBoardClick(boardID) {
     this.router.navigate(['canvas/' + boardID]);
+  }
+
+  handleProjectClick(projectID) {
+    this.router.navigate(['project/' + projectID]);
   }
 
   openCreateBoardDialog() {
@@ -63,7 +61,18 @@ export class DashboardComponent implements OnInit {
       width: '700px',
       data: {
         user: this.user,
-        createBoard: this.createBoard
+        createBoard: this.createBoard,
+        projects:this.yourProjects
+      }
+    });
+  }
+
+  openCreateProjectDialog() {
+    this.dialog.open(AddProjectModalComponent, {
+      width: '700px',
+      data: {
+        user: this.user,
+        createProject: this.createProject
       }
     });
   }
@@ -77,9 +86,28 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  createBoard = (board: Board) => {
+  openJoinProjectDialog() {
+    this.dialog.open(JoinProjectModalComponent, {
+      width: '700px',
+      data: {
+        user: this.user
+      }
+    });
+  }
+
+  createBoard = (board: Board, selectedProjectID:string) => {
     this.boardService.create(board).then(_ => {
       this.router.navigate(['canvas/' + board.boardID])
+    })
+    let projectBoards = this.yourProjects.find(project=>project.projectID == selectedProjectID)?.boards
+    if(projectBoards){
+      this.projectService.update(selectedProjectID,{boards:[...projectBoards,board.boardID]})
+    }
+  }
+
+  createProject = (project: Project) => {
+    this.projectService.create(project).then(_ => {
+      this.router.navigate(['project/' + project.projectID])
     })
   }
 }

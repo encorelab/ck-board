@@ -3,7 +3,7 @@
   <mat-toolbar>
       <span *ngIf="board && board.name">{{ board.name }}</span>
       <span style="flex: 1 1 auto"></span>
-      <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
+      <button mat-icon-button routerLink="{{'/project/'+projectID}}" matTooltip="Return to Project Dashboard">
         <mat-icon>keyboard_return</mat-icon>
       </button>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
@@ -17,7 +17,7 @@
         <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
       </mat-menu>
   </mat-toolbar>
-  <div class="canvas-area">
+  <div class="canvas-area" id="canvas-area">
       <canvas id="canvas"></canvas>
       <div class="toolSection">
           <div class="toolField">

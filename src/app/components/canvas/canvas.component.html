@@ -6,7 +6,7 @@
       <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
         <mat-icon>keyboard_return</mat-icon>
       </button>
-      <button mat-icon-button (click)="openWorkflowDialog()" matTooltip="Workflows">
+      <button mat-icon-button *ngIf="user && user.role == 'teacher'" (click)="openWorkflowDialog()" matTooltip="Workflows">
         <mat-icon>timeline</mat-icon>
       </button>
       <button mat-icon-button (click)="showList = false; showBuckets = !showBuckets" matTooltip="View Buckets">

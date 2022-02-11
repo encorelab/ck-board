@@ -49,7 +49,7 @@ export class PostComponent extends fabric.Group {
     
     var likeButton = new fabric.Textbox('👍🏼', {
       name: 'like',
-      width: 100,
+      width: 55,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
       left: 170,
       fontSize: 20,
@@ -60,7 +60,7 @@ export class PostComponent extends fabric.Group {
 
     var likeCount = new fabric.Textbox('0', {
       name: 'likeCount',
-      width: 100,
+      width: 55,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
       left: (likeButton.left ?? 0) + 28,
       fontSize: 20,
@@ -71,7 +71,7 @@ export class PostComponent extends fabric.Group {
 
     var commentButton = new fabric.Textbox('💬', {
       name: 'comment',
-      width: 100,
+      width: 55,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
       left: (likeCount.left ?? 0) + 45,
       fontSize: 20,
@@ -82,7 +82,7 @@ export class PostComponent extends fabric.Group {
 
     var commentCount = new fabric.Textbox('0', {
       name: 'commentCount',
-      width: 100,
+      width: 55,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
       left: (commentButton.left ?? 0) + 28,
       fontSize: 20,

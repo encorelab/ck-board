@@ -44,6 +44,18 @@
                 </button>
             </div>
           </div>
+          <div class = "zoomField">
+            <button (click) = "handleZoom('zoomOut')" class = "zoomButton" mat-button color = "basic">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <p> {{displayZoomValue()}}%</p>
+            <button (click) = "handleZoom('zoomIn')" class = "zoomButton" mat-button color = "basic">
+              <mat-icon>add</mat-icon>
+            </button>
+            <button (click) = "handleZoom('reset')" class = "zoomButton" mat-button color = "basic">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </div>
     </div>
   </div>
   <app-bucket [board]="board" [(visible)]="showBuckets"></app-bucket>

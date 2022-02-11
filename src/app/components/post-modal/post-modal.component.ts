@@ -33,8 +33,12 @@ export class PostModalComponent {
   desc: string
   editingDesc: string
   isEditing: boolean = false
+  showEditDelete: boolean = false
   canEditDelete: boolean
+  canStudentComment:boolean
+  canStudentTag:boolean
   showComments: boolean = false
+  showAuthorName:boolean
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
   descControl = new FormControl('', [Validators.maxLength(1000)]);
@@ -64,7 +68,7 @@ export class PostModalComponent {
           this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
           this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
-          this.canEditDelete = this.post.userID == this.user.id || this.user.role == 'teacher'
+          this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == 'teacher'
         })
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
@@ -87,6 +91,12 @@ export class PostModalComponent {
         })
       })
       
+    let isStudent = this.user.role =="student"
+    let isTeacher = this.user.role =="teacher"
+    this.showEditDelete = (isStudent && data.board.permissions.allowStudentEditAddDeletePost) || isTeacher 
+    this.canStudentComment = (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher 
+    this.canStudentTag = (isStudent && data.board.permissions.allowStudentTagging) || isTeacher 
+    this.showAuthorName = (isStudent && data.board.permissions.showAuthorNameStudent) || (isTeacher && data.board.permissions.showAuthorNameTeacher)
   }
   
   close(): void {
@@ -145,6 +155,8 @@ export class PostModalComponent {
   }
 
   removeTag(tag) {
+    if(!this.canStudentTag)
+      return
     const index = this.tags.indexOf(tag);
     if (index >= 0) {
       this.tags.splice(index, 1);
@@ -170,6 +182,11 @@ export class PostModalComponent {
   }
 
   handleLikeClick() {
+    // if liking is locked just return (do nothing)
+    if(this.user.role =="student" && !this.data.board.permissions.allowStudentLiking){
+      return;
+    }
+      
     if (this.isLiked) {
       this.likesService.remove(this.isLiked.likeID).then(() => {
         this.isLiked = null

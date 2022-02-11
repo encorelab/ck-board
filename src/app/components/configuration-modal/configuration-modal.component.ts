@@ -3,6 +3,7 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BoardService } from 'src/app/services/board.service';
 import { MatChipInputEvent } from '@angular/material/chips';
+import { Permissions } from 'src/app/models/permissions';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
@@ -15,12 +16,13 @@ export class ConfigurationModalComponent {
 
   boardName: string
   isPublic: boolean = false
-  bgImgURL: any
+
+  currentBgImage: any 
 
   taskTitle: string
   taskMessage: string
 
-  allowStudentMoveAny: boolean
+  permissions: Permissions
 
   tags: string[]
   newTagText: string = ''
@@ -32,12 +34,13 @@ export class ConfigurationModalComponent {
     public boardService: BoardService,
     public userService: UserService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
-      this.allowStudentMoveAny = data.board.permissions.allowStudentMoveAny
       this.boardName = data.board.name
       this.isPublic = data.board.public
+      this.currentBgImage = data.board.bgImage
       this.taskTitle = data.board.task.title
       this.taskMessage = data.board.task.message
       this.tags = data.board.tags ?? []
+      this.permissions= data.board.permissions
       data.board.members.map(id => {
         userService.getOneById(id).then(user => {
           if (user) {
@@ -60,18 +63,22 @@ export class ConfigurationModalComponent {
     var file = e.target.files[0];
     var reader = new FileReader();
     reader.onload = (f) => {
-        this.bgImgURL = f.target?.result;
+        this.currentBgImage = { url: f.target?.result };
+        this.data.updateBackground(this.currentBgImage.url)
     };
     reader.readAsDataURL(file);
   }
 
+  removeImage() {
+    this.currentBgImage = null
+    this.data.updateBackground(null)
+  }
+
   handleDialogSubmit() {
-    if (this.bgImgURL) this.data.updateBackground(this.bgImgURL)
     this.data.updateBoardName(this.boardName)
     this.data.updateTask(this.taskTitle, this.taskMessage)
-    this.data.updatePermissions(this.allowStudentMoveAny)
+    this.data.updatePermissions(this.permissions)
     this.data.updateTags(this.tags)
-    this.data.updatePublic(this.isPublic)
     this.dialogRef.close();
   }
 

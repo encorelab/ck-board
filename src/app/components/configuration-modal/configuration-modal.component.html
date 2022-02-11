@@ -9,8 +9,17 @@
       <mat-slide-toggle [(ngModel)]="isPublic">
         Public Board
       </mat-slide-toggle>
-      <h4>Set Background Image:</h4>
-      <input ng-hide id="input-file-id" type="file" accept=".jpeg,.jpg,.png,.svg" (change)="handleImageUpload($event)" style="margin-bottom: 20px;"/>
+      <div class="image-form">
+        <mat-chip (click)="fileInput.click()" color="primary" selected>
+          <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
+          Upload New Background Image
+        </mat-chip>
+        <input hidden (change)="handleImageUpload($event)" #fileInput type="file" accept=".png,.svg" id="input-file-id">
+        <mat-chip *ngIf="currentBgImage && currentBgImage.url" color="warn" selected (click)="removeImage()">
+          <mat-icon class="chip-icon">cancel</mat-icon>
+          Remove Current Background Image
+        </mat-chip>
+      </div>
     </mat-tab>
     <mat-tab label="Task">
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
@@ -24,7 +33,25 @@
     </mat-tab>
     <mat-tab label="Permissions">
       <p>
-        <mat-checkbox [checked]="allowStudentMoveAny">Students can move any post?</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny">Allow students to move any post</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentEditAddDeletePost" >Allow students to create, edit, and delete posts</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentLiking" >Allow students to like posts</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentCommenting" >Allow students to comment on posts</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentTagging" >Allow students to tag posts</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.showAuthorNameStudent" >Show author names to students</mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.showAuthorNameTeacher" >Show author names to teachers</mat-checkbox>
       </p>
     </mat-tab>
     <mat-tab label="Tags">
@@ -44,17 +71,6 @@
         </mat-chip-list>
       </mat-form-field>
       <button mat-button [disabled]="newTagText.length < 1" color="primary" (click)="addTag()">Add Tag</button>
-    </mat-tab>
-    <mat-tab label="Members">
-      <mat-list>
-        <div mat-subheader>Invite Code: {{ data.board.joinCode }}</div>
-        <div mat-subheader>Current Members</div>
-        <mat-list-item *ngFor="let member of members">
-          <mat-icon mat-list-icon>person</mat-icon>
-          <div mat-line>{{ member }}</div>
-        </mat-list-item>
-        <mat-divider></mat-divider>
-      </mat-list>
     </mat-tab>
   </mat-tab-group>
 </div>

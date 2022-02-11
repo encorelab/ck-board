@@ -1,0 +1,60 @@
+<div class="app">
+    <mat-toolbar>
+        <span>{{project.name}}</span>
+        <span style="flex: 1 1 auto"></span>
+        <button 
+            mat-icon-button 
+            routerLink="/dashboard" 
+            matTooltip="Return to dashboard">
+                <mat-icon>keyboard_return</mat-icon>
+        </button>
+        <button 
+            mat-icon-button 
+            [matMenuTriggerFor]="addMenu"
+            *ngIf="user && user.role == 'teacher'"
+            matTooltip="Create Board">
+                <mat-icon>add</mat-icon>
+        </button>
+        <mat-menu #addMenu="matMenu" >
+            <button 
+                mat-menu-item
+                (click) ="openCreateBoardDialog()">
+                    Create Board
+            </button>
+        </mat-menu>
+        <button 
+            *ngIf="user && user.role == 'teacher'" 
+            mat-icon-button (click)="openSettingsDialog()" 
+            matTooltip="Adjust Settings">
+                <mat-icon>settings</mat-icon>
+        </button>
+        <button 
+            style="margin-left: 1em" 
+            mat-button
+            mat-button [matMenuTriggerFor]="logoutMenu"
+            matTooltip="Account">
+                {{ user.username }}
+        </button>
+        <mat-menu #logoutMenu="matMenu">
+            <button 
+                mat-menu-item 
+                (click)="this.authService.signOut()">
+                    Log Out
+            </button>
+          </mat-menu>
+    </mat-toolbar>
+
+    <h3 class="header">Boards for {{ project.name }}</h3>
+    <mat-grid-list class="content" cols="4" rowHeight="200">
+        <mat-grid-tile *ngFor="let board of boards" height="100px">
+            <mat-card class="card" (click) = "handleBoardClick(board.boardID)">
+                <mat-card-header>
+                    <mat-card-title class="title">
+                        {{board.name}}
+                    </mat-card-title>
+                </mat-card-header>
+            </mat-card>
+        </mat-grid-tile>
+    </mat-grid-list>
+
+</div>

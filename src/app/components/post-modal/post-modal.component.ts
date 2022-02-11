@@ -126,6 +126,9 @@ export class PostModalComponent {
   }
 
   onUpdate() {
+    this.editingTitle = this.title
+    this.editingDesc = this.desc
+    
     var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
     
     obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)

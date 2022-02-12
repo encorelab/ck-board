@@ -97,7 +97,7 @@ export class DashboardComponent implements OnInit {
 
   createBoard = (board: Board, selectedProjectID:string) => {
     this.boardService.create(board).then(_ => {
-      this.router.navigate(['canvas/' + board.boardID])
+      this.router.navigate(['project/' +selectedProjectID+"/board/"+ board.boardID])
     })
     let projectBoards = this.yourProjects.find(project=>project.projectID == selectedProjectID)?.boards
     if(projectBoards){

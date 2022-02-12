@@ -78,5 +78,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button disabled cdkFocusInitial [disabled]="boardNameInput.invalid || projectInput.invalid">Create Board!</button>
+  <button mat-button  cdkFocusInitial [disabled]="boardNameInput.invalid || projectInput.invalid" (click) ="handleDialogSubmit()">Create Board!</button>
 </div>

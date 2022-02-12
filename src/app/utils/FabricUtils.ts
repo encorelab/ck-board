@@ -167,14 +167,35 @@ export class FabricUtils {
           width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
           height = Math.abs(vptCoords.br.y - vptCoords.tr.y)
         }
+        let scaleX = 0
+        let scaleY = 0
+
+        /* 
+            we scale by the longer of width and height
+            if the image is square we scale by same ammount on width and height
+            ex viewport is 2 by 2. Image is w:16 h:9
+            w>=h so scaleX = 2/16 -> 1/8
+            scaleY = scaleX so that we have even scaling
+            final scaled image will be W: 16/8 = 2 H: 9/8 = 1.125
+            this fits in our 2 by 2 viewport
+
+        */
+        if(img.width>=img.height){
+            scaleX= width / (img.width ?? 1)
+            scaleY = scaleX
+        }
+        else{
+            scaleY= height / (img.height ?? 1)
+            scaleX = scaleY
+        }
 
         return {
           top: vptCoords?.tl.y,
           left: vptCoords?.tl.x,
           width: width,
           height: height,
-          scaleX: width / (img.width ?? 1),
-          scaleY: height / (img.height ?? 1)
+          scaleX: scaleX,
+          scaleY: scaleY
         }
     }
 }

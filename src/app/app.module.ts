@@ -28,6 +28,10 @@ import { PasswordResetComponent } from './components/password-reset/password-res
 import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
 import { ErrorComponent } from './components/error/error.component';
 import { PasswordResetConfirmationModalComponent } from './components/password-reset-confirmation-modal/password-reset-confirmation-modal.component';
+import { JoinProjectModalComponent } from './components/join-project-modal/join-project-modal.component';
+import { AddProjectModalComponent } from './components/add-project-modal/add-project-modal.component';
+import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
+import { ProjectConfigurationModalComponent } from './components/project-configuration-modal/project-configuration-modal.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +49,11 @@ import { PasswordResetConfirmationModalComponent } from './components/password-r
     PasswordResetComponent,
     JoinBoardModalComponent,
     ErrorComponent,
-    PasswordResetConfirmationModalComponent
+    PasswordResetConfirmationModalComponent,
+    JoinProjectModalComponent,
+    AddProjectModalComponent,
+    ProjectDashboardComponent,
+    ProjectConfigurationModalComponent
   ],
   imports: [
     BrowserModule,

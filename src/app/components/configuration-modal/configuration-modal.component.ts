@@ -79,7 +79,6 @@ export class ConfigurationModalComponent {
     this.data.updateTask(this.taskTitle, this.taskMessage)
     this.data.updatePermissions(this.permissions)
     this.data.updateTags(this.tags)
-    this.data.updatePublic(this.isPublic)
     this.dialogRef.close();
   }
 

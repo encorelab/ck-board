@@ -5,6 +5,7 @@ import { Permissions } from 'src/app/models/permissions';
 import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { Utils } from 'src/app/utils/Utils';
+import { Project } from 'src/app/models/project';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -17,7 +18,6 @@ export class AddBoardModalComponent implements OnInit {
   permissions:Permissions
 
   boardName: string = ''
-  isPublic: boolean = false
   bgImgURL: any = ''
 
   taskTitle: string = ''
@@ -25,6 +25,8 @@ export class AddBoardModalComponent implements OnInit {
   
   tags: string[] = []
   newTagText: string = ''
+  projects:Project[]
+  selectedProject:string=''
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
@@ -40,6 +42,8 @@ export class AddBoardModalComponent implements OnInit {
         showAuthorNameStudent:true,
         showAuthorNameTeacher:true
       }
+      this.projects = data.projects
+      this.selectedProject = data.defaultProject || ''
     }
   ngOnInit(): void {}
 
@@ -67,7 +71,6 @@ export class AddBoardModalComponent implements OnInit {
       boardID: boardID,
       teacherID: this.data.user.id,
       name: this.boardName,
-      public: this.isPublic,
       task: {
         title: this.taskTitle,
         message: this.taskMessage
@@ -78,8 +81,7 @@ export class AddBoardModalComponent implements OnInit {
       permissions:this.permissions,
       members: [this.authService.userData.id],
       tags: this.tags,
-      joinCode: Utils.generateCode(5).toString()
-    })
+    }, this.selectedProject)
     this.dialogRef.close();
   }
 

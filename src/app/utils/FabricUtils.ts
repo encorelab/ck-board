@@ -171,11 +171,10 @@ export class FabricUtils {
         let scaleY = 0
 
         /* 
-            we scale by the smaller of the two scales
-            if the image is square we scale by same ammount on width and height
+            we scale both width and height by the smaller of the two scales
             ex viewport is 2 by 2. Image is w:16 h:9
             scaleX = 2/16, scaleY = 2/9
-            9/2 is smaller so we scale by that
+            2/16 is smaller so we scale by that
             scaleY = scaleX so that we have even scaling
             final scaled image will be W: 16/8 = 2 H: 9/8 = 1.125
             this fits in our 2 by 2 viewport

@@ -13,6 +13,9 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   bucketName: string = ''
 
+  isError: boolean = false
+  errorMessage: string = ''
+
   constructor(
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
     public bucketService: BucketService,
@@ -22,6 +25,11 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   createBucket() {
+    if (this.bucketName == '') {
+      this.showError('Bucket name is required!')
+      return;
+    }
+
     const bucket: Bucket = {
       bucketID: Date.now() + '-' + this.data.board.boardID,
       boardID: this.data.board.boardID,
@@ -40,5 +48,10 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  showError(message: string) {
+    this.isError = true
+    this.errorMessage = message
   }
 }

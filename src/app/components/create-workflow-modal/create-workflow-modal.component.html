@@ -5,6 +5,7 @@
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Bucket Name</mat-label>
         <input matInput [(ngModel)]="bucketName">
+        <mat-hint class="mat-error" *ngIf="isError">{{ errorMessage }}</mat-hint>
       </mat-form-field>
       <div mat-dialog-actions>
         <button mat-button (click)="onNoClick()">Cancel</button>

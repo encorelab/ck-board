@@ -531,7 +531,7 @@ export class CanvasComponent {
           this.zoom *= 0.999 ** delta;
         }
         else {
-          this.zoom *= 1.01 ** delta;
+          this.zoom *= 0.95 ** delta;
         }
         if (this.zoom > 20) this.zoom = 20;
         if (this.zoom < 0.01) this.zoom = 0.01;

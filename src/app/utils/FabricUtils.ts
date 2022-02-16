@@ -188,10 +188,15 @@ export class FabricUtils {
         else{
             scaleX = scaleY
         }
+        // center image horizontally
+        let leftOffset = Math.floor((width - scaleX *img.width) /2)
+
+        // center image vertically
+        let topOffset = Math.floor((height - scaleY *img.height) /2)
 
         return {
-          top: vptCoords?.tl.y,
-          left: vptCoords?.tl.x,
+          top: vptCoords?.tl.y + topOffset,
+          left: vptCoords?.tl.x +leftOffset,
           width: width,
           height: height,
           scaleX: scaleX,

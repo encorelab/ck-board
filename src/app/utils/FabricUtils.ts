@@ -167,14 +167,40 @@ export class FabricUtils {
           width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
           height = Math.abs(vptCoords.br.y - vptCoords.tr.y)
         }
+        let scaleX = 0
+        let scaleY = 0
+
+        /* 
+            we scale both width and height by the smaller of the two scales
+            ex viewport is 2 by 2. Image is w:16 h:9
+            scaleX = 2/16, scaleY = 2/9
+            2/16 is smaller so we scale by that
+            scaleY = scaleX so that we have even scaling
+            final scaled image will be W: 16/8 = 2 H: 9/8 = 1.125
+            this fits in our 2 by 2 viewport
+
+        */
+        scaleX= width / (img.width ?? 1)
+        scaleY= height / (img.height ?? 1)
+        if(scaleX<=scaleY){
+            scaleY = scaleX
+        }
+        else{
+            scaleX = scaleY
+        }
+        // center image horizontally
+        let leftOffset = Math.floor((width - scaleX *img.width) /2)
+
+        // center image vertically
+        let topOffset = Math.floor((height - scaleY *img.height) /2)
 
         return {
-          top: vptCoords?.tl.y,
-          left: vptCoords?.tl.x,
+          top: vptCoords?.tl.y + topOffset,
+          left: vptCoords?.tl.x +leftOffset,
           width: width,
           height: height,
-          scaleX: width / (img.width ?? 1),
-          scaleY: height / (img.height ?? 1)
+          scaleX: scaleX,
+          scaleY: scaleY
         }
     }
 }

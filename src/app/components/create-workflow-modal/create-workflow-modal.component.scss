@@ -1,0 +1,10 @@
+.source-destination {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.arrow-icon {
+  transform: scale(2);
+  line-height: 1.5;
+}

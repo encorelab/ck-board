@@ -5,7 +5,6 @@
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Bucket Name</mat-label>
         <input matInput [(ngModel)]="bucketName">
-        <mat-hint class="mat-error" *ngIf="isError">{{ errorMessage }}</mat-hint>
       </mat-form-field>
       <div mat-dialog-actions>
         <button mat-button (click)="onNoClick()">Cancel</button>
@@ -13,9 +12,57 @@
       </div>
     </mat-tab>
     <mat-tab label="Create Workflow"> 
+      <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
+        <mat-label>Workflow Name</mat-label>
+        <input [formControl]="workflowNameFormControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="workflowName">
+        <mat-error *ngIf="workflowNameFormControl.hasError('required')">You must make a selection</mat-error>
+      </mat-form-field>
+      <h4>Pick a source and destination board/bucket:</h4>
+      <div class="source-destination">
+        <mat-form-field appearance="fill">
+          <mat-label>Source</mat-label>
+          <mat-select [(ngModel)]="source" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
+            <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="sourceFormControl.hasError('required')">You must make a selection</mat-error>
+        </mat-form-field>
+        <mat-icon class="arrow-icon">arrow_right_alt</mat-icon>
+        <mat-form-field appearance="fill">
+          <mat-label>Destination</mat-label>
+          <mat-select [(ngModel)]="destination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
+            <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="destinationFormControl.hasError('required')">You must make a selection</mat-error>
+        </mat-form-field>
+      </div>
+      <section>
+        <h4>Pick a criteria:</h4>
+        <p>
+          <mat-checkbox [(ngModel)]="includeLikes">
+            Post has <input type="number" [(ngModel)]="selectedLikes"/> likes.
+          </mat-checkbox>
+        </p>
+        <p>
+          <mat-checkbox [(ngModel)]="includeComments">
+            Post has <input type="number" [(ngModel)]="selectedComments"/> comments.
+          </mat-checkbox>
+        </p>
+        <p>
+          <mat-checkbox [(ngModel)]="includeTags">
+            Post has 
+            <mat-form-field appearance="fill" style="font-size: 12px !important">
+              <mat-label>Tags</mat-label>
+              <mat-select [formControl]="tagsFormControl" multiple>
+                <mat-option *ngFor="let tag of tags" [value]="tag">{{ tag }}</mat-option>
+              </mat-select>
+            </mat-form-field> 
+            tags.
+          </mat-checkbox>
+        </p>
+      </section>
       <div mat-dialog-actions>
         <button mat-button (click)="onNoClick()">Cancel</button>
-        <button mat-button (click)="createWorkflow()">Create Workflow!</button>
+        <button mat-button [disabled]="!_validForm()" (click)="createWorkflow()">Create Workflow!</button>
       </div>
     </mat-tab>
   </mat-tab-group>

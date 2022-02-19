@@ -12,6 +12,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { Project } from 'src/app/models/project';
 import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
 import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
+import { Role } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +26,8 @@ export class DashboardComponent implements OnInit {
   user: User
 
   yourProjects:Project[]=[]
+
+  Role: typeof Role = Role
   
   constructor(public userService: UserService, public authService: AuthService, 
     public boardService: BoardService, public router: Router, public dialog: MatDialog, public projectService:ProjectService) {}

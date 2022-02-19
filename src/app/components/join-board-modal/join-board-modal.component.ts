@@ -52,7 +52,7 @@ export class JoinBoardModalComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  showError(message) {
+  showError(message: string) {
     this.isError = true
     this.errorMessage = message
   }

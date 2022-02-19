@@ -1,24 +1,45 @@
+import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
+import { Canvas } from 'fabric/fabric-impl';
 
+@Injectable({providedIn: 'root'})
 export class FabricUtils {
 
-    serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'authorID', 'hasControls', 'subTargetCheck', 'removed']
+    _canvas: fabric.Canvas;
+
+    serializableProperties = [
+        'name', 'postID', 'title', 'desc', 
+        'author', 'authorID', 'hasControls', 
+        'subTargetCheck', 'removed'
+    ]
 
     canvasConfig = {
-        width: window.innerWidth * 0.99, 
-        height: window.innerHeight * 0.9, 
+        width: window.innerWidth, 
+        height: window.innerHeight - 64, 
         fireRightClick: true, 
         stopContextMenu: true
     }
 
-    renderPostFromJSON(post:any, callback: (objects) => any): void {
-        fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => callback(objects), "fabric");
+    public set canvas(surface: fabric.Canvas) {
+        this._canvas = surface;
     }
 
-    getObjectFromId(ctx: any, postID: string){
-        var currentObjects = ctx.getObjects();
-        
-        for (var i = currentObjects.length - 1; i >= 0; i-- ) {
+    renderPostFromJSON(post:any): void {
+        fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => {
+            var origRenderOnAddRemove = this._canvas.renderOnAddRemove;
+            this._canvas.renderOnAddRemove = false;
+
+            objects.forEach((o: fabric.Object) => this._canvas.add(o));
+                
+            this._canvas.renderOnAddRemove = origRenderOnAddRemove;
+            this._canvas.renderAll();
+        }, "fabric");
+    }
+
+    getObjectFromId(postID: string){
+        var currentObjects: any = this._canvas?.getObjects();
+
+        for (var i = currentObjects.length - 1; i >= 0; i--) {
           if (currentObjects[i].postID == postID)
             return currentObjects[i]
         }

@@ -17,7 +17,7 @@ import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { PostComponent } from '../post/post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { Mode } from 'src/app/utils/Mode';
+import { Mode, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -27,10 +27,8 @@ import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
-import { ThrowStmt } from '@angular/compiler';
-
-// hard-coded for now
-// const this.boardID = '13n4jrf2r32fj'
+import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { RealtimeService } from 'src/app/services/realtime.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -44,7 +42,7 @@ interface PostIDNamePair {
 })
 export class CanvasComponent {
   boardID: string
-  projectID:string
+  projectID: string
   canvas: Canvas;
 
   user: User
@@ -52,34 +50,34 @@ export class CanvasComponent {
 
   centerX: number
   centerY: number
-  initialClientX: number
-  initialClientY: number
-  finalClientX: number
-  finalClientY: number
+  initialClientX: number = 0
+  initialClientY: number = 0
+  finalClientX: number = 0
+  finalClientY: number = 0
 
-  zoom: number
+  zoom: number = 1
 
   mode: Mode = Mode.EDIT
-  modeType = Mode
-  fabricUtils: FabricUtils = new FabricUtils()
+  modeType = Mode 
+  Role: typeof Role = Role
+
+  showList: boolean = false
+  showBuckets: boolean = false
 
   showAddPost: boolean = true
 
-  constructor(public postsService: PostService, public boardService: BoardService,
-    public userService: UserService, public authService: AuthService, public commentService: CommentService,
-    public likesService: LikesService, public dialog: MatDialog, private route: Router) { }
+  constructor(public postsService: PostService, public boardService: BoardService, 
+    public userService: UserService, public authService: AuthService, public commentService: CommentService, 
+    public likesService: LikesService, public realtimeService: RealtimeService, public dialog: MatDialog, private route: Router,
+    protected fabricUtils: FabricUtils) {}
 
   ngOnInit() {
     this.user = this.authService.userData;
     this.parseUrl(this.route.url);
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-    this.zoom = 1;
+    this.fabricUtils._canvas = this.canvas
     this.centerX = this.canvas.getWidth() / 2;
     this.centerY = this.canvas.getHeight() / 2;
-    this.initialClientX = 0
-    this.initialClientY = 0;
-    this.finalClientX = 0;
-    this.finalClientY = 0;
     this.displayZoomValue();
     this.configureBoard();
     this.addObjectListener();
@@ -89,13 +87,10 @@ export class CanvasComponent {
     this.panningListener();
     this.keyPanningListener();
     this.expandPostListener();
-    this.addCommentListener();
-    this.addLikeListener();
     this.handleLikeButtonClick();
-    this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
+    this.hideListsWhenModalOpen();
     this.boardService.observable(this.boardID, this.handleBoardChange);
-
-
+    this.realtimeService.observe(this.boardID, this.handlePostEvent, this.handleLikeEvent, this.handleCommentEvent);
   }
 
   // configure board
@@ -116,6 +111,15 @@ export class CanvasComponent {
         }
       })
     })
+  }
+
+  openWorkflowDialog() {
+    this.dialog.open(CreateWorkflowModalComponent, {
+      width: '700px',
+      data: {
+        board: this.board,
+      }
+    });
   }
 
   // open dialog to get message for a new post
@@ -168,7 +172,7 @@ export class CanvasComponent {
     });
     this.canvas.add(fabricPost);
   }
-
+  
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
       width: '850px',
@@ -216,8 +220,8 @@ export class CanvasComponent {
   }
 
   updateShowAddPost(permissions: Permissions) {
-    let isStudent = this.user.role == "student"
-    let isTeacher = this.user.role == "teacher"
+    let isStudent = this.user.role == Role.STUDENT
+    let isTeacher = this.user.role == Role.TEACHER
     this.showAddPost = (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
   }
 
@@ -244,18 +248,19 @@ export class CanvasComponent {
   }
 
   updateAuthorNames(postToUpdate: PostIDNamePair) {
-    let obj = this.fabricUtils.getObjectFromId(this.canvas, postToUpdate.postID)
+    let obj = this.fabricUtils.getObjectFromId(postToUpdate.postID)
     if(obj){
       this.fabricUtils.updateAuthor(obj, postToUpdate.username)
       this.canvas.renderAll()
     }
   }
+  
   setAuthorVisibilityOne(post){
     if(!this.board){
       return
     }
-    let isStudentAndVisible = this.user.role == "student" && this.board.permissions.showAuthorNameStudent
-    let IsTeacherAndVisisble= this.user.role == "teacher" && this.board.permissions.showAuthorNameTeacher
+    let isStudentAndVisible = this.user.role == Role.STUDENT && this.board.permissions.showAuthorNameStudent
+    let IsTeacherAndVisisble= this.user.role == Role.TEACHER && this.board.permissions.showAuthorNameTeacher
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
       this.updateAuthorNames({ postID: post.postID, username: "Anonymous" })
     }
@@ -266,7 +271,6 @@ export class CanvasComponent {
     }
 
   }
-
 
   setAuthorVisibilityAll() {
     this.postsService.getAll(this.boardID).then((data) => {
@@ -288,25 +292,6 @@ export class CanvasComponent {
     });
   }
 
-  // remove post from board
-  removePost = (postID: string) => {
-    var obj = this.fabricUtils.getObjectFromId(this.canvas, postID);
-    if (!obj || obj.type != 'group') return;
-    this.canvas.remove(obj);
-    this.canvas.renderAll();
-  };
-
-  updatePost = (postID, title, desc) => {
-    var obj: any = this.fabricUtils.getObjectFromId(this.canvas, postID);
-
-    obj = this.fabricUtils.updatePostTitleDesc(obj, title, desc)
-    obj.set({ title: title, desc: desc })
-    this.canvas.renderAll()
-
-    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
-    this.postsService.update(postID, { fabricObject: obj, title: title, desc: desc })
-  }
-
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any) {
     const post: Post = {
@@ -316,14 +301,15 @@ export class CanvasComponent {
       tags: [],
       userID: this.user.id,
       boardID: this.boardID,
-      fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties))
+      fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
+      timestamp: new Date().getTime()
     }
     this.postsService.create(post);
   }
 
   // sync board using incoming/outgoing posts
-  syncBoard(obj: any, postID: any) {
-    var existing = this.fabricUtils.getObjectFromId(this.canvas, postID)
+  syncBoard(obj:any, postID:any){
+    var existing = this.fabricUtils.getObjectFromId(postID)
 
     // delete object from board
     if (obj.removed) {
@@ -342,41 +328,49 @@ export class CanvasComponent {
       }
 
       existing = this.fabricUtils.updateLikeCount(existing, obj)
+      existing = this.fabricUtils.updateCommentCount(existing, obj)
       existing.set(obj)
       existing.setCoords()
       this.canvas.renderAll()
     } else {
-      this.fabricUtils.renderPostFromJSON(obj, (objects) => {
-        var origRenderOnAddRemove = this.canvas.renderOnAddRemove;
-        this.canvas.renderOnAddRemove = false;
-
-        objects.forEach((o: fabric.Object) => this.canvas.add(o));
-
-        this.canvas.renderOnAddRemove = origRenderOnAddRemove;
-        this.canvas.renderAll();
-      })
+      this.fabricUtils.renderPostFromJSON(obj)
     }
-
+    
   }
 
-  addLikeListener() {
-    this.likesService.observable(this.boardID, (like: Like, change: string) => {
-      var post = this.fabricUtils.getObjectFromId(this.canvas, like.postID)
-      if (post) {
-        post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
-        this.canvas.renderAll()
-        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-        this.postsService.update(post.postID, { fabricObject: jsonPost })
-      }
-    }, true)
+  handlePostEvent = (post) => {
+    if (post) {
+      var obj = JSON.parse(post.fabricObject);
+      this.syncBoard(obj, post.postID);
+    }
+  }
+
+  handleLikeEvent = (like: Like, change: string) => {
+    var post = this.fabricUtils.getObjectFromId(like.postID)
+    if (post) {
+      post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
+      this.canvas.renderAll()
+      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      this.postsService.update(post.postID, { fabricObject: jsonPost })
+    }
+  }
+
+  handleCommentEvent = (comment: Comment) => {
+    var post = this.fabricUtils.getObjectFromId(comment.postID)
+    if (post) {
+      post = this.fabricUtils.incrementComments(post)
+      this.canvas.renderAll()
+      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      this.postsService.update(post.postID, { fabricObject: jsonPost })
+    }
   }
 
   handleLikeButtonClick() {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      let isStudent = this.user.role == "student"
-      let isTeacher = this.user.role == "teacher"
+      let isStudent = this.user.role == Role.STUDENT
+      let isTeacher = this.user.role == Role.TEACHER
       let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
       if (likeButton && (studentHasPerm || isTeacher)) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
@@ -424,25 +418,11 @@ export class CanvasComponent {
           data: {
             user: this.user,
             post: obj,
-            board: this.board,
-            removePost: this.removePost,
-            updatePost: this.updatePost,
+            board: this.board
           }
         });
       }
     });
-  }
-
-  addCommentListener() {
-    this.commentService.observable(this.boardID, (comment: Comment) => {
-      var post = this.fabricUtils.getObjectFromId(this.canvas, comment.postID)
-      if (post) {
-        post = this.fabricUtils.incrementComments(post)
-        this.canvas.renderAll()
-        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-        this.postsService.update(post.postID, { fabricObject: jsonPost })
-      }
-    }, true)
   }
 
   // listen to configuration/permission changes
@@ -454,22 +434,6 @@ export class CanvasComponent {
 
     board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
     board.name ? this.updateBoardName(board.name) : null
-  }
-
-  handleAddFromGroup = (post) => {
-    if (post) {
-      var obj = JSON.parse(post.fabricObject);
-      this.syncBoard(obj, post.postID);
-      this.setAuthorVisibilityOne(post)
-    }
-  }
-
-  handleModificationFromGroup = (post) => {
-    if (post) {
-      var obj = JSON.parse(post.fabricObject);
-      this.syncBoard(obj, post.postID);
-      this.setAuthorVisibilityOne(post)
-    }
   }
 
   // perform actions when new post is added
@@ -610,7 +574,6 @@ export class CanvasComponent {
 
 
   handleZoom(event) {
-
     let centerX = this.centerX + (this.finalClientX - this.initialClientX);
     let centerY = this.centerY + (this.finalClientY - this.initialClientY);
     this.initialClientX = this.finalClientX;
@@ -638,5 +601,12 @@ export class CanvasComponent {
 
   displayZoomValue() {
     return Math.round(this.zoom * 100);
+  }
+
+  hideListsWhenModalOpen() {
+    this.dialog.afterOpened.subscribe(() => {
+      this.showList = false
+      this.showBuckets = false
+    })
   }
 }

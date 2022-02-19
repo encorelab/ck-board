@@ -2,11 +2,22 @@
   <mat-card-header>
     <div mat-card-avatar class="avatar"></div>
     <mat-card-title [innerHTML]="editingTitle">{{ editingTitle }}</mat-card-title>
+    <span class="fill-remaining-space"></span>
     <mat-card-subtitle *ngIf="showAuthorName; else elseBlock">{{ data.post.author }}</mat-card-subtitle>
     <ng-template #elseBlock>
       <mat-card-subtitle >Anonymous</mat-card-subtitle>
     </ng-template>
-    <span class="fill-remaining-space"></span>
+    <button mat-icon-button [matMenuTriggerFor]="bucketMenu">
+      <mat-icon>library_add</mat-icon>
+    </button>
+    <mat-menu #bucketMenu="matMenu">
+      <div mat-menu-item *ngIf="buckets && buckets.length == 0">
+        No buckets available.
+      </div>
+      <div mat-menu-item (click)="$event.stopPropagation();" *ngFor="let bucket of buckets">
+        <mat-checkbox id={{bucket.bucketID}} [checked]="bucket.includesPost" (change)="updateBucket($event)">{{ bucket.name }}</mat-checkbox>
+      </div>
+    </mat-menu>
     <button mat-icon-button [matMenuTriggerFor]="menu" *ngIf="showEditDelete">
       <mat-icon>more_vert</mat-icon>
     </button>
@@ -93,5 +104,5 @@
   </mat-form-field>
 </div>
 <div mat-dialog-actions align="end">
-  <button *ngIf="!isEditing" mat-button (click)="onNoClick()">Close</button>
+  <button *ngIf="!isEditing" mat-button (click)="close()">Close</button>
 </div>

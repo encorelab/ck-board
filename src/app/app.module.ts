@@ -13,6 +13,7 @@ import { AngularFireAuthModule } from '@angular/fire/auth'
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component'
 import { PostComponent } from './components/post/post.component';
@@ -24,6 +25,10 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
+import { CreateWorkflowModalComponent } from './components/create-workflow-modal/create-workflow-modal.component';
+import { BucketPostComponent } from './shared/bucket-post/bucket-post.component';
+import { BucketComponent } from './shared/bucket/bucket.component';
+import { ListViewComponent } from './shared/list-view/list-view.component';
 import { PasswordResetComponent } from './components/password-reset/password-reset.component';
 import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
 import { ErrorComponent } from './components/error/error.component';
@@ -46,6 +51,10 @@ import { ProjectConfigurationModalComponent } from './components/project-configu
     RegisterComponent,
     DashboardComponent,
     AddBoardModalComponent,
+    CreateWorkflowModalComponent,
+    BucketPostComponent,
+    BucketComponent,
+    ListViewComponent,
     PasswordResetComponent,
     JoinBoardModalComponent,
     ErrorComponent,
@@ -64,6 +73,7 @@ import { ProjectConfigurationModalComponent } from './components/project-configu
     FormsModule, 
     BrowserAnimationsModule,
     ReactiveFormsModule,
+    InfiniteScrollModule,
     MaterialModule
   ],
   providers: [],

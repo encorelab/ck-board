@@ -11,6 +11,7 @@ import { BoardService } from 'src/app/services/board.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import { PostService } from 'src/app/services/post.service';
+import { Role } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-bucket-post',
@@ -30,23 +31,28 @@ export class BucketPostComponent implements OnInit {
   numLikes: number = 0
 
   isLiked: Like | null
+
+  showUsername: boolean = false
   
   constructor(public commentService: CommentService, public likesService: LikesService, public postService: PostService,
     public authService: AuthService, public boardService: BoardService, public dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.user = this.authService.userData;
-    this.loadLikesCommentsAmount()
-    this.listenForUpdates()
+    this.configurePost()
   }
 
-  loadLikesCommentsAmount() {
-    this.boardService.get(this.post.boardID).then(board => this.board = board)
+  configurePost() {
     this.commentService.getCommentsByPost(this.post.postID).then(data => this.numComments = data.docs.length)
     this.likesService.getLikesByPost(this.post.postID).then(data => {
       this.numLikes = data.docs.length
       let foundLike = data.docs.find(like => like.data().likerID == this.user.id)
       this.isLiked = foundLike ? foundLike.data() : null
+    })
+    this.boardService.get(this.post.boardID).then(board => {
+      this.board = board
+      this.listenForUpdates()
+      this.setUsernameAnonymity(board)
     })
   }
 
@@ -83,14 +89,35 @@ export class BucketPostComponent implements OnInit {
 
   listenForUpdates() {
     this.postService.observeOne(this.post.postID, this.handleUpdate, this.handleDelete);
+    this.boardService.observable(this.board.boardID, this.handleBoardChange);
   }
 
   handleUpdate = (post) => {
     this.post = post
-    this.loadLikesCommentsAmount()
+    this.configurePost()
   }
 
   handleDelete = (_post) => {
     this.exists = false
+  }
+
+  handleBoardChange = (board: Board) => {
+    this.setUsernameAnonymity(board)
+  }
+
+  setUsernameAnonymity(board) {
+    const permissions = board.permissions
+    const isStudent = this.user.role == Role.STUDENT
+    const isTeacher = this.user.role == Role.TEACHER
+    const showUsernameForStudent = permissions.showAuthorNameStudent
+    const showUsernameForTeacher = permissions.showAuthorNameTeacher
+
+    if (isStudent && showUsernameForStudent) {
+      this.showUsername = true
+    } else if (isTeacher && showUsernameForTeacher) {
+      this.showUsername = true
+    } else {
+      this.showUsername = false
+    }
   }
 }

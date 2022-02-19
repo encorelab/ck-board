@@ -5,7 +5,7 @@
         <button 
           mat-icon-button 
           [matMenuTriggerFor]="addMenu" 
-          *ngIf="user && user.role == 'teacher'" 
+          *ngIf="user && user.role == Role.TEACHER" 
           matTooltip="Create Project or Board">
           <mat-icon>add</mat-icon>
         </button>

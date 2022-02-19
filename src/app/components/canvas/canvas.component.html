@@ -6,7 +6,7 @@
       <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
         <mat-icon>keyboard_return</mat-icon>
       </button>
-      <button mat-icon-button *ngIf="user && user.role == 'teacher'" (click)="openWorkflowDialog()" matTooltip="Workflows">
+      <button mat-icon-button *ngIf="user && user.role == Role.TEACHER" (click)="openWorkflowDialog()" matTooltip="Workflows">
         <mat-icon>timeline</mat-icon>
       </button>
       <button mat-icon-button (click)="showList = false; showBuckets = !showBuckets" matTooltip="View Buckets">
@@ -18,7 +18,7 @@
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
           <mat-icon>task</mat-icon>
       </button>
-      <button *ngIf="user && user.role == 'teacher'" mat-icon-button (click)="openSettingsDialog()" matTooltip="Adjust Settings">
+      <button *ngIf="user && user.role == Role.TEACHER" mat-icon-button (click)="openSettingsDialog()" matTooltip="Adjust Settings">
         <mat-icon>settings</mat-icon>
       </button>
       <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>

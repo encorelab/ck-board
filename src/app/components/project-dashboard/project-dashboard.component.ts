@@ -9,7 +9,7 @@ import {Router} from '@angular/router'
 import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
-
+import { Role } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -24,6 +24,7 @@ export class ProjectDashboardComponent implements OnInit {
   projectID:string
   yourProjects:Project[]=[]
 
+  Role: typeof Role = Role
 
   constructor(public boardService:BoardService,
     public projectService:ProjectService,

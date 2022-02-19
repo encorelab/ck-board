@@ -12,6 +12,7 @@ import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
+import { Role } from 'src/app/utils/constants';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -68,7 +69,7 @@ export class PostModalComponent {
           this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
           this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
-          this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == 'teacher'
+          this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == Role.TEACHER
         })
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
@@ -91,8 +92,8 @@ export class PostModalComponent {
         })
       })
       
-    let isStudent = this.user.role =="student"
-    let isTeacher = this.user.role =="teacher"
+    let isStudent = this.user.role == Role.STUDENT
+    let isTeacher = this.user.role == Role.TEACHER
     this.showEditDelete = (isStudent && data.board.permissions.allowStudentEditAddDeletePost) || isTeacher 
     this.canStudentComment = (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher 
     this.canStudentTag = (isStudent && data.board.permissions.allowStudentTagging) || isTeacher 
@@ -186,7 +187,7 @@ export class PostModalComponent {
 
   handleLikeClick() {
     // if liking is locked just return (do nothing)
-    if(this.user.role =="student" && !this.data.board.permissions.allowStudentLiking){
+    if(this.user.role == Role.STUDENT && !this.data.board.permissions.allowStudentLiking){
       return;
     }
       

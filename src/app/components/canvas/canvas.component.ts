@@ -17,7 +17,7 @@ import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { PostComponent } from '../post/post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { Mode } from 'src/app/utils/Mode';
+import { Mode, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -59,6 +59,7 @@ export class CanvasComponent {
 
   mode: Mode = Mode.EDIT
   modeType = Mode 
+  Role: typeof Role = Role
 
   showList: boolean = false
   showBuckets: boolean = false
@@ -87,8 +88,10 @@ export class CanvasComponent {
     this.keyPanningListener();
     this.expandPostListener();
     this.handleLikeButtonClick();
+    this.hideListsWhenModalOpen();
     this.boardService.observable(this.boardID, this.handleBoardChange);
     this.realtimeService.observe(this.boardID, this.handlePostEvent, this.handleLikeEvent, this.handleCommentEvent);
+    
   }
 
   // configure board
@@ -218,8 +221,8 @@ export class CanvasComponent {
   }
 
   updateShowAddPost(permissions: Permissions) {
-    let isStudent = this.user.role == "student"
-    let isTeacher = this.user.role == "teacher"
+    let isStudent = this.user.role == Role.STUDENT
+    let isTeacher = this.user.role == Role.TEACHER
     this.showAddPost = (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
   }
 
@@ -252,12 +255,13 @@ export class CanvasComponent {
       this.canvas.renderAll()
     }
   }
+  
   setAuthorVisibilityOne(post){
     if(!this.board){
       return
     }
-    let isStudentAndVisible = this.user.role == "student" && this.board.permissions.showAuthorNameStudent
-    let IsTeacherAndVisisble= this.user.role == "teacher" && this.board.permissions.showAuthorNameTeacher
+    let isStudentAndVisible = this.user.role == Role.STUDENT && this.board.permissions.showAuthorNameStudent
+    let IsTeacherAndVisisble= this.user.role == Role.TEACHER && this.board.permissions.showAuthorNameTeacher
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
       this.updateAuthorNames({ postID: post.postID, username: "Anonymous" })
     }
@@ -268,7 +272,6 @@ export class CanvasComponent {
     }
 
   }
-
 
   setAuthorVisibilityAll() {
     this.postsService.getAll(this.boardID).then((data) => {
@@ -345,6 +348,7 @@ export class CanvasComponent {
       }
 
       existing = this.fabricUtils.updateLikeCount(existing, obj)
+      existing = this.fabricUtils.updateCommentCount(existing, obj)
       existing.set(obj)
       existing.setCoords()
       this.canvas.renderAll()
@@ -385,8 +389,8 @@ export class CanvasComponent {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      let isStudent = this.user.role == "student"
-      let isTeacher = this.user.role == "teacher"
+      let isStudent = this.user.role == Role.STUDENT
+      let isTeacher = this.user.role == Role.TEACHER
       let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
       if (likeButton && (studentHasPerm || isTeacher)) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
@@ -619,5 +623,12 @@ export class CanvasComponent {
 
   displayZoomValue() {
     return Math.round(this.zoom * 100);
+  }
+
+  hideListsWhenModalOpen() {
+    this.dialog.afterOpened.subscribe(() => {
+      this.showList = false
+      this.showBuckets = false
+    })
   }
 }

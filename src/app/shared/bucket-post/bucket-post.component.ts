@@ -36,22 +36,18 @@ export class BucketPostComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.authService.userData;
-    this.initializePost()
+    this.loadLikesCommentsAmount()
+    this.listenForUpdates()
   }
 
-  initializePost() {
+  loadLikesCommentsAmount() {
     this.boardService.get(this.post.boardID).then(board => this.board = board)
     this.commentService.getCommentsByPost(this.post.postID).then(data => this.numComments = data.docs.length)
     this.likesService.getLikesByPost(this.post.postID).then(data => {
       this.numLikes = data.docs.length
-      for (let like of data.docs) {
-        if (like.data().likerID == this.user.id) {
-          this.isLiked = like.data()
-          break
-        }
-      }
+      let foundLike = data.docs.find(like => like.data().likerID == this.user.id)
+      this.isLiked = foundLike ? foundLike.data() : null
     })
-    
   }
 
   openPostDialog() {
@@ -62,13 +58,6 @@ export class BucketPostComponent implements OnInit {
         user: this.user, 
         post: this.post, 
         board: this.board
-      }
-    }).afterClosed().subscribe(value => {
-      if (value == DELETE) {
-        this.exists = false
-      } else if (value) {
-        this.post = value
-        this.initializePost()
       }
     })
   }
@@ -90,5 +79,18 @@ export class BucketPostComponent implements OnInit {
       this.numLikes += 1
       this.isLiked = like
     }
+  }
+
+  listenForUpdates() {
+    this.postService.observeOne(this.post.postID, this.handleUpdate, this.handleDelete);
+  }
+
+  handleUpdate = (post) => {
+    this.post = post
+    this.loadLikesCommentsAmount()
+  }
+
+  handleDelete = (_post) => {
+    this.exists = false
   }
 }

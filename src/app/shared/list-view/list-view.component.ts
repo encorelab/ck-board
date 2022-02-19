@@ -1,7 +1,5 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, QueryList, ViewChildren } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, QueryList, ViewChildren } from '@angular/core';
 import { Board } from 'src/app/models/board';
-import Post from 'src/app/models/post';
-import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
 
 @Component({
@@ -24,7 +22,7 @@ export class ListViewComponent implements OnChanges {
 
   lastItem: any = null
 
-  constructor(public postService: PostService) { }
+  constructor(public postService: PostService) {}
 
   ngOnChanges() {
     if (this.visible) {

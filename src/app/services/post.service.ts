@@ -31,6 +31,19 @@ export class PostService {
     })
   }
 
+  observeOne(postID: string, handleUpdate: Function, handleDelete: Function) {
+    return this.postsCollection.ref.where("postID", "==", postID).onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        let post = change.doc.data()
+        if (change.type == "modified") {
+          handleUpdate(post)
+        } else if (change.type == "removed") {
+          handleDelete(post);
+        }
+      })
+    })
+  }
+
   get(postID: string) {
     return this.postsCollection.ref.where("postID", "==", postID).get().then((snapshot) => snapshot)
   }

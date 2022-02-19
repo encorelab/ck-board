@@ -27,8 +27,8 @@ import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
-import { ThrowStmt } from '@angular/compiler';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { RealtimeService } from 'src/app/services/realtime.service';
 
 interface PostIDNamePair{
   postID:string,
@@ -42,7 +42,7 @@ interface PostIDNamePair{
 })
 export class CanvasComponent {
   boardID: string
-  projectID:string
+  projectID: string
   canvas: Canvas;
 
   user: User
@@ -50,12 +50,12 @@ export class CanvasComponent {
 
   centerX: number
   centerY: number
-  initialClientX: number
-  initialClientY: number
-  finalClientX: number
-  finalClientY: number
+  initialClientX: number = 0
+  initialClientY: number = 0
+  finalClientX: number = 0
+  finalClientY: number = 0
 
-  zoom: number
+  zoom: number = 1
 
   mode: Mode = Mode.EDIT
   modeType = Mode 
@@ -67,7 +67,7 @@ export class CanvasComponent {
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
-    public likesService: LikesService, public dialog: MatDialog, private route: Router,
+    public likesService: LikesService, public realtimeService: RealtimeService, public dialog: MatDialog, private route: Router,
     protected fabricUtils: FabricUtils) {}
 
   ngOnInit() {
@@ -75,13 +75,8 @@ export class CanvasComponent {
     this.parseUrl(this.route.url);
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas
-    this.zoom = 1;
     this.centerX = this.canvas.getWidth() / 2;
     this.centerY = this.canvas.getHeight() / 2;
-    this.initialClientX = 0
-    this.initialClientY = 0;
-    this.finalClientX = 0;
-    this.finalClientY = 0;
     this.displayZoomValue();
     this.configureBoard();
     this.addObjectListener();
@@ -91,11 +86,9 @@ export class CanvasComponent {
     this.panningListener();
     this.keyPanningListener();
     this.expandPostListener();
-    this.addCommentListener();
-    this.addLikeListener();
     this.handleLikeButtonClick();
-    this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
     this.boardService.observable(this.boardID, this.handleBoardChange);
+    this.realtimeService.observe(this.boardID, this.handlePostEvent, this.handleLikeEvent, this.handleCommentEvent);
   }
 
   // configure board
@@ -279,7 +272,7 @@ export class CanvasComponent {
     this.canvas.renderAll()
   }
 
-  updateAuthorNames(postToUpdate:PostIDNamePair){
+  updateAuthorNames(postToUpdate:PostIDNamePair) {
     let obj = this.fabricUtils.getObjectFromId(postToUpdate.postID)
     this.fabricUtils.updateAuthor(obj, postToUpdate.username)
     this.canvas.renderAll()
@@ -340,16 +333,31 @@ export class CanvasComponent {
     
   }
 
-  addLikeListener() {
-    this.likesService.observable(this.boardID, (like: Like, change: string) => {
-      var post = this.fabricUtils.getObjectFromId(like.postID)
-      if (post) {
-        post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
-        this.canvas.renderAll()
-        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-        this.postsService.update(post.postID, { fabricObject: jsonPost })
-      }
-    }, true)
+  handlePostEvent = (post) => {
+    if (post) {
+      var obj = JSON.parse(post.fabricObject);
+      this.syncBoard(obj, post.postID);
+    }
+  }
+
+  handleLikeEvent = (like: Like, change: string) => {
+    var post = this.fabricUtils.getObjectFromId(like.postID)
+    if (post) {
+      post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
+      this.canvas.renderAll()
+      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      this.postsService.update(post.postID, { fabricObject: jsonPost })
+    }
+  }
+
+  handleCommentEvent = (comment: Comment) => {
+    var post = this.fabricUtils.getObjectFromId(comment.postID)
+    if (post) {
+      post = this.fabricUtils.incrementComments(post)
+      this.canvas.renderAll()
+      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      this.postsService.update(post.postID, { fabricObject: jsonPost })
+    }
   }
 
   handleLikeButtonClick() {
@@ -404,38 +412,12 @@ export class CanvasComponent {
     });
   }
 
-  addCommentListener() {
-    this.commentService.observable(this.boardID, (comment: Comment) => {
-      var post = this.fabricUtils.getObjectFromId(comment.postID)
-      if (post) {
-        post = this.fabricUtils.incrementComments(post)
-        this.canvas.renderAll()
-        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-        this.postsService.update(post.postID, { fabricObject: jsonPost })
-      }
-    }, true)
-  }
-
   // listen to configuration/permission changes
   handleBoardChange = (board) => {
     this.board = board
     this.lockPostsMovement(!board.permissions.allowStudentMoveAny)
     board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
     board.name ? this.updateBoardName(board.name) : null
-  }
-
-  handleAddFromGroup = (post) => {
-    if (post) {
-      var obj = JSON.parse(post.fabricObject);
-      this.syncBoard(obj, post.postID);
-    }
-  }
-
-  handleModificationFromGroup = (post) => {
-    if (post) {
-      var obj = JSON.parse(post.fabricObject);
-      this.syncBoard(obj, post.postID);
-    }
   }
 
   // perform actions when new post is added
@@ -575,7 +557,6 @@ export class CanvasComponent {
   }
 
   handleZoom(event) {
-
     let centerX = this.centerX + (this.finalClientX - this.initialClientX);
     let centerY = this.centerY + (this.finalClientY - this.initialClientY);
 

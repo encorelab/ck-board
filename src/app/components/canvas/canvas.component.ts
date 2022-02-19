@@ -590,8 +590,8 @@ export class CanvasComponent {
       if(trackpad_twofinger) { 
         let vpt = this.canvas.viewportTransform;
         if(!vpt) return;
-        vpt[4] += options.deltaX;
-        vpt[5] += options.deltaY;
+        vpt[4] -= options.deltaX;
+        vpt[5] -= options.deltaY;
         this.canvas.requestRenderAll();
       }
     })

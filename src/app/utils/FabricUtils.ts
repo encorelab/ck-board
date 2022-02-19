@@ -7,7 +7,11 @@ export class FabricUtils {
 
     _canvas: fabric.Canvas;
 
-    serializableProperties = ['name', 'postID', 'title', 'desc', 'author', 'authorID', 'hasControls', 'subTargetCheck', 'removed']
+    serializableProperties = [
+        'name', 'postID', 'title', 'desc', 
+        'author', 'authorID', 'hasControls', 
+        'subTargetCheck', 'removed'
+    ]
 
     canvasConfig = {
         width: window.innerWidth, 
@@ -17,7 +21,7 @@ export class FabricUtils {
     }
 
     public set canvas(surface: fabric.Canvas) {
-        this.canvas = surface;
+        this._canvas = surface;
     }
 
     renderPostFromJSON(post:any): void {
@@ -34,7 +38,7 @@ export class FabricUtils {
 
     getObjectFromId(postID: string){
         var currentObjects: any = this._canvas?.getObjects();
-        
+
         for (var i = currentObjects.length - 1; i >= 0; i--) {
           if (currentObjects[i].postID == postID)
             return currentObjects[i]

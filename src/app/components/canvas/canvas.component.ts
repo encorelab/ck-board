@@ -91,7 +91,6 @@ export class CanvasComponent {
     this.hideListsWhenModalOpen();
     this.boardService.observable(this.boardID, this.handleBoardChange);
     this.realtimeService.observe(this.boardID, this.handlePostEvent, this.handleLikeEvent, this.handleCommentEvent);
-    
   }
 
   // configure board
@@ -293,25 +292,6 @@ export class CanvasComponent {
     });
   }
 
-  // remove post from board
-  removePost = (postID: string) => {
-    var obj = this.fabricUtils.getObjectFromId(postID);
-    if (!obj || obj.type != 'group') return;
-    this.canvas.remove(obj);
-    this.canvas.renderAll();
-  };
-
-  updatePost = (postID, title, desc) => {
-    var obj: any = this.fabricUtils.getObjectFromId(postID);
-
-    obj = this.fabricUtils.updatePostTitleDesc(obj, title, desc)
-    obj.set({ title: title, desc: desc })
-    this.canvas.renderAll()
-
-    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
-    this.postsService.update(postID, { fabricObject: obj, title: title, desc: desc })
-  }
-
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any) {
     const post: Post = {
@@ -438,9 +418,7 @@ export class CanvasComponent {
           data: {
             user: this.user,
             post: obj,
-            board: this.board,
-            removePost: this.removePost,
-            updatePost: this.updatePost,
+            board: this.board
           }
         });
       }

@@ -303,7 +303,8 @@ export class CanvasComponent {
       userID: this.user.id,
       boardID: this.boardID,
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
-      timestamp: new Date().getTime()
+      timestamp: new Date().getTime(),
+      bucketOnly:false
     }
     this.postsService.create(post);
   }

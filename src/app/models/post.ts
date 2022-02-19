@@ -6,6 +6,7 @@ export default class Post {
     tags: string[];
     userID: string;
     fabricObject: string;
-    timestamp: number
+    timestamp: number;
+    bucketOnly:boolean = false;
 }
   

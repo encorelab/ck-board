@@ -18,5 +18,8 @@
         <mat-icon>comment</mat-icon>
         {{numComments}}
       </button>
+      <button mat-button *ngIf="post.bucketOnly">
+        <mat-icon>visibility_off</mat-icon>
+      </button>
     </mat-card-actions>
 </mat-card>

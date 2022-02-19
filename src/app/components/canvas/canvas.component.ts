@@ -85,6 +85,7 @@ export class CanvasComponent {
     this.movingObjectListener();
     this.zoomListener();
     this.panningListener();
+    this.panningBySwipingListener();
     this.keyPanningListener();
     this.expandPostListener();
     this.handleLikeButtonClick();
@@ -488,20 +489,40 @@ export class CanvasComponent {
     })
   }
 
+
   zoomListener() {
     this.canvas.on('mouse:wheel', (opt) => {
       var options = (opt.e as unknown) as WheelEvent
 
-      var delta = options.deltaY;
-      //var zoom = this.canvas.getZoom();
+      // Condition for pinch gesture on trackpad: 
+      // 1. delta Y is an integer or delta X is 0 
+      // 2. ctrl key is triggered
+      const trackpad_pinch = ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
+      && (options.ctrlKey);
 
-      this.zoom *= 0.999 ** delta;
-      if (this.zoom > 20) this.zoom = 20;
-      if (this.zoom < 0.01) this.zoom = 0.01;
+      // Condition for mousewheel:
+      // 1. delta Y has trailing non-zero decimal points
+      // 2. delta X is zero 
+      // 3. ctrl key is not triggered
+      const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9) 
+      && Math.abs(options.deltaX) < 1e-9 && !(options.ctrlKey);
 
-      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
-      opt.e.preventDefault();
-      opt.e.stopPropagation();
+      if(trackpad_pinch || mousewheel) {  
+        var delta = options.deltaY;
+
+        if(mousewheel) {
+          this.zoom *= 0.999 ** delta;
+        }
+        else {
+          this.zoom *= 0.95 ** delta;
+        }
+        if (this.zoom > 20) this.zoom = 20;
+        if (this.zoom < 0.01) this.zoom = 0.01;
+
+        this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
+        opt.e.preventDefault();
+        opt.e.stopPropagation();
+      }
     });
   }
 
@@ -537,6 +558,28 @@ export class CanvasComponent {
     })
   }
 
+  panningBySwipingListener() {
+    this.canvas.on('mouse:wheel', (opt) => {
+      let options = (opt.e as unknown) as WheelEvent;
+
+      // Condition for two-finger swipe on trackpad: 
+      // 1. delta Y is an integer, 
+      // 2. delta X is an integer,
+      // 3. ctrl key is not triggered
+      const trackpad_twofinger = 
+      Number.isInteger(options.deltaY) && Number.isInteger(options.deltaX)
+      && !(options.ctrlKey);
+
+      if(trackpad_twofinger) { 
+        let vpt = this.canvas.viewportTransform;
+        if(!vpt) return;
+        vpt[4] -= options.deltaX;
+        vpt[5] -= options.deltaY;
+        this.canvas.requestRenderAll();
+      }
+    })
+  }
+  
   keyPanningListener() {
     document.addEventListener('keydown', (event) => {
       if(event.key == 'ArrowUp') {

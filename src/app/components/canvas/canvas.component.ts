@@ -17,7 +17,7 @@ import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { PostComponent } from '../post/post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { Mode } from 'src/app/utils/Mode';
+import { Mode, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -27,12 +27,12 @@ import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
-import { ThrowStmt } from '@angular/compiler';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { RealtimeService } from 'src/app/services/realtime.service';
 
-interface PostIDNamePair{
-  postID:string,
-  username:string
+interface PostIDNamePair {
+  postID: string,
+  username: string
 }
 
 @Component({
@@ -42,7 +42,7 @@ interface PostIDNamePair{
 })
 export class CanvasComponent {
   boardID: string
-  projectID:string
+  projectID: string
   canvas: Canvas;
 
   user: User
@@ -50,15 +50,16 @@ export class CanvasComponent {
 
   centerX: number
   centerY: number
-  initialClientX: number
-  initialClientY: number
-  finalClientX: number
-  finalClientY: number
+  initialClientX: number = 0
+  initialClientY: number = 0
+  finalClientX: number = 0
+  finalClientY: number = 0
 
-  zoom: number
+  zoom: number = 1
 
   mode: Mode = Mode.EDIT
   modeType = Mode 
+  Role: typeof Role = Role
 
   showList: boolean = false
   showBuckets: boolean = false
@@ -67,7 +68,7 @@ export class CanvasComponent {
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
-    public likesService: LikesService, public dialog: MatDialog, private route: Router,
+    public likesService: LikesService, public realtimeService: RealtimeService, public dialog: MatDialog, private route: Router,
     protected fabricUtils: FabricUtils) {}
 
   ngOnInit() {
@@ -75,13 +76,8 @@ export class CanvasComponent {
     this.parseUrl(this.route.url);
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas
-    this.zoom = 1;
     this.centerX = this.canvas.getWidth() / 2;
     this.centerY = this.canvas.getHeight() / 2;
-    this.initialClientX = 0
-    this.initialClientY = 0;
-    this.finalClientX = 0;
-    this.finalClientY = 0;
     this.displayZoomValue();
     this.configureBoard();
     this.addObjectListener();
@@ -89,13 +85,13 @@ export class CanvasComponent {
     this.movingObjectListener();
     this.zoomListener();
     this.panningListener();
+    this.panningBySwipingListener();
     this.keyPanningListener();
     this.expandPostListener();
-    this.addCommentListener();
-    this.addLikeListener();
     this.handleLikeButtonClick();
-    this.postsService.observable(this.boardID, this.handleAddFromGroup, this.handleModificationFromGroup);
+    this.hideListsWhenModalOpen();
     this.boardService.observable(this.boardID, this.handleBoardChange);
+    this.realtimeService.observe(this.boardID, this.handlePostEvent, this.handleLikeEvent, this.handleCommentEvent);
   }
 
   // configure board
@@ -103,7 +99,7 @@ export class CanvasComponent {
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
-        let obj = JSON.parse(post.fabricObject); 
+        let obj = JSON.parse(post.fabricObject);
         this.syncBoard(obj, post.postID);
       })
       this.boardService.get(this.boardID).then((board) => {
@@ -112,23 +108,8 @@ export class CanvasComponent {
           board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
           board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
           this.updateShowAddPost(this.board.permissions)
-          if(!(
-                  (this.user.role =="student" && this.board.permissions.showAuthorNameStudent) 
-              ||  (this.user.role =="teacher" && this.board.permissions.showAuthorNameTeacher)
-              )){
-              this.hideAuthorNames()
-          }
-          else{
-            // update all the post names to to the poster's name rather than anonymous
-            data.forEach((data) => {
-              let post = data.data() ?? {}
-              let uid = post.userID; 
-              this.userService.getOneById(uid).then((user:any)=>{
-                this.updateAuthorNames({postID:post.postID, username:user.username})
-              })
-            })
-          }
-        } 
+          this.setAuthorVisibilityAll()
+        }
       })
     })
   }
@@ -181,28 +162,16 @@ export class CanvasComponent {
   }
 
   addPost = (title: string, desc = '', left: number, top: number) => {
-    var fabricPost = new PostComponent({ 
-      title: title, 
+    var fabricPost = new PostComponent({
+      title: title,
       author: this.user.username,
       authorID: this.user.id,
-      desc: desc, 
-      lock: !this.board.permissions.allowStudentMoveAny, 
-      left: left, 
-      top: top 
+      desc: desc,
+      lock: !this.board.permissions.allowStudentMoveAny,
+      left: left,
+      top: top
     });
     this.canvas.add(fabricPost);
-  }
-
-  openPostDialog(post: any) {
-    this.dialog.open(PostModalComponent, {
-      minWidth: '700px',
-      width: 'auto',
-      data: { 
-        user: this.user, 
-        post: post, 
-        board: this.board
-      }
-    });
   }
   
   openSettingsDialog() {
@@ -244,19 +213,19 @@ export class CanvasComponent {
     });
   }
 
-  updatePostPermissions = (permissions:Permissions) => {
-    this.boardService.update(this.boardID, { permissions:permissions})
+  updatePostPermissions = (permissions: Permissions) => {
+    this.boardService.update(this.boardID, { permissions: permissions })
     this.lockPostsMovement(!permissions.allowStudentMoveAny)
     this.updateShowAddPost(permissions)
     this.configureBoard()
   }
 
-  updateShowAddPost(permissions:Permissions) {
-    let isStudent  = this.user.role == "student"
-    let isTeacher = this.user.role =="teacher"
-    this.showAddPost = ( isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
+  updateShowAddPost(permissions: Permissions) {
+    let isStudent = this.user.role == Role.STUDENT
+    let isTeacher = this.user.role == Role.TEACHER
+    this.showAddPost = (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
   }
-  
+
   updateTask = (title, message) => {
     this.boardService.update(this.boardID, { task: { title: title, message: message } })
   }
@@ -267,22 +236,51 @@ export class CanvasComponent {
 
   lockPostsMovement(value) {
     this.canvas.getObjects().map(obj => {
-      obj.set({lockMovementX: value, lockMovementY: value});
+      obj.set({ lockMovementX: value, lockMovementY: value });
     });
     this.canvas.renderAll()
   }
 
-  hideAuthorNames(){
+  hideAuthorNames() {
     this.canvas.getObjects().map(obj => {
       this.fabricUtils.updateAuthor(obj, "Anonymous")
     });
     this.canvas.renderAll()
   }
 
-  updateAuthorNames(postToUpdate:PostIDNamePair){
+  updateAuthorNames(postToUpdate: PostIDNamePair) {
     let obj = this.fabricUtils.getObjectFromId(postToUpdate.postID)
-    this.fabricUtils.updateAuthor(obj, postToUpdate.username)
-    this.canvas.renderAll()
+    if(obj){
+      this.fabricUtils.updateAuthor(obj, postToUpdate.username)
+      this.canvas.renderAll()
+    }
+  }
+  
+  setAuthorVisibilityOne(post){
+    if(!this.board){
+      return
+    }
+    let isStudentAndVisible = this.user.role == Role.STUDENT && this.board.permissions.showAuthorNameStudent
+    let IsTeacherAndVisisble= this.user.role == Role.TEACHER && this.board.permissions.showAuthorNameTeacher
+    if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
+      this.updateAuthorNames({ postID: post.postID, username: "Anonymous" })
+    }
+    else{
+      this.userService.getOneById(post.userID).then((user: any) => {
+        this.updateAuthorNames({ postID: post.postID, username: user.username })
+      })
+    }
+
+  }
+
+  setAuthorVisibilityAll() {
+    this.postsService.getAll(this.boardID).then((data) => {
+      // update all the post names to to the poster's name rather than anonymous
+      data.forEach((data) => {
+        let post = data.data() ?? {}
+        this.setAuthorVisibilityOne(post)
+      })
+    })
   }
 
   openTaskDialog() {
@@ -296,8 +294,8 @@ export class CanvasComponent {
   }
 
   // send your post to the rest of the group
-  sendObjectToGroup(pObject: any){
-    const post:Post = {
+  sendObjectToGroup(pObject: any) {
+    const post: Post = {
       postID: pObject.postID,
       title: pObject.title,
       desc: pObject.desc,
@@ -331,6 +329,7 @@ export class CanvasComponent {
       }
 
       existing = this.fabricUtils.updateLikeCount(existing, obj)
+      existing = this.fabricUtils.updateCommentCount(existing, obj)
       existing.set(obj)
       existing.setCoords()
       this.canvas.renderAll()
@@ -340,26 +339,41 @@ export class CanvasComponent {
     
   }
 
-  addLikeListener() {
-    this.likesService.observable(this.boardID, (like: Like, change: string) => {
-      var post = this.fabricUtils.getObjectFromId(like.postID)
-      if (post) {
-        post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
-        this.canvas.renderAll()
-        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-        this.postsService.update(post.postID, { fabricObject: jsonPost })
-      }
-    }, true)
+  handlePostEvent = (post) => {
+    if (post) {
+      var obj = JSON.parse(post.fabricObject);
+      this.syncBoard(obj, post.postID);
+    }
+  }
+
+  handleLikeEvent = (like: Like, change: string) => {
+    var post = this.fabricUtils.getObjectFromId(like.postID)
+    if (post) {
+      post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
+      this.canvas.renderAll()
+      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      this.postsService.update(post.postID, { fabricObject: jsonPost })
+    }
+  }
+
+  handleCommentEvent = (comment: Comment) => {
+    var post = this.fabricUtils.getObjectFromId(comment.postID)
+    if (post) {
+      post = this.fabricUtils.incrementComments(post)
+      this.canvas.renderAll()
+      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      this.postsService.update(post.postID, { fabricObject: jsonPost })
+    }
   }
 
   handleLikeButtonClick() {
     this.canvas.on('mouse:down', e => {
       var post: any = e.target
       var likeButton = e.subTargets?.find(o => o.name == 'like')
-      let isStudent  = this.user.role == "student"
-      let isTeacher = this.user.role =="teacher"
+      let isStudent = this.user.role == Role.STUDENT
+      let isTeacher = this.user.role == Role.TEACHER
       let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
-      if (likeButton && ( studentHasPerm || isTeacher) ) {
+      if (likeButton && (studentHasPerm || isTeacher)) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
             this.likesService.add({
@@ -370,7 +384,7 @@ export class CanvasComponent {
             })
           } else {
             data.forEach((data) => {
-              let like: Like = data.data() 
+              let like: Like = data.data()
               this.likesService.remove(like.likeID)
             })
           }
@@ -399,65 +413,50 @@ export class CanvasComponent {
       var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
       if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
-        this.openPostDialog(obj)
+        this.dialog.open(PostModalComponent, {
+          minWidth: '700px',
+          width: 'auto',
+          data: {
+            user: this.user,
+            post: obj,
+            board: this.board
+          }
+        });
       }
     });
-  }
-
-  addCommentListener() {
-    this.commentService.observable(this.boardID, (comment: Comment) => {
-      var post = this.fabricUtils.getObjectFromId(comment.postID)
-      if (post) {
-        post = this.fabricUtils.incrementComments(post)
-        this.canvas.renderAll()
-        var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-        this.postsService.update(post.postID, { fabricObject: jsonPost })
-      }
-    }, true)
   }
 
   // listen to configuration/permission changes
   handleBoardChange = (board) => {
     this.board = board
+
     this.lockPostsMovement(!board.permissions.allowStudentMoveAny)
+    this.setAuthorVisibilityAll()
+
     board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
     board.name ? this.updateBoardName(board.name) : null
   }
 
-  handleAddFromGroup = (post) => {
-    if (post) {
-      var obj = JSON.parse(post.fabricObject);
-      this.syncBoard(obj, post.postID);
-    }
-  }
-
-  handleModificationFromGroup = (post) => {
-    if (post) {
-      var obj = JSON.parse(post.fabricObject);
-      this.syncBoard(obj, post.postID);
-    }
-  }
-
   // perform actions when new post is added
   addObjectListener() {
-    this.canvas.on('object:added', (options:any) => {
+    this.canvas.on('object:added', (options: any) => {
       if (options.target) {
         var obj = options.target;
-        
+
         if (!obj.postID) {
           obj.set('postID', Date.now() + '-' + this.user.id);
           fabric.util.object.extend(obj, { postID: obj.postID })
           this.sendObjectToGroup(obj)
-		    }
+        }
       }
     });
   }
 
   // perform actions when post is removed
   removeObjectListener() {
-    this.canvas.on('object:removed', (options:any) => {
+    this.canvas.on('object:removed', (options: any) => {
       if (options.target) {
-        var obj = options.target;	         
+        var obj = options.target;
         if (obj.removed) {
           return // already removed
         }
@@ -465,14 +464,14 @@ export class CanvasComponent {
         this.postsService.delete(obj.postID)
         obj.set('removed', true);
         fabric.util.object.extend(obj, { removed: true })
-		    this.sendObjectToGroup(obj);   
+        this.sendObjectToGroup(obj);
       }
     });
   }
 
   // perform actions when post is moved
   movingObjectListener() {
-    this.canvas.on('object:moving', (options:any) => {
+    this.canvas.on('object:moving', (options: any) => {
       if (options.target) {
         var obj = options.target;
 
@@ -490,20 +489,40 @@ export class CanvasComponent {
     })
   }
 
+
   zoomListener() {
     this.canvas.on('mouse:wheel', (opt) => {
       var options = (opt.e as unknown) as WheelEvent
 
-      var delta = options.deltaY;
-      //var zoom = this.canvas.getZoom();
+      // Condition for pinch gesture on trackpad: 
+      // 1. delta Y is an integer or delta X is 0 
+      // 2. ctrl key is triggered
+      const trackpad_pinch = ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
+      && (options.ctrlKey);
 
-      this.zoom *= 0.999 ** delta;
-      if (this.zoom > 20) this.zoom = 20;
-      if (this.zoom < 0.01) this.zoom = 0.01;
+      // Condition for mousewheel:
+      // 1. delta Y has trailing non-zero decimal points
+      // 2. delta X is zero 
+      // 3. ctrl key is not triggered
+      const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9) 
+      && Math.abs(options.deltaX) < 1e-9 && !(options.ctrlKey);
 
-      this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
-      opt.e.preventDefault();
-      opt.e.stopPropagation();
+      if(trackpad_pinch || mousewheel) {  
+        var delta = options.deltaY;
+
+        if(mousewheel) {
+          this.zoom *= 0.999 ** delta;
+        }
+        else {
+          this.zoom *= 0.95 ** delta;
+        }
+        if (this.zoom > 20) this.zoom = 20;
+        if (this.zoom < 0.01) this.zoom = 0.01;
+
+        this.canvas.zoomToPoint(new fabric.Point(options.offsetX, options.offsetY), this.zoom);
+        opt.e.preventDefault();
+        opt.e.stopPropagation();
+      }
     });
   }
 
@@ -519,7 +538,7 @@ export class CanvasComponent {
         this.initialClientY = options.clientY;
       }
     });
-      
+
     this.canvas.on("mouse:up", (opt) => {
       isPanning = false;
       this.canvas.selection = true;
@@ -539,6 +558,28 @@ export class CanvasComponent {
     })
   }
 
+  panningBySwipingListener() {
+    this.canvas.on('mouse:wheel', (opt) => {
+      let options = (opt.e as unknown) as WheelEvent;
+
+      // Condition for two-finger swipe on trackpad: 
+      // 1. delta Y is an integer, 
+      // 2. delta X is an integer,
+      // 3. ctrl key is not triggered
+      const trackpad_twofinger = 
+      Number.isInteger(options.deltaY) && Number.isInteger(options.deltaX)
+      && !(options.ctrlKey);
+
+      if(trackpad_twofinger) { 
+        let vpt = this.canvas.viewportTransform;
+        if(!vpt) return;
+        vpt[4] -= options.deltaX;
+        vpt[5] -= options.deltaY;
+        this.canvas.requestRenderAll();
+      }
+    })
+  }
+  
   keyPanningListener() {
     document.addEventListener('keydown', (event) => {
       if(event.key == 'ArrowUp') {
@@ -574,11 +615,10 @@ export class CanvasComponent {
     this.canvas.hoverCursor = 'move'
   }
 
-  handleZoom(event) {
 
+  handleZoom(event) {
     let centerX = this.centerX + (this.finalClientX - this.initialClientX);
     let centerY = this.centerY + (this.finalClientY - this.initialClientY);
-
     this.initialClientX = this.finalClientX;
     this.initialClientY = this.finalClientY;
 
@@ -604,5 +644,12 @@ export class CanvasComponent {
 
   displayZoomValue() {
     return Math.round(this.zoom * 100);
+  }
+
+  hideListsWhenModalOpen() {
+    this.dialog.afterOpened.subscribe(() => {
+      this.showList = false
+      this.showBuckets = false
+    })
   }
 }

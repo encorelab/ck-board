@@ -5,8 +5,8 @@ import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import { Role } from 'src/app/utils/constants';
 
-enum UserType { STUDENT = 'student', TEACHER = 'teacher' }
 enum Step { CHOOSE_TYPE, ADD_CREDENTIALS }
 
 @Component({
@@ -19,8 +19,8 @@ export class RegisterComponent {
   username: string
   email: string
   password: string
-  userType = UserType.STUDENT
-  UserType: typeof UserType = UserType
+  role = Role.STUDENT
+  Role: typeof Role = Role
   step = Step.CHOOSE_TYPE
 
   usernameControl = new FormControl('', [Validators.required, Validators.maxLength(25)]);
@@ -42,7 +42,7 @@ export class RegisterComponent {
 
   onRegister() {
     this.invalidCredentials = false
-    this.auth.register(this.userType, this.username, this.email, this.password)
+    this.auth.register(this.role, this.username, this.email, this.password)
       .catch(() => this.invalidCredentials = true)
   }
 }

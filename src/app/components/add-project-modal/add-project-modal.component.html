@@ -4,12 +4,15 @@
     <mat-tab label="Project"> 
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Project Name</mat-label>
-        <input matInput [(ngModel)]="name">
+        <input matInput [(ngModel)]="name" #projectNameInput="ngModel" required>
+        <mat-error *ngIf="projectNameInput.invalid">
+          Project name is required.
+        </mat-error>
       </mat-form-field>
     </mat-tab>
   </mat-tab-group>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Create Project!</button>
+  <button mat-button (click)="handleDialogSubmit()" [disabled]="projectNameInput.invalid" cdkFocusInitial>Create Project!</button>
 </div>

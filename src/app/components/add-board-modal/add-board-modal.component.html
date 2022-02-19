@@ -4,15 +4,21 @@
     <mat-tab label="Board"> 
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Board Name</mat-label>
-        <input matInput [(ngModel)]="boardName">
+        <input matInput [(ngModel)]="boardName" #boardNameInput="ngModel" required minlength="1">
+        <mat-error *ngIf="boardNameInput.invalid">
+          Board Name is required.
+        </mat-error>
       </mat-form-field>
       <mat-form-field style="width:100%">
         <mat-label>Project</mat-label>
-        <mat-select [(value)]="selectedProject" required>
+        <mat-select [(ngModel)]="selectedProject" required #projectInput="ngModel" name="project"> 
           <mat-option *ngFor="let project of projects" [value]="project.projectID">
             {{project.name}}
           </mat-option>
         </mat-select>
+        <mat-error *ngIf="projectInput.invalid">
+          Project is required.
+        </mat-error>
       </mat-form-field>
       <h4>Set Background Image:</h4>
       <input ng-hide id="input-file-id" type="file" accept=".jpeg,.jpg,.png,.svg" (change)="handleImageUpload($event)" style="margin-bottom: 20px;"/>
@@ -72,5 +78,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Create Board!</button>
+  <button mat-button  cdkFocusInitial [disabled]="boardNameInput.invalid || projectInput.invalid" (click) ="handleDialogSubmit()">Create Board!</button>
 </div>

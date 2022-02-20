@@ -10,8 +10,12 @@
           <h3>No Buckets Available!</h3>
         </ng-template>
         <span style="flex: 1 1 auto"></span>
-        <button mat-icon-button matTooltip="Create Post in Bucket" (click)="openAddPostDialog()">
-          <mat-icon>library_add</mat-icon>
+        <button 
+          mat-icon-button 
+          matTooltip="Create Post in Bucket" 
+          (click)="openAddPostDialog()"
+          [disabled] = "buckets && buckets.length == 0">
+            <mat-icon>library_add</mat-icon>
         </button>
         <button mat-icon-button matTooltip="Close Bucket" (click)="close()">
           <mat-icon>close</mat-icon>

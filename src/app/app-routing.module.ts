@@ -12,24 +12,23 @@ import { ProjectBoardGuard } from './utils/project.board.guard';
 import {ProjectGuard} from './utils/project.guard'
 
 const routes: Routes = [
-  { path: 'project/:projectID/board/:boardID',
-  component: CanvasComponent,
-  canActivate:[ProjectBoardGuard]
-
-  },
-  {
-    path:'project/:projectID',
-    component:ProjectDashboardComponent,
-    canActivate:[ProjectGuard]
-  },
-  { path: 'dashboard', component: DashboardComponent,
-    canActivate: [AuthGuard]  
-  },
+  { path: '', component: LoginComponent },
   { path: 'login', component: LoginComponent },
   { path: 'reset-password', component: PasswordResetComponent},
   { path: 'register', component: RegisterComponent },
+  { path: 'dashboard', component: DashboardComponent,
+    canActivate: [AuthGuard]  
+  },
+  { path:'project/:projectID',
+    component:ProjectDashboardComponent,
+    canActivate:[ProjectGuard]
+  },
+  { path: 'project/:projectID/board/:boardID',
+    component: CanvasComponent,
+    canActivate:[ProjectBoardGuard]
+  },
   { path: 'error', component: ErrorComponent },
-  { path: '**', redirectTo: 'error' }
+  { path: '**', redirectTo: 'error' },
 ];
 
 @NgModule({

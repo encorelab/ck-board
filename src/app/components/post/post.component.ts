@@ -99,6 +99,8 @@ export class PostComponent extends fabric.Group {
       fill: '#F4D74B',
       rx: 20, 
       ry: 20,
+      strokeWidth: 2,
+      stroke: "black",
     });
 
     const groupOptions = {

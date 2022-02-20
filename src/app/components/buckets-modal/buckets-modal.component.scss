@@ -1,0 +1,15 @@
+.list {
+  display: flex; 
+  flex-direction: row; 
+  flex-wrap: wrap; 
+  gap: 10px;
+}
+
+.spinner {
+  margin: 70px auto; 
+  background: transparent; 
+}
+
+::ng-deep .mat-dialog-container {
+  overflow-y: hidden !important;
+}

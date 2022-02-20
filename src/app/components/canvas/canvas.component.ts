@@ -29,6 +29,8 @@ import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { RealtimeService } from 'src/app/services/realtime.service';
+import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
+import { ListModalComponent } from '../list-modal/list-modal.component';
 
 interface PostIDNamePair {
   postID: string,
@@ -92,6 +94,26 @@ export class CanvasComponent {
     this.hideListsWhenModalOpen();
     this.boardService.observable(this.boardID, this.handleBoardChange);
     this.realtimeService.observe(this.boardID, this.handlePostEvent, this.handleLikeEvent, this.handleCommentEvent);
+  }
+
+  showBucketsModal() {
+    this.dialog.open(BucketsModalComponent, {
+      width: '73vw',
+      height: '75vh',
+      data: {
+        board: this.board,
+      }
+    });
+  }
+
+  showListModal() {
+    this.dialog.open(ListModalComponent, {
+      width: '73vw',
+      height: '75vh',
+      data: {
+        board: this.board,
+      }
+    });
   }
 
   // configure board

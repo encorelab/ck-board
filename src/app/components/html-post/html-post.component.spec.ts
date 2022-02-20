@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BucketPostComponent } from './bucket-post.component';
+import { BucketPostComponent } from './html-post.component';
 
 describe('BucketPostComponent', () => {
   let component: BucketPostComponent;

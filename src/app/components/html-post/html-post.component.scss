@@ -1,0 +1,26 @@
+.bucket-card {
+  cursor: pointer;
+
+  width: 15vw;
+
+  border-radius: 20px;
+  border: 2px solid black;
+  word-wrap: break-word;
+  
+  background-color: #f4d74b;
+}
+
+.content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* number of lines to show */
+          line-clamp: 4; 
+  -webkit-box-orient: vertical;
+}
+
+mat-chip {
+  padding: 2px 8px !important;
+  font-size: 12px;
+}

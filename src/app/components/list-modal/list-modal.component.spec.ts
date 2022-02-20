@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BucketComponent } from './bucket.component';
+import { ListModalComponent } from './list-modal.component';
 
-describe('BucketComponent', () => {
-  let component: BucketComponent;
-  let fixture: ComponentFixture<BucketComponent>;
+describe('ListModalComponent', () => {
+  let component: ListModalComponent;
+  let fixture: ComponentFixture<ListModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ BucketComponent ]
+      declarations: [ ListModalComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(BucketComponent);
+    fixture = TestBed.createComponent(ListModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

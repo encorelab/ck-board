@@ -1,0 +1,16 @@
+.list {
+  display: flex; 
+
+  flex-flow: row wrap; 
+  justify-content: space-evenly;
+  row-gap: 10px;
+}
+
+.spinner {
+  margin: 70px auto; 
+  background: transparent; 
+}
+
+::ng-deep .mat-dialog-container {
+  overflow-y: hidden !important;
+}

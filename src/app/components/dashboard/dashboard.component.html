@@ -2,23 +2,53 @@
     <mat-toolbar>
         <span>Common Knowledge Board</span>
         <span style="flex: 1 1 auto"></span>
-        <button mat-icon-button (click)="openCreateBoardDialog()">
-            <mat-icon>add</mat-icon>
+        <button 
+          mat-icon-button 
+          [matMenuTriggerFor]="addMenu" 
+          *ngIf="user && user.role == Role.TEACHER" 
+          matTooltip="Create Project or Board">
+          <mat-icon>add</mat-icon>
         </button>
-        <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
+        <mat-menu #addMenu="matMenu" >
+          <button 
+            mat-menu-item  
+            (click)="openCreateProjectDialog()">
+              Create Project
+          </button>
+          <button mat-menu-item (click)="openCreateBoardDialog()" *ngIf="yourProjects.length >0" >
+              Create Board
+          </button>
+        </mat-menu>
+        <button 
+          mat-button 
+          (click)="openJoinProjectDialog()"
+          matTooltip="Join Project" >
+            <mat-icon>group_add</mat-icon>
+        </button>
+        <button 
+          style="margin-left: 1em" 
+          *ngIf="user && user.username" 
+          mat-button [matMenuTriggerFor]="menu"
+          matTooltip="Account">
+            {{ user.username }}
+        </button>
         <mat-menu #menu="matMenu">
           <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
         </mat-menu>
     </mat-toolbar>
+    <h3 class="header">My Projects</h3>
     <mat-grid-list class="content" cols="4" rowHeight="200">
-      <mat-grid-tile *ngFor="let board of boards" height="100px">
-        <mat-card class="card" (click)="handleBoardClick(board.boardID)">
+      <mat-grid-tile *ngFor="let project of yourProjects" height="100px">
+        <mat-card class="card" (click)="handleProjectClick(project.projectID)">
           <mat-card-header>
-            <mat-card-title class="title">{{ board.name }}</mat-card-title>
+            <mat-card-title class="title">{{ project.name }}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
             <p>
-              {{ board.task.title }}
+              {{ project.members.length + " members"}}
+            </p>
+            <p>
+              {{ project.boards.length + " boards"}}
             </p>
           </mat-card-content>
         </mat-card>

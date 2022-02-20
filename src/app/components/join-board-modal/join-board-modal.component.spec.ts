@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PostComponent } from './post.component';
+import { JoinBoardModalComponent } from './join-board-modal.component';
 
-describe('PostComponent', () => {
-  let component: PostComponent;
-  let fixture: ComponentFixture<PostComponent>;
+describe('JoinBoardModalComponent', () => {
+  let component: JoinBoardModalComponent;
+  let fixture: ComponentFixture<JoinBoardModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PostComponent ]
+      declarations: [ JoinBoardModalComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PostComponent);
+    fixture = TestBed.createComponent(JoinBoardModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

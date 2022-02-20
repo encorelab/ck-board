@@ -8,14 +8,14 @@ import { AppComponent } from './app.component';
 
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireModule } from '@angular/fire';
-import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth'
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component'
-import { PostComponent } from './components/post/post.component';
+import { FabricPostComponent } from './components/fabric-post/fabric-post.component';
 import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
 import { PostModalComponent } from './components/post-modal/post-modal.component';
@@ -24,12 +24,24 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
+import { CreateWorkflowModalComponent } from './components/create-workflow-modal/create-workflow-modal.component';
+import { HtmlPostComponent } from './components/html-post/html-post.component';
+import { PasswordResetComponent } from './components/password-reset/password-reset.component';
+import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
+import { ErrorComponent } from './components/error/error.component';
+import { PasswordResetConfirmationModalComponent } from './components/password-reset-confirmation-modal/password-reset-confirmation-modal.component';
+import { JoinProjectModalComponent } from './components/join-project-modal/join-project-modal.component';
+import { AddProjectModalComponent } from './components/add-project-modal/add-project-modal.component';
+import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
+import { ProjectConfigurationModalComponent } from './components/project-configuration-modal/project-configuration-modal.component';
+import { BucketsModalComponent } from './components/buckets-modal/buckets-modal.component';
+import { ListModalComponent } from './components/list-modal/list-modal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AddPostComponent,
-    PostComponent,
+    FabricPostComponent,
     ConfigurationModalComponent,
     TaskModalComponent,
     PostModalComponent,
@@ -37,7 +49,19 @@ import { AddBoardModalComponent } from './components/add-board-modal/add-board-m
     LoginComponent,
     RegisterComponent,
     DashboardComponent,
-    AddBoardModalComponent
+    AddBoardModalComponent,
+    CreateWorkflowModalComponent,
+    PasswordResetComponent,
+    JoinBoardModalComponent,
+    ErrorComponent,
+    PasswordResetConfirmationModalComponent,
+    JoinProjectModalComponent,
+    AddProjectModalComponent,
+    ProjectDashboardComponent,
+    ProjectConfigurationModalComponent,
+    BucketsModalComponent,
+    ListModalComponent,
+    HtmlPostComponent
   ],
   imports: [
     BrowserModule,
@@ -48,6 +72,7 @@ import { AddBoardModalComponent } from './components/add-board-modal/add-board-m
     FormsModule, 
     BrowserAnimationsModule,
     ReactiveFormsModule,
+    InfiniteScrollModule,
     MaterialModule
   ],
   providers: [],

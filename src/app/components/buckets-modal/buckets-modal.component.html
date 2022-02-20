@@ -1,0 +1,12 @@
+<h1 mat-dialog-title>CK Buckets</h1>
+<div mat-dialog-content>
+  <mat-form-field *ngIf="buckets && buckets.length > 0 && !loading" appearance="outline" style="font-size: 14px; width: 100%;">
+    <mat-select [(ngModel)]="activeBucket.name">
+      <mat-option value="{{bucket.name}}" *ngFor="let bucket of buckets" (click)="loadBucketPosts(bucket)">{{ bucket.name }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
+  <div class="list">
+    <app-html-post [post]="post" *ngFor="let post of posts"></app-html-post>
+  </div>
+</div>

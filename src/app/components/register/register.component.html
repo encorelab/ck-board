@@ -8,13 +8,13 @@
                     <div *ngIf="step == 0">
                         <h2>Which one are you?</h2>
                         <div class="selectContainer">
-                            <div class="selectBox" [ngClass]="userType == UserType.STUDENT ? 'active' : ''" (click)="userType = UserType.STUDENT">
+                            <div class="selectBox" [ngClass]="role == Role.STUDENT ? 'active' : ''" (click)="role = Role.STUDENT">
                                 <h1 class="title">Student</h1>
                                 <div class="graphic">
                                     <img src="../../assets/student.png" />
                                 </div>
                             </div>
-                            <div class="selectBox" [ngClass]="userType == UserType.TEACHER ? 'active' : ''" (click)="userType = UserType.TEACHER">
+                            <div class="selectBox" [ngClass]="role == Role.TEACHER ? 'active' : ''" (click)="role = Role.TEACHER">
                                 <h1 class="title">Teacher</h1>
                                 <div class="graphic">
                                     <img src="../../assets/teacher.png" />

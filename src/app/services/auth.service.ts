@@ -32,6 +32,7 @@ export class AuthService {
 
   login(email: string, password: string) {
     return this.auth.signInWithEmailAndPassword(email, password).then((result) => {
+      this.userData = result.user
       this.ngZone.run(() => {
         this.router.navigate(['dashboard']);
       });
@@ -78,5 +79,13 @@ export class AuthService {
       localStorage.removeItem('user');
       this.router.navigate(['/login']);
     })
+  }
+
+  getAuth() { 
+    return this.auth; 
+  } 
+
+  resetPassword(email: string) {
+      return this.auth.sendPasswordResetEmail(email)
   }
 }

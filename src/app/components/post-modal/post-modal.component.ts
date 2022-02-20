@@ -8,6 +8,13 @@ import User from 'src/app/models/user';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
+import { BucketService } from 'src/app/services/bucket.service';
+import { FabricUtils } from 'src/app/utils/FabricUtils';
+import Post from 'src/app/models/post';
+import { DELETE } from '@angular/cdk/keycodes';
+import { Role } from 'src/app/utils/constants';
+
+const linkifyStr = require('linkifyjs/lib/linkify-string');
 
 @Component({
   selector: 'app-post-modal',
@@ -19,12 +26,20 @@ export class PostModalComponent {
   tagOptions: string[] = []
 
   user: User
+  post: Post
+  buckets: any[]
 
   title: string
+  editingTitle: string
   desc: string
+  editingDesc: string
   isEditing: boolean = false
+  showEditDelete: boolean = false
   canEditDelete: boolean
+  canStudentComment:boolean
+  canStudentTag:boolean
   showComments: boolean = false
+  showAuthorName:boolean
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
   descControl = new FormControl('', [Validators.maxLength(1000)]);
@@ -39,17 +54,22 @@ export class PostModalComponent {
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
     public commentService: CommentService, public likesService: LikesService,
-    public postsService: PostService,
+    public postsService: PostService, public bucketService: BucketService,
+    public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
+      dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
       this.postsService.get(data.post.postID).then((item) => {
         item.forEach((post) => {
           var p = post.data()
+          this.post = p
           this.title = p.title
+          this.editingTitle = linkifyStr(p.title, { defaultProtocol: 'https', target: "_blank"})
           this.desc = p.desc
+          this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
           this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
-          this.canEditDelete = this.data.post.userID == this.user.id || this.user.role == 'teacher'
+          this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == Role.TEACHER
         })
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
@@ -64,10 +84,38 @@ export class PostModalComponent {
           this.likes.push(likeObj)
         })
       })
+      this.bucketService.getAllByBoard(this.data.board.boardID).then(buckets => {
+        this.buckets = []
+        buckets.forEach(bucket => {
+          bucket.includesPost = bucket.posts.some(post => post.postID == this.post.postID)
+          this.buckets.push(bucket)
+        })
+      })
+      
+    let isStudent = this.user.role == Role.STUDENT
+    let isTeacher = this.user.role == Role.TEACHER
+    this.showEditDelete = (isStudent && data.board.permissions.allowStudentEditAddDeletePost) || isTeacher 
+    this.canStudentComment = (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher 
+    this.canStudentTag = (isStudent && data.board.permissions.allowStudentTagging) || isTeacher 
+    this.showAuthorName = (isStudent && data.board.permissions.showAuthorNameStudent) || (isTeacher && data.board.permissions.showAuthorNameTeacher)
   }
   
-  onNoClick(): void {
-    this.dialogRef.close();
+  close(): void {
+    this.dialogRef.close(this.post);
+  }
+  
+  updateBucket(event) {
+    const bucketID = event.source.id
+    const bucket: any = this.buckets.find(bucket => bucket.bucketID === bucketID)
+
+    if (event.checked) {
+      bucket.posts.push(this.post)
+    } else {
+      bucket.posts = bucket.posts.filter(post => post.postID !== this.post.postID)
+    }
+
+    let ids = bucket.posts.map(post => post.postID)
+    this.bucketService.update(bucketID, { posts: ids })
   }
 
   toggleEdit() {
@@ -79,30 +127,47 @@ export class PostModalComponent {
   }
 
   onUpdate() {
-    this.data.updatePost(this.data.post.postID, this.title, this.desc)
-    this.toggleEdit()
+    this.editingTitle = this.title
+    this.editingDesc = this.desc
+    
+    var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
+    
+    obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
+    obj.set({ title: this.title, desc: this.desc })
+    this.fabricUtils._canvas.renderAll()
+
+    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+
+    this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
+      .then(() => this.toggleEdit())
   }
 
   onDelete() {
-    this.data.removePost(this.data.post.postID)
-    this.dialogRef.close();
+    var obj = this.fabricUtils.getObjectFromId(this.post.postID);
+    if (!obj || obj.type != 'group') return;
+    this.fabricUtils._canvas.remove(obj);
+    this.fabricUtils._canvas.renderAll();
+
+    this.postsService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
   }
 
   addTag(event, tagOption): void {
     event.stopPropagation()
     this.tags.push(tagOption);
     this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
-    this.postsService.update(this.data.post.postID, { tags: this.tags })
+    this.postsService.update(this.post.postID, { tags: this.tags })
   }
 
   removeTag(tag) {
+    if(!this.canStudentTag)
+      return
     const index = this.tags.indexOf(tag);
     if (index >= 0) {
       this.tags.splice(index, 1);
     }
 
     this.tagOptions.push(tag);
-    this.postsService.update(this.data.post.postID, { tags: this.tags })
+    this.postsService.update(this.post.postID, { tags: this.tags })
   }
 
   addComment() {
@@ -110,7 +175,7 @@ export class PostModalComponent {
       comment: this.newComment,
       commentID: Date.now() + '-' + this.data.user.id,
       userID: this.data.user.id,
-      postID: this.data.post.postID,
+      postID: this.post.postID,
       boardID: this.data.board.boardID,
       author: this.data.user.username
     }
@@ -121,6 +186,11 @@ export class PostModalComponent {
   }
 
   handleLikeClick() {
+    // if liking is locked just return (do nothing)
+    if(this.user.role == Role.STUDENT && !this.data.board.permissions.allowStudentLiking){
+      return;
+    }
+      
     if (this.isLiked) {
       this.likesService.remove(this.isLiked.likeID).then(() => {
         this.isLiked = null
@@ -130,7 +200,7 @@ export class PostModalComponent {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
         likerID: this.user.id,
-        postID: this.data.post.postID,
+        postID: this.post.postID,
         boardID: this.data.board.boardID
       }
       this.likesService.add(like)

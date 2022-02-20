@@ -1,38 +1,61 @@
-<div class="app">
-  <mat-toolbar>
+<div>
+  <div style="position: absolute;">
+    <mat-toolbar>
       <span *ngIf="board && board.name">{{ board.name }}</span>
       <span style="flex: 1 1 auto"></span>
-      <button mat-icon-button routerLink="/dashboard" matTooltip="Return to dashboard">
+      <button mat-icon-button routerLink="{{'/project/'+projectID}}" matTooltip="Return to Project Dashboard">
         <mat-icon>keyboard_return</mat-icon>
+      </button>
+      <button mat-icon-button *ngIf="user && user.role == Role.TEACHER" (click)="openWorkflowDialog()" matTooltip="Workflows">
+        <mat-icon>timeline</mat-icon>
+      </button>
+      <button mat-icon-button (click)="showBucketsModal()" matTooltip="View Buckets">
+        <mat-icon>shopping_basket</mat-icon>
+      </button>
+      <button mat-icon-button (click)="showListModal()" matTooltip="List Posts">
+        <mat-icon>list_alt</mat-icon>
       </button>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
           <mat-icon>task</mat-icon>
       </button>
-      <button *ngIf="user && user.role == 'teacher'" mat-icon-button (click)="openSettingsDialog()" matTooltip="Adjust Settings">
+      <button *ngIf="user && user.role == Role.TEACHER" mat-icon-button (click)="openSettingsDialog()" matTooltip="Adjust Settings">
         <mat-icon>settings</mat-icon>
       </button>
       <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
       <mat-menu #menu="matMenu">
         <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
       </mat-menu>
-  </mat-toolbar>
-  <div class="canvas-area">
-      <canvas id="canvas"></canvas>
-      <div class="toolSection">
-          <div class="toolField">
-              <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Add Post" (click)="handleCreatePost()">
-                  <mat-icon>add</mat-icon>
-              </button>
-              <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Cancel Post" (click)="disableChooseLocation()">
-                  <mat-icon>close</mat-icon>
-              </button>
-              <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" matTooltip="Move Posts - Mode" (click)="enablePanMode()">
-                  <mat-icon>open_with</mat-icon>
-              </button>
-              <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Canvas - Mode"  (click)="enableEditMode()">
-                  <mat-icon style="padding-right: 3px;">pan_tool</mat-icon>
-              </button>
+    </mat-toolbar>
+    <div class="canvas-area">
+        <canvas id="canvas"></canvas>
+        <div class="toolSection">
+            <div class="toolField">
+                <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Add Post" (click)="handleCreatePost()">
+                    <mat-icon>add</mat-icon>
+                </button>
+                <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Cancel Post" (click)="disableChooseLocation()">
+                    <mat-icon>close</mat-icon>
+                </button>
+                <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" matTooltip="Move Posts - Mode" (click)="enablePanMode()">
+                    <mat-icon>open_with</mat-icon>
+                </button>
+                <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Canvas - Mode"  (click)="enableEditMode()">
+                    <mat-icon style="padding-right: 3px;">pan_tool</mat-icon>
+                </button>
+            </div>
           </div>
-        </div>
+          <div class = "zoomField">
+            <button (click) = "handleZoom('zoomOut')" class = "zoomButton" mat-button color = "basic">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <p> {{displayZoomValue()}}%</p>
+            <button (click) = "handleZoom('zoomIn')" class = "zoomButton" mat-button color = "basic">
+              <mat-icon>add</mat-icon>
+            </button>
+            <button (click) = "handleZoom('reset')" class = "zoomButton" mat-button color = "basic">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </div>
+    </div>
   </div>
 </div>

@@ -33,6 +33,10 @@ export class UserService {
     return this.usersRef.doc(user.id).set(user) 
   }
 
+  update(user: User) {
+    return this.usersRef.doc(user.id).update(user)
+  }
+
   delete(id: string) {
     return this.usersRef.ref.doc(id).delete()
   }

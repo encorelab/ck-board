@@ -1,8 +1,9 @@
 .list {
   display: flex; 
-  flex-direction: row; 
-  flex-wrap: wrap; 
-  gap: 10px;
+
+  flex-flow: row wrap; 
+  justify-content: space-evenly;
+  row-gap: 10px;
 }
 
 .spinner {

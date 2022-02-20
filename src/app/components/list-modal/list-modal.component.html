@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>CK List</h1>
 <div mat-dialog-content (scroll)="onScroll($event)">
   <div class="list" *ngIf="!loading" >
-    <app-bucket-post [post]="post" *ngFor="let post of posts"></app-bucket-post>
+    <app-html-post [post]="post" *ngFor="let post of posts"></app-html-post>
   </div>
 </div>

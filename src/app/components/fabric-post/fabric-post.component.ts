@@ -6,11 +6,11 @@ const DESC_OFFSET = 80
 const CONTENT_EXTRA_HEIGHT = 55
 
 @Component({
-  selector: 'app-post',
-  templateUrl: './post.component.html',
-  styleUrls: ['./post.component.scss']
+  selector: 'app-fabric-post',
+  templateUrl: './fabric-post.component.html',
+  styleUrls: ['./fabric-post.component.scss']
 })
-export class PostComponent extends fabric.Group {
+export class FabricPostComponent extends fabric.Group {
 
   constructor(@Inject(Object) options:any) { 
     var title = new fabric.Textbox(options.title, {

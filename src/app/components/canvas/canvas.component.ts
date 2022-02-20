@@ -14,7 +14,7 @@ import { PostService } from '../../services/post.service';
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
-import { PostComponent } from '../post/post.component';
+import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { Mode, Role } from 'src/app/utils/constants';
@@ -184,7 +184,7 @@ export class CanvasComponent {
   }
 
   addPost = (title: string, desc = '', left: number, top: number) => {
-    var fabricPost = new PostComponent({
+    var fabricPost = new FabricPostComponent({
       title: title,
       author: this.user.username,
       authorID: this.user.id,

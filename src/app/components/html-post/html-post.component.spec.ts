@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PostComponent } from './post.component';
+import { BucketPostComponent } from './html-post.component';
 
-describe('PostComponent', () => {
-  let component: PostComponent;
-  let fixture: ComponentFixture<PostComponent>;
+describe('BucketPostComponent', () => {
+  let component: BucketPostComponent;
+  let fixture: ComponentFixture<BucketPostComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PostComponent ]
+      declarations: [ BucketPostComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PostComponent);
+    fixture = TestBed.createComponent(BucketPostComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

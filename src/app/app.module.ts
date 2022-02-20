@@ -12,7 +12,6 @@ import { AngularFireAuthModule } from '@angular/fire/auth'
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
-import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component'
 import { FabricPostComponent } from './components/fabric-post/fabric-post.component';
@@ -72,7 +71,6 @@ import { ListModalComponent } from './components/list-modal/list-modal.component
     FormsModule, 
     BrowserAnimationsModule,
     ReactiveFormsModule,
-    InfiniteScrollModule,
     MaterialModule
   ],
   providers: [],

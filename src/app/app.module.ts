@@ -8,7 +8,6 @@ import { AppComponent } from './app.component';
 
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireModule } from '@angular/fire';
-import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth'
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -16,7 +15,7 @@ import { MaterialModule } from './material-module';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component'
-import { PostComponent } from './components/post/post.component';
+import { FabricPostComponent } from './components/fabric-post/fabric-post.component';
 import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
 import { PostModalComponent } from './components/post-modal/post-modal.component';
@@ -26,9 +25,7 @@ import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
 import { CreateWorkflowModalComponent } from './components/create-workflow-modal/create-workflow-modal.component';
-import { BucketPostComponent } from './shared/bucket-post/bucket-post.component';
-import { BucketComponent } from './shared/bucket/bucket.component';
-import { ListViewComponent } from './shared/list-view/list-view.component';
+import { HtmlPostComponent } from './components/html-post/html-post.component';
 import { PasswordResetComponent } from './components/password-reset/password-reset.component';
 import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
 import { ErrorComponent } from './components/error/error.component';
@@ -37,12 +34,14 @@ import { JoinProjectModalComponent } from './components/join-project-modal/join-
 import { AddProjectModalComponent } from './components/add-project-modal/add-project-modal.component';
 import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
 import { ProjectConfigurationModalComponent } from './components/project-configuration-modal/project-configuration-modal.component';
+import { BucketsModalComponent } from './components/buckets-modal/buckets-modal.component';
+import { ListModalComponent } from './components/list-modal/list-modal.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AddPostComponent,
-    PostComponent,
+    FabricPostComponent,
     ConfigurationModalComponent,
     TaskModalComponent,
     PostModalComponent,
@@ -52,9 +51,6 @@ import { ProjectConfigurationModalComponent } from './components/project-configu
     DashboardComponent,
     AddBoardModalComponent,
     CreateWorkflowModalComponent,
-    BucketPostComponent,
-    BucketComponent,
-    ListViewComponent,
     PasswordResetComponent,
     JoinBoardModalComponent,
     ErrorComponent,
@@ -62,7 +58,10 @@ import { ProjectConfigurationModalComponent } from './components/project-configu
     JoinProjectModalComponent,
     AddProjectModalComponent,
     ProjectDashboardComponent,
-    ProjectConfigurationModalComponent
+    ProjectConfigurationModalComponent,
+    BucketsModalComponent,
+    ListModalComponent,
+    HtmlPostComponent
   ],
   imports: [
     BrowserModule,

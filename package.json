@@ -24,7 +24,6 @@
     "express": "^4.17.1",
     "fabric": "^4.5.1",
     "firebase": "^8.7.1",
-    "ngx-infinite-scroll": "^10.0.1",
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.4",
     "rxjs": "~6.6.0",

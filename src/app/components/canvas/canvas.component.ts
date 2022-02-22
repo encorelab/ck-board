@@ -14,7 +14,7 @@ import { PostService } from '../../services/post.service';
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
-import { PostComponent } from '../post/post.component';
+import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { Mode, Role } from 'src/app/utils/constants';
@@ -29,6 +29,8 @@ import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { RealtimeService } from 'src/app/services/realtime.service';
+import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
+import { ListModalComponent } from '../list-modal/list-modal.component';
 
 interface PostIDNamePair {
   postID: string,
@@ -92,6 +94,26 @@ export class CanvasComponent {
     this.hideListsWhenModalOpen();
     this.boardService.observable(this.boardID, this.handleBoardChange);
     this.realtimeService.observe(this.boardID, this.handlePostEvent, this.handleLikeEvent, this.handleCommentEvent);
+  }
+
+  showBucketsModal() {
+    this.dialog.open(BucketsModalComponent, {
+      width: '73vw',
+      height: '75vh',
+      data: {
+        board: this.board,
+      }
+    });
+  }
+
+  showListModal() {
+    this.dialog.open(ListModalComponent, {
+      width: '73vw',
+      height: '75vh',
+      data: {
+        board: this.board,
+      }
+    });
   }
 
   // configure board
@@ -162,7 +184,7 @@ export class CanvasComponent {
   }
 
   addPost = (title: string, desc = '', left: number, top: number) => {
-    var fabricPost = new PostComponent({
+    var fabricPost = new FabricPostComponent({
       title: title,
       author: this.user.username,
       authorID: this.user.id,

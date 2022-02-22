@@ -2,10 +2,11 @@
     <mat-card-title>{{ post.title }}</mat-card-title>
     <mat-card-subtitle *ngIf="showUsername">{{ user.username }}</mat-card-subtitle>
     <mat-card-subtitle *ngIf="!showUsername">Anonymous</mat-card-subtitle>
-    <mat-chip-list>
-      <mat-chip color="primary" selected *ngFor="let tag of post.tags">{{ tag }}</mat-chip>
-    </mat-chip-list>
+    
     <mat-card-content class="content">
+      <mat-chip-list>
+        <mat-chip color="primary" selected *ngFor="let tag of post.tags">{{ tag }}</mat-chip>
+      </mat-chip-list>
       <p>{{ post.desc }}</p>
     </mat-card-content>
     <mat-card-actions>

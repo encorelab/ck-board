@@ -95,10 +95,6 @@
     color: red
 }
 
-#request-pass-reset {
-    float: right;
-}
-
 .input{
     background-color: white;
     outline: none;
@@ -123,6 +119,13 @@
     font-size: 20px;
     text-align: center;
     margin-bottom: 30px;
+}
+
+.forgot-pass {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    text-align: center;
+    margin: 0 0;
 }
 
 .sign{

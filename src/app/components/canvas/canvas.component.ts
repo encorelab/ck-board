@@ -102,6 +102,7 @@ export class CanvasComponent {
       height: '75vh',
       data: {
         board: this.board,
+        user:this.user
       }
     });
   }

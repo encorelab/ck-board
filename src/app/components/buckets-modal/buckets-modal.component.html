@@ -5,6 +5,13 @@
       <mat-option value="{{bucket.name}}" *ngFor="let bucket of buckets" (click)="loadBucketPosts(bucket)">{{ bucket.name }}</mat-option>
     </mat-select>
   </mat-form-field>
+  <button 
+  mat-icon-button 
+  matTooltip="Create Post in Bucket" 
+  (click)="openAddPostDialog()"
+  [disabled] = "buckets && buckets.length == 0">
+    <mat-icon>library_add</mat-icon>
+</button>
   <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
   <div class="list">
     <app-html-post [post]="post" *ngFor="let post of posts"></app-html-post>

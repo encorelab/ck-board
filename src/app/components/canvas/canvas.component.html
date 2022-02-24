@@ -9,10 +9,10 @@
       <button mat-icon-button *ngIf="user && user.role == Role.TEACHER" (click)="openWorkflowDialog()" matTooltip="Workflows">
         <mat-icon>timeline</mat-icon>
       </button>
-      <button mat-icon-button (click)="showList = false; showBuckets = !showBuckets" matTooltip="View Buckets">
+      <button mat-icon-button (click)="showBucketsModal()" matTooltip="View Buckets">
         <mat-icon>shopping_basket</mat-icon>
       </button>
-      <button mat-icon-button (click)="showBuckets = false; showList = !showList" matTooltip="List Posts">
+      <button mat-icon-button (click)="showListModal()" matTooltip="List Posts">
         <mat-icon>list_alt</mat-icon>
       </button>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
@@ -58,6 +58,4 @@
           </div>
     </div>
   </div>
-  <app-bucket [board]="board" [(visible)]="showBuckets"></app-bucket>
-  <app-list-view [board]="board" [(visible)]="showList"></app-list-view>
 </div>

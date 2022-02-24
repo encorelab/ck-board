@@ -1,5 +1,5 @@
 import { DELETE } from '@angular/cdk/keycodes';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PostModalComponent } from 'src/app/components/post-modal/post-modal.component';
 import { Board } from 'src/app/models/board';
@@ -14,11 +14,11 @@ import { PostService } from 'src/app/services/post.service';
 import { Role } from 'src/app/utils/constants';
 
 @Component({
-  selector: 'app-bucket-post',
-  templateUrl: './bucket-post.component.html',
-  styleUrls: ['./bucket-post.component.scss']
+  selector: 'app-html-post',
+  templateUrl: './html-post.component.html',
+  styleUrls: ['./html-post.component.scss']
 })
-export class BucketPostComponent implements OnInit {
+export class HtmlPostComponent implements OnInit, OnDestroy {
 
   @Input() post: Post
 
@@ -33,6 +33,9 @@ export class BucketPostComponent implements OnInit {
   isLiked: Like | null
 
   showUsername: boolean = false
+
+  unsubPosts: Function
+  unsubBucket: Function
   
   constructor(public commentService: CommentService, public likesService: LikesService, public postService: PostService,
     public authService: AuthService, public boardService: BoardService, public dialog: MatDialog) { }
@@ -51,7 +54,7 @@ export class BucketPostComponent implements OnInit {
     })
     this.boardService.get(this.post.boardID).then(board => {
       this.board = board
-      this.listenForUpdates()
+      this.listenForUpdatesIfNot()
       this.setUsernameAnonymity(board)
     })
   }
@@ -87,9 +90,11 @@ export class BucketPostComponent implements OnInit {
     }
   }
 
-  listenForUpdates() {
-    this.postService.observeOne(this.post.postID, this.handleUpdate, this.handleDelete);
-    this.boardService.observable(this.board.boardID, this.handleBoardChange);
+  listenForUpdatesIfNot() {
+    if (!this.unsubBucket && !this.unsubPosts) {
+      this.unsubPosts = this.postService.observeOne(this.post.postID, this.handleUpdate, this.handleDelete);
+      this.unsubBucket = this.boardService.observable(this.board.boardID, this.handleBoardChange);
+    }
   }
 
   handleUpdate = (post) => {
@@ -119,5 +124,10 @@ export class BucketPostComponent implements OnInit {
     } else {
       this.showUsername = false
     }
+  }
+
+  ngOnDestroy(): void {
+    this.unsubPosts()
+    this.unsubBucket()
   }
 }

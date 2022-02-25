@@ -1,0 +1,13 @@
+<mat-toolbar role="toolbar" aria-label="Top Toolbar">
+  <ng-content></ng-content>
+  <button 
+    style="margin-left: 1em" 
+    *ngIf="user && user.username" 
+    mat-button [matMenuTriggerFor]="menu"
+    matTooltip="Account">
+      {{ user.username }}
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="signOut()">Log Out</button>
+  </mat-menu>
+</mat-toolbar>

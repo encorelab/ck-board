@@ -35,6 +35,7 @@ import { ProjectDashboardComponent } from './components/project-dashboard/projec
 import { ProjectConfigurationModalComponent } from './components/project-configuration-modal/project-configuration-modal.component';
 import { BucketsModalComponent } from './components/buckets-modal/buckets-modal.component';
 import { ListModalComponent } from './components/list-modal/list-modal.component';
+import { ToolbarComponent } from './components/toolbar/toolbar.component';
 
 @NgModule({
   declarations: [
@@ -60,7 +61,8 @@ import { ListModalComponent } from './components/list-modal/list-modal.component
     ProjectConfigurationModalComponent,
     BucketsModalComponent,
     ListModalComponent,
-    HtmlPostComponent
+    HtmlPostComponent,
+    ToolbarComponent
   ],
   imports: [
     BrowserModule,

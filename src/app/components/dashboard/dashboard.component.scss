@@ -1,46 +1,23 @@
-.card {
-    width: 250px;
-    height: 100px;
-    padding: 16px;
-    cursor: pointer;
-}
+@use '../../../style/layout';
 
-.header {
-    margin-left: 3%;
-}
-
-mat-toolbar {
-    justify-content: space-between;
-}
-
-.content {
-    padding: 1px;
-}
-
-.content > mat-card {
-    margin-bottom: 1px;
-}
-
-.column-label {
+.heading {
+    margin-left: 8px;
     margin-right: 8px;
-    font-size: 1rem;
 }
 
 .title {
-    margin-left: -16px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    line-height: 1.4;
 }
 
-.no-boards {
-    position: absolute;
-    transform: translate(-50%,-50%);
-    left: 50%;
-    top: 40%;
-    font-size: xx-large;
-    color: grey;
+.cards {
+    display: grid;
+    grid-gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
-.icons {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
+.card {
+    min-height: 100px;
+    cursor: pointer;
 }

@@ -6,14 +6,26 @@
     </mat-select>
   </mat-form-field>
   <button 
-  mat-icon-button 
-  matTooltip="Create Post in Bucket" 
-  (click)="openAddPostDialog()"
-  [disabled] = "buckets && buckets.length == 0">
-    <mat-icon>library_add</mat-icon>
-</button>
+    mat-icon-button 
+    matTooltip="Create Post in Bucket" 
+    (click)="openAddPostDialog()"
+    [disabled] = "buckets && buckets.length == 0">
+      <mat-icon>library_add</mat-icon>
+  </button>
+  <mat-slide-toggle
+    (click)="activateMovePost()"
+    >
+    Select posts to move
+</mat-slide-toggle>
   <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
   <div class="list">
-    <app-html-post [post]="post" *ngFor="let post of posts"></app-html-post>
+    <div *ngFor="let post of posts">
+      <mat-checkbox *ngIf="post.bucketOnly && movePostActivated; else defaultPost" (change)="handleCheckedPost(post.postID)" >
+        <app-html-post [post]="post" ></app-html-post>
+      </mat-checkbox>
+      <ng-template #defaultPost>
+        <app-html-post [post]="post" ></app-html-post>
+      </ng-template>
+    </div>
   </div>
 </div>

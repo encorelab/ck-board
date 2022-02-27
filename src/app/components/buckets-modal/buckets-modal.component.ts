@@ -26,6 +26,9 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
 
   loading: boolean = true
 
+  postsToMove:string[] =[]
+  movePostActivated:boolean
+
   constructor(
     public dialogRef: MatDialogRef<BucketsModalComponent>,
     public bucketService: BucketService,
@@ -106,5 +109,19 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       width: '500px',
       data: dialogData
     });
+  }
+
+  handleCheckedPost(postID:string){
+    alert(JSON.stringify(postID))
+    if(this.postsToMove.includes(postID)){
+      this.postsToMove = this.postsToMove.filter(e => e!=postID)
+    }
+    else{
+      this.postsToMove.push(postID)
+    }
+
+  }
+  activateMovePost(){
+    this.movePostActivated = !this.movePostActivated
   }
 }

@@ -13,10 +13,12 @@
       <mat-icon>library_add</mat-icon>
   </button>
   <mat-slide-toggle
-    (click)="activateMovePost()"
-    >
+    (click)="activateMovePost()">
     Select posts to move
-</mat-slide-toggle>
+  </mat-slide-toggle>
+  <button (click)="movePostsToBoard()" [disabled]="postsToMove.length == 0 || !movePostActivated">
+    Move selected posts to board
+  </button>
   <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
   <div class="list">
     <div *ngFor="let post of posts">

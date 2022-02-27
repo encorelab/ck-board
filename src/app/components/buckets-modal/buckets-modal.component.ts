@@ -7,6 +7,9 @@ import { PostService } from 'src/app/services/post.service';
 import { AddPostComponent } from 'src/app/components/add-post-modal/add-post.component';
 import Post from 'src/app/models/post';
 import { DialogInterface } from 'src/app/interfaces/dialog.interface';
+import { FabricPostComponent } from '../fabric-post/fabric-post.component';
+import { FabricUtils } from 'src/app/utils/FabricUtils';
+import { fabric } from 'fabric';
 
 
 @Component({
@@ -34,6 +37,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     public bucketService: BucketService,
     public postsService:PostService,
     public dialog: MatDialog,
+    protected fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
     this.board = data.board
     this.user = data.user
@@ -126,5 +130,35 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     if(!this.movePostActivated){
       this.postsToMove =[]
     }
+  }
+
+  movePostsToBoard(){
+
+    for(let postID of this.postsToMove){
+      this.postsService.get(postID).then(data =>{
+        data.forEach(item =>{
+          let post = item.data()
+          console.log(post)
+          let fabricPost = new FabricPostComponent({
+            title: post.title,
+            author: this.user.username,
+            authorID: this.user.id,
+            desc: post.desc,
+            lock: !this.board.permissions.allowStudentMoveAny,
+            // todo stack posts on top of each other in the middle of the canvas
+            left: 150,
+            top: 150
+          });
+          fabric.util.object.extend(fabricPost, { postID: postID })
+          let updatedPost = {
+            fabricObject: JSON.stringify(fabricPost.toJSON(this.fabricUtils.serializableProperties)),
+            bucketOnly:false
+          }
+          this.postsService.update(postID,updatedPost)
+        })
+        // todo close modal
+      })
+    }
+    
   }
 }

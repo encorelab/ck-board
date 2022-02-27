@@ -123,5 +123,8 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   }
   activateMovePost(){
     this.movePostActivated = !this.movePostActivated
+    if(!this.movePostActivated){
+      this.postsToMove =[]
+    }
   }
 }

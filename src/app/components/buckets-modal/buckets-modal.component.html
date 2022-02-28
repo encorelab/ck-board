@@ -16,8 +16,8 @@
     (click)="activateMovePost()">
     Select posts to move
   </mat-slide-toggle>
-  <button (click)="movePostsToBoard()" [disabled]="postsToMove.length == 0 || !movePostActivated">
-    Move selected posts to board
+  <button (click)="movePostsToBoard()" *ngIf="postsToMove.length > 0 && movePostActivated">
+    Move {{postsToMove.length}} posts to board
   </button>
   <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
   <div class="list">

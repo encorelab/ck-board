@@ -32,6 +32,9 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   postsToMove:string[] =[]
   movePostActivated:boolean
 
+  centerX:number
+  centerY:number
+
   constructor(
     public dialogRef: MatDialogRef<BucketsModalComponent>,
     public bucketService: BucketService,
@@ -41,6 +44,8 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: any) {
     this.board = data.board
     this.user = data.user
+    this.centerX = data.centerX
+    this.centerY = data.centerY
   }
 
   ngOnInit(): void {
@@ -116,7 +121,6 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   }
 
   handleCheckedPost(postID:string){
-    alert(JSON.stringify(postID))
     if(this.postsToMove.includes(postID)){
       this.postsToMove = this.postsToMove.filter(e => e!=postID)
     }
@@ -133,21 +137,20 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   }
 
   movePostsToBoard(){
+    let Yoffset = this.centerY
 
     for(let postID of this.postsToMove){
       this.postsService.get(postID).then(data =>{
         data.forEach(item =>{
           let post = item.data()
-          console.log(post)
           let fabricPost = new FabricPostComponent({
             title: post.title,
             author: this.user.username,
             authorID: this.user.id,
             desc: post.desc,
             lock: !this.board.permissions.allowStudentMoveAny,
-            // todo stack posts on top of each other in the middle of the canvas
-            left: 150,
-            top: 150
+            left: this.centerX ,
+            top: Yoffset
           });
           fabric.util.object.extend(fabricPost, { postID: postID })
           let updatedPost = {
@@ -155,10 +158,11 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
             bucketOnly:false
           }
           this.postsService.update(postID,updatedPost)
+          Yoffset+=50
         })
-        // todo close modal
       })
     }
+    this.dialogRef.close()
     
   }
 }

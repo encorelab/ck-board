@@ -13,6 +13,8 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { Role } from 'src/app/utils/constants';
+import { TracingService } from 'src/app/services/tracing.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -56,6 +58,8 @@ export class PostModalComponent {
     public commentService: CommentService, public likesService: LikesService,
     public postsService: PostService, public bucketService: BucketService,
     public fabricUtils: FabricUtils,
+    public tracingService: TracingService,
+    public authService: AuthService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
@@ -129,6 +133,10 @@ export class PostModalComponent {
   onUpdate() {
     this.editingTitle = this.title
     this.editingDesc = this.desc
+
+    this.tracingService.traceUpdatePost(this.post.postID).then((tracing) => {
+      this.tracingService.exportToCSV([tracing.properties]);
+    })
     
     var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
     
@@ -139,7 +147,13 @@ export class PostModalComponent {
     obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
 
     this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
-      .then(() => this.toggleEdit())
+      .then(() => {
+        this.toggleEdit();
+        /*
+        this.tracingService.traceUpdatePost(this.post.postID).then((tracing) => {
+          console.log(tracing);
+        }); */
+      });
   }
 
   onDelete() {

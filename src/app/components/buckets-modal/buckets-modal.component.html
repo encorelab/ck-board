@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>CK Buckets</h1>
 <div mat-dialog-content>
-  <mat-form-field *ngIf="buckets && buckets.length > 0 && !loading" appearance="outline" style="font-size: 14px; width: 100%;">
+  <mat-form-field *ngIf="buckets && buckets.length > 0 && !loading" appearance="outline" style="font-size: 14px; margin-right: 1em;">
     <mat-select [(ngModel)]="activeBucket.name">
       <mat-option value="{{bucket.name}}" *ngFor="let bucket of buckets" (click)="loadBucketPosts(bucket)">{{ bucket.name }}</mat-option>
     </mat-select>
@@ -12,25 +12,10 @@
     [disabled] = "buckets && buckets.length == 0">
       <mat-icon>library_add</mat-icon>
   </button>
-  <mat-slide-toggle
-    (click)="activateMovePost()">
-    Select posts to move
-  </mat-slide-toggle>
-  <button (click)="movePostsToBoard()" *ngIf="postsToMove.length > 0 && movePostActivated">
-    Move {{postsToMove.length}} posts to board
-  </button>
   <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
   <div class="list">
     <div *ngFor="let post of posts">
-      <mat-checkbox 
-        *ngIf="post.bucketOnly && movePostActivated; else defaultPost" 
-        (change)="handleCheckedPost(post.postID)" 
-        [checked]="postsToMove.includes(post.postID)" >
-        <app-html-post [post]="post" ></app-html-post>
-      </mat-checkbox>
-      <ng-template #defaultPost>
-        <app-html-post [post]="post" ></app-html-post>
-      </ng-template>
+      <app-html-post [post]="post" (movePostToBoardEvent)="movePostToBoard($event)" ></app-html-post>
     </div>
   </div>
 </div>

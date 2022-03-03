@@ -1,5 +1,5 @@
 import { DELETE } from '@angular/cdk/keycodes';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PostModalComponent } from 'src/app/components/post-modal/post-modal.component';
 import { Board } from 'src/app/models/board';
@@ -21,6 +21,7 @@ import { Role } from 'src/app/utils/constants';
 export class HtmlPostComponent implements OnInit, OnDestroy {
 
   @Input() post: Post
+  @Output() movePostToBoardEvent = new EventEmitter<string>();
 
   exists: boolean = true
 
@@ -124,6 +125,9 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
     } else {
       this.showUsername = false
     }
+  }
+  movePostToBoard(postID:string){
+    this.movePostToBoardEvent.next(postID)
   }
 
   ngOnDestroy(): void {

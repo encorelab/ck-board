@@ -29,11 +29,10 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
 
   loading: boolean = true
 
-  postsToMove:string[] =[]
   movePostActivated:boolean
 
-  centerX:number
-  centerY:number
+  Yoffset:number
+  Xoffset:number
 
   constructor(
     public dialogRef: MatDialogRef<BucketsModalComponent>,
@@ -44,8 +43,8 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: any) {
     this.board = data.board
     this.user = data.user
-    this.centerX = data.centerX
-    this.centerY = data.centerY
+    this.Xoffset = data.centerX
+    this.Yoffset = data.centerY
   }
 
   ngOnInit(): void {
@@ -120,49 +119,29 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  handleCheckedPost(postID:string){
-    if(this.postsToMove.includes(postID)){
-      this.postsToMove = this.postsToMove.filter(e => e!=postID)
-    }
-    else{
-      this.postsToMove.push(postID)
-    }
+  movePostToBoard(postID:string){
 
-  }
-  activateMovePost(){
-    this.movePostActivated = !this.movePostActivated
-    if(!this.movePostActivated){
-      this.postsToMove =[]
-    }
-  }
-
-  movePostsToBoard(){
-    let Yoffset = this.centerY
-
-    for(let postID of this.postsToMove){
-      this.postsService.get(postID).then(data =>{
-        data.forEach(item =>{
-          let post = item.data()
-          let fabricPost = new FabricPostComponent({
-            title: post.title,
-            author: this.user.username,
-            authorID: this.user.id,
-            desc: post.desc,
-            lock: !this.board.permissions.allowStudentMoveAny,
-            left: this.centerX ,
-            top: Yoffset
-          });
-          fabric.util.object.extend(fabricPost, { postID: postID })
-          let updatedPost = {
-            fabricObject: JSON.stringify(fabricPost.toJSON(this.fabricUtils.serializableProperties)),
-            bucketOnly:false
-          }
-          this.postsService.update(postID,updatedPost)
-          Yoffset+=50
-        })
+    this.postsService.get(postID).then(data =>{
+      data.forEach(item =>{
+        let post = item.data()
+        let fabricPost = new FabricPostComponent({
+          title: post.title,
+          author: this.user.username,
+          authorID: this.user.id,
+          desc: post.desc,
+          lock: !this.board.permissions.allowStudentMoveAny,
+          left: this.Xoffset ,
+          top: this.Yoffset
+        });
+        fabric.util.object.extend(fabricPost, { postID: postID })
+        let updatedPost = {
+          fabricObject: JSON.stringify(fabricPost.toJSON(this.fabricUtils.serializableProperties)),
+          bucketOnly:false
+        }
+        this.postsService.update(postID,updatedPost)
+        this.Yoffset+=50
       })
-    }
-    this.dialogRef.close()
+    })
     
   }
 }

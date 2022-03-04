@@ -10,7 +10,7 @@
     matTooltip="Create Post in Bucket" 
     (click)="openAddPostDialog()"
     [disabled] = "buckets && buckets.length == 0">
-      <mat-icon>note_add</mat-icon>
+      <mat-icon class="material-icons-outlined">note_add</mat-icon>
   </button>
   <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
   <div class="list">

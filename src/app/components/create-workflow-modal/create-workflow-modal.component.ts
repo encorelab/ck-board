@@ -19,6 +19,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   board: Board
   buckets: Bucket[]
+  workflows: Workflow[] = []
   tags: string[]
 
   bucketName: string = ''
@@ -29,6 +30,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   source: Board | Bucket
   destination: Board | Bucket
 
+  activateImmediately: boolean = true
+  includeExistingPosts: boolean = false
   includeLikes: boolean = false
   includeComments: boolean = false
   includeTags: boolean = false
@@ -56,9 +59,17 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.sourceDestOptions = this.sourceDestOptions.concat(buckets)
       this.sourceDestOptions.push(this.board)
     })
-    
+    this.loadWorkflows()
     this.tagsFormControl.valueChanges.subscribe((value) => this.selectedTags = value)
   }
+
+  loadWorkflows() {
+    this.workflowService.get(this.board.boardID).then((workflows) => {
+      workflows.forEach(workflow => {
+        this.workflows.push(workflow.data())
+      })
+    })
+  } 
 
   createBucket() {
     const bucket: Bucket = {
@@ -92,14 +103,31 @@ export class CreateWorkflowModalComponent implements OnInit {
     let workflow: Workflow = {
       workflowID: workflowID,
       boardID: this.board.boardID,
+      active: this.activateImmediately,
       name: this.workflowName,
-      source: this._isBoard(this.source) ? this.source.boardID : this.source.bucketID,
-      destination: this._isBoard(this.destination) ? this.destination.boardID : this.destination.bucketID,
+      source: this.source,
+      destination: this.destination,
       criteria: criteria,
       timestamp: new Date().getTime()
     }
     
     this.workflowService.create(workflow).then(() => this.dialogRef.close())
+  }
+
+  toggleWorkflow(current: boolean, workflowID: string) {
+    this.workflowService.updateStatus(workflowID, !current).then(() => {
+      this.workflows.forEach((workflow) => {
+        if (workflow.workflowID == workflowID) {
+          workflow.active = !current
+        }
+      })
+    })
+  }
+
+  deleteWorkflow(workflowID: string) {
+    this.workflowService.remove(workflowID).then(() => {
+      this.workflows = this.workflows.filter(workflow => workflow.workflowID !== workflowID)
+    })
   }
 
   onNoClick(): void {

@@ -1,11 +1,15 @@
+import { Board } from "./board"
+import Bucket from "./bucket"
+
 export default class Workflow {
   workflowID: string
   boardID: string
+  active: boolean
 
   name: string
 
-  source: string
-  destination: string
+  source: Board | Bucket
+  destination: Board | Bucket
   
   criteria: WorkflowCriteria
 

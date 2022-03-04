@@ -12,14 +12,27 @@
       </div>
     </mat-tab>
     <mat-tab label="Create Workflow"> 
-      <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
+      <mat-form-field appearance="outline" style="width:100%; margin-top: 10px;">
         <mat-label>Workflow Name</mat-label>
         <input [formControl]="workflowNameFormControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="workflowName">
         <mat-error *ngIf="workflowNameFormControl.hasError('required')">You must make a selection</mat-error>
       </mat-form-field>
+      <mat-accordion>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Advanced Options
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div style="display: flex; flex-direction: column">
+            <mat-checkbox [(ngModel)]="activateImmediately">Activate workflow immediately after creation</mat-checkbox>
+            <mat-checkbox [(ngModel)]="includeExistingPosts">Include existing posts into workflow</mat-checkbox>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
       <h4>Pick a source and destination board/bucket:</h4>
       <div class="source-destination">
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="fill" style="font-size: 14px !important">
           <mat-label>Source</mat-label>
           <mat-select [(ngModel)]="source" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
             <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
@@ -27,7 +40,7 @@
           <mat-error *ngIf="sourceFormControl.hasError('required')">You must make a selection</mat-error>
         </mat-form-field>
         <mat-icon class="arrow-icon">arrow_right_alt</mat-icon>
-        <mat-form-field appearance="fill">
+        <mat-form-field appearance="fill" style="font-size: 14px !important">
           <mat-label>Destination</mat-label>
           <mat-select [(ngModel)]="destination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
             <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
@@ -64,6 +77,37 @@
         <button mat-button (click)="onNoClick()">Cancel</button>
         <button mat-button [disabled]="!_validForm()" (click)="createWorkflow()">Create Workflow!</button>
       </div>
+    </mat-tab>
+    <mat-tab label="Manage Workflows"> 
+      <h3 *ngIf="!workflows || workflows.length == 0" style="color: grey; text-align: center;">No workflows created!</h3>
+      <mat-accordion multi *ngFor="let workflow of workflows" style="padding: 10px">
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon [ngStyle]="{'color': workflow.active ? 'green' : 'grey'}" style="padding-right: 30px">circle</mat-icon>
+              {{ workflow.name }}
+            </mat-panel-title>
+            <mat-panel-description>
+              {{ workflow.source.name }}
+              <mat-icon style="font-size: 30px; line-height: 20px; padding: 0px 10px">arrow_right_alt</mat-icon>
+              {{ workflow.destination.name }}
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+          <div style="display: flex; flex-direction: row; gap: 10px">
+            <button mat-raised-button color="accent" (click)="toggleWorkflow(workflow.active, workflow.workflowID)">
+              {{ workflow.active ? "Deactivate Workflow" : "Activate Workflow" }}
+            </button>
+            <button mat-raised-button color="warn" (click)="deleteWorkflow(workflow.workflowID)">Delete Workflow</button>
+          </div>
+          <h3>Criteria:</h3>
+          <p *ngIf="workflow.criteria.minimumLikes">Has atleast {{ workflow.criteria.minimumLikes }} likes.</p>
+          <p *ngIf="workflow.criteria.minimumComments">Has atleast {{ workflow.criteria.minimumComments }} comments.</p>
+          <p *ngIf="workflow.criteria.includesTags">Includes the following tags:</p>
+          <mat-chip-list>
+            <mat-chip color="primary" selected *ngFor="let tag of workflow.criteria.includesTags">{{ tag }}</mat-chip>
+          </mat-chip-list>
+        </mat-expansion-panel>
+      </mat-accordion>
     </mat-tab>
   </mat-tab-group>
 </div>

@@ -124,8 +124,10 @@ export class CanvasComponent {
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
-        let obj = JSON.parse(post.fabricObject);
-        this.syncBoard(obj, post.postID);
+        if(post.fabricObject){
+          let obj = JSON.parse(post.fabricObject);
+          this.syncBoard(obj, post.postID);
+        }
       })
       this.boardService.get(this.boardID).then((board) => {
         if (board) {
@@ -330,7 +332,6 @@ export class CanvasComponent {
       boardID: this.boardID,
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
       timestamp: new Date().getTime(),
-      bucketOnly:false
     }
     this.postsService.create(post);
   }
@@ -367,7 +368,7 @@ export class CanvasComponent {
   }
 
   handlePostEvent = (post) => {
-    if (post) {
+    if (post && post.fabricObject) {
       var obj = JSON.parse(post.fabricObject);
       this.syncBoard(obj, post.postID);
     }

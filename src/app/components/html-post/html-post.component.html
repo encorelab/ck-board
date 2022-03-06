@@ -3,7 +3,7 @@
     <mat-card-title style="display:inline-block;">{{ post.title }}</mat-card-title>
     <button 
       mat-button 
-      *ngIf="post.bucketOnly" 
+      *ngIf="!post.fabricObject" 
       (click)="movePostToBoard(post.postID); $event.stopPropagation()"
       style="display: inline-block;">
       <mat-icon class="material-icons-outlined">download</mat-icon>

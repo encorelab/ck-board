@@ -96,9 +96,8 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       tags: [],
       userID: this.user.id,
       boardID: this.board.boardID,
-      fabricObject: "{}",
+      fabricObject: "",
       timestamp: new Date().getTime(),
-      bucketOnly:true
     }
     this.postsService.create(post);
     this.posts.push(post);
@@ -136,7 +135,6 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         fabric.util.object.extend(fabricPost, { postID: postID })
         let updatedPost = {
           fabricObject: JSON.stringify(fabricPost.toJSON(this.fabricUtils.serializableProperties)),
-          bucketOnly:false
         }
         this.postsService.update(postID,updatedPost)
         this.Yoffset+=50

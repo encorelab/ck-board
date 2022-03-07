@@ -493,21 +493,24 @@ export class CanvasComponent {
 
   // perform actions when post is moved
   movingObjectListener() {
+    let id, obj;
     this.canvas.on('object:moving', (options: any) => {
       if (options.target) {
-        var obj = options.target;
+        obj = options.target;
 
         var left = (Math.round((options.pointer.x - obj.getScaledWidth() / 2)));
         var top = (Math.round((options.pointer.y - obj.getScaledHeight() / 2)));
 
-        obj.set({ left: left, top: top })
-        obj.setCoords()
-        this.canvas.renderAll()
-
-        var id = obj.postID
-        obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
-        this.postsService.update(id, { fabricObject: obj })
+        obj.set({ left: left, top: top });
+        obj.setCoords();
+        this.canvas.renderAll();
       }
+    })
+
+    this.canvas.on('object:moved', () => {
+      id = obj.postID;
+      obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties));
+      this.postsService.update(id, { fabricObject: obj });
     })
   }
 

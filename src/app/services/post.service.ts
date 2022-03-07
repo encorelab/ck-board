@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Post from '../models/post';
+import { TracingService } from './tracing.service';
 
 interface Options {
   pageSize: number;
@@ -15,7 +16,7 @@ export class PostService {
   private postsPath : string = 'posts';
   postsCollection: AngularFirestoreCollection<Post>;
 
-  constructor(private db: AngularFirestore) {
+  constructor(private db: AngularFirestore, public tracingService: TracingService) {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }
 
@@ -65,7 +66,9 @@ export class PostService {
   }
 
   create(post: any): any {
-    return this.postsCollection.doc(post.postID).set(post)
+    return this.postsCollection.doc(post.postID).set(post).then(() => {
+      this.tracingService.tracePostServer(post.postID, post.title, post.desc);
+    })
   }
 
   update(postID: string, value: any) {

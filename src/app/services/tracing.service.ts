@@ -22,7 +22,11 @@ interface IBuilder {
     setProjectName(name: string): Builder;
     setBoardName(name: string): Builder;
     setAgentUsername(name: string): Builder;
-    setTimestamp(): Builder;
+    setPostTitle(title: string): Builder;
+    setPostMessage(message: string): Builder;
+
+    setClientTimestamp(): Builder;
+    setServerTimestamp(): Builder;
 }
 
 class Builder implements IBuilder {
@@ -67,8 +71,23 @@ class Builder implements IBuilder {
         return this;
     }
 
-    public setTimestamp(): Builder {
-        this.trace.properties["timestamp"] = Date.now();
+    public setClientTimestamp(): Builder {
+        this.trace.properties["client_timestamp"] = Date.now();
+        return this;
+    }
+    
+    public setServerTimestamp(): Builder {
+        this.trace.properties["server_timestamp"] = Date.now();
+        return this;
+    }
+
+    public setPostTitle(title: string): Builder {
+        this.trace.properties["title"] = title;
+        return this;
+    }
+
+    public setPostMessage(message: string): Builder {
+        this.trace.properties["message"] = message;
         return this;
     }
 
@@ -124,18 +143,35 @@ export class TracingService {
 
         const username = this.authService.userData.username;
 
-        return this.builder.setTimestamp()
-                    .setAgentUsername(username)
+        return this.builder.setAgentUsername(username)
                     .setProjectId(projectId)
                     .setProjectName(project.name)
                     .setBoardId(boardId)
                     .setBoardName(board.name);
     }
 
-    public async traceUpdatePost(postId: string): Promise<Tracing> {
-        const basic = await this.traceBasic();
+    private async traceClient(): Promise<Builder> {
+        return (await this.traceBasic()).setClientTimestamp();
+    }
 
-        return basic.setPostId(postId).getTracing();
+    private async traceServer(): Promise<Builder> {
+        return (await this.traceBasic()).setServerTimestamp();
+    }
+
+    public async tracePostClient(postId: string, title: string, message: string): Promise<Tracing> {
+        return (await this.traceClient())
+            .setPostId(postId)
+            .setPostTitle(title)
+            .setPostMessage(message)
+            .getTracing();
+    }
+
+    public async tracePostServer(postId: string, title: string, message: string): Promise<Tracing> {
+        return (await this.traceServer())
+            .setPostId(postId)
+            .setPostTitle(title)
+            .setPostMessage(message)
+            .getTracing();
     }
 
 

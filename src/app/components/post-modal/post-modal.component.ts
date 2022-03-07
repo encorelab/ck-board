@@ -131,12 +131,14 @@ export class PostModalComponent {
   }
 
   onUpdate() {
+    let changed = false;
+    if(this.editingTitle != this.title || this.editingDesc != this.desc) {
+      changed = true;
+      this.tracingService.tracePostClient(this.post.postID, this.editingTitle, this.editingDesc);
+    } 
+
     this.editingTitle = this.title
     this.editingDesc = this.desc
-
-    this.tracingService.traceUpdatePost(this.post.postID).then((tracing) => {
-      this.tracingService.exportToCSV([tracing.properties]);
-    })
     
     var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
     
@@ -149,11 +151,12 @@ export class PostModalComponent {
     this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
       .then(() => {
         this.toggleEdit();
-        /*
-        this.tracingService.traceUpdatePost(this.post.postID).then((tracing) => {
-          console.log(tracing);
-        }); */
+        if(changed == true) {
+          this.tracingService.tracePostServer(this.post.postID, this.editingTitle, this.editingDesc);
+        }
       });
+
+    // If changed == true, then store data into Firebase
   }
 
   onDelete() {

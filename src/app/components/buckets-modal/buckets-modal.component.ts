@@ -96,7 +96,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       tags: [],
       userID: this.user.id,
       boardID: this.board.boardID,
-      fabricObject: "",
+      fabricObject: null,
       timestamp: new Date().getTime(),
     }
     this.postsService.create(post);

@@ -218,8 +218,8 @@ export class FabricUtils {
         return {
           top: vptCoords?.tl.y + topOffset,
           left: vptCoords?.tl.x +leftOffset,
-          width: width,
-          height: height,
+          width: img.width,
+          height: img.height,
           scaleX: scaleX,
           scaleY: scaleY
         }

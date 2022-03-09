@@ -5,7 +5,7 @@ export default class Post {
     desc: string;
     tags: string[];
     userID: string;
-    fabricObject: string;
-    timestamp: number
+    fabricObject: string|null;
+    timestamp: number;
 }
   

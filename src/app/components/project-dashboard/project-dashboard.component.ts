@@ -105,4 +105,8 @@ export class ProjectDashboardComponent implements OnInit {
     this.router.navigate(['project/' + this.projectID + '/board/'+ boardID]);
   }
 
+  exportToCSV() {
+    
+  }
+
 }

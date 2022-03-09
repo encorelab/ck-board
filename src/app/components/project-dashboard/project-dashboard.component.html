@@ -24,6 +24,12 @@
         </mat-menu>
         <button 
             *ngIf="user && user.role == Role.TEACHER" 
+            mat-icon-button (click)="exportToCSV()" 
+            matTooltip="Export Data To CSV">
+                <mat-icon>download</mat-icon>
+        </button>
+        <button 
+            *ngIf="user && user.role == Role.TEACHER" 
             mat-icon-button (click)="openSettingsDialog()" 
             matTooltip="Adjust Settings">
                 <mat-icon>settings</mat-icon>
@@ -41,7 +47,7 @@
                 (click)="this.authService.signOut()">
                     Log Out
             </button>
-          </mat-menu>
+        </mat-menu>
     </mat-toolbar>
 
     <h3 class="header" *ngIf="project">Boards for {{ project.name }}</h3>

@@ -179,6 +179,17 @@ export class FabricUtils {
         return obj
     }
 
+    updateBorderColor(existing, obj) {
+        var borderExisting: any = existing.getObjects().find((obj) => obj.name == 'content')
+        var borderObj: any = obj.objects.find((obj) => obj.name == 'content')
+
+        borderExisting.set({ stroke: borderObj.stroke, dirty: true })
+
+        existing.dirty = true
+        existing.addWithUpdate();
+        return existing
+    }
+
     createImageSettings(canvas, img) {
         let vptCoords = canvas.vptCoords
         let width = canvas.getWidth()

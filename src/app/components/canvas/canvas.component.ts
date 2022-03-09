@@ -350,11 +350,28 @@ export class CanvasComponent {
         existing.title = obj.title
       }
 
+      existing = this.fabricUtils.updateBorderColor(existing, obj)
       existing = this.fabricUtils.updateLikeCount(existing, obj)
       existing = this.fabricUtils.updateCommentCount(existing, obj)
-      existing.set(obj)
-      existing.setCoords()
-      this.canvas.renderAll()
+      
+      console.log('in here')
+      // if object was moved then animate else only border color updated so dont animate
+      if (obj.left != existing.left || obj.top != existing.top) {
+        
+        existing.animate({ left: obj.left, top: obj.top }, {
+          onChange: this.canvas.renderAll.bind(this.canvas),
+          duration: 1000,
+          onComplete: () => {
+            existing.set(obj)
+            existing.setCoords()
+            this.canvas.renderAll()
+          }
+        })
+      } else {
+        existing.set(obj)
+        existing.setCoords()
+        this.canvas.renderAll()
+      }
     } else {
       this.fabricUtils.renderPostFromJSON(obj)
     }
@@ -493,13 +510,73 @@ export class CanvasComponent {
 
   // perform actions when post is moved
   movingObjectListener() {
-    this.canvas.on('object:moving', (options: any) => {
+    // this.canvas.on('object:moving', (options: any) => {
+    //   if (options.target) {
+    //     var obj = options.target;
+    //     console.log(options.pointer.x)
+    //     console.log(options.pointer.y)
+    //     var left = (Math.round((options.pointer.x - obj.getScaledWidth() / 2)));
+    //     var top = (Math.round((options.pointer.y - obj.getScaledHeight() / 2)));
+
+    //     obj.set({ left: left, top: top })
+    //     obj.setCoords()
+    //     this.canvas.renderAll()
+
+    //     var id = obj.postID
+    //     obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+    //     this.postsService.update(id, { fabricObject: obj })
+    //   }
+    // })
+    var isDragging = false;
+    var isMouseDown = false;
+
+    this.canvas.on('mouse:down', (options: any) => {
+      if (options.target?.name == 'post') {
+        var obj = options.target;
+        var children: fabric.Object[] = obj.getObjects()
+        var content: any = children.filter((obj) => obj.name == 'content').pop()
+        
+        content.set({ stroke: "red" })
+        obj.dirty = true
+        obj.addWithUpdate();
+        this.canvas.renderAll()
+
+        var id = obj.postID
+        obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+        this.postsService.update(id, { fabricObject: obj })
+      }
+    });
+
+    // this.canvas.on('mouse:up', (options: any) => {
+    //   if (options.target?.name == 'post') {
+    //     var obj = options.target;
+    //     var children: fabric.Object[] = obj.getObjects()
+    //     var content: any = children.filter((obj) => obj.name == 'content').pop()
+        
+    //     content.set({ stroke: "red" })
+    //     obj.dirty = true
+    //     obj.addWithUpdate();
+    //     this.canvas.renderAll()
+
+    //     var id = obj.postID
+    //     obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+    //     this.postsService.update(id, { fabricObject: obj })
+    //   }
+    // });
+
+    this.canvas.on('object:moved', (options: any) => {
       if (options.target) {
         var obj = options.target;
 
-        var left = (Math.round((options.pointer.x - obj.getScaledWidth() / 2)));
-        var top = (Math.round((options.pointer.y - obj.getScaledHeight() / 2)));
+        let pointerX = obj.oCoords.mt.x;
+        let pointerY = obj.oCoords.mr.y;
+        var left = (Math.round((pointerX - obj.getScaledWidth() / 2)));
+        var top = (Math.round((pointerY - obj.getScaledHeight() / 2)));
 
+        var children: fabric.Object[] = obj.getObjects()
+        var content: any = children.filter((obj) => obj.name == 'content').pop()
+        
+        content.set({ stroke: "black" })
         obj.set({ left: left, top: top })
         obj.setCoords()
         this.canvas.renderAll()
@@ -508,7 +585,7 @@ export class CanvasComponent {
         obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
         this.postsService.update(id, { fabricObject: obj })
       }
-    })
+    });
   }
 
 

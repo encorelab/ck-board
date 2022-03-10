@@ -12,6 +12,7 @@ export class FileUploadService{
     constructor(private storage: AngularFireStorage) { }
     upload(file) {
         console.log(file)
+        // should generate random string for filename to avoid duplicates
         const ref = this.storage.ref(FileUploadService.filePath+file.name)
         const task = this.storage.upload(FileUploadService.filePath+file.name,file)
         return task.snapshotChanges().toPromise().then(()=>{

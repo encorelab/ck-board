@@ -31,6 +31,7 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
 import { RealtimeService } from 'src/app/services/realtime.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
+import { FileUploadService } from 'src/app/services/fileUpload.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -70,7 +71,8 @@ export class CanvasComponent {
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
-    public likesService: LikesService, public realtimeService: RealtimeService, public dialog: MatDialog, private route: Router,
+    public likesService: LikesService, public realtimeService: RealtimeService, public fileUploadService :FileUploadService,
+    public dialog: MatDialog, private route: Router,
     protected fabricUtils: FabricUtils) {}
 
   ngOnInit() {
@@ -220,14 +222,19 @@ export class CanvasComponent {
     this.boardService.update(this.boardID, { name: name })
   }
 
-  updateBackground = (url, settings?) => {
-    fabric.Image.fromURL(url, (img) => {
+  updateBackground = (imageString,settings?, file?) => {
+    fabric.Image.fromURL(imageString, (img) => {
       if (img && settings) {
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
-      } else if (img) {
+      } else if (img && !settings && file) {
+        // TODO: delete old background image
         const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-        this.boardService.update(this.boardID, { bgImage: { url: url, imgSettings: imgSettings } })
+        this.fileUploadService.upload(file).then( firebaseUrl =>{
+          this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+          }
+        )
+        
       } else {
         this.canvas.setBackgroundImage('', this.canvas.renderAll.bind(this.canvas))
         this.boardService.update(this.boardID, { bgImage: null })

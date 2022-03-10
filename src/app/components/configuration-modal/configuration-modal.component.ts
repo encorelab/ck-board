@@ -64,7 +64,7 @@ export class ConfigurationModalComponent {
     var reader = new FileReader();
     reader.onload = (f) => {
         this.currentBgImage = { url: f.target?.result };
-        this.data.updateBackground(this.currentBgImage.url)
+        this.data.updateBackground(this.currentBgImage.url,null, file)
     };
     reader.readAsDataURL(file);
   }

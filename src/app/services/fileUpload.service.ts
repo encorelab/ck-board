@@ -11,10 +11,11 @@ export class FileUploadService{
     downloadURL:Observable<string>
     constructor(private storage: AngularFireStorage) { }
     upload(file) {
-        console.log(file)
-        // should generate random string for filename to avoid duplicates
-        const ref = this.storage.ref(FileUploadService.filePath+file.name)
-        const task = this.storage.upload(FileUploadService.filePath+file.name,file)
+        // generate filename from timestamp
+        const extension = file.name.substring(file.name.lastIndexOf('.'))
+        const filename = FileUploadService.filePath+Date.now()+extension
+        const ref = this.storage.ref(filename)
+        const task = this.storage.upload(filename,file)
         return task.snapshotChanges().toPromise().then(()=>{
            return ref.getDownloadURL().toPromise()
         })

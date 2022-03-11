@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
 import { AngularFireStorage} from '@angular/fire/storage';
-import FileUpload from '../models/fileUpload';
-import {finalize} from 'rxjs/operators'
-import { Observable } from 'rxjs';
 @Injectable({
     providedIn: 'root'
   })
 export class FileUploadService{
     static filePath:string = "/images/"
-    downloadURL:Observable<string>
     constructor(private storage: AngularFireStorage) { }
-    upload(file) {
+    /**
+     * Uploads a file to firebase
+     * @param file File to be uploaded to firebase
+     * @returns Promise for getDownloadUrl which returns a downloadUrl string
+     */
+    upload(file:File) {
         // generate filename from timestamp
         const extension = file.name.substring(file.name.lastIndexOf('.'))
         const filename = FileUploadService.filePath+Date.now()+extension
@@ -20,7 +21,18 @@ export class FileUploadService{
            return ref.getDownloadURL().toPromise()
         })
     }
-    // TODO: Delete and Download
+    /**
+     * Deletes file specified by downloadUrl
+     * @param downloadUrl String representing the firebase downloadurl
+     * @returns Promise for the delete action
+     */
+    delete(downloadUrl:string){
+        return this.storage.storage.refFromURL(downloadUrl).delete()
+    }
+    download(filename){
+        const ref = this.storage.ref(filename)
+        return ref.getDownloadURL().toPromise()
+    }
 
 }
 

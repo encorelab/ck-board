@@ -12,7 +12,7 @@ interface Options {
 })
 export class PostService {
 
-  private postsPath : string = 'posts';
+  private postsPath : string = '/posts';
   postsCollection: AngularFirestoreCollection<Post>;
 
   constructor(private db: AngularFirestore) {
@@ -68,11 +68,24 @@ export class PostService {
     return this.postsCollection.doc(post.postID).set(post)
   }
 
+  createMany(posts: any[]) {
+    const batch = this.db.firestore.batch();
+    posts.forEach(post => {
+      batch.set(this.db.firestore.doc(`${this.postsPath}/${post.postID}`), post);
+    })
+
+    return batch.commit().then(_res => {
+      console.log('Success');
+    }).catch(err => {
+      console.error(err);
+    })
+  }
+
   update(postID: string, value: any) {
     return this.postsCollection.ref.doc(postID).update(value)
   }
 
   delete(postID: string) {
-    return this.postsCollection.ref.doc(postID).delete()
+    return this.postsCollection.ref.doc(postID).delete().catch(e => console.log(e))
   }
 }

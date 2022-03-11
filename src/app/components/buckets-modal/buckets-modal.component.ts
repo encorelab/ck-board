@@ -37,7 +37,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         this.activeBucket = this.buckets[0] 
         this.loadBucketPosts(this.activeBucket)
       }
-    })
+    }).catch(e => console.log(e))
   }
 
   loadBucketPosts(bucket) {

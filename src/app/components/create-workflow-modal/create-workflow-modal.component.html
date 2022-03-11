@@ -1,6 +1,8 @@
 <h1 mat-dialog-title>CK Workflows</h1>
 <div mat-dialog-content>
-  <mat-tab-group dynamicHeight animationDuration="0ms">
+  <mat-tab-group dynamicHeight animationDuration="0ms"
+    [selectedIndex]="selected.value"
+    (selectedIndexChange)="selected.setValue($event)">
     <mat-tab label="Create Bucket"> 
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Bucket Name</mat-label>
@@ -11,68 +13,98 @@
         <button mat-button (click)="createBucket()">Create Bucket!</button>
       </div>
     </mat-tab>
-    <mat-tab label="Create Workflow"> 
-      <mat-form-field appearance="outline" style="width:100%; margin-top: 10px;">
-        <mat-label>Workflow Name</mat-label>
-        <input [formControl]="workflowNameFormControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="workflowName">
-        <mat-error *ngIf="workflowNameFormControl.hasError('required')">You must make a selection</mat-error>
-      </mat-form-field>
-      <mat-accordion>
-        <mat-expansion-panel>
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              Advanced Options
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-          <div style="display: flex; flex-direction: column">
-            <mat-checkbox [(ngModel)]="activateImmediately">Activate workflow immediately after creation</mat-checkbox>
-            <mat-checkbox [(ngModel)]="includeExistingPosts">Include existing posts into workflow</mat-checkbox>
-          </div>
-        </mat-expansion-panel>
-      </mat-accordion>
-      <h4>Pick a source and destination board/bucket:</h4>
-      <div class="source-destination">
-        <mat-form-field appearance="fill" style="font-size: 14px !important">
-          <mat-label>Source</mat-label>
-          <mat-select [(ngModel)]="source" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
-            <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
-          </mat-select>
-          <mat-error *ngIf="sourceFormControl.hasError('required')">You must make a selection</mat-error>
+    <mat-tab label="Create Workflow">
+      <mat-radio-group [(ngModel)]="workflowType">
+        <mat-radio-button style="margin-top: 20px;" [value]="WorkflowType.DISTRIBUTION">Distribution Workflow</mat-radio-button>
+        <mat-radio-button style="margin-top: 20px;" [value]="WorkflowType.CUSTOM">Custom Criteria Workflow</mat-radio-button>
+      </mat-radio-group>
+      <div *ngIf="workflowType == WorkflowType.DISTRIBUTION">
+        <mat-form-field appearance="outline" style="width:100%; margin-top: 10px;">
+          <mat-label>Workflow Name</mat-label>
+          <input [formControl]="workflowNameFormControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="workflowName">
+          <mat-error *ngIf="workflowNameFormControl.hasError('required')">Workflow name required!</mat-error>
         </mat-form-field>
-        <mat-icon class="arrow-icon">arrow_right_alt</mat-icon>
-        <mat-form-field appearance="fill" style="font-size: 14px !important">
-          <mat-label>Destination</mat-label>
-          <mat-select [(ngModel)]="destination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
-            <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
-          </mat-select>
-          <mat-error *ngIf="destinationFormControl.hasError('required')">You must make a selection</mat-error>
-        </mat-form-field>
+        <h4>Pick a source and destination board/bucket(s):</h4>
+        <div class="source-destination">
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Source</mat-label>
+            <mat-select [(ngModel)]="source" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
+              <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="sourceFormControl.hasError('required')">Source required!</mat-error>
+          </mat-form-field>
+          <mat-icon class="arrow-icon">arrow_right_alt</mat-icon>
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Destination</mat-label>
+            <mat-select [(ngModel)]="distributionDestinations" [formControl]="destinationFormControl" [errorStateMatcher]="matcher" multiple>
+              <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="destinationFormControl.hasError('required')">Destination required!</mat-error>
+          </mat-form-field>
+        </div>
+        <section>
+          <h4>Posts Per Bucket: <input type="number" [(ngModel)]="postsPerBucket"/></h4>
+        </section>
+        <section>
+          <h4>Choose Distribution:</h4>
+          <p>
+            <mat-checkbox [checked]="true" disabled="true">
+              Random
+            </mat-checkbox>
+          </p>
+        </section>
       </div>
-      <section>
-        <h4>Pick a criteria:</h4>
-        <p>
-          <mat-checkbox [(ngModel)]="includeLikes">
-            Post has <input type="number" [(ngModel)]="selectedLikes"/> likes.
-          </mat-checkbox>
-        </p>
-        <p>
-          <mat-checkbox [(ngModel)]="includeComments">
-            Post has <input type="number" [(ngModel)]="selectedComments"/> comments.
-          </mat-checkbox>
-        </p>
-        <p>
-          <mat-checkbox [(ngModel)]="includeTags">
-            Post has 
-            <mat-form-field appearance="fill" style="font-size: 12px !important">
-              <mat-label>Tags</mat-label>
-              <mat-select [formControl]="tagsFormControl" multiple>
-                <mat-option *ngFor="let tag of tags" [value]="tag">{{ tag }}</mat-option>
-              </mat-select>
-            </mat-form-field> 
-            tags.
-          </mat-checkbox>
-        </p>
-      </section>
+      <div *ngIf="workflowType == WorkflowType.CUSTOM">
+        <mat-form-field appearance="outline" style="width:100%; margin-top: 10px;">
+          <mat-label>Workflow Name</mat-label>
+          <input [formControl]="workflowNameFormControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="workflowName">
+          <mat-error *ngIf="workflowNameFormControl.hasError('required')">Workflow name required!</mat-error>
+        </mat-form-field>
+        
+        <h4>Pick a source and destination board/bucket:</h4>
+        <div class="source-destination">
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Source</mat-label>
+            <mat-select [(ngModel)]="source" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
+              <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="sourceFormControl.hasError('required')">Source required!</mat-error>
+          </mat-form-field>
+          <mat-icon class="arrow-icon">arrow_right_alt</mat-icon>
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Destination</mat-label>
+            <mat-select [(ngModel)]="customDestination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
+              <mat-option *ngFor="let option of sourceDestOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="destinationFormControl.hasError('required')">Destination required!</mat-error>
+          </mat-form-field>
+        </div>
+        <section>
+          <h4>Pick a criteria:</h4>
+          <p>
+            <mat-checkbox [(ngModel)]="includeLikes">
+              Post has <input type="number" [(ngModel)]="selectedLikes"/> likes.
+            </mat-checkbox>
+          </p>
+          <p>
+            <mat-checkbox [(ngModel)]="includeComments">
+              Post has <input type="number" [(ngModel)]="selectedComments"/> comments.
+            </mat-checkbox>
+          </p>
+          <p>
+            <mat-checkbox [(ngModel)]="includeTags">
+              Post has 
+              <mat-form-field appearance="fill" style="font-size: 12px !important">
+                <mat-label>Tags</mat-label>
+                <mat-select [formControl]="tagsFormControl" multiple>
+                  <mat-option *ngFor="let tag of tags" [value]="tag">{{ tag }}</mat-option>
+                </mat-select>
+              </mat-form-field> 
+              tags.
+            </mat-checkbox>
+          </p>
+        </section>
+      </div> 
       <div mat-dialog-actions>
         <button mat-button (click)="onNoClick()">Cancel</button>
         <button mat-button [disabled]="!_validForm()" (click)="createWorkflow()">Create Workflow!</button>
@@ -87,27 +119,34 @@
               <mat-icon [ngStyle]="{'color': workflow.active ? 'green' : 'grey'}" style="padding-right: 30px">circle</mat-icon>
               {{ workflow.name }}
             </mat-panel-title>
-            <mat-panel-description>
-              {{ workflow.source.name }}
-              <mat-icon style="font-size: 30px; line-height: 20px; padding: 0px 10px">arrow_right_alt</mat-icon>
-              {{ workflow.destination.name }}
-            </mat-panel-description>
           </mat-expansion-panel-header>
           <div style="display: flex; flex-direction: row; gap: 10px">
             <button mat-raised-button color="accent" (click)="toggleWorkflow(workflow.active, workflow.workflowID)">
-              {{ workflow.active ? "Deactivate Workflow" : "Activate Workflow" }}
+              {{ workflow.active ? "Stop Workflow" : "Run Workflow" }}
             </button>
             <button mat-raised-button color="warn" (click)="deleteWorkflow(workflow.workflowID)">Delete Workflow</button>
           </div>
-          <h3>Criteria:</h3>
-          <p *ngIf="workflow.criteria.minimumLikes">Has atleast {{ workflow.criteria.minimumLikes }} likes.</p>
-          <p *ngIf="workflow.criteria.minimumComments">Has atleast {{ workflow.criteria.minimumComments }} comments.</p>
-          <p *ngIf="workflow.criteria.includesTags">Includes the following tags:</p>
-          <mat-chip-list>
-            <mat-chip color="primary" selected *ngFor="let tag of workflow.criteria.includesTags">{{ tag }}</mat-chip>
-          </mat-chip-list>
+          <div>
+            <h4>Source: {{ workflow.source.name }}</h4> 
+            <h4>Destination: {{ workflow.destination ? workflow.destination.name : _parseNames(workflow.destinations) }}</h4> 
+          </div>
+          <div *ngIf="workflow.criteria">
+            <h3>Criteria:</h3>
+            <p *ngIf="workflow.criteria.minimumLikes">Has atleast {{ workflow.criteria.minimumLikes }} likes.</p>
+            <p *ngIf="workflow.criteria.minimumComments">Has atleast {{ workflow.criteria.minimumComments }} comments.</p>
+            <p *ngIf="workflow.criteria.includesTags">Includes the following tags:</p>
+            <mat-chip-list>
+              <mat-chip color="primary" selected *ngFor="let tag of workflow.criteria.includesTags">{{ tag }}</mat-chip>
+            </mat-chip-list>
+          </div>
+          <div *ngIf="workflow.postsPerBucket">
+            <h4>Posts Per Bucket: {{ workflow.postsPerBucket }}</h4>
+          </div>
         </mat-expansion-panel>
       </mat-accordion>
+      <div mat-dialog-actions>
+        <button mat-button (click)="onNoClick()">Close</button>
+      </div>
     </mat-tab>
   </mat-tab-group>
 </div>

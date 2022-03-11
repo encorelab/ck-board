@@ -1,7 +1,12 @@
 import { Board } from "./board"
 import Bucket from "./bucket"
 
-export default class Workflow {
+export enum WorkflowType {
+  DISTRIBUTION,
+  CUSTOM
+}
+
+export default class CustomWorkflow {
   workflowID: string
   boardID: string
   active: boolean
@@ -10,8 +15,21 @@ export default class Workflow {
 
   source: Board | Bucket
   destination: Board | Bucket
-  
   criteria: WorkflowCriteria
+
+  timestamp: number
+}
+
+export class DistributionWorkflow {
+  workflowID: string
+  boardID: string
+  active: boolean
+
+  name: string
+
+  source: Board | Bucket
+  destinations: (Board | Bucket)[]
+  postsPerBucket: number
 
   timestamp: number
 }

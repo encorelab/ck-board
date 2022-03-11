@@ -19,6 +19,7 @@ import { MatSidenavModule } from '@angular/material/sidenav'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatSlideToggleModule } from '@angular/material/slide-toggle'
 import { MatExpansionModule } from '@angular/material/expansion'
+import { MatRadioModule } from '@angular/material/radio'
 import { NgModule } from '@angular/core';
 
 @NgModule({
@@ -40,7 +41,8 @@ import { NgModule } from '@angular/core';
     MatOptionModule,
     MatAutocompleteModule,
     MatSelectModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatRadioModule
   ],
   exports: [
     MatButtonModule,
@@ -63,7 +65,8 @@ import { NgModule } from '@angular/core';
     MatSidenavModule,
     MatProgressSpinnerModule,
     MatSlideToggleModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatRadioModule
   ]
 })
 export class MaterialModule {}

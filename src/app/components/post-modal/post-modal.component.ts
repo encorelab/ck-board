@@ -144,9 +144,11 @@ export class PostModalComponent {
 
   onDelete() {
     var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-    if (!obj || obj.type != 'group') return;
-    this.fabricUtils._canvas.remove(obj);
-    this.fabricUtils._canvas.renderAll();
+    
+    if (obj && obj.type != 'group') {
+      this.fabricUtils._canvas.remove(obj);
+      this.fabricUtils._canvas.renderAll();
+    }
 
     this.postsService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
   }

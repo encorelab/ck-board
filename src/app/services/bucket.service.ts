@@ -45,6 +45,7 @@ export class BucketService {
             if (!data.empty) {
                 for (const rawBucket of data.docs) {
                     let bucket: any = rawBucket.data()
+                    console.log(bucket.posts)
                     const parsedPosts = await this.parsePosts(bucket.posts)
                     const parsedBucket = {
                         bucketID: bucket.bucketID,

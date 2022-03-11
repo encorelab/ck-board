@@ -102,6 +102,9 @@ export class CanvasComponent {
       height: '75vh',
       data: {
         board: this.board,
+        user:this.user,
+        centerX:this.centerX,
+        centerY:this.centerY
       }
     });
   }
@@ -121,8 +124,10 @@ export class CanvasComponent {
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
-        let obj = JSON.parse(post.fabricObject);
-        this.syncBoard(obj, post.postID);
+        if(post.fabricObject){
+          let obj = JSON.parse(post.fabricObject);
+          this.syncBoard(obj, post.postID);
+        }
       })
       this.boardService.get(this.boardID).then((board) => {
         if (board) {
@@ -317,6 +322,7 @@ export class CanvasComponent {
 
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any) {
+    console.log("Sendobject to group ran")
     const post: Post = {
       postID: pObject.postID,
       title: pObject.title,
@@ -325,7 +331,7 @@ export class CanvasComponent {
       userID: this.user.id,
       boardID: this.boardID,
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
-      timestamp: new Date().getTime()
+      timestamp: new Date().getTime(),
     }
     this.postsService.create(post);
   }
@@ -362,7 +368,7 @@ export class CanvasComponent {
   }
 
   handlePostEvent = (post) => {
-    if (post) {
+    if (post && post.fabricObject) {
       var obj = JSON.parse(post.fabricObject);
       this.syncBoard(obj, post.postID);
     }

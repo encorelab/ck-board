@@ -131,12 +131,18 @@ export class PostModalComponent {
     this.editingDesc = this.desc
     
     var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
-    
-    obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
-    obj.set({ title: this.title, desc: this.desc })
-    this.fabricUtils._canvas.renderAll()
+    // check if post is on board
+    if (obj){
+      obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
+      obj.set({ title: this.title, desc: this.desc })
+      this.fabricUtils._canvas.renderAll()
 
-    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+      obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+    }
+    // bucket only so fabricObject is {}
+    else{
+      obj ="{}"
+    }
 
     this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
       .then(() => this.toggleEdit())
@@ -145,7 +151,7 @@ export class PostModalComponent {
   onDelete() {
     var obj = this.fabricUtils.getObjectFromId(this.post.postID);
     
-    if (obj && obj.type != 'group') {
+    if (obj && obj.type == 'group') {
       this.fabricUtils._canvas.remove(obj);
       this.fabricUtils._canvas.renderAll();
     }

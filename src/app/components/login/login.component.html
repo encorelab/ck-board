@@ -1,29 +1,29 @@
 <div class="wrapper">
     <div class="container">
-        <img src="../../assets/Login.png" />
-        <form class="formContainer" (ngSubmit)="onLogin()">
-            <div>
-                <h1 class="header">Welcome Back!</h1>
-                <p class="subheader"></p>
-                <div class="credentialsContainer">
-                    <p class="label">Email</p>
-                    <mat-form-field appearance="fill" style="width: 80%">
+        <div class="form-image-wrapper">
+            <img class="form-image" src="../../assets/Login.png" alt="CK Board login picture" />
+        </div>
+        <div class="form-container">
+            <form class="form" (ngSubmit)="onLogin()">
+                <h1 class="header">Common Knowledge Board</h1>
+                <div class="credentials-container">
+                    <mat-form-field appearance="fill">
                         <mat-label>Email</mat-label>
-                        <input autocomplete="username" type="email" matInput [(ngModel)]="email" name="username"/>
+                        <input autocomplete="username" type="email" matInput [(ngModel)]="email" name="username" />
                     </mat-form-field>
-                    <p class="label">Password</p>
-                    <mat-form-field appearance="fill" style="width: 80%">
+                    <mat-form-field appearance="fill">
                         <mat-label>Password</mat-label>
-                        <input autocomplete="current-password" type="password" matInput [(ngModel)]="password" name="password"/>
+                        <input autocomplete="current-password" type="password" matInput [(ngModel)]="password"
+                            name="password" />
                     </mat-form-field>
                     <p *ngIf="invalidCredentials" class="invalid-pass">Invalid email or password!</p>
                 </div>
-                <p class="forgot-pass"><a routerLink="/reset-password">Forgot Password?</a></p>
-                <div class="next" >
+                <p class="forgot-pass"><a routerLink="/reset-password">Forgot Password</a></p>
+                <div class="next">
                     <button type="submit" mat-button>Login</button>
                 </div>
-            </div>
-            <p class="alternate"><a routerLink="/register">Don't have an account? Sign up here!</a></p>
-        </form>
+                <p class="alternate"><a routerLink="/register">Don't have an account? Sign up here!</a></p>
+            </form>
+        </div>
     </div>
 </div>

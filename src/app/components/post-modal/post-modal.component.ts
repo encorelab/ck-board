@@ -115,7 +115,7 @@ export class PostModalComponent {
     }
 
     let ids = bucket.posts.map(post => post.postID)
-    this.bucketService.update(bucketID, { posts: ids })
+    this.bucketService.add(bucketID, ids)
   }
 
   toggleEdit() {

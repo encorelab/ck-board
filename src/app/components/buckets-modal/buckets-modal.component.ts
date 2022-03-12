@@ -102,7 +102,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     this.postsService.create(post);
     this.posts.push(post);
     let ids = this.posts.map(post=>post.postID)
-    this.bucketService.update(this.activeBucket.bucketID,{posts:ids})
+    this.bucketService.add(this.activeBucket.bucketID, ids)
 
   }
 

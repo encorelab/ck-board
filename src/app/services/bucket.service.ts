@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreCollection, FieldPath } from '@angular/fire/firestore';
+import * as firebase from 'firebase';
 import Bucket from '../models/bucket';
 import Post from '../models/post';
 import { PostService } from './post.service';
@@ -12,7 +13,7 @@ export class BucketService {
   private bucketsPath : string = 'buckets';
   bucketsCollection: AngularFirestoreCollection<Bucket>;
 
-  constructor(db: AngularFirestore, private postService: PostService) {
+  constructor(public db: AngularFirestore, private postService: PostService) {
     this.bucketsCollection = db.collection<Bucket>(this.bucketsPath)
   }
 
@@ -45,7 +46,6 @@ export class BucketService {
             if (!data.empty) {
                 for (const rawBucket of data.docs) {
                     let bucket: any = rawBucket.data()
-                    console.log(bucket.posts)
                     const parsedPosts = await this.parsePosts(bucket.posts)
                     const parsedBucket = {
                         bucketID: bucket.bucketID,
@@ -65,6 +65,12 @@ export class BucketService {
 
   create(bucket: Bucket): any {
     return this.bucketsCollection.doc(bucket.bucketID).set(bucket)
+  }
+
+  add(bucketID: string, posts: string[]) {
+    return this.bucketsCollection.ref.doc(bucketID).update({
+      posts: firebase.default.firestore.FieldValue.arrayUnion(...posts)
+    })
   }
 
   update(bucketID: string, value: any) {

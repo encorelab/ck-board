@@ -322,7 +322,6 @@ export class CanvasComponent {
 
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any) {
-    console.log("Sendobject to group ran")
     const post: Post = {
       postID: pObject.postID,
       title: pObject.title,

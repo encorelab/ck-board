@@ -222,15 +222,15 @@ export class CanvasComponent {
     this.boardService.update(this.boardID, { name: name })
   }
 
-  updateBackground = (imageString, settings?, file?) => {
-    fabric.Image.fromURL(imageString, (img) => {
+  updateBackground = (fileString, settings?) => {
+    fabric.Image.fromURL(fileString, (img) => {
       if (img && settings) {
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
-      } else if (img && !settings && file) {
+      } else if (img && !settings) {
         // TODO: delete old background image
         const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-        this.fileUploadService.upload(file).then(firebaseUrl => {
+        this.fileUploadService.upload(fileString).then(firebaseUrl => {
           if (this.board.bgImage?.url) {
             this.fileUploadService.delete(this.board.bgImage?.url).then(_ => {
               this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
@@ -242,8 +242,8 @@ export class CanvasComponent {
         })
 
       } else {
-        this.canvas.setBackgroundImage('', this.canvas.renderAll.bind(this.canvas))
-        this.boardService.update(this.boardID, { bgImage: null })
+        //this.canvas.setBackgroundImage('', this.canvas.renderAll.bind(this.canvas))
+        //this.boardService.update(this.boardID, { bgImage: null })
       }
     });
   }

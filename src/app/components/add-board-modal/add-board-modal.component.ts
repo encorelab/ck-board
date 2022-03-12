@@ -6,6 +6,9 @@ import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { Utils } from 'src/app/utils/Utils';
 import { Project } from 'src/app/models/project';
+import {NgxImageCompressService} from "ngx-image-compress";
+import { FileUploadService } from 'src/app/services/fileUpload.service';
+
 
 @Component({
   selector: 'app-add-board-modal',
@@ -32,6 +35,8 @@ export class AddBoardModalComponent implements OnInit {
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
     public authService: AuthService,
     public userService: UserService,
+    public fileUploadService: FileUploadService,
+    private imageCompress: NgxImageCompressService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.permissions={
         allowStudentMoveAny:true,
@@ -56,13 +61,19 @@ export class AddBoardModalComponent implements OnInit {
     this.tags = this.tags.filter(tag => tag != tagRemove)
   }
 
-  handleImageUpload(e) {
-    var file = e.target.files[0];
-    var reader = new FileReader();
-    reader.onload = (f) => {
-        this.bgImgURL = f.target?.result;
-    };
-    reader.readAsDataURL(file);
+  compressFile(){
+    const MAX_MEGABYTE = 2;
+    this.imageCompress
+      .uploadAndGetImageWithMaxSize(MAX_MEGABYTE)
+      .then(
+        (result: string) => {
+          this.fileUploadService.upload(result).then(firebaseUrl => {
+            this.bgImgURL = firebaseUrl
+          })
+        },
+        (result: string) => {
+          console.error('The compression algorithm didn\'t succed! The best size we can do is', this.imageCompress.byteCount(result), 'bytes')
+        });
   }
 
   handleDialogSubmit() {

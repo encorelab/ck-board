@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireStorage} from '@angular/fire/storage';
+
 @Injectable({
     providedIn: 'root'
   })
@@ -11,12 +12,14 @@ export class FileUploadService{
      * @param file File to be uploaded to firebase
      * @returns Promise for getDownloadUrl which returns a downloadUrl string
      */
-    upload(file:File) {
+    upload(file:string) {
         // generate filename from timestamp
-        const extension = file.name.substring(file.name.lastIndexOf('.'))
-        const filename = FileUploadService.filePath+Date.now()+extension
+        const contentType = file.substring(file.indexOf(":")+1, file.indexOf(";"))
+        const extension = contentType.substring(contentType.indexOf("/")+1)
+        const filename = FileUploadService.filePath+Date.now()+"."+extension
         const ref = this.storage.ref(filename)
-        const task = this.storage.upload(filename,file)
+        const base64String = file.substring(file.indexOf(',')+1)
+        const task = ref.putString(base64String,"base64",{contentType:contentType})
         return task.snapshotChanges().toPromise().then(()=>{
            return ref.getDownloadURL().toPromise()
         })

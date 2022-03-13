@@ -137,7 +137,7 @@ export class PostModalComponent {
       obj.set({ title: this.title, desc: this.desc })
       this.fabricUtils._canvas.renderAll()
 
-      obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+      obj = this.fabricUtils.toJSON(obj)
     }
     // bucket only so fabricObject is {}
     else{

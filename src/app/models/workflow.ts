@@ -6,6 +6,11 @@ export enum WorkflowType {
   CUSTOM
 }
 
+export enum ContainerType {
+  BOARD,
+  BUCKET
+}
+
 export default class CustomWorkflow {
   workflowID: string
   boardID: string
@@ -13,8 +18,9 @@ export default class CustomWorkflow {
 
   name: string
 
-  source: Board | Bucket
-  destination: Board | Bucket
+  source: Container
+  destination: Container
+
   criteria: WorkflowCriteria
 
   timestamp: number
@@ -27,8 +33,9 @@ export class DistributionWorkflow {
 
   name: string
 
-  source: Board | Bucket
-  destinations: (Board | Bucket)[]
+  source: Container
+  destinations: Container[]
+
   postsPerBucket: number
 
   timestamp: number
@@ -41,4 +48,10 @@ export class WorkflowCriteria {
   minimumLikes: number | null
   minimumComments: number | null
   includesTags: string[] | null 
+}
+
+export class Container {
+  type: ContainerType
+  id: string
+  name: string
 }

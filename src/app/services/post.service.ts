@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Post from '../models/post';
+import { FabricUtils } from '../utils/FabricUtils';
 
 interface Options {
   pageSize: number;
@@ -15,7 +16,7 @@ export class PostService {
   private postsPath : string = '/posts';
   postsCollection: AngularFirestoreCollection<Post>;
 
-  constructor(private db: AngularFirestore) {
+  constructor(private db: AngularFirestore, protected fabricUtils: FabricUtils) {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }
 
@@ -68,17 +69,20 @@ export class PostService {
     return this.postsCollection.doc(post.postID).set(post)
   }
 
-  createMany(posts: any[]) {
+  cloneMany(boardID: string, posts: any[]): Promise<void> {
     const batch = this.db.firestore.batch();
     posts.forEach(post => {
-      batch.set(this.db.firestore.doc(`${this.postsPath}/${post.postID}`), post);
+      const newID = Date.now() + '-' + boardID;
+
+      post.fabricObject = this.fabricUtils.clonePost(post, newID);
+      post.boardID = boardID;
+      post.postID = newID;
+      post.tags = []
+      
+      batch.set(this.db.firestore.doc(`${this.postsPath}/${newID}`), post);
     })
 
-    return batch.commit().then(_res => {
-      console.log('Success');
-    }).catch(err => {
-      console.error(err);
-    })
+    return batch.commit()
   }
 
   update(postID: string, value: any) {

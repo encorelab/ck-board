@@ -57,6 +57,8 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       if (buckets.length > 0) {
         this.activeBucket = this.buckets[0] 
         this.loadBucketPosts(this.activeBucket)
+      } else {
+        this.loading = false
       }
     }).catch(e => console.log(e))
   }
@@ -134,7 +136,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         });
         fabric.util.object.extend(fabricPost, { postID: postID })
         let updatedPost = {
-          fabricObject: JSON.stringify(fabricPost.toJSON(this.fabricUtils.serializableProperties)),
+          fabricObject: this.fabricUtils.toJSON(fabricPost),
         }
         this.postsService.update(postID,updatedPost)
         this.Yoffset+=50

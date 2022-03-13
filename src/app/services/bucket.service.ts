@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection, FieldPath } from '@angular/fire/firestore';
-import * as firebase from 'firebase';
+import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 import Bucket from '../models/bucket';
 import Post from '../models/post';
 import { PostService } from './post.service';
@@ -69,7 +70,7 @@ export class BucketService {
 
   add(bucketID: string, posts: string[]) {
     return this.bucketsCollection.ref.doc(bucketID).update({
-      posts: firebase.default.firestore.FieldValue.arrayUnion(...posts)
+      posts: firebase.firestore.FieldValue.arrayUnion(...posts)
     })
   }
 

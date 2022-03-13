@@ -2,11 +2,8 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import { Board } from '../models/board';
 import Bucket from '../models/bucket';
-import Like from '../models/like';
-import Post from '../models/post';
-import CustomWorkflow, { DistributionWorkflow, WorkflowType } from '../models/workflow';
+import CustomWorkflow, { Container, ContainerType, DistributionWorkflow, WorkflowType } from '../models/workflow';
 import Workflow from '../models/workflow';
-import { BoardService } from './board.service';
 import { BucketService } from './bucket.service';
 import { PostService } from './post.service';
 
@@ -41,53 +38,74 @@ export class WorkflowService {
   }
 
   async runDistribution(workflow: DistributionWorkflow) {
-    const source: Board | Bucket = workflow.source;
-    const destinations: (Board | Bucket)[] = workflow.destinations;
+    const source: Container = workflow.source;
+    const destinations: Container[] = workflow.destinations;
     const amountPerDest = workflow.postsPerBucket; 
 
-    const sourcePosts = source instanceof Bucket ? (await this.bucketService.get(source.bucketID)) : (await this.postService.getAll(source.boardID)).docs.map(data => data.data());
-    const splitPosts: Post[][] = this.distributePosts(sourcePosts, destinations, amountPerDest);
+    let sourcePosts: any = [];
+    if (source.type == ContainerType.BUCKET) {
+      let bucket = await this.bucketService.get(source.id);
+      sourcePosts = bucket ? bucket.posts : [];
+    } else if (source.type == ContainerType.BOARD) {
+      let rawPosts = await this.postService.getAll(source.id)
+      sourcePosts = rawPosts.docs.map(data => data.data());
+    }
 
-    for (let i = 0; i < destinations.length; i++) {
-      let destination: Bucket | Board = destinations[i];
-      if ("bucketID" in destination) {
-        console.log(destination)
-        const newIds = splitPosts[i].map(post => post.postID);
-        const ids = destination.posts.concat(newIds);
-        console.log(destination.posts);
-        console.log(newIds);
-        // await this.bucketService.update(destination.bucketID, { posts: ids })
-      } else if ("boardID" in destination) {
-        await this.postService.createMany(splitPosts[i]);
+    const splitPosts: any = await this.distributePosts(sourcePosts, destinations, amountPerDest);
+
+    for (let i = 0; i < splitPosts.length; i++) {
+      let destination: Container = destinations[i];
+      if (destination.type == ContainerType.BUCKET) {
+        const newIds = splitPosts[i];
+        await this.bucketService.add(destination.id, newIds);
+      } else if (destination.type == ContainerType.BOARD) {
+        let ids = splitPosts[i]
+        let clonedPosts = sourcePosts.filter(post => ids.includes(post.postID));
+        await this.postService.cloneMany(destination.id, clonedPosts);
       }
     }
   }
 
-  private distributePosts(posts, destinations, amountPerDestination): Post[][] {
-    if (!posts || posts.length < amountPerDestination) {
+  private async distributePosts(posts: any, destinations: Container[], amountPerDestination: number) {
+    if (!posts || posts.length == 0) {
       return [];
     }
-
+    
     const chunks: any = [];
-    const numPost = posts.length;
     const numDest = destinations.length;
+    
+    let distributed: Set<string> = new Set();
+    let i = 0;
 
-    let i = 0, a = 0, b = amountPerDestination;
     while (i < numDest) {
-      let chunk: any[];
-      if (b < numPost) {
-        chunk = posts.slice(a, b);
-        a += amountPerDestination;
-        b += amountPerDestination;
-      } else {
-        let firstRange = posts.slice(a, b);
-        let secondRange = posts.slice(0, b - numPost);
-        chunk = firstRange.concat(secondRange);
-        a = b - numPost;
-        b = a + amountPerDestination;
+      let destination: Container = destinations[i];
+      let destPosts: any = []
+      if (destination.type == ContainerType.BUCKET) {
+        let bucket = await this.bucketService.get(destination.id);
+        destPosts = bucket ? bucket.posts : [];
+      } else if (destination.type == ContainerType.BOARD) {
+        let rawPosts = await this.postService.getAll(destination.id)
+        destPosts = rawPosts.docs.map(data => data.data());
       }
+      
+      // Remove posts that are already in destination
+      let destPostIds = destPosts.map(post => post.postID);
+      let potentialPosts = posts.map(post => post.postID).filter(n => !destPostIds.includes(n));
 
-      chunks.push(chunk);
+      // First choose posts that aren't already distributed
+      let nonDistributedPosts = potentialPosts.filter(post => !distributed.has(post));
+      let distributedPosts = [];
+
+      // If we couldn't fill all spots, then also include already
+      // distributed posts this time.
+      if (nonDistributedPosts.length < amountPerDestination) {
+        distributedPosts = potentialPosts.filter(post => distributed.has(post));
+      }
+      
+      let newPosts = nonDistributedPosts.concat(distributedPosts);
+      newPosts = newPosts.slice(0, amountPerDestination);
+      newPosts.map(postID => distributed.add(postID));
+      chunks.push(newPosts);
       i += 1;
     }
 

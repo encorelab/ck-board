@@ -31,6 +31,8 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
 import { RealtimeService } from 'src/app/services/realtime.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
+import { Project } from 'src/app/models/project';
+import { ProjectService } from 'src/app/services/project.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -49,6 +51,7 @@ export class CanvasComponent {
 
   user: User
   board: Board
+  project: Project
 
   centerX: number
   centerY: number
@@ -70,8 +73,8 @@ export class CanvasComponent {
 
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
-    public likesService: LikesService, public realtimeService: RealtimeService, public dialog: MatDialog, private route: Router,
-    protected fabricUtils: FabricUtils) {}
+    public likesService: LikesService, public realtimeService: RealtimeService, public projectService: ProjectService, 
+    public dialog: MatDialog, private route: Router, protected fabricUtils: FabricUtils) {}
 
   ngOnInit() {
     this.user = this.authService.userData;
@@ -139,6 +142,7 @@ export class CanvasComponent {
         }
       })
     })
+    this.projectService.get(this.projectID).then(project => this.project = project)
   }
 
   openWorkflowDialog() {
@@ -146,6 +150,7 @@ export class CanvasComponent {
       width: '700px',
       data: {
         board: this.board,
+        project: this.project
       }
     });
   }
@@ -329,7 +334,7 @@ export class CanvasComponent {
       tags: [],
       userID: this.user.id,
       boardID: this.boardID,
-      fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
+      fabricObject: this.fabricUtils.toJSON(pObject),
       timestamp: new Date().getTime(),
     }
     this.postsService.create(post);
@@ -378,7 +383,7 @@ export class CanvasComponent {
     if (post) {
       post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
       this.canvas.renderAll()
-      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      var jsonPost = this.fabricUtils.toJSON(post)
       this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -388,7 +393,7 @@ export class CanvasComponent {
     if (post) {
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
-      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      var jsonPost = this.fabricUtils.toJSON(post);
       this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -510,7 +515,7 @@ export class CanvasComponent {
         this.canvas.renderAll()
 
         var id = obj.postID
-        obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+        obj = this.fabricUtils.toJSON(obj)
         this.postsService.update(id, { fabricObject: obj })
       }
     })

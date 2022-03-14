@@ -94,7 +94,7 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
   listenForUpdatesIfNot() {
     if (!this.unsubBucket && !this.unsubPosts) {
       this.unsubPosts = this.postService.observeOne(this.post.postID, this.handleUpdate, this.handleDelete);
-      this.unsubBucket = this.boardService.observable(this.board.boardID, this.handleBoardChange);
+      this.unsubBucket = this.boardService.subscribe(this.board.boardID, this.handleBoardChange);
     }
   }
 

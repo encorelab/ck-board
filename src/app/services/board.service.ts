@@ -14,7 +14,7 @@ export class BoardService {
     this.boardRef = db.collection<Board>(this.boardPath)
   }
 
-  observable(boardID: string, handleBoardChange: Function) {
+  subscribe(boardID: string, handleBoardChange: Function) {
     return this.boardRef.ref.where("boardID", "==", boardID).onSnapshot((snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "modified") {

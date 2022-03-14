@@ -6,7 +6,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { Utils } from 'src/app/utils/Utils';
 import { Project } from 'src/app/models/project';
-import {NgxImageCompressService} from "ngx-image-compress";
+import { NgxImageCompressService } from "ngx-image-compress";
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 
 
@@ -18,18 +18,18 @@ import { FileUploadService } from 'src/app/services/fileUpload.service';
 export class AddBoardModalComponent implements OnInit {
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
 
-  permissions:Permissions
+  permissions: Permissions
 
   boardName: string = ''
   bgImgURL: any = ''
 
   taskTitle: string = ''
   taskMessage: string = ''
-  
+
   tags: string[] = []
   newTagText: string = ''
-  projects:Project[]
-  selectedProject:string=''
+  projects: Project[]
+  selectedProject: string = ''
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
@@ -38,19 +38,19 @@ export class AddBoardModalComponent implements OnInit {
     public fileUploadService: FileUploadService,
     private imageCompress: NgxImageCompressService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
-      this.permissions={
-        allowStudentMoveAny:true,
-        allowStudentLiking:true,
-        allowStudentEditAddDeletePost:true,
-        allowStudentCommenting:true,
-        allowStudentTagging:true,
-        showAuthorNameStudent:true,
-        showAuthorNameTeacher:true
-      }
-      this.projects = data.projects
-      this.selectedProject = data.defaultProject || ''
+    this.permissions = {
+      allowStudentMoveAny: true,
+      allowStudentLiking: true,
+      allowStudentEditAddDeletePost: true,
+      allowStudentCommenting: true,
+      allowStudentTagging: true,
+      showAuthorNameStudent: true,
+      showAuthorNameTeacher: true
     }
-  ngOnInit(): void {}
+    this.projects = data.projects
+    this.selectedProject = data.defaultProject || ''
+  }
+  ngOnInit(): void { }
 
   addTag() {
     this.tags.push(this.newTagText)
@@ -61,19 +61,36 @@ export class AddBoardModalComponent implements OnInit {
     this.tags = this.tags.filter(tag => tag != tagRemove)
   }
 
-  compressFile(){
-    const MAX_MEGABYTE = 2;
-    this.imageCompress
-      .uploadAndGetImageWithMaxSize(MAX_MEGABYTE)
-      .then(
-        (result: string) => {
-          this.fileUploadService.upload(result).then(firebaseUrl => {
+  compressFile() {
+    // similar to code in configuration modal
+    // might refactor in future to avoid copy paste
+    const MAX_BYTE = 2 * Math.pow(10, 6);
+    this.imageCompress.uploadFile().then(
+      ({ image, orientation }) => {
+        console.log("Size in bytes before compression is : " + this.imageCompress.byteCount(image))
+
+        if (this.imageCompress.byteCount(image) > MAX_BYTE) {
+          let compressAmount = (MAX_BYTE / this.imageCompress.byteCount(image)) * 100
+          console.log(compressAmount)
+          this.imageCompress
+            .compressFile(image, orientation, compressAmount, compressAmount)
+            .then(
+              (compressedImage) => {
+                this.fileUploadService.upload(compressedImage).then(firebaseUrl => {
+                  this.bgImgURL = firebaseUrl
+                })
+                console.log("Size in bytes after compression is now:", this.imageCompress.byteCount(compressedImage));
+              }
+            );
+
+        }
+        else {
+          this.fileUploadService.upload(image).then(firebaseUrl => {
             this.bgImgURL = firebaseUrl
           })
-        },
-        (result: string) => {
-          console.error('The compression algorithm didn\'t succed! The best size we can do is', this.imageCompress.byteCount(result), 'bytes')
-        });
+        }
+      }
+    );
   }
 
   handleDialogSubmit() {
@@ -89,7 +106,7 @@ export class AddBoardModalComponent implements OnInit {
       bgImage: {
         url: this.bgImgURL
       },
-      permissions:this.permissions,
+      permissions: this.permissions,
       members: [this.authService.userData.id],
       tags: this.tags,
     }, this.selectedProject)

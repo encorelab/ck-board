@@ -62,16 +62,32 @@ export class ConfigurationModalComponent {
   }
 
   compressFile(){
-    const MAX_MEGABYTE = 2;
-    this.imageCompress
-      .uploadAndGetImageWithMaxSize(MAX_MEGABYTE)
-      .then(
-        (result: string) => {
-          this.data.updateBackground(result,null);
-        },
-        (result: string) => {
-          console.error('The compression algorithm didn\'t succed! The best size we can do is', this.imageCompress.byteCount(result), 'bytes')
-        });
+    // Compresses file so that it does not exceed 2MB
+    const MAX_BYTE = 2 * Math.pow(10,6);
+    this.imageCompress.uploadFile().then(
+      ({image, orientation}) => {
+        console.log("Size in bytes before compression is : "+this.imageCompress.byteCount(image))
+
+        if(this.imageCompress.byteCount(image) > MAX_BYTE){
+          let compressAmount = (MAX_BYTE / this.imageCompress.byteCount(image)) *100
+          console.log(compressAmount)
+          this.imageCompress
+          .compressFile(image, orientation, compressAmount, compressAmount)
+          .then(
+            (compressedImage) => {
+              this.data.updateBackground(compressedImage,null);
+              console.log("Size in bytes after compression is now:", this.imageCompress.byteCount(compressedImage));
+            }
+          );
+
+        }
+        else{
+          this.data.updateBackground(image,null);
+        }
+
+        
+      }
+    );
   }
 
   removeImage() {

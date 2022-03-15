@@ -38,7 +38,10 @@
                     (keyup.enter)="handleBoardClick(board.boardID)"
                     role="button"
                     tabindex="0">
-                    <mat-card-title class="title">{{ board.name }}</mat-card-title>
+                    <mat-card-title class="title accent">
+                        <mat-icon color="accent">picture_in_picture</mat-icon>
+                        <span>{{ board.name }}</span>
+                    </mat-card-title>
                 </mat-card>
             </ng-container>
         </div>

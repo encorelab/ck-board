@@ -1,5 +1,18 @@
 @use '../../../style/layout/login';
 
+.welcome {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    max-height: 100px;
+    width: auto;
+}
+
 .invalid-pass {
     color: red;
     text-align: center;

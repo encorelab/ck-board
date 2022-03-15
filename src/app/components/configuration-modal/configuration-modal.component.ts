@@ -5,7 +5,7 @@ import { BoardService } from 'src/app/services/board.service';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Permissions } from 'src/app/models/permissions';
 import { UserService } from 'src/app/services/user.service';
-import {NgxImageCompressService} from "ngx-image-compress";
+import { FileUploadService } from 'src/app/services/fileUpload.service';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -34,7 +34,7 @@ export class ConfigurationModalComponent {
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
     public boardService: BoardService,
     public userService: UserService,
-    private imageCompress: NgxImageCompressService,
+    public fileUploadService: FileUploadService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.boardName = data.board.name
       this.isPublic = data.board.public
@@ -62,32 +62,10 @@ export class ConfigurationModalComponent {
   }
 
   compressFile(){
-    // Compresses file so that it does not exceed 2MB
-    const MAX_BYTE = 2 * Math.pow(10,6);
-    this.imageCompress.uploadFile().then(
-      ({image, orientation}) => {
-        console.log("Size in bytes before compression is : "+this.imageCompress.byteCount(image))
-
-        if(this.imageCompress.byteCount(image) > MAX_BYTE){
-          let compressAmount = (MAX_BYTE / this.imageCompress.byteCount(image)) *100
-          console.log(compressAmount)
-          this.imageCompress
-          .compressFile(image, orientation, compressAmount, compressAmount)
-          .then(
-            (compressedImage) => {
-              this.data.updateBackground(compressedImage,null);
-              console.log("Size in bytes after compression is now:", this.imageCompress.byteCount(compressedImage));
-            }
-          );
-
-        }
-        else{
-          this.data.updateBackground(image,null);
-        }
-
-        
-      }
-    );
+    this.fileUploadService.compressFile().then((compressedImage) =>{
+      this.data.updateBackground(compressedImage,null);
+    })
+  
   }
 
   removeImage() {

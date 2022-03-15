@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import { AngularFireStorage} from '@angular/fire/storage';
+import { NgxImageCompressService } from "ngx-image-compress";
+
 
 @Injectable({
     providedIn: 'root'
   })
 export class FileUploadService{
     static filePath:string = "/images/"
-    constructor(private storage: AngularFireStorage) { }
+    constructor(private storage: AngularFireStorage,private imageCompress: NgxImageCompressService) { }
     /**
-     * Uploads a file to firebase
-     * @param file File to be uploaded to firebase
+     * Uploads a Image to firebase
+     * @param file base64 encode string representation of an Image to be uploaded to firebase
      * @returns Promise for getDownloadUrl which returns a downloadUrl string
      */
     upload(file:string) {
@@ -35,6 +37,26 @@ export class FileUploadService{
     download(filename){
         const ref = this.storage.ref(filename)
         return ref.getDownloadURL().toPromise()
+    }
+    /**
+     * Compresses image using ngx-image-compress and returns the compressed image as base64 string
+     * 
+     * @returns Promise<string> compressedImage - This is the base64 string of the compressed image
+     */
+    compressFile(){
+        const MAX_BYTE = 2 * Math.pow(10, 6);
+        return this.imageCompress.uploadFile()
+                .then(({ image, orientation }) => {
+                        console.log("Size in bytes before compression is : " + this.imageCompress.byteCount(image))
+                        let compressAmount = Math.min((MAX_BYTE / this.imageCompress.byteCount(image)) * 100,100)
+                        console.log(compressAmount)
+                        return this.imageCompress
+                                .compressFile(image, orientation, compressAmount, compressAmount)
+                })
+                .then((compressedImage) => {
+                        console.log("Size in bytes after compression is now:", this.imageCompress.byteCount(compressedImage));
+                        return compressedImage
+                });
     }
 
 }

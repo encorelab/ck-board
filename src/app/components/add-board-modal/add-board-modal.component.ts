@@ -6,7 +6,6 @@ import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { Utils } from 'src/app/utils/Utils';
 import { Project } from 'src/app/models/project';
-import { NgxImageCompressService } from "ngx-image-compress";
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 
 
@@ -36,7 +35,6 @@ export class AddBoardModalComponent implements OnInit {
     public authService: AuthService,
     public userService: UserService,
     public fileUploadService: FileUploadService,
-    private imageCompress: NgxImageCompressService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
     this.permissions = {
       allowStudentMoveAny: true,
@@ -62,35 +60,11 @@ export class AddBoardModalComponent implements OnInit {
   }
 
   compressFile() {
-    // similar to code in configuration modal
-    // might refactor in future to avoid copy paste
-    const MAX_BYTE = 2 * Math.pow(10, 6);
-    this.imageCompress.uploadFile().then(
-      ({ image, orientation }) => {
-        console.log("Size in bytes before compression is : " + this.imageCompress.byteCount(image))
-
-        if (this.imageCompress.byteCount(image) > MAX_BYTE) {
-          let compressAmount = (MAX_BYTE / this.imageCompress.byteCount(image)) * 100
-          console.log(compressAmount)
-          this.imageCompress
-            .compressFile(image, orientation, compressAmount, compressAmount)
-            .then(
-              (compressedImage) => {
-                this.fileUploadService.upload(compressedImage).then(firebaseUrl => {
-                  this.bgImgURL = firebaseUrl
-                })
-                console.log("Size in bytes after compression is now:", this.imageCompress.byteCount(compressedImage));
-              }
-            );
-
-        }
-        else {
-          this.fileUploadService.upload(image).then(firebaseUrl => {
-            this.bgImgURL = firebaseUrl
-          })
-        }
-      }
-    );
+    this.fileUploadService.compressFile().then((compressedImage) =>{
+      this.fileUploadService.upload(compressedImage).then(firebaseUrl => {
+        this.bgImgURL = firebaseUrl
+      })
+    })
   }
 
   handleDialogSubmit() {

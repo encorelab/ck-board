@@ -45,6 +45,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   boardID: string
   projectID: string
   canvas: Canvas;
+  postColor: string;
 
   user: User
   board: Board
@@ -69,7 +70,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   unsubListeners: Function[] = []
 
   constructor(
-    public postsService: PostService, public boardService: BoardService, 
+    public postService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, 
     public commentService: CommentService, public likesService: LikesService,  
     public dialog: MatDialog, protected fabricUtils: FabricUtils, 
@@ -80,6 +81,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.user = this.authService.userData;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas;
+    this.postColor = this.postService.getPostColor();
 
     this.configureBoard();
     
@@ -108,7 +110,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initGroupEventsListener() {
     const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
-    const unsubPosts = this.postsService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
+    const unsubPosts = this.postService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
     const unsubLikes = this.likesService.observable(this.boardID, this.handleLikeEvent, true);
     const unsubComms = this.commentService.observable(this.boardID, this.handleCommentEvent, true);
 
@@ -149,7 +151,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.router.navigate(['error']);
     }
     
-    this.postsService.getAll(this.boardID).then((data) => {
+    this.postService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
         if(post.fabricObject){
@@ -224,7 +226,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
       desc: desc,
       lock: !this.board.permissions.allowStudentMoveAny,
       left: left,
-      top: top
+      top: top,
+      color: this.postColor
     });
     this.canvas.add(fabricPost);
   }
@@ -329,7 +332,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   setAuthorVisibilityAll() {
-    this.postsService.getAll(this.boardID).then((data) => {
+    this.postService.getAll(this.boardID).then((data) => {
       // update all the post names to to the poster's name rather than anonymous
       data.forEach((data) => {
         let post = data.data() ?? {}
@@ -361,7 +364,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
       timestamp: new Date().getTime(),
     }
-    this.postsService.create(post);
+    this.postService.create(post);
   }
 
   // sync board using incoming/outgoing posts
@@ -408,7 +411,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
       this.canvas.renderAll()
       var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-      this.postsService.update(post.postID, { fabricObject: jsonPost })
+      this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
 
@@ -418,7 +421,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
       var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-      this.postsService.update(post.postID, { fabricObject: jsonPost })
+      this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
 
@@ -539,7 +542,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
           return // already removed
         }
 
-        this.postsService.delete(obj.postID)
+        this.postService.delete(obj.postID)
         obj.set('removed', true);
         fabric.util.object.extend(obj, { removed: true })
         this.sendObjectToGroup(obj);
@@ -567,7 +570,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
         var id = obj.postID
         obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
-        this.postsService.update(id, { fabricObject: obj })
+        this.postService.update(id, { fabricObject: obj })
       }
     }
 

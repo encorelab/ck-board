@@ -49,7 +49,7 @@
           Add Tag 
           <mat-icon>add</mat-icon>
         </mat-chip>
-        <mat-chip style="background-color: #F4D74B" *ngFor="let tag of tags">
+        <mat-chip [ngStyle]="{'background-color': postColor}" *ngFor="let tag of tags">
           {{ tag }}
           <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
         </mat-chip>

@@ -30,6 +30,7 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
 
   numComments: number = 0
   numLikes: number = 0
+  postColor: string;
 
   isLiked: Like | null
 
@@ -43,6 +44,7 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.user = this.authService.userData;
+    this.postColor = this.postService.getPostColor();
     this.configurePost()
   }
 

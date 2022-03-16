@@ -2,7 +2,7 @@
   <div style="position: absolute;">
     <app-toolbar [user]="user">
       <span *ngIf="board && board.name">{{ board.name }}</span>
-      <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
+      <button mat-icon-button (click)="openTaskDialog()" matTooltip="Read Task">
         <mat-icon>task</mat-icon>
       </button>
       <span style="flex: 1 1 auto"></span>

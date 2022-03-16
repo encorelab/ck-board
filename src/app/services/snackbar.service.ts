@@ -1,19 +1,28 @@
 import { Injectable, OnDestroy } from "@angular/core";
-import { MatSnackBar, MatSnackBarConfig, MatSnackBarDismiss } from "@angular/material/snack-bar";
-import { BehaviorSubject, Subject, Observable } from "rxjs";
-import { filter, tap, map, takeUntil, delay, take } from "rxjs/operators";
+import { MatSnackBar, MatSnackBarConfig } from "@angular/material/snack-bar";
+import { BehaviorSubject, Subscription } from "rxjs";
+import { SnackBarComponent } from "../components/snackbar/snackbar.component";
+
+export interface SnackbarConfig {
+  matSnackbarConfig?: MatSnackBarConfig
+  action?: Action
+}
+
+export interface Action {
+  name: string;
+  run: Function;
+}
 
 export interface SnackBarQueueItem {
-  message: string;
-  configParams?: MatSnackBarConfig;
+  title: string;
+  description: string;
+  configParams: SnackbarConfig;
 }
 
 @Injectable({
   providedIn: 'root',
 })
-export class SnackbarService {
-
-  private snackbars: SnackBarQueueItem[];
+export class SnackbarService implements OnDestroy {
 
   private readonly snackBarQueue = new BehaviorSubject<SnackBarQueueItem[]>([]);
   private readonly snackBarQueue$ = this.snackBarQueue.asObservable();
@@ -22,7 +31,6 @@ export class SnackbarService {
     let alreadyDismissed = false;
 
     this.snackBarQueue$.subscribe(e => {
-      console.log(e);
       if (!alreadyDismissed && this.snackBar._openedSnackBarRef) {
         this.snackBar.dismiss();
       }
@@ -31,7 +39,7 @@ export class SnackbarService {
       const nextIndex = e.length - 1;
       if (nextIndex >= 0) {
         const next = e[nextIndex];
-        this.snackBar.open(next.message, "Close", next.configParams);
+        this.openSnackbar(next);
         this.snackBar._openedSnackBarRef?.afterDismissed().subscribe((close) => {
           if (close.dismissedByAction) {
             alreadyDismissed = true;
@@ -42,13 +50,13 @@ export class SnackbarService {
     })
   }
 
-  queueSnackbar(message: string, configParams?: MatSnackBarConfig) {
-    if (this.snackBarQueue.value.find(snack => snack.message == message)) {
+  queueSnackbar(title: string, description: string = '', configParams: SnackbarConfig = {}) {
+    if (this.snackBarQueue.value.find(snack => snack.title == title && snack.description == description)) {
       return;
     }
-
+    
     this.snackBarQueue.next(
-      this.snackBarQueue.value.concat([{message, configParams}]),
+      this.snackBarQueue.value.concat([{title, description, configParams}]),
     );
   }
 
@@ -57,5 +65,21 @@ export class SnackbarService {
     this.snackBarQueue.next(
       this.snackBarQueue.value,
     );
+  }
+
+  private openSnackbar(item: SnackBarQueueItem) {
+    let config = item.configParams.matSnackbarConfig ?? {};
+    config.data = {
+      title: item.title, 
+      description: item.description,
+      action: item.configParams.action,
+      close: () => this.snackBar._openedSnackBarRef?.dismissWithAction()
+    }
+
+    this.snackBar.openFromComponent(SnackBarComponent, config);
+  }
+
+  ngOnDestroy(): void {
+    this.snackBarQueue.next([]);
   }
 }

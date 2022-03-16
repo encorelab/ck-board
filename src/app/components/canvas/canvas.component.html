@@ -18,6 +18,10 @@
       <button mat-icon-button (click)="showListModal()" matTooltip="List Posts">
         <mat-icon>list_alt</mat-icon>
       </button>
+      <button *ngIf="user && user.role == Role.TEACHER" mat-icon-button (click)="openSettingsDialog()"
+        matTooltip="Adjust Settings">
+        <mat-icon>settings</mat-icon>
+      </button>
     </app-toolbar>
     <div class="canvas-area">
         <canvas id="canvas"></canvas>
@@ -34,10 +38,6 @@
                 </button>
                 <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Canvas - Mode"  (click)="enableEditMode()">
                     <mat-icon style="padding-right: 3px;">pan_tool</mat-icon>
-                </button>
-                <button *ngIf="user && user.role == Role.TEACHER" mat-icon-button (click)="openSettingsDialog()"
-                  matTooltip="Adjust Settings">
-                  <mat-icon>settings</mat-icon>
                 </button>
             </div>
           </div>

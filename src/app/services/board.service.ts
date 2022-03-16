@@ -33,6 +33,12 @@ export class BoardService {
     })
   }
 
+  getMultiple(ids: string[]) {
+    return this.boardRef.ref.where("boardID", "in", ids).get().then((snapshot) => {
+      return snapshot.docs;
+    });
+  }
+
   getByJoinCode(code: string) {
     return this.boardRef.ref.where("joinCode", "==", code).get().then((snapshot) => snapshot)
   }

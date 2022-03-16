@@ -32,6 +32,8 @@ import { ListModalComponent } from '../list-modal/list-modal.component';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { ToolbarComponent } from '../toolbar/toolbar.component';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
+import { Project } from 'src/app/models/project';
+import { ProjectService } from 'src/app/services/project.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -50,6 +52,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   user: User
   board: Board
+  project: Project
 
   Math: Math = Math;
   initialClientX: number = 0
@@ -73,10 +76,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
   constructor(
     public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, 
-    public commentService: CommentService, public likesService: LikesService,  
-    public dialog: MatDialog, protected fabricUtils: FabricUtils, 
+    public commentService: CommentService, public likesService: LikesService, 
+    public projectService: ProjectService, 
+    protected fabricUtils: FabricUtils, 
     private router: Router,  private activatedRoute: ActivatedRoute,
-    public snackbarService: SnackbarService
+    public snackbarService: SnackbarService, public dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -170,6 +174,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         }
       })
     })
+    this.projectService.get(this.projectID).then(project => this.project = project)
   }
 
   openWorkflowDialog() {
@@ -177,6 +182,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       width: '700px',
       data: {
         board: this.board,
+        project: this.project
       }
     });
   }
@@ -362,7 +368,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any) {
-    console.log("Sendobject to group ran")
     const post: Post = {
       postID: pObject.postID,
       title: pObject.title,
@@ -370,7 +375,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       tags: [],
       userID: this.user.id,
       boardID: this.boardID,
-      fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
+      fabricObject: this.fabricUtils.toJSON(pObject),
       timestamp: new Date().getTime(),
     }
     this.postsService.create(post);
@@ -419,7 +424,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
       this.canvas.renderAll()
-      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      var jsonPost = this.fabricUtils.toJSON(post)
       this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -429,7 +434,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
-      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      var jsonPost = this.fabricUtils.toJSON(post);
       this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -578,7 +583,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.canvas.renderAll()
 
         var id = obj.postID
-        obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+        obj = this.fabricUtils.toJSON(obj)
         this.postsService.update(id, { fabricObject: obj })
       }
     }

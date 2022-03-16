@@ -4,6 +4,7 @@ import { Board } from '../models/board';
 import Bucket from '../models/bucket';
 import CustomWorkflow, { Container, ContainerType, DistributionWorkflow, WorkflowType } from '../models/workflow';
 import Workflow from '../models/workflow';
+import { Utils } from '../utils/Utils';
 import { BucketService } from './bucket.service';
 import { PostService } from './post.service';
 
@@ -51,6 +52,7 @@ export class WorkflowService {
       sourcePosts = rawPosts.docs.map(data => data.data());
     }
 
+    Utils.shuffle(sourcePosts);
     const splitPosts: any = await this.distributePosts(sourcePosts, destinations, amountPerDest);
 
     for (let i = 0; i < splitPosts.length; i++) {

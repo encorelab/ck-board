@@ -11,6 +11,7 @@ import { BoardService } from 'src/app/services/board.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import { PostService } from 'src/app/services/post.service';
+import { UserService } from 'src/app/services/user.service';
 import { Role } from 'src/app/utils/constants';
 
 @Component({
@@ -37,9 +38,11 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
 
   unsubPosts: Function
   unsubBucket: Function
+
+  postAuthor: User | undefined
   
   constructor(public commentService: CommentService, public likesService: LikesService, public postService: PostService,
-    public authService: AuthService, public boardService: BoardService, public dialog: MatDialog) { }
+    public authService: AuthService, public userSevice: UserService, public boardService: BoardService, public dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.user = this.authService.userData;
@@ -58,6 +61,10 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
       this.listenForUpdatesIfNot()
       this.setUsernameAnonymity(board)
     })
+    this.userSevice.getOneById(this.post.userID)
+      .then(user =>{
+        this.postAuthor = user
+      })
   }
 
   openPostDialog() {
@@ -94,7 +101,7 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
   listenForUpdatesIfNot() {
     if (!this.unsubBucket && !this.unsubPosts) {
       this.unsubPosts = this.postService.observeOne(this.post.postID, this.handleUpdate, this.handleDelete);
-      this.unsubBucket = this.boardService.observable(this.board.boardID, this.handleBoardChange);
+      this.unsubBucket = this.boardService.subscribe(this.board.boardID, this.handleBoardChange);
     }
   }
 

@@ -3,6 +3,7 @@ import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import Post from '../../models/post';
 import Comment from 'src/app/models/comment';
@@ -73,7 +74,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     public userService: UserService, public authService: AuthService, 
     public commentService: CommentService, public likesService: LikesService,  
     public dialog: MatDialog, protected fabricUtils: FabricUtils, 
-    private router: Router,  private activatedRoute: ActivatedRoute, 
+    private router: Router,  private activatedRoute: ActivatedRoute,
+    private _snackBar: MatSnackBar 
   ) {}
 
   ngOnInit() {
@@ -183,6 +185,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.mode = Mode.CHOOSING_LOCATION
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'
+    this._snackBar.open('Click where you want the post to be created!', "Close");
     this.canvas.on('mouse:down', this.handleChoosePostLocation);
   }
 
@@ -207,11 +210,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
         data: dialogData
       });
     }
+    this._snackBar.dismiss();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
 
   disableChooseLocation() {
+    this._snackBar.dismiss();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
@@ -770,6 +775,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this._snackBar.dismiss();
     for (let unsubFunc of this.unsubListeners) {
       unsubFunc();
     }

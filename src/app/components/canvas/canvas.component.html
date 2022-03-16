@@ -18,6 +18,9 @@
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
         <mat-icon>task</mat-icon>
       </button>
+      <button mat-icon-button *ngIf="user && user.role == Role.TEACHER" (click)="openSettingsDialog()" matTooltip="Open Settings">
+        <mat-icon>settings</mat-icon>
+      </button>
     </app-toolbar>
     <div class="canvas-area">
         <canvas id="canvas"></canvas>

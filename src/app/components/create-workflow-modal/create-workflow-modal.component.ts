@@ -1,12 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
+import { MatSnackBarConfig } from '@angular/material/snack-bar';
 import { Board } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
 import CustomWorkflow, { ContainerType, DistributionWorkflow, WorkflowCriteria, WorkflowType } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
+import { SnackbarService } from 'src/app/services/snackbar.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 
@@ -61,7 +62,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   
   constructor(
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
-    private _snackBar: MatSnackBar,
+    private snackbarService: SnackbarService,
     public bucketService: BucketService,
     public boardService: BoardService,
     public workflowService: WorkflowService,
@@ -154,7 +155,9 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   openSnackBar(message: string) {
-    this._snackBar.open(message, "Close", this.snackbarConfig);
+    this.snackbarService.queueSnackbar(message, undefined, {
+      matSnackbarConfig: this.snackbarConfig
+    });
   }
 
   _isBoard(object: Board | Bucket): object is Board {

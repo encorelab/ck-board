@@ -36,6 +36,7 @@ import { ProjectConfigurationModalComponent } from './components/project-configu
 import { BucketsModalComponent } from './components/buckets-modal/buckets-modal.component';
 import { ListModalComponent } from './components/list-modal/list-modal.component';
 import { ToolbarComponent } from './components/toolbar/toolbar.component';
+import { SnackBarComponent } from './components/snackbar/snackbar.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +63,8 @@ import { ToolbarComponent } from './components/toolbar/toolbar.component';
     BucketsModalComponent,
     ListModalComponent,
     HtmlPostComponent,
-    ToolbarComponent
+    ToolbarComponent,
+    SnackBarComponent
   ],
   imports: [
     BrowserModule,

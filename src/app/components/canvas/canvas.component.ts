@@ -3,7 +3,6 @@ import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 import Post from '../../models/post';
 import Comment from 'src/app/models/comment';
@@ -14,7 +13,6 @@ import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
-import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
@@ -31,6 +29,9 @@ import { Permissions } from 'src/app/models/permissions';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
+import { SnackbarService } from 'src/app/services/snackbar.service';
+import { ToolbarComponent } from '../toolbar/toolbar.component';
+import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
 
@@ -79,7 +80,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     public projectService: ProjectService, 
     protected fabricUtils: FabricUtils, 
     private router: Router,  private activatedRoute: ActivatedRoute,
-    private _snackBar: MatSnackBar, public dialog: MatDialog
+    public snackbarService: SnackbarService, public dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -191,16 +192,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.mode = Mode.CHOOSING_LOCATION
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'
-    this._snackBar.open('Click where you want the post to be created!', "Close");
+    this.snackbarService.queueSnackbar('Click where you want the post to be created!');
     this.canvas.on('mouse:down', this.handleChoosePostLocation);
-  }
-
-  parseUrl =(url:string)=>{
-    // /project/[projectid]/board/[boardid]
-    let urlArr = url.split('/')
-    this.boardID = urlArr[urlArr.length-1];
-    this.projectID = urlArr[urlArr.length-3];
-
   }
   
   handleChoosePostLocation = (opt) => {
@@ -216,13 +209,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
         data: dialogData
       });
     }
-    this._snackBar.dismiss();
+    this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
 
   disableChooseLocation() {
-    this._snackBar.dismiss();
+    this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
@@ -350,11 +343,26 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openTaskDialog() {
-    this.dialog.open(TaskModalComponent, {
-      width: '500px',
-      data: {
-        title: this.board.task.title,
-        message: this.board.task.message ?? ''
+    const title = this.board.task.title ? this.board.task.title : 'No task created!';
+    const message = this.board.task.message;
+
+    const openDialogCloseSnack = () => {
+      this.dialog.open(TaskModalComponent, {
+        width: '500px',
+        data: {
+          title: title,
+          message: message
+        }
+      });
+      this.snackbarService.dequeueSnackbar();
+    };
+
+    this.snackbarService.queueSnackbar(title, message, {
+      action: { name: 'View Full Task!', run: openDialogCloseSnack },
+      matSnackbarConfig: { 
+        verticalPosition: 'bottom',
+        horizontalPosition: 'center',
+        panelClass: ['wide-snackbar']
       }
     });
   }
@@ -780,7 +788,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._snackBar.dismiss();
+    this.snackbarService.ngOnDestroy();
     for (let unsubFunc of this.unsubListeners) {
       unsubFunc();
     }

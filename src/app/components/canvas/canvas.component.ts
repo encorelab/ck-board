@@ -360,8 +360,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.snackbarService.queueSnackbar(title, message, {
       action: { name: 'View Full Task!', run: openDialogCloseSnack },
       matSnackbarConfig: { 
-        verticalPosition: 'top',
-        horizontalPosition: 'left',
+        verticalPosition: 'bottom',
+        horizontalPosition: 'center',
+        panelClass: ['wide-snackbar']
       }
     });
   }

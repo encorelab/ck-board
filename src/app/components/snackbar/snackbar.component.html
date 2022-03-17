@@ -1,12 +1,25 @@
-<div class="title">
-  {{ data.title }}
+<div *ngIf="!data.description" style="display: flex; flex-direction: row;">
+  <div class="title">
+    {{ data.title }}
+  </div>
+  <button mat-stroked-button color="accent" (click)="close()">
+    Close!
+  </button>
+  <button mat-stroked-button color="accent" *ngIf="action" (click)="doAction()">
+    {{ this.action.name }}
+  </button>
 </div>
-<div class="description" *ngIf="data.description">
-  {{ data.description }}
+<div *ngIf="data.description">
+  <div class="title">
+    {{ data.title }}
+  </div>
+  <div class="description">
+    {{ data.description }}
+  </div>
+  <button mat-stroked-button color="accent" (click)="close()">
+    Close!
+  </button>
+  <button mat-stroked-button color="accent" *ngIf="action" (click)="doAction()">
+    {{ this.action.name }}
+  </button>
 </div>
-<button mat-stroked-button color="accent" (click)="close()">
-  Close!
-</button>
-<button mat-stroked-button color="accent" *ngIf="action" (click)="doAction()">
-  {{ this.action.name }}
-</button>

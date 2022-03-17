@@ -14,7 +14,10 @@
     
     <mat-card-content class="content">
       <mat-chip-list>
-        <mat-chip color="primary" selected *ngFor="let tag of post.tags">{{ tag }}</mat-chip>
+        <mat-chip [ngStyle]="{'background-color': tag.color, 'color': 'black'}" selected 
+          *ngFor="let tag of post.tags">
+          {{ tag.name }}
+        </mat-chip>
       </mat-chip-list>
       <p>{{ post.desc }}</p>
     </mat-card-content>

@@ -6,6 +6,8 @@ import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { Utils } from 'src/app/utils/Utils';
 import { Project } from 'src/app/models/project';
+import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
+import { Tag } from 'src/app/models/post';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -23,8 +25,10 @@ export class AddBoardModalComponent implements OnInit {
   taskTitle: string = ''
   taskMessage: string = ''
   
-  tags: string[] = []
+  tags: Tag[] = []
   newTagText: string = ''
+  newTagColor: any = TAG_DEFAULT_COLOR;
+
   projects:Project[]
   selectedProject:string=''
 
@@ -48,7 +52,7 @@ export class AddBoardModalComponent implements OnInit {
   ngOnInit(): void {}
 
   addTag() {
-    this.tags.push(this.newTagText)
+    this.tags.push({name: this.newTagText, color: this.newTagColor})
     this.newTagText = ''
   }
 

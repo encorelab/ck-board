@@ -5,6 +5,8 @@ import { BoardService } from 'src/app/services/board.service';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { Permissions } from 'src/app/models/permissions';
 import { UserService } from 'src/app/services/user.service';
+import { Tag } from 'src/app/models/post';
+import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -24,8 +26,9 @@ export class ConfigurationModalComponent {
 
   permissions: Permissions
 
-  tags: string[]
+  tags: Tag[]
   newTagText: string = ''
+  newTagColor: any = TAG_DEFAULT_COLOR;
 
   members: string[] = []
 
@@ -51,7 +54,7 @@ export class ConfigurationModalComponent {
     }
 
   addTag() {
-    this.tags.push(this.newTagText)
+    this.tags.push({name: this.newTagText, color: this.newTagColor})
     this.newTagText = ''
   }
 

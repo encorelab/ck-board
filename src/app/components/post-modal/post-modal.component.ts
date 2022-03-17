@@ -116,7 +116,7 @@ export class PostModalComponent {
     }
 
     let ids = bucket.posts.map(post => post.postID)
-    this.bucketService.update(bucketID, { posts: ids })
+    this.bucketService.add(bucketID, ids)
   }
 
   toggleEdit() {
@@ -138,7 +138,7 @@ export class PostModalComponent {
       obj.set({ title: this.title, desc: this.desc })
       this.fabricUtils._canvas.renderAll()
 
-      obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+      obj = this.fabricUtils.toJSON(obj)
     }
     // bucket only so fabricObject is {}
     else{
@@ -151,9 +151,8 @@ export class PostModalComponent {
 
   onDelete() {
     var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-    // check if post is on board
-    if (obj){
-      if (!obj || obj.type != 'group') return;
+    
+    if (obj && obj.type == 'group') {
       this.fabricUtils._canvas.remove(obj);
       this.fabricUtils._canvas.renderAll();
     }

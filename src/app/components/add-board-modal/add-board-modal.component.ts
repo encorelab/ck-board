@@ -1,12 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Permissions } from 'src/app/models/permissions';
 import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
-import { Utils } from 'src/app/utils/Utils';
 import { Project } from 'src/app/models/project';
-import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
+import { DEFAULT_TAGS, TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { Tag } from 'src/app/models/post';
 
 @Component({
@@ -15,7 +13,7 @@ import { Tag } from 'src/app/models/post';
   styleUrls: ['./add-board-modal.component.scss']
 })
 export class AddBoardModalComponent implements OnInit {
-  readonly separatorKeysCodes = [ENTER, COMMA] as const;
+  readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
   permissions:Permissions
 
@@ -25,7 +23,8 @@ export class AddBoardModalComponent implements OnInit {
   taskTitle: string = ''
   taskMessage: string = ''
   
-  tags: Tag[] = []
+  tags: Tag[] = [];
+  defaultTags: Tag[] = DEFAULT_TAGS;
   newTagText: string = ''
   newTagColor: any = TAG_DEFAULT_COLOR;
 
@@ -84,9 +83,13 @@ export class AddBoardModalComponent implements OnInit {
       },
       permissions:this.permissions,
       members: [this.authService.userData.id],
-      tags: this.tags,
+      tags: this.tags.concat(this.defaultTags),
     }, this.selectedProject)
     this.dialogRef.close();
+  }
+
+  resetColor() {
+    this.newTagColor = TAG_DEFAULT_COLOR;
   }
 
   onNoClick(): void {

@@ -59,6 +59,9 @@
     <mat-tab label="Tags">
       <div class="tags-list">
         <mat-chip-list>
+          <mat-chip *ngFor="let tag of defaultTags" [ngStyle]="{'background-color': tag.color}">
+            {{ tag.name }}
+          </mat-chip>
           <mat-chip *ngFor="let tag of tags" [ngStyle]="{'background-color': tag.color}">
             {{ tag.name }}
             <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
@@ -67,7 +70,7 @@
       </div>
       <mat-form-field appearance="fill">
         <mat-label>New Tag Name...</mat-label>
-        <input matInput [(ngModel)]="newTagText">
+        <input matInput [(ngModel)]="newTagText" (keyup.enter)="addTag()">
         <button mat-icon-button matSuffix>
           <mat-icon [(colorPicker)]="newTagColor" [style.color]="newTagColor">
             circle
@@ -75,6 +78,7 @@
         </button>
       </mat-form-field>
       <button mat-button [disabled]="newTagText.length < 1" color="primary" (click)="addTag()">Add Tag</button>
+      <button mat-button [disabled]="newTagColor == tagDefaultColor" color="primary" (click)="resetColor()">Reset Color</button>
     </mat-tab>
   </mat-tab-group>
 </div>

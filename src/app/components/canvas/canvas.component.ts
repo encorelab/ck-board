@@ -70,6 +70,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   showBuckets: boolean = false
 
   showAddPost: boolean = true
+  lockArrowKeys: boolean = false
 
   unsubListeners: Function[] = []
 
@@ -107,10 +108,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const unsubSwipePan = this.initPanSwipeListener();
     const unsubKeyPan = this.initKeyPanningListener();
     const unsubModal = this.hideListsWhenModalOpen();
+    const unsubArrowKeyLock = this.lockArrowKeysWhenModalOpen();
+    const unsubArrowKeyUnlock = this.unlockArrowKeysWhenModalClose();
     
     return [unsubLike, unsubExpand, unsubModal, unsubAdd, 
             unsubRemove, unsubMoving, unsubZoom, unsubPan, 
-            unsubSwipePan, unsubKeyPan];
+            unsubSwipePan, unsubKeyPan, unsubArrowKeyLock, unsubArrowKeyUnlock];
   }
 
   initGroupEventsListener() {
@@ -710,22 +713,26 @@ export class CanvasComponent implements OnInit, OnDestroy {
   
   initKeyPanningListener() {
     document.addEventListener('keydown', (event) => {
-      if(event.key == 'ArrowUp') {
-        event.preventDefault();
-        this.canvas.relativePan(new fabric.Point(0, 30 * this.canvas.getZoom()));
+      if(!this.lockArrowKeys){
+        if(event.key == 'ArrowUp') {
+          event.preventDefault();
+          this.canvas.relativePan(new fabric.Point(0, 30 * this.canvas.getZoom()));
+        }
+        else if(event.key == 'ArrowDown') {
+          event.preventDefault();
+          this.canvas.relativePan(new fabric.Point(0, -30 * this.canvas.getZoom()));
+        }
+        else if(event.key == 'ArrowLeft') {
+          event.preventDefault();
+          this.canvas.relativePan(new fabric.Point(30 * this.canvas.getZoom(), 0));
+        }
+        else if(event.key == 'ArrowRight') {
+          event.preventDefault();
+          this.canvas.relativePan(new fabric.Point(-30 * this.canvas.getZoom(), 0));
+        }
+
       }
-      else if(event.key == 'ArrowDown') {
-        event.preventDefault();
-        this.canvas.relativePan(new fabric.Point(0, -30 * this.canvas.getZoom()));
-      }
-      else if(event.key == 'ArrowLeft') {
-        event.preventDefault();
-        this.canvas.relativePan(new fabric.Point(30 * this.canvas.getZoom(), 0));
-      }
-      else if(event.key == 'ArrowRight') {
-        event.preventDefault();
-        this.canvas.relativePan(new fabric.Point(-30 * this.canvas.getZoom(), 0));
-      }
+      
     });
 
     return () => {
@@ -783,6 +790,23 @@ export class CanvasComponent implements OnInit, OnDestroy {
     })
 
     return () => {
+      subscription.unsubscribe();
+    }
+  }
+
+  lockArrowKeysWhenModalOpen(){
+    const subscription = this.dialog.afterOpened.subscribe(()=>{
+      this.lockArrowKeys = true
+    })
+    return ()=>{
+      subscription.unsubscribe();
+    }
+  }
+  unlockArrowKeysWhenModalClose(){
+    const subscription = this.dialog.afterAllClosed.subscribe(()=>{
+      this.lockArrowKeys = false
+    })
+    return ()=>{
       subscription.unsubscribe();
     }
   }

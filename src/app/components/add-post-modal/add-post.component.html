@@ -2,7 +2,7 @@
 <div mat-dialog-content>
   <mat-form-field appearance="fill" style="width:100%">
     <mat-label>Title</mat-label>
-    <input [formControl]="titleControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="title">
+    <input name="title" [formControl]="titleControl" [errorStateMatcher]="matcher" matInput autocomplete="off" cdkFocusInitial [(ngModel)]="title">
     <mat-error *ngIf="!title">
       Title is <strong>required</strong>
     </mat-error>

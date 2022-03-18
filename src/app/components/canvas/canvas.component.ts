@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
@@ -13,7 +13,6 @@ import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
-import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
@@ -22,16 +21,20 @@ import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { Permissions } from 'src/app/models/permissions';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
-import { RealtimeService } from 'src/app/services/realtime.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
+import { SnackbarService } from 'src/app/services/snackbar.service';
+import { ToolbarComponent } from '../toolbar/toolbar.component';
+import { TaskModalComponent } from '../task-modal/task-modal.component';
+import { Project } from 'src/app/models/project';
+import { ProjectService } from 'src/app/services/project.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -43,16 +46,16 @@ interface PostIDNamePair {
   templateUrl: './canvas.component.html',
   styleUrls: ['./canvas.component.scss']
 })
-export class CanvasComponent {
+export class CanvasComponent implements OnInit, OnDestroy {
   boardID: string
   projectID: string
   canvas: Canvas;
 
   user: User
   board: Board
+  project: Project
 
-  centerX: number
-  centerY: number
+  Math: Math = Math;
   initialClientX: number = 0
   initialClientY: number = 0
   finalClientX: number = 0
@@ -69,33 +72,57 @@ export class CanvasComponent {
 
   showAddPost: boolean = true
 
-  constructor(public postsService: PostService, public boardService: BoardService,
-    public userService: UserService, public authService: AuthService, public commentService: CommentService,
-    public likesService: LikesService, public realtimeService: RealtimeService, public fileUploadService: FileUploadService,
-    public dialog: MatDialog, private route: Router,
-    protected fabricUtils: FabricUtils) { }
+
+  unsubListeners: Function[] = []
+
+  constructor(
+    public postsService: PostService, public boardService: BoardService, 
+    public userService: UserService, public authService: AuthService, 
+    public commentService: CommentService, public likesService: LikesService, 
+    public projectService: ProjectService, 
+    protected fabricUtils: FabricUtils, 
+    private router: Router,  private activatedRoute: ActivatedRoute,
+    public snackbarService: SnackbarService, public dialog: MatDialog,
+    public fileUploadService: FileUploadService
+  ) {}
 
   ngOnInit() {
     this.user = this.authService.userData;
-    this.parseUrl(this.route.url);
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
-    this.fabricUtils._canvas = this.canvas
-    this.centerX = this.canvas.getWidth() / 2;
-    this.centerY = this.canvas.getHeight() / 2;
-    this.displayZoomValue();
+    this.fabricUtils._canvas = this.canvas;
+
     this.configureBoard();
-    this.addObjectListener();
-    this.removeObjectListener();
-    this.movingObjectListener();
-    this.zoomListener();
-    this.panningListener();
-    this.panningBySwipingListener();
-    this.keyPanningListener();
-    this.expandPostListener();
-    this.handleLikeButtonClick();
-    this.hideListsWhenModalOpen();
-    this.boardService.observable(this.boardID, this.handleBoardChange);
-    this.realtimeService.observe(this.boardID, this.handlePostEvent, this.handleLikeEvent, this.handleCommentEvent);
+    
+    const unsubCanvasEvents = this.initCanvasEventsListener();
+    const unsubGroupEvents = this.initGroupEventsListener();
+
+    this.unsubListeners = unsubCanvasEvents.concat(unsubGroupEvents);
+  }
+
+  initCanvasEventsListener() {
+    const unsubAdd = this.initAddPostListener();
+    const unsubRemove = this.initRemovePostListener();
+    const unsubMoving = this.initMovingPostListener();
+    const unsubExpand = this.initPostClickListener();
+    const unsubLike = this.initLikeClickListener();
+    const unsubZoom = this.initZoomListener();
+    const unsubPan = this.initPanListener();
+    const unsubSwipePan = this.initPanSwipeListener();
+    const unsubKeyPan = this.initKeyPanningListener();
+    const unsubModal = this.hideListsWhenModalOpen();
+    
+    return [unsubLike, unsubExpand, unsubModal, unsubAdd, 
+            unsubRemove, unsubMoving, unsubZoom, unsubPan, 
+            unsubSwipePan, unsubKeyPan];
+  }
+
+  initGroupEventsListener() {
+    const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
+    const unsubPosts = this.postsService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
+    const unsubLikes = this.likesService.observable(this.boardID, this.handleLikeEvent, true);
+    const unsubComms = this.commentService.observable(this.boardID, this.handleCommentEvent, true);
+
+    return [unsubBoard, unsubPosts, unsubLikes, unsubComms];
   }
 
   showBucketsModal() {
@@ -104,6 +131,9 @@ export class CanvasComponent {
       height: '75vh',
       data: {
         board: this.board,
+        user: this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top,
       }
     });
   }
@@ -120,11 +150,22 @@ export class CanvasComponent {
 
   // configure board
   configureBoard() {
+    const map = this.activatedRoute.snapshot.paramMap;
+
+    if (map.has('boardID') && map.has('projectID')) {
+      this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
+      this.projectID = this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+    } else {
+      this.router.navigate(['error']);
+    }
+    
     this.postsService.getAll(this.boardID).then((data) => {
       data.forEach((data) => {
         let post = data.data() ?? {}
-        let obj = JSON.parse(post.fabricObject);
-        this.syncBoard(obj, post.postID);
+        if(post.fabricObject){
+          let obj = JSON.parse(post.fabricObject);
+          this.syncBoard(obj, post.postID);
+        }
       })
       this.boardService.get(this.boardID).then((board) => {
         if (board) {
@@ -136,6 +177,7 @@ export class CanvasComponent {
         }
       })
     })
+    this.projectService.get(this.projectID).then(project => this.project = project)
   }
 
   openWorkflowDialog() {
@@ -143,6 +185,7 @@ export class CanvasComponent {
       width: '700px',
       data: {
         board: this.board,
+        project: this.project
       }
     });
   }
@@ -152,15 +195,8 @@ export class CanvasComponent {
     this.mode = Mode.CHOOSING_LOCATION
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'
+    this.snackbarService.queueSnackbar('Click where you want the post to be created!');
     this.canvas.on('mouse:down', this.handleChoosePostLocation);
-  }
-
-  parseUrl = (url: string) => {
-    // /project/[projectid]/board/[boardid]
-    let urlArr = url.split('/')
-    this.boardID = urlArr[urlArr.length - 1];
-    this.projectID = urlArr[urlArr.length - 3];
-
   }
 
   handleChoosePostLocation = (opt) => {
@@ -176,11 +212,13 @@ export class CanvasComponent {
         data: dialogData
       });
     }
+    this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
 
   disableChooseLocation() {
+    this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
@@ -319,11 +357,26 @@ export class CanvasComponent {
   }
 
   openTaskDialog() {
-    this.dialog.open(TaskModalComponent, {
-      width: '500px',
-      data: {
-        title: this.board.task.title,
-        message: this.board.task.message ?? ''
+    const title = this.board.task.title ? this.board.task.title : 'No task created!';
+    const message = this.board.task.message;
+
+    const openDialogCloseSnack = () => {
+      this.dialog.open(TaskModalComponent, {
+        width: '500px',
+        data: {
+          title: title,
+          message: message
+        }
+      });
+      this.snackbarService.dequeueSnackbar();
+    };
+
+    this.snackbarService.queueSnackbar(title, message, {
+      action: { name: 'View Full Task!', run: openDialogCloseSnack },
+      matSnackbarConfig: { 
+        verticalPosition: 'bottom',
+        horizontalPosition: 'center',
+        panelClass: ['wide-snackbar']
       }
     });
   }
@@ -337,8 +390,8 @@ export class CanvasComponent {
       tags: [],
       userID: this.user.id,
       boardID: this.boardID,
-      fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
-      timestamp: new Date().getTime()
+      fabricObject: this.fabricUtils.toJSON(pObject),
+      timestamp: new Date().getTime(),
     }
     this.postsService.create(post);
   }
@@ -375,7 +428,7 @@ export class CanvasComponent {
   }
 
   handlePostEvent = (post) => {
-    if (post) {
+    if (post && post.fabricObject) {
       var obj = JSON.parse(post.fabricObject);
       this.syncBoard(obj, post.postID);
     }
@@ -386,7 +439,7 @@ export class CanvasComponent {
     if (post) {
       post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
       this.canvas.renderAll()
-      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      var jsonPost = this.fabricUtils.toJSON(post)
       this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -396,57 +449,65 @@ export class CanvasComponent {
     if (post) {
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
-      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      var jsonPost = this.fabricUtils.toJSON(post);
       this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
 
-  handleLikeButtonClick() {
-    this.canvas.on('mouse:down', e => {
-      var post: any = e.target
-      var likeButton = e.subTargets?.find(o => o.name == 'like')
-      let isStudent = this.user.role == Role.STUDENT
-      let isTeacher = this.user.role == Role.TEACHER
-      let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
-      if (likeButton && (studentHasPerm || isTeacher)) {
-        this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
-          if (data.size == 0) {
-            this.likesService.add({
-              likeID: Date.now() + '-' + this.user.id,
-              likerID: this.user.id,
-              postID: post.postID,
-              boardID: this.board.boardID
-            })
-          } else {
-            data.forEach((data) => {
-              let like: Like = data.data()
-              this.likesService.remove(like.likeID)
-            })
-          }
-        })
-      }
-    });
+  initLikeClickListener() {
+    this.canvas.on('mouse:down', this.handleLikeClick);
+
+    return () => { 
+      this.canvas.off('mouse:down', this.handleLikeClick)
+    };
   }
 
-  expandPostListener() {
+  handleLikeClick = (e: fabric.IEvent) => {
+    var post: any = e.target
+    var likeButton = e.subTargets?.find(o => o.name == 'like')
+    let isStudent = this.user.role == Role.STUDENT
+    let isTeacher = this.user.role == Role.TEACHER
+    let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
+    if (likeButton && (studentHasPerm || isTeacher)) {
+      this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
+        if (data.size == 0) {
+          this.likesService.add({
+            likeID: Date.now() + '-' + this.user.id,
+            likerID: this.user.id,
+            postID: post.postID,
+            boardID: this.board.boardID
+          })
+        } else {
+          data.forEach((data) => {
+            let like: Like = data.data()
+            this.likesService.remove(like.likeID)
+          })
+        }
+      })
+    }
+  }
+
+  initPostClickListener() {
     var isDragging = false;
     var isMouseDown = false;
 
-    this.canvas.on('mouse:down', (e) => {
+    const postClickHandler = (e: fabric.IEvent) => {
       if (e.target?.name == 'post') isMouseDown = true;
-    });
+    };
 
-    this.canvas.on('mouse:move', (e) => {
+    const postMovingHandler = (e: fabric.IEvent) => {
       if (e.target?.name == 'post') isDragging = isMouseDown;
-    })
+    };
 
-    this.canvas.on('mouse:up', (e) => {
+    const mouseUpHandler = (e: fabric.IEvent) => {
       var obj: any = e.target;
-      isMouseDown = false;
+      
+      var likePress = e.subTargets?.find(o => o.name == 'like')
       var isDragEnd = isDragging;
       isDragging = false;
-      var clickedLikeButton = e.subTargets?.find(o => o.name == 'like')
-      if (!isDragEnd && !clickedLikeButton && obj?.name == 'post') {
+      isMouseDown = false;
+
+      if (!isDragEnd && !likePress && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.dialog.open(PostModalComponent, {
           minWidth: '700px',
@@ -458,7 +519,17 @@ export class CanvasComponent {
           }
         });
       }
-    });
+    };
+
+    this.canvas.on('mouse:down', postClickHandler);
+    this.canvas.on('mouse:move', postMovingHandler);
+    this.canvas.on('mouse:up', mouseUpHandler);
+
+    return () => {
+      this.canvas.off('mouse:down', postClickHandler);
+      this.canvas.off('mouse:move', postMovingHandler);
+      this.canvas.off('mouse:up', mouseUpHandler);
+    }
   }
 
   // listen to configuration/permission changes
@@ -472,11 +543,10 @@ export class CanvasComponent {
     board.name ? this.updateBoardName(board.name) : null
   }
 
-  // perform actions when new post is added
-  addObjectListener() {
-    this.canvas.on('object:added', (options: any) => {
-      if (options.target) {
-        var obj = options.target;
+  initAddPostListener() {
+    const handleAddPost = (e: fabric.IEvent) => {
+      if (e.target) {
+        var obj: any = e.target;
 
         if (!obj.postID) {
           obj.set('postID', Date.now() + '-' + this.user.id);
@@ -484,14 +554,19 @@ export class CanvasComponent {
           this.sendObjectToGroup(obj)
         }
       }
-    });
+    }
+
+    this.canvas.on('object:added', handleAddPost);
+
+    return () => {
+      this.canvas.off('object:added', handleAddPost);
+    }
   }
 
-  // perform actions when post is removed
-  removeObjectListener() {
-    this.canvas.on('object:removed', (options: any) => {
-      if (options.target) {
-        var obj = options.target;
+  initRemovePostListener() {
+    const handleRemovePost = (e: fabric.IEvent) => {
+      if (e.target) {
+        var obj: any = e.target;
         if (obj.removed) {
           return // already removed
         }
@@ -501,32 +576,42 @@ export class CanvasComponent {
         fabric.util.object.extend(obj, { removed: true })
         this.sendObjectToGroup(obj);
       }
-    });
+    }
+
+    this.canvas.on('object:removed', handleRemovePost);
+
+    return () => {
+      this.canvas.off('object:removed', handleRemovePost);
+    }
   }
 
-  // perform actions when post is moved
-  movingObjectListener() {
-    this.canvas.on('object:moving', (options: any) => {
-      if (options.target) {
-        var obj = options.target;
+  initMovingPostListener() {
+    const handleMovingPost = (e: any) => {
+      if (e.target) {
+        var obj = e.target;
 
-        var left = (Math.round((options.pointer.x - obj.getScaledWidth() / 2)));
-        var top = (Math.round((options.pointer.y - obj.getScaledHeight() / 2)));
+        var left = (Math.round((e.pointer.x - obj.getScaledWidth() / 2)));
+        var top = (Math.round((e.pointer.y - obj.getScaledHeight() / 2)));
 
         obj.set({ left: left, top: top })
         obj.setCoords()
         this.canvas.renderAll()
 
         var id = obj.postID
-        obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+        obj = this.fabricUtils.toJSON(obj)
         this.postsService.update(id, { fabricObject: obj })
       }
-    })
+    }
+
+    this.canvas.on('object:moving', handleMovingPost);
+
+    return () => {
+      this.canvas.off('object:moving', handleMovingPost);
+    }
   }
 
-
-  zoomListener() {
-    this.canvas.on('mouse:wheel', (opt) => {
+  initZoomListener() {
+    const handleZoomEvent = (opt) => {
       var options = (opt.e as unknown) as WheelEvent
 
       // Condition for pinch gesture on trackpad: 
@@ -558,13 +643,19 @@ export class CanvasComponent {
         opt.e.preventDefault();
         opt.e.stopPropagation();
       }
-    });
+    }
+
+    this.canvas.on('mouse:wheel', handleZoomEvent);
+
+    return () => {
+      this.canvas.off('mouse:wheel', handleZoomEvent);
+    }
   }
 
-  panningListener() {
+  initPanListener() {
     var isPanning = false;
 
-    this.canvas.on("mouse:down", (opt) => {
+    const mouseDown = (opt) => {
       if (this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
@@ -572,17 +663,17 @@ export class CanvasComponent {
         this.initialClientX = options.clientX;
         this.initialClientY = options.clientY;
       }
-    });
+    };
 
-    this.canvas.on("mouse:up", (opt) => {
+    const mouseUp = (opt) => {
       isPanning = false;
       this.canvas.selection = true;
       const options = (opt.e as unknown) as WheelEvent
       this.initialClientX = options.clientX;
       this.initialClientY = options.clientY;
-    });
+    };
 
-    this.canvas.on("mouse:move", (opt) => {
+    const handlePan = (opt) => {
       var options = (opt.e as unknown) as WheelEvent
       if (isPanning && options) {
         let delta = new fabric.Point(options.movementX, options.movementY);
@@ -590,11 +681,21 @@ export class CanvasComponent {
         this.finalClientX = options.clientX;
         this.finalClientY = options.clientY;
       }
-    })
+    };
+
+    this.canvas.on("mouse:down", mouseDown);
+    this.canvas.on("mouse:up", mouseUp);
+    this.canvas.on("mouse:move", handlePan);
+
+    return () => {
+      this.canvas.off("mouse:down", mouseDown);
+      this.canvas.off("mouse:up", mouseUp);
+      this.canvas.off("mouse:move", handlePan);
+    }
   }
 
-  panningBySwipingListener() {
-    this.canvas.on('mouse:wheel', (opt) => {
+  initPanSwipeListener() {
+    const handlePanSwipe = (opt) => {
       let options = (opt.e as unknown) as WheelEvent;
 
       // Condition for two-finger swipe on trackpad: 
@@ -612,10 +713,17 @@ export class CanvasComponent {
         vpt[5] -= options.deltaY;
         this.canvas.requestRenderAll();
       }
-    })
-  }
+    }
 
-  keyPanningListener() {
+    this.canvas.on('mouse:wheel', handlePanSwipe);
+
+    return () => {
+      this.canvas.off('mouse:wheel', handlePanSwipe);
+    }
+  }
+  
+  initKeyPanningListener() {
+
     document.addEventListener('keydown', (event) => {
       if (event.key == 'ArrowUp') {
         event.preventDefault();
@@ -634,6 +742,11 @@ export class CanvasComponent {
         this.canvas.relativePan(new fabric.Point(-30 * this.canvas.getZoom(), 0));
       }
     });
+
+    return () => {
+      if (document.removeAllListeners) 
+        document.removeAllListeners('keydown');
+    }
   }
 
   enablePanMode() {
@@ -652,8 +765,9 @@ export class CanvasComponent {
 
 
   handleZoom(event) {
-    let centerX = this.centerX + (this.finalClientX - this.initialClientX);
-    let centerY = this.centerY + (this.finalClientY - this.initialClientY);
+    let center = this.canvas.getCenter()
+    let centerX = center.left + (this.finalClientX - this.initialClientX);
+    let centerY = center.top + (this.finalClientY - this.initialClientY);
     this.initialClientX = this.finalClientX;
     this.initialClientY = this.finalClientY;
 
@@ -677,14 +791,21 @@ export class CanvasComponent {
     this.canvas.zoomToPoint(new fabric.Point(centerX, centerY), this.zoom);
   }
 
-  displayZoomValue() {
-    return Math.round(this.zoom * 100);
-  }
-
   hideListsWhenModalOpen() {
-    this.dialog.afterOpened.subscribe(() => {
+    const subscription = this.dialog.afterOpened.subscribe(() => {
       this.showList = false
       this.showBuckets = false
     })
+
+    return () => {
+      subscription.unsubscribe();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.snackbarService.ngOnDestroy();
+    for (let unsubFunc of this.unsubListeners) {
+      unsubFunc();
+    }
   }
 }

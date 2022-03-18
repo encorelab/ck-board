@@ -21,7 +21,10 @@
         </mat-error>
       </mat-form-field>
       <h4>Set Background Image:</h4>
-      <input ng-hide id="input-file-id" type="file" accept=".jpeg,.jpg,.png,.svg" (change)="handleImageUpload($event)" style="margin-bottom: 20px;"/>
+      <mat-chip (click)="compressFile()" color="primary" selected>
+        <mat-icon class="chip-icon">upload</mat-icon>
+        Upload New Background Image
+      </mat-chip>
     </mat-tab>
     <mat-tab label="Task">
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">

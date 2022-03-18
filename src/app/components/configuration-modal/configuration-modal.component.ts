@@ -3,8 +3,10 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BoardService } from 'src/app/services/board.service';
 import { Permissions } from 'src/app/models/permissions';
 import { UserService } from 'src/app/services/user.service';
+import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { Tag } from 'src/app/models/post';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
+
 
 @Component({
   selector: 'app-configuration-modal',
@@ -34,6 +36,7 @@ export class ConfigurationModalComponent {
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
     public boardService: BoardService,
     public userService: UserService,
+    public fileUploadService: FileUploadService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.boardName = data.board.name
       this.isPublic = data.board.public
@@ -60,14 +63,11 @@ export class ConfigurationModalComponent {
     this.tags = this.tags.filter(tag => tag != tagRemove)
   }
 
-  handleImageUpload(e) {
-    var file = e.target.files[0];
-    var reader = new FileReader();
-    reader.onload = (f) => {
-        this.currentBgImage = { url: f.target?.result };
-        this.data.updateBackground(this.currentBgImage.url)
-    };
-    reader.readAsDataURL(file);
+  compressFile(){
+    this.fileUploadService.compressFile().then((compressedImage) =>{
+      this.data.updateBackground(compressedImage,null);
+    })
+  
   }
 
   removeImage() {

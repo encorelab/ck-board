@@ -10,11 +10,10 @@
         Public Board
       </mat-slide-toggle>
       <div class="image-form">
-        <mat-chip (click)="fileInput.click()" color="primary" selected>
+        <mat-chip (click)="compressFile()" color="primary" selected>
           <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
           Upload New Background Image
         </mat-chip>
-        <input hidden (change)="handleImageUpload($event)" #fileInput type="file" accept=".png,.svg" id="input-file-id">
         <mat-chip *ngIf="currentBgImage && currentBgImage.url" color="warn" selected (click)="removeImage()">
           <mat-icon class="chip-icon">cancel</mat-icon>
           Remove Current Background Image

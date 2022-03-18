@@ -115,6 +115,7 @@ export class FabricPostComponent extends fabric.Group {
       title: options.title,
       desc: options.desc,
       author: options.author,
+      tags: options.tags,
       subTargetCheck: true,
       authorID: options.authorID
     }

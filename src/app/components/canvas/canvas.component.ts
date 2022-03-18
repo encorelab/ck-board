@@ -199,14 +199,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
   handleChoosePostLocation = (opt) => {
     if (opt.target == null) {
       this.canvas.selection = false;
-      const dialogData: DialogInterface = {
-        addPost: this.addPost,
-        top: opt.absolutePointer ? opt.absolutePointer.y : 150,
-        left: opt.absolutePointer ? opt.absolutePointer.x : 150,
-      }
       this.dialog.open(AddPostComponent, {
         width: '500px',
-        data: dialogData
+        data: {
+          board: this.board,
+          user: this.user,
+          top: opt.absolutePointer ? opt.absolutePointer.y : 150,
+          left: opt.absolutePointer ? opt.absolutePointer.x : 150
+        }
       });
     }
     this.snackbarService.dequeueSnackbar();
@@ -373,7 +373,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       postID: pObject.postID,
       title: pObject.title,
       desc: pObject.desc,
-      tags: [],
+      tags: pObject.tags,
       userID: this.user.id,
       boardID: this.boardID,
       fabricObject: this.fabricUtils.toJSON(pObject),

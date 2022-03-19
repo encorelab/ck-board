@@ -637,7 +637,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
           this.zoom *= 0.999 ** delta;
         }
         else {
-          this.zoom *= 0.95 ** delta;
+          this.zoom *= 0.99 ** delta;
         }
         if (this.zoom > 20) this.zoom = 20;
         if (this.zoom < 0.01) this.zoom = 0.01;

@@ -1,7 +1,10 @@
 <div>
   <div style="position: absolute;">
-    <mat-toolbar>
+    <app-toolbar [user]="user">
       <span *ngIf="board && board.name">{{ board.name }}</span>
+      <button mat-icon-button (click)="openTaskDialog()" matTooltip="Read Task">
+        <mat-icon>task</mat-icon>
+      </button>
       <span style="flex: 1 1 auto"></span>
       <button mat-icon-button routerLink="{{'/project/'+projectID}}" matTooltip="Return to Project Dashboard">
         <mat-icon>keyboard_return</mat-icon>
@@ -15,17 +18,11 @@
       <button mat-icon-button (click)="showListModal()" matTooltip="List Posts">
         <mat-icon>list_alt</mat-icon>
       </button>
-      <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
-          <mat-icon>task</mat-icon>
-      </button>
-      <button *ngIf="user && user.role == Role.TEACHER" mat-icon-button (click)="openSettingsDialog()" matTooltip="Adjust Settings">
+      <button *ngIf="user && user.role == Role.TEACHER" mat-icon-button (click)="openSettingsDialog()"
+        matTooltip="Adjust Settings">
         <mat-icon>settings</mat-icon>
       </button>
-      <button style="margin-left: 1em" *ngIf="user && user.username" mat-button [matMenuTriggerFor]="menu">{{ user.username }}</button>
-      <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="this.authService.signOut()">Log Out</button>
-      </mat-menu>
-    </mat-toolbar>
+    </app-toolbar>
     <div class="canvas-area">
         <canvas id="canvas"></canvas>
         <div class="toolSection">
@@ -48,7 +45,7 @@
             <button (click) = "handleZoom('zoomOut')" class = "zoomButton" mat-button color = "basic">
               <mat-icon>remove</mat-icon>
             </button>
-            <p> {{displayZoomValue()}}%</p>
+            <p> {{ Math.round(this.zoom * 100) }}%</p>
             <button (click) = "handleZoom('zoomIn')" class = "zoomButton" mat-button color = "basic">
               <mat-icon>add</mat-icon>
             </button>

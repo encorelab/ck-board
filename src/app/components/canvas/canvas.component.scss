@@ -27,10 +27,6 @@
   margin-top: 0.5rem;
 }
 
-button {
-  margin-bottom: 10px;
-}
-
 .toolField {
   width: 100%;
   display: flex;
@@ -49,9 +45,10 @@ button {
   flex-direction: row;
   align-items: center;
   position: absolute;
-  bottom: 0.5em;
-  left: 82%;
+  bottom: 2em;
+  right: 3em;
   background-color: white;
+  opacity: 0.60;
   border-radius: 10px;
 
   p {

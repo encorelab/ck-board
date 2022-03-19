@@ -12,6 +12,7 @@ import { AngularFireAuthModule } from '@angular/fire/auth'
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
+import { ColorPickerModule } from 'ngx-color-picker';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component'
 import { FabricPostComponent } from './components/fabric-post/fabric-post.component';
@@ -35,6 +36,8 @@ import { ProjectDashboardComponent } from './components/project-dashboard/projec
 import { ProjectConfigurationModalComponent } from './components/project-configuration-modal/project-configuration-modal.component';
 import { BucketsModalComponent } from './components/buckets-modal/buckets-modal.component';
 import { ListModalComponent } from './components/list-modal/list-modal.component';
+import { ToolbarComponent } from './components/toolbar/toolbar.component';
+import { SnackBarComponent } from './components/snackbar/snackbar.component';
 
 @NgModule({
   declarations: [
@@ -60,7 +63,9 @@ import { ListModalComponent } from './components/list-modal/list-modal.component
     ProjectConfigurationModalComponent,
     BucketsModalComponent,
     ListModalComponent,
-    HtmlPostComponent
+    HtmlPostComponent,
+    ToolbarComponent,
+    SnackBarComponent
   ],
   imports: [
     BrowserModule,
@@ -71,6 +76,7 @@ import { ListModalComponent } from './components/list-modal/list-modal.component
     FormsModule, 
     BrowserAnimationsModule,
     ReactiveFormsModule,
+    ColorPickerModule,
     MaterialModule
   ],
   providers: [],

@@ -123,7 +123,4 @@ export class PasswordResetComponent implements OnInit, OnDestroy{
     onSubmitPassword() {
         this.passwordSubmitted = true;
     }
-    onCancelPassword() {
-        this.passwordSubmitted = false;
-    }
 }

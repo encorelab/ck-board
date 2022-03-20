@@ -1,6 +1,7 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
+import { Tag } from 'src/app/models/post';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
 
@@ -18,6 +19,9 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   posts: any[]
   lastItem: any = null
+  activeFilters: Tag[] =[]
+  filterOptions: Tag[] =[]
+  filteredPosts:any[]
 
   constructor(
     public dialogRef: MatDialogRef<ListModalComponent>,
@@ -29,6 +33,8 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetchInitialPosts()
+    this.updateFilterOptions()
+    this.filterPosts()
   }
 
   fetchInitialPosts() {
@@ -56,6 +62,36 @@ export class ListModalComponent implements OnInit, OnDestroy {
     if (event.target.offsetHeight + event.target.scrollTop >= event.target.scrollHeight) {
       this.loadingMore = true
       this.fetchMorePosts()
+    }
+  }
+  updateFilterOptions(){
+    // very inefficient
+    // maybe use observables/subscriptions instead of calling update functions
+    this.filterOptions = this.board.tags
+                              .filter(tag => !this.activeFilters.includes(tag))
+    this.filterPosts()
+
+  }
+
+  addFilter(filter:Tag){
+    if(!this.activeFilters.includes(filter)){
+      this.activeFilters.push(filter);
+      this.updateFilterOptions();
+    }
+  }
+  removeFilter(filter:Tag){
+    if(this.activeFilters.length >0){
+      this.activeFilters = this.activeFilters.filter(tag=> tag!=filter);
+      this.updateFilterOptions();
+    }
+  }
+
+  filterPosts(){
+    if (this.activeFilters.length >0){
+      this.filteredPosts = this.posts.filter(post => this.activeFilters.every(tag=>post.tags.map(tag=>tag.name).includes(tag.name)))
+    }
+    else{
+      this.filteredPosts = this.posts 
     }
   }
 

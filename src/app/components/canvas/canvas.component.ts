@@ -589,30 +589,59 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initMovingPostListener() {
-    const handleMovingPost = (e: any) => {
+    let isMovingPost = false;
+
+    const handleGrabPost = (e: any) => {
       if (e.target) {
+        isMovingPost = true;
         var obj = e.target;
 
-        // Coordinates at which the post was clicked
-        var postClickPosition = obj.getLocalPointer(e);
+        var children: fabric.Object[] = obj.getObjects()
+        var content: any = children.filter((obj) => obj.name == 'content').pop()
 
-        var left = Math.round((e.pointer.x - postClickPosition.x));
-        var top = Math.round((e.pointer.y - postClickPosition.y));
-
-        obj.set({ left: left, top: top })
-        obj.setCoords()
+        content.set({ stroke: "red" })
+        obj.dirty = true
+        obj.addWithUpdate();
         this.canvas.renderAll()
 
         var id = obj.postID
-        obj = this.fabricUtils.toJSON(obj)
+        obj = this.fabricUtils.toJSON(obj);
         this.postsService.update(id, { fabricObject: obj })
       }
     }
+    
+    const handleDroppedPost = (e) => {
+      if (!isMovingPost) return;
 
-    this.canvas.on('object:moving', handleMovingPost);
+      isMovingPost = false;
+      var obj = e.target;
+
+      var children: fabric.Object[] = obj.getObjects()
+      var content: any = children.filter((obj) => obj.name == 'content').pop()
+
+      content.set({ stroke: "black" })
+      obj.dirty = true
+      obj.addWithUpdate();
+
+      var postClickPosition = obj.getLocalPointer(e);
+      var left = Math.round((e.pointer.x - postClickPosition.x));
+      var top = Math.round((e.pointer.y - postClickPosition.y));
+
+      obj.set({ left: left, top: top })
+      obj.setCoords()
+      this.canvas.renderAll()
+
+      var id = obj.postID
+      obj = this.fabricUtils.toJSON(obj)
+      this.postsService.update(id, { fabricObject: obj })
+    };
+
+    this.canvas.on('mouse:down', handleGrabPost);
+    this.canvas.on('mouse:up', handleDroppedPost);
 
     return () => {
-      this.canvas.off('object:moving', handleMovingPost);
+      this.canvas.off('mouse:down', handleGrabPost);
+      this.canvas.off('mouse:up', handleDroppedPost);
     }
   }
 

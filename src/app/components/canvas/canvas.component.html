@@ -2,6 +2,9 @@
   <div style="position: absolute;">
     <app-toolbar [user]="user">
       <span *ngIf="board && board.name">{{ board.name }}</span>
+      <button mat-icon-button (click)="openTaskDialog()" matTooltip="Read Task">
+        <mat-icon>task</mat-icon>
+      </button>
       <span style="flex: 1 1 auto"></span>
       <button mat-icon-button routerLink="{{'/project/'+projectID}}" matTooltip="Return to Project Dashboard">
         <mat-icon>keyboard_return</mat-icon>
@@ -14,9 +17,6 @@
       </button>
       <button mat-icon-button (click)="showListModal()" matTooltip="List Posts">
         <mat-icon>list_alt</mat-icon>
-      </button>
-      <button mat-icon-button (click)="openTaskDialog()" matTooltip="View Task">
-        <mat-icon>task</mat-icon>
       </button>
       <button *ngIf="user && user.role == Role.TEACHER" mat-icon-button (click)="openSettingsDialog()"
         matTooltip="Adjust Settings">

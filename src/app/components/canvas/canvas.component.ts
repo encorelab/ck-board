@@ -13,7 +13,6 @@ import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
-import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
@@ -31,6 +30,11 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
 import { POST_COLOR } from 'src/app/utils/constants';
+import { FileUploadService } from 'src/app/services/fileUpload.service';
+import { SnackbarService } from 'src/app/services/snackbar.service';
+import { TaskModalComponent } from '../task-modal/task-modal.component';
+import { Project } from 'src/app/models/project';
+import { ProjectService } from 'src/app/services/project.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -50,6 +54,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   user: User
   board: Board
+  project: Project
 
   Math: Math = Math;
   initialClientX: number = 0
@@ -60,22 +65,27 @@ export class CanvasComponent implements OnInit, OnDestroy {
   zoom: number = 1
 
   mode: Mode = Mode.EDIT
-  modeType = Mode 
+  modeType = Mode
   Role: typeof Role = Role
 
   showList: boolean = false
   showBuckets: boolean = false
 
   showAddPost: boolean = true
+  lockArrowKeys: boolean = false
+
 
   unsubListeners: Function[] = []
 
   constructor(
     public postService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, 
-    public commentService: CommentService, public likesService: LikesService,  
-    public dialog: MatDialog, protected fabricUtils: FabricUtils, 
-    private router: Router,  private activatedRoute: ActivatedRoute, 
+    public commentService: CommentService, public likesService: LikesService, 
+    public projectService: ProjectService, 
+    protected fabricUtils: FabricUtils, 
+    private router: Router,  private activatedRoute: ActivatedRoute,
+    public snackbarService: SnackbarService, public dialog: MatDialog,
+    public fileUploadService: FileUploadService
   ) {}
 
   ngOnInit() {
@@ -103,10 +113,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const unsubSwipePan = this.initPanSwipeListener();
     const unsubKeyPan = this.initKeyPanningListener();
     const unsubModal = this.hideListsWhenModalOpen();
+    const unsubArrowKeyLock = this.lockArrowKeysWhenModalOpen();
+    const unsubArrowKeyUnlock = this.unlockArrowKeysWhenModalClose();
     
     return [unsubLike, unsubExpand, unsubModal, unsubAdd, 
             unsubRemove, unsubMoving, unsubZoom, unsubPan, 
-            unsubSwipePan, unsubKeyPan];
+            unsubSwipePan, unsubKeyPan, unsubArrowKeyLock, unsubArrowKeyUnlock];
   }
 
   initGroupEventsListener() {
@@ -170,6 +182,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         }
       })
     })
+    this.projectService.get(this.projectID).then(project => this.project = project)
   }
 
   openWorkflowDialog() {
@@ -177,6 +190,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       width: '700px',
       data: {
         board: this.board,
+        project: this.project
       }
     });
   }
@@ -186,35 +200,30 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.mode = Mode.CHOOSING_LOCATION
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'
+    this.snackbarService.queueSnackbar('Click where you want the post to be created!');
     this.canvas.on('mouse:down', this.handleChoosePostLocation);
   }
 
-  parseUrl =(url:string)=>{
-    // /project/[projectid]/board/[boardid]
-    let urlArr = url.split('/')
-    this.boardID = urlArr[urlArr.length-1];
-    this.projectID = urlArr[urlArr.length-3];
-
-  }
-  
   handleChoosePostLocation = (opt) => {
     if (opt.target == null) {
       this.canvas.selection = false;
-      const dialogData: DialogInterface = {
-        addPost: this.addPost,
-        top: opt.absolutePointer ? opt.absolutePointer.y : 150,
-        left: opt.absolutePointer ? opt.absolutePointer.x : 150,
-      }
       this.dialog.open(AddPostComponent, {
         width: '500px',
-        data: dialogData
+        data: {
+          board: this.board,
+          user: this.user,
+          top: opt.absolutePointer ? opt.absolutePointer.y : 150,
+          left: opt.absolutePointer ? opt.absolutePointer.x : 150
+        }
       });
     }
+    this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
 
   disableChooseLocation() {
+    this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
@@ -232,7 +241,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
     this.canvas.add(fabricPost);
   }
-  
+
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
       width: '850px',
@@ -257,17 +266,28 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.boardService.update(this.boardID, { name: name })
   }
 
-  updateBackground = (url, settings?) => {
-    fabric.Image.fromURL(url, (img) => {
+  updateBackground = (fileString, settings?) => {
+    fabric.Image.fromURL(fileString, (img) => {
       if (img && settings) {
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
-      } else if (img) {
+      } else if (img && !settings) {
+        // TODO: delete old background image
         const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-        this.boardService.update(this.boardID, { bgImage: { url: url, imgSettings: imgSettings } })
+        this.fileUploadService.upload(fileString).then(firebaseUrl => {
+          if (this.board.bgImage?.url) {
+            this.fileUploadService.delete(this.board.bgImage?.url).then(_ => {
+              this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+            })
+          }
+          else {
+            this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+          }
+        })
+
       } else {
-        this.canvas.setBackgroundImage('', this.canvas.renderAll.bind(this.canvas))
-        this.boardService.update(this.boardID, { bgImage: null })
+        //this.canvas.setBackgroundImage('', this.canvas.renderAll.bind(this.canvas))
+        //this.boardService.update(this.boardID, { bgImage: null })
       }
     });
   }
@@ -309,22 +329,22 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   updateAuthorNames(postToUpdate: PostIDNamePair) {
     let obj = this.fabricUtils.getObjectFromId(postToUpdate.postID)
-    if(obj){
+    if (obj) {
       this.fabricUtils.updateAuthor(obj, postToUpdate.username)
       this.canvas.renderAll()
     }
   }
-  
-  setAuthorVisibilityOne(post){
-    if(!this.board){
+
+  setAuthorVisibilityOne(post) {
+    if (!this.board) {
       return
     }
     let isStudentAndVisible = this.user.role == Role.STUDENT && this.board.permissions.showAuthorNameStudent
-    let IsTeacherAndVisisble= this.user.role == Role.TEACHER && this.board.permissions.showAuthorNameTeacher
+    let IsTeacherAndVisisble = this.user.role == Role.TEACHER && this.board.permissions.showAuthorNameTeacher
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
       this.updateAuthorNames({ postID: post.postID, username: "Anonymous" })
     }
-    else{
+    else {
       this.userService.getOneById(post.userID).then((user: any) => {
         this.updateAuthorNames({ postID: post.postID, username: user.username })
       })
@@ -343,33 +363,47 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openTaskDialog() {
-    this.dialog.open(TaskModalComponent, {
-      width: '500px',
-      data: {
-        title: this.board.task.title,
-        message: this.board.task.message ?? ''
+    const title = this.board.task.title ? this.board.task.title : 'No task created!';
+    const message = this.board.task.message;
+
+    const openDialogCloseSnack = () => {
+      this.dialog.open(TaskModalComponent, {
+        width: '500px',
+        data: {
+          title: title,
+          message: message
+        }
+      });
+      this.snackbarService.dequeueSnackbar();
+    };
+
+    this.snackbarService.queueSnackbar(title, message, {
+      action: { name: 'View Full Task!', run: openDialogCloseSnack },
+      matSnackbarConfig: { 
+        verticalPosition: 'bottom',
+        horizontalPosition: 'center',
+        panelClass: ['wide-snackbar']
       }
     });
   }
 
   // send your post to the rest of the group
   sendObjectToGroup(pObject: any) {
-    console.log("Sendobject to group ran")
     const post: Post = {
       postID: pObject.postID,
       title: pObject.title,
       desc: pObject.desc,
-      tags: [],
+      tags: pObject.tags,
       userID: this.user.id,
       boardID: this.boardID,
-      fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
+      fabricObject: this.fabricUtils.toJSON(pObject),
       timestamp: new Date().getTime(),
     }
     this.postService.create(post);
   }
 
   // sync board using incoming/outgoing posts
-  syncBoard(obj:any, postID:any){
+  syncBoard(obj: any, postID: any) {
     var existing = this.fabricUtils.getObjectFromId(postID)
 
     // delete object from board
@@ -396,7 +430,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else {
       this.fabricUtils.renderPostFromJSON(obj)
     }
-    
+
   }
 
   handlePostEvent = (post) => {
@@ -411,7 +445,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
       this.canvas.renderAll()
-      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      var jsonPost = this.fabricUtils.toJSON(post)
       this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -421,7 +455,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
-      var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
+      var jsonPost = this.fabricUtils.toJSON(post);
       this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -570,7 +604,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.canvas.renderAll()
 
         var id = obj.postID
-        obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+        obj = this.fabricUtils.toJSON(obj)
         this.postService.update(id, { fabricObject: obj })
       }
     }
@@ -590,23 +624,23 @@ export class CanvasComponent implements OnInit, OnDestroy {
       // 1. delta Y is an integer or delta X is 0 
       // 2. ctrl key is triggered
       const trackpad_pinch = ((Number.isInteger(options.deltaY) || Math.abs(options.deltaX) < 1e-9))
-      && (options.ctrlKey);
+        && (options.ctrlKey);
 
       // Condition for mousewheel:
       // 1. delta Y has trailing non-zero decimal points
       // 2. delta X is zero 
       // 3. ctrl key is not triggered
-      const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9) 
-      && Math.abs(options.deltaX) < 1e-9 && !(options.ctrlKey);
+      const mousewheel = !(Math.abs(options.deltaY - Math.floor(options.deltaY)) < 1e-9)
+        && Math.abs(options.deltaX) < 1e-9 && !(options.ctrlKey);
 
-      if(trackpad_pinch || mousewheel) {  
+      if (trackpad_pinch || mousewheel) {
         var delta = options.deltaY;
 
-        if(mousewheel) {
+        if (mousewheel) {
           this.zoom *= 0.999 ** delta;
         }
         else {
-          this.zoom *= 0.95 ** delta;
+          this.zoom *= 0.99 ** delta;
         }
         if (this.zoom > 20) this.zoom = 20;
         if (this.zoom < 0.01) this.zoom = 0.01;
@@ -674,13 +708,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
       // 1. delta Y is an integer, 
       // 2. delta X is an integer,
       // 3. ctrl key is not triggered
-      const trackpad_twofinger = 
-      Number.isInteger(options.deltaY) && Number.isInteger(options.deltaX)
-      && !(options.ctrlKey);
+      const trackpad_twofinger =
+        Number.isInteger(options.deltaY) && Number.isInteger(options.deltaX)
+        && !(options.ctrlKey);
 
-      if(trackpad_twofinger) { 
+      if (trackpad_twofinger) {
         let vpt = this.canvas.viewportTransform;
-        if(!vpt) return;
+        if (!vpt) return;
         vpt[4] -= options.deltaX;
         vpt[5] -= options.deltaY;
         this.canvas.requestRenderAll();
@@ -695,23 +729,27 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
   
   initKeyPanningListener() {
+
     document.addEventListener('keydown', (event) => {
-      if(event.key == 'ArrowUp') {
-        event.preventDefault();
-        this.canvas.relativePan(new fabric.Point(0, 30 * this.canvas.getZoom()));
+      if(!this.lockArrowKeys){
+        if(event.key == 'ArrowUp') {
+          event.preventDefault();
+          this.canvas.relativePan(new fabric.Point(0, 30 * this.canvas.getZoom()));
+        }
+        else if(event.key == 'ArrowDown') {
+          event.preventDefault();
+          this.canvas.relativePan(new fabric.Point(0, -30 * this.canvas.getZoom()));
+        }
+        else if(event.key == 'ArrowLeft') {
+          event.preventDefault();
+          this.canvas.relativePan(new fabric.Point(30 * this.canvas.getZoom(), 0));
+        }
+        else if(event.key == 'ArrowRight') {
+          event.preventDefault();
+          this.canvas.relativePan(new fabric.Point(-30 * this.canvas.getZoom(), 0));
+        }
       }
-      else if(event.key == 'ArrowDown') {
-        event.preventDefault();
-        this.canvas.relativePan(new fabric.Point(0, -30 * this.canvas.getZoom()));
-      }
-      else if(event.key == 'ArrowLeft') {
-        event.preventDefault();
-        this.canvas.relativePan(new fabric.Point(30 * this.canvas.getZoom(), 0));
-      }
-      else if(event.key == 'ArrowRight') {
-        event.preventDefault();
-        this.canvas.relativePan(new fabric.Point(-30 * this.canvas.getZoom(), 0));
-      }
+      
     });
 
     return () => {
@@ -742,20 +780,20 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.initialClientX = this.finalClientX;
     this.initialClientY = this.finalClientY;
 
-    if(event === 'zoomIn') {
+    if (event === 'zoomIn') {
       this.zoom += 0.05;
     }
-    else if(event === 'zoomOut') {
+    else if (event === 'zoomOut') {
       this.zoom -= 0.05;
     }
-    else if(event === 'reset') {
+    else if (event === 'reset') {
       this.zoom = 1;
     }
 
-    if(this.zoom > 20) {
+    if (this.zoom > 20) {
       this.zoom = 20;
     }
-    else if(this.zoom < 0.01) {
+    else if (this.zoom < 0.01) {
       this.zoom = 0.01;
     }
 
@@ -773,7 +811,25 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   }
 
+  lockArrowKeysWhenModalOpen(){
+    const subscription = this.dialog.afterOpened.subscribe(()=>{
+      this.lockArrowKeys = true
+    })
+    return ()=>{
+      subscription.unsubscribe();
+    }
+  }
+  unlockArrowKeysWhenModalClose(){
+    const subscription = this.dialog.afterAllClosed.subscribe(()=>{
+      this.lockArrowKeys = false
+    })
+    return ()=>{
+      subscription.unsubscribe();
+    }
+  }
+
   ngOnDestroy(): void {
+    this.snackbarService.ngOnDestroy();
     for (let unsubFunc of this.unsubListeners) {
       unsubFunc();
     }

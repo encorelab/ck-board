@@ -1,10 +1,12 @@
 import { Component, Inject } from '@angular/core';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BoardService } from 'src/app/services/board.service';
-import { MatChipInputEvent } from '@angular/material/chips';
 import { Permissions } from 'src/app/models/permissions';
 import { UserService } from 'src/app/services/user.service';
+import { FileUploadService } from 'src/app/services/fileUpload.service';
+import { Tag } from 'src/app/models/post';
+import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
+
 
 @Component({
   selector: 'app-configuration-modal',
@@ -12,7 +14,7 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./configuration-modal.component.scss']
 })
 export class ConfigurationModalComponent {
-  readonly separatorKeysCodes = [ENTER, COMMA] as const;
+  readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
   boardName: string
   isPublic: boolean = false
@@ -24,8 +26,9 @@ export class ConfigurationModalComponent {
 
   permissions: Permissions
 
-  tags: string[]
+  tags: Tag[]
   newTagText: string = ''
+  newTagColor: any = TAG_DEFAULT_COLOR;
 
   members: string[] = []
 
@@ -33,6 +36,7 @@ export class ConfigurationModalComponent {
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
     public boardService: BoardService,
     public userService: UserService,
+    public fileUploadService: FileUploadService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.boardName = data.board.name
       this.isPublic = data.board.public
@@ -51,7 +55,7 @@ export class ConfigurationModalComponent {
     }
 
   addTag() {
-    this.tags.push(this.newTagText)
+    this.tags.push({name: this.newTagText, color: this.newTagColor})
     this.newTagText = ''
   }
 
@@ -59,14 +63,11 @@ export class ConfigurationModalComponent {
     this.tags = this.tags.filter(tag => tag != tagRemove)
   }
 
-  handleImageUpload(e) {
-    var file = e.target.files[0];
-    var reader = new FileReader();
-    reader.onload = (f) => {
-        this.currentBgImage = { url: f.target?.result };
-        this.data.updateBackground(this.currentBgImage.url)
-    };
-    reader.readAsDataURL(file);
+  compressFile(){
+    this.fileUploadService.compressFile().then((compressedImage) =>{
+      this.data.updateBackground(compressedImage,null);
+    })
+  
   }
 
   removeImage() {
@@ -80,6 +81,10 @@ export class ConfigurationModalComponent {
     this.data.updatePermissions(this.permissions)
     this.data.updateTags(this.tags)
     this.dialogRef.close();
+  }
+
+  resetColor() {
+    this.newTagColor = TAG_DEFAULT_COLOR;
   }
 
   onNoClick(): void {

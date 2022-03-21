@@ -106,7 +106,6 @@ export class ProjectBoardGuard implements CanActivate {
           resolve(true)
           return true
         } else {
-          console.log('here')
           this.ngZone.run(() => {
             this.router.navigate(['/error'], { state: { code: 403, message: 'You do not have access to this board' }})
           });

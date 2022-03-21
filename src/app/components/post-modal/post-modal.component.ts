@@ -10,7 +10,7 @@ import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Post from 'src/app/models/post';
+import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { Role } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
@@ -23,8 +23,8 @@ const linkifyStr = require('linkifyjs/lib/linkify-string');
   styleUrls: ['./post-modal.component.scss']
 })
 export class PostModalComponent {
-  tags: string[] = []
-  tagOptions: string[] = []
+  tags: Tag[] = []
+  tagOptions: Tag[] = []
 
   user: User
   post: Post
@@ -70,7 +70,8 @@ export class PostModalComponent {
           this.desc = p.desc
           this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
-          this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
+          this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
+          
           this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == Role.TEACHER
         })
       })
@@ -118,7 +119,7 @@ export class PostModalComponent {
     }
 
     let ids = bucket.posts.map(post => post.postID)
-    this.bucketService.update(bucketID, { posts: ids })
+    this.bucketService.add(bucketID, ids)
   }
 
   toggleEdit() {
@@ -140,7 +141,7 @@ export class PostModalComponent {
       obj.set({ title: this.title, desc: this.desc })
       this.fabricUtils._canvas.renderAll()
 
-      obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+      obj = this.fabricUtils.toJSON(obj)
     }
     // bucket only so fabricObject is {}
     else{
@@ -153,9 +154,8 @@ export class PostModalComponent {
 
   onDelete() {
     var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-    // check if post is on board
-    if (obj){
-      if (!obj || obj.type != 'group') return;
+    
+    if (obj && obj.type == 'group') {
       this.fabricUtils._canvas.remove(obj);
       this.fabricUtils._canvas.renderAll();
     }

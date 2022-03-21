@@ -13,6 +13,7 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { Role } from 'src/app/utils/constants';
+import { POST_COLOR } from 'src/app/utils/constants';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -99,7 +100,7 @@ export class PostModalComponent {
     this.canStudentComment = (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher 
     this.canStudentTag = (isStudent && data.board.permissions.allowStudentTagging) || isTeacher 
     this.showAuthorName = (isStudent && data.board.permissions.showAuthorNameStudent) || (isTeacher && data.board.permissions.showAuthorNameTeacher)
-    this.postColor = postService.getPostColor();
+    this.postColor = POST_COLOR;
   }
   
   close(): void {

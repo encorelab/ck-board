@@ -11,7 +11,6 @@ interface Options {
   providedIn: 'root'
 })
 export class PostService {
-  private postColor: string = '#FFE663';
   private postsPath: string = 'posts';
   postsCollection: AngularFirestoreCollection<Post>;
 
@@ -73,10 +72,6 @@ export class PostService {
         let newLastItem = data.docs[data.docs.length - 1];
         return { newLastItem, data };
       });
-  }
-
-  getPostColor(): string {
-    return this.postColor;
   }
 
   create(post: any): any {

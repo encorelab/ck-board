@@ -8,3 +8,5 @@ export enum Role {
     STUDENT = "student",
     TEACHER = "teacher"
 }
+
+export const POST_COLOR: string = '#FFE663';

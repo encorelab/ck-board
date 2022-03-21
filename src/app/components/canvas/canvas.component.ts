@@ -30,6 +30,7 @@ import { Permissions } from 'src/app/models/permissions';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
+import { POST_COLOR } from 'src/app/utils/constants';
 
 interface PostIDNamePair {
   postID: string,
@@ -81,7 +82,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.user = this.authService.userData;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas;
-    this.postColor = this.postService.getPostColor();
+    this.postColor = POST_COLOR;
 
     this.configureBoard();
     

@@ -596,8 +596,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       if (e.target) {
         var obj = e.target;
 
-        var left = (Math.round((e.pointer.x - obj.getScaledWidth() / 2)));
-        var top = (Math.round((e.pointer.y - obj.getScaledHeight() / 2)));
+        // Coordinates at which the post was clicked
+        var postClickPosition = obj.getLocalPointer(e);
+
+        var left = Math.round((e.pointer.x - postClickPosition.x));
+        var top = Math.round((e.pointer.y - postClickPosition.y));
 
         obj.set({ left: left, top: top })
         obj.setCoords()

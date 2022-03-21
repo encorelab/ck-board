@@ -1,4 +1,4 @@
-<mat-card class="bucket-card" (click)="openPostDialog()" *ngIf="exists">
+<mat-card class="bucket-card" (click)="openPostDialog()" *ngIf="exists" [ngStyle]="{'background-color': postColor}">
   <div class="titleRow">
     <mat-card-title style="display:inline-block;">{{ post.title }}</mat-card-title>
     <button 

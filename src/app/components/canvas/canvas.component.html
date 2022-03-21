@@ -27,29 +27,29 @@
         <canvas id="canvas"></canvas>
         <div class="toolSection">
             <div class="toolField">
-                <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Add Post" (click)="handleCreatePost()">
+                <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="accent" matTooltip="Add Post" matTooltipPosition="before" (click)="handleCreatePost()">
                     <mat-icon>add</mat-icon>
                 </button>
-                <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="primary" matTooltip="Cancel Post" (click)="disableChooseLocation()">
+                <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="accent" matTooltip="Cancel Post" matTooltipPosition="before" (click)="disableChooseLocation()">
                     <mat-icon>close</mat-icon>
                 </button>
-                <button *ngIf="mode == modeType.EDIT" mat-fab color="primary" matTooltip="Move Posts - Mode" (click)="enablePanMode()">
+                <button *ngIf="mode == modeType.EDIT" mat-fab color="accent" matTooltip="Mode: Move Posts" matTooltipPosition="before" (click)="enablePanMode()">
                     <mat-icon>open_with</mat-icon>
                 </button>
-                <button *ngIf="mode == modeType.PAN" mat-fab color="primary" matTooltip="Pan Canvas - Mode"  (click)="enableEditMode()">
+                <button *ngIf="mode == modeType.PAN" mat-fab color="accent" matTooltip="Mode: Pan Canvas" matTooltipPosition="before"  (click)="enableEditMode()">
                     <mat-icon style="padding-right: 3px;">pan_tool</mat-icon>
                 </button>
             </div>
           </div>
-          <div class = "zoomField">
-            <button (click) = "handleZoom('zoomOut')" class = "zoomButton" mat-button color = "basic">
+          <div class="zoomField">
+            <button mat-icon-button (click)="handleZoom('zoomOut')" class="zoomButton" aria-label="Zoom out">
               <mat-icon>remove</mat-icon>
             </button>
-            <p> {{ Math.round(this.zoom * 100) }}%</p>
-            <button (click) = "handleZoom('zoomIn')" class = "zoomButton" mat-button color = "basic">
+            <span aria-label="Current zoom level">{{ Math.round(this.zoom * 100) }}%</span>
+            <button mat-icon-button (click)="handleZoom('zoomIn')" class="zoomButton" aria-label="Zoom in">
               <mat-icon>add</mat-icon>
             </button>
-            <button (click) = "handleZoom('reset')" class = "zoomButton" mat-button color = "basic">
+            <button mat-icon-button (click)="handleZoom('reset')" class="zoomButton" aria-label="Reset zoom">
               <mat-icon>refresh</mat-icon>
             </button>
           </div>

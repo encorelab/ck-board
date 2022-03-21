@@ -11,6 +11,8 @@ export enum Role {
     TEACHER = "teacher"
 }
 
+export const POST_COLOR: string = '#FFE663';
+
 export const DEFAULT_TAGS: Tag[] = [
     {name: 'Idea', color: '#5bc2cb'},
     {name: 'Question', color: '#e6a129'},

@@ -13,6 +13,7 @@ import { LikesService } from 'src/app/services/likes.service';
 import { PostService } from 'src/app/services/post.service';
 import { UserService } from 'src/app/services/user.service';
 import { Role } from 'src/app/utils/constants';
+import { POST_COLOR } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-html-post',
@@ -31,6 +32,7 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
 
   numComments: number = 0
   numLikes: number = 0
+  postColor: string;
 
   isLiked: Like | null
 
@@ -46,6 +48,7 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.user = this.authService.userData;
+    this.postColor = POST_COLOR;
     this.configurePost()
   }
 

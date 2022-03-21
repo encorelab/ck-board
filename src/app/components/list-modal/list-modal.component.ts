@@ -33,7 +33,6 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetchInitialPosts()
-    this.updateFilterOptions()
     this.filterPosts()
   }
 
@@ -64,26 +63,23 @@ export class ListModalComponent implements OnInit, OnDestroy {
       this.fetchMorePosts()
     }
   }
-  updateFilterOptions(){
-    this.filterOptions = this.board.tags.filter(tag => !this.activeFilters.includes(tag))
-    this.filterPosts()
-
-  }
 
   addFilter(filter:Tag){
     if(!this.activeFilters.includes(filter)){
       this.activeFilters.push(filter);
-      this.updateFilterOptions();
+      this.filterPosts();
     }
   }
   removeFilter(filter:Tag){
     if(this.activeFilters.length >0){
       this.activeFilters = this.activeFilters.filter(tag=> tag!=filter);
-      this.updateFilterOptions();
+      this.filterPosts();
     }
   }
 
   filterPosts(){
+    // update filter options
+    this.filterOptions = this.board.tags.filter(tag => !this.activeFilters.includes(tag))
     if (this.activeFilters.length >0){
       // for each post on the board
       // check if the post has every tag in active filters

@@ -66,6 +66,7 @@ export class PostService {
   }
 
   create(post: any): any {
+    console.log(post);
     return this.postsCollection.doc(post.postID).set(post)
   }
 
@@ -90,6 +91,7 @@ export class PostService {
   }
 
   delete(postID: string) {
+    console.log(this.postsCollection.ref.doc(postID))
     return this.postsCollection.ref.doc(postID).delete().catch(e => console.log(e))
   }
 }

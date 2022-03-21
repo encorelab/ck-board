@@ -10,7 +10,8 @@ export class FabricUtils {
     serializableProperties = [
         'name', 'postID', 'title', 'desc', 
         'author', 'authorID', 'hasControls', 
-        'subTargetCheck', 'removed'
+        'subTargetCheck', 'removed', 'moverID',
+        'lockMovement'
     ]
 
     canvasConfig = {
@@ -34,7 +35,7 @@ export class FabricUtils {
         return JSON.stringify(fabricObj.toJSON(this.serializableProperties));
     }
     
-    renderPostFromJSON(post:any): void {
+    fromJSON(post: any): void {
         fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => {
             var origRenderOnAddRemove = this._canvas.renderOnAddRemove;
             this._canvas.renderOnAddRemove = false;
@@ -60,6 +61,28 @@ export class FabricUtils {
         let fabricObj = this.getObjectFromId(post.postID);
         fabricObj = this.setField(fabricObj, 'postID', newID);
         return this.toJSON(fabricObj);
+    }
+
+    getChildFromGroup(group: fabric.Group | any, child: string) {
+        if (group instanceof fabric.Group) {
+            const childObj = group.getObjects().find((obj) => obj.name == child);
+            return childObj;
+        } else {
+            const childObj = group.objects.find((obj) => obj.name == child);
+            return childObj;
+        }
+    }
+
+    setBorderColor(existing: fabric.Group, color: string) {
+        const content = this.getChildFromGroup(existing, 'content');
+        
+        if (content) {
+            content.set({ stroke: color, dirty: true });
+        }
+
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
     }
 
     updateAuthor(obj: any, author: string) {
@@ -239,5 +262,13 @@ export class FabricUtils {
           scaleX: scaleX,
           scaleY: scaleY
         }
+    }
+
+    animateToPosition(object: fabric.Object, left: number, top: number, callback: Function) {
+        object.animate({left, top}, {
+            onChange: this._canvas.renderAll.bind(this._canvas),
+            duration: 1000,
+            onComplete: callback
+        })
     }
 }

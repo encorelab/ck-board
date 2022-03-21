@@ -1,4 +1,6 @@
 import { Permissions } from "./permissions";
+import { Tag } from "./post";
+
 export class Board {
     boardID: string;
     teacherID: string;
@@ -14,5 +16,5 @@ export class Board {
     };
     permissions: Permissions; 
     members: [];
-    tags: [];
+    tags: Tag[];
 }

@@ -65,10 +65,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
     }
   }
   updateFilterOptions(){
-    // very inefficient
-    // maybe use observables/subscriptions instead of calling update functions
-    this.filterOptions = this.board.tags
-                              .filter(tag => !this.activeFilters.includes(tag))
+    this.filterOptions = this.board.tags.filter(tag => !this.activeFilters.includes(tag))
     this.filterPosts()
 
   }
@@ -88,7 +85,9 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   filterPosts(){
     if (this.activeFilters.length >0){
-      this.filteredPosts = this.posts.filter(post => this.activeFilters.every(tag=>post.tags.map(tag=>tag.name).includes(tag.name)))
+      // for each post on the board
+      // check if the post has every tag in active filters
+      this.filteredPosts = this.posts.filter(post => this.activeFilters.every(filter=>post.tags.map(postTag=>postTag.name).includes(filter.name)))
     }
     else{
       this.filteredPosts = this.posts 

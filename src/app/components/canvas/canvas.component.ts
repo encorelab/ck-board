@@ -556,8 +556,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
         var obj: any = e.target;
 
         if (!obj.postID) {
-          obj.set('postID', Date.now() + '-' + this.user.id);
-          fabric.util.object.extend(obj, { postID: obj.postID })
+          const id = Date.now() + '-' + this.user.id;
+          obj = this.fabricUtils.setField(obj, 'postID', id);
           this.sendObjectToGroup(obj)
         }
       }

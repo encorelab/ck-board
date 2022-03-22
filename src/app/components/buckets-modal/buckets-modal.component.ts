@@ -137,11 +137,11 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
           top: this.Yoffset,
           color: POST_COLOR
         });
-        fabric.util.object.extend(fabricPost, { postID: postID })
-        let updatedPost = {
-          fabricObject: this.fabricUtils.toJSON(fabricPost),
-        }
-        this.postsService.update(postID,updatedPost)
+
+        fabricPost = this.fabricUtils.setField(fabricPost, 'postID', postID);
+        const updatedPost = this.fabricUtils.toJSON(fabricPost);
+        
+        this.postsService.update(postID, {fabricObject: updatedPost});
         this.Yoffset+=50
       })
     })

@@ -74,6 +74,12 @@ export class CreateWorkflowModalComponent implements OnInit {
   ngOnInit(): void {
     this.board = this.data.board
     this.tags = this.data.board.tags
+    this.loadBucketsBoards();
+    this.loadWorkflows()
+    this.tagsFormControl.valueChanges.subscribe((value) => this.selectedTags = value)
+  }
+
+  async loadBucketsBoards() {
     this.bucketService.getAllByBoard(this.data.board.boardID).then((buckets) => {
       this.sourceOptions = this.sourceOptions.concat(buckets);
       this.destOptions = this.destOptions.concat(buckets);
@@ -86,8 +92,6 @@ export class CreateWorkflowModalComponent implements OnInit {
           this.destOptions.push(board);
       })
     })
-    this.loadWorkflows()
-    this.tagsFormControl.valueChanges.subscribe((value) => this.selectedTags = value)
   }
 
   async loadWorkflows() {
@@ -108,8 +112,11 @@ export class CreateWorkflowModalComponent implements OnInit {
       timestamp: new Date().getTime()
     }
     
-    this.bucketService.create(bucket)
-    this.dialogRef.close();
+    this.bucketService.create(bucket).then(() => {
+      this.loadBucketsBoards();
+      this.openSnackBar('Bucket created succesfully!');
+      this.bucketNameFormControl.reset();
+    });
   }
 
   createWorkflow() {

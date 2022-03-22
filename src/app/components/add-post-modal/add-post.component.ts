@@ -1,13 +1,13 @@
 import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogInterface } from 'src/app/interfaces/dialog.interface';
 import { Board } from 'src/app/models/board';
 import { Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
+import { POST_COLOR } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-dialog',
@@ -21,6 +21,7 @@ export class AddPostComponent {
   title: string = ''
   message: string = ''
 
+  postColor: string;
   tags: Tag[] = []
   tagOptions: Tag[] = []
   
@@ -35,6 +36,7 @@ export class AddPostComponent {
       this.user = data.user
       this.board = data.board
       this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
+      this.postColor = POST_COLOR;
     }
 
   addTag(event, tagOption): void {
@@ -61,7 +63,8 @@ export class AddPostComponent {
       tags: this.tags,
       lock: !this.board.permissions.allowStudentMoveAny,
       left: this.data.left,
-      top: this.data.top
+      top: this.data.top,
+      color: this.postColor
     });
     this.fabricUtils._canvas.add(fabricPost);
   }

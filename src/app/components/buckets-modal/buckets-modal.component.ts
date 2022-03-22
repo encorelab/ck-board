@@ -122,7 +122,6 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   }
 
   movePostToBoard(postID:string){
-
     this.postsService.get(postID).then(data =>{
       data.forEach(item =>{
         let post = item.data()
@@ -131,6 +130,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
           author: this.user.username,
           authorID: this.user.id,
           desc: post.desc,
+          tags: [],
           lock: !this.board.permissions.allowStudentMoveAny,
           left: this.Xoffset,
           top: this.Yoffset,

@@ -124,7 +124,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initGroupEventsListener() {
     const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
-    const unsubPosts = this.postService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent, this.handlePostEvent);
+    const unsubPosts = this.postService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
     const unsubLikes = this.likesService.observable(this.boardID, this.handleLikeEvent, true);
     const unsubComms = this.commentService.observable(this.boardID, this.handleCommentEvent, true);
 
@@ -415,8 +415,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       } else if (event == CanvasEvent.COMMENT) {
         existing = this.fabricUtils.updateCommentCount(existing, obj)
         this.canvas.requestRenderAll()
-      } else if (event == CanvasEvent.REMOVE_POST) {
-        this.canvas.remove(existing);
       } else if (event == CanvasEvent.START_MOVE && !movedBySelf) {
         existing = this.fabricUtils.setBorderColor(existing, 'red');
         existing = this.fabricUtils.setPostMovement(existing, true);
@@ -582,7 +580,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
         this.postService.delete(obj.postID)
         
-        obj = this.fabricUtils.setField(obj, 'canvasEvent', CanvasEvent.REMOVE_POST);
+        obj = this.fabricUtils.setField(obj, 'removed', true);
         this.sendObjectToGroup(obj);
       }
     }

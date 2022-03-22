@@ -12,7 +12,7 @@ export class FabricUtils {
         'name', 'postID', 'title', 'desc', 
         'author', 'authorID', 'hasControls', 
         'subTargetCheck', 'removed', 'moverID',
-        'lockMovement', 'canvasEvent'
+        'lockMovement', 'canvasEvent', 'tags'
     ]
 
     canvasConfig = {

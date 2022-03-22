@@ -89,8 +89,6 @@ export class ProjectDashboardComponent implements OnInit {
         this.router.navigate(['project/' +selectedProjectID+"/board/"+ board.boardID])
       })
     }
-    
-    
   }
 
   updateProjectName = (name) =>{

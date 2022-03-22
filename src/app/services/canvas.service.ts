@@ -3,6 +3,7 @@ import { AngularFirestore, AngularFirestoreCollection } from "@angular/fire/fire
 import { DialogInterface } from "../interfaces/dialog.interface";
 import Post from "../models/post";
 import { FabricUtils } from "../utils/FabricUtils";
+import { CommentService } from "./comment.service";
 import { PostService } from "./post.service";
 import { TracingService } from "./tracing.service";
 
@@ -16,6 +17,7 @@ export class CanvasService {
     constructor(private db: AngularFirestore, 
                 public tracingService: TracingService,
                 public postsService: PostService,
+                public commentService: CommentService,
                 public fabricUtils: FabricUtils) 
     {
         this.postsCollection = db.collection<Post>(this.postsPath)
@@ -53,6 +55,18 @@ export class CanvasService {
   
         this.postsService.update(post.postID, { fabricObject: obj, title: title, desc: desc }).then(() => {
             this.tracingService.traceModifyPostServer(post.postID, title, desc);
+        });
+    }
+
+    createCommentClient(comment: any, comments: any) {
+        this.tracingService.traceCreateCommentClient(comment.commentID, comment.comment).then(() => {
+            comments.push(comment);
+        });
+    }
+
+    createCommentServer(comment: any) {
+        this.commentService.add(comment).then(() => {
+            this.tracingService.traceCreateCommentServer(comment.commentID, comment.comment);
         });
     }
 }

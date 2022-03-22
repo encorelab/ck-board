@@ -174,7 +174,7 @@ export class PostModalComponent {
     this.postsService.update(this.post.postID, { tags: this.tags })
   }
 
-  addComment() {
+  async addComment() {
     const comment: Comment = {
       comment: this.newComment,
       commentID: Date.now() + '-' + this.data.user.id,
@@ -183,10 +183,10 @@ export class PostModalComponent {
       boardID: this.data.board.boardID,
       author: this.data.user.username
     }
-    this.commentService.add(comment).then(() => {
-      this.newComment = ''
-      this.comments.push(comment)
-    }).catch((e) => console.log(e))
+
+    this.canvasService.createCommentClient(comment, this.comments);
+    await this.canvasService.createCommentServer(comment);
+    this.newComment = '';
   }
 
   handleLikeClick() {

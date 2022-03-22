@@ -5,6 +5,7 @@ import { DialogInterface } from 'src/app/interfaces/dialog.interface';
 import { Board } from 'src/app/models/board';
 import { Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
+import { POST_COLOR } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
@@ -61,7 +62,8 @@ export class AddPostComponent {
       tags: this.tags,
       lock: !this.board.permissions.allowStudentMoveAny,
       left: this.data.left,
-      top: this.data.top
+      top: this.data.top,
+      color: POST_COLOR,
     });
     this.fabricUtils._canvas.add(fabricPost);
   }

@@ -10,6 +10,7 @@ import { DialogInterface } from 'src/app/interfaces/dialog.interface';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
+import { POST_COLOR } from 'src/app/utils/constants';
 
 
 @Component({
@@ -131,8 +132,9 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
           authorID: this.user.id,
           desc: post.desc,
           lock: !this.board.permissions.allowStudentMoveAny,
-          left: this.Xoffset ,
-          top: this.Yoffset
+          left: this.Xoffset,
+          top: this.Yoffset,
+          color: POST_COLOR
         });
         fabric.util.object.extend(fabricPost, { postID: postID })
         let updatedPost = {

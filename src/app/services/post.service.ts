@@ -21,55 +21,65 @@ export class PostService {
   }
 
   observable(boardID: string, handleAdd: Function, handleModification: Function, handleDelete: Function) {
-    return this.postsCollection.ref.where("boardID", "==", boardID).onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        const doc = change.doc.data();
-        if (change.type === "added") {
-          handleAdd(doc);
-        } else if (change.type === "modified") {
-          handleModification(doc);
-        } else if (change.type === "removed") {
-          handleDelete(doc);
-        }
-      })
-    })
+    return this.postsCollection.ref
+      .where("boardID", "==", boardID)
+      .onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          const doc = change.doc.data();
+          if (change.type === "added") {
+            handleAdd(doc);
+          } else if (change.type === "modified") {
+            handleModification(doc);
+          } else if (change.type === "removed") {
+            handleDelete(doc);
+          }
+        })
+      });
   }
 
   observeOne(postID: string, handleUpdate: Function, handleDelete: Function) {
-    return this.postsCollection.ref.where("postID", "==", postID).onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        let post = change.doc.data()
-        if (change.type == "modified") {
-          handleUpdate(post)
-        } else if (change.type == "removed") {
-          handleDelete(post);
-        }
-      })
-    })
+    return this.postsCollection.ref
+      .where('postID', '==', postID)
+      .onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          let post = change.doc.data();
+          if (change.type == 'modified') {
+            handleUpdate(post);
+          } else if (change.type == 'removed') {
+            handleDelete(post);
+          }
+        });
+      });
   }
 
   get(postID: string) {
-    return this.postsCollection.ref.where("postID", "==", postID).get().then((snapshot) => snapshot)
+    return this.postsCollection.ref
+      .where('postID', '==', postID)
+      .get()
+      .then((snapshot) => snapshot);
   }
 
   getAll(boardID: string) {
-    return this.postsCollection.ref.where("boardID", "==", boardID).get().then((snapshot) => snapshot)
+    return this.postsCollection.ref
+      .where('boardID', '==', boardID)
+      .get()
+      .then((snapshot) => snapshot);
   }
 
   getPaginated(boardID: string, opts: Options) {
-    return this.postsCollection.ref.where("boardID", "==", boardID)
-      .orderBy("timestamp")
+    return this.postsCollection.ref
+      .where('boardID', '==', boardID)
+      .orderBy('timestamp')
       .startAfter(opts.lastItem)
       .limit(opts.pageSize)
       .get()
-      .then(data => {
-        let newLastItem = data.docs[data.docs.length - 1]
-        return { newLastItem, data }
-      })
+      .then((data) => {
+        let newLastItem = data.docs[data.docs.length - 1];
+        return { newLastItem, data };
+      });
   }
 
   create(post: any): any {
-    console.log(post);
     return this.postsCollection.doc(post.postID).set(post)
   }
 
@@ -90,7 +100,7 @@ export class PostService {
   }
 
   update(postID: string, value: any) {
-    return this.postsCollection.ref.doc(postID).update(value)
+    return this.postsCollection.ref.doc(postID).update(value);
   }
 
   delete(postID: string) {

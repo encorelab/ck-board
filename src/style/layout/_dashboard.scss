@@ -1,3 +1,4 @@
+@use '@angular/material' as mat;
 @use '../../style/base' as *;
 
 app-toolbar {
@@ -15,7 +16,7 @@ app-toolbar {
   right: 0;
   bottom: 0;
   overflow: auto;
-  padding: 20px;
+  padding: 1.5em;
 
   @media (min-width: breakpoint('sm', 'min')) {
     top: 64px;
@@ -23,23 +24,30 @@ app-toolbar {
 }
 
 .heading {
-    margin-left: 8px;
-    margin-right: 8px;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
 }
 
 .title {
-    font-size: 1rem;
-    margin-bottom: 16px;
-    line-height: 1.4;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25em;
 }
 
 .cards {
-    display: grid;
-    grid-gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
 
 .card {
-    min-height: 100px;
-    cursor: pointer;
+  min-height: 100px;
+  cursor: pointer;
+
+  &:hover {
+    @include mat.elevation(5);
+  }
 }

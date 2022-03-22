@@ -13,6 +13,7 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { Role } from 'src/app/utils/constants';
+import { POST_COLOR } from 'src/app/utils/constants';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -34,11 +35,12 @@ export class PostModalComponent {
   desc: string
   editingDesc: string
   isEditing: boolean = false
-  showEditDelete: boolean = false
   canEditDelete: boolean
   canStudentComment:boolean
   canStudentTag:boolean
+  postColor: string;
   showComments: boolean = false
+  showEditDelete: boolean = false
   showAuthorName:boolean
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
@@ -54,12 +56,12 @@ export class PostModalComponent {
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
     public commentService: CommentService, public likesService: LikesService,
-    public postsService: PostService, public bucketService: BucketService,
+    public postService: PostService, public bucketService: BucketService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
-      this.postsService.get(data.post.postID).then((item) => {
+      this.postService.get(data.post.postID).then((item) => {
         item.forEach((post) => {
           var p = post.data()
           this.post = p
@@ -99,6 +101,7 @@ export class PostModalComponent {
     this.canStudentComment = (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher 
     this.canStudentTag = (isStudent && data.board.permissions.allowStudentTagging) || isTeacher 
     this.showAuthorName = (isStudent && data.board.permissions.showAuthorNameStudent) || (isTeacher && data.board.permissions.showAuthorNameTeacher)
+    this.postColor = POST_COLOR;
   }
   
   close(): void {
@@ -145,7 +148,7 @@ export class PostModalComponent {
       obj ="{}"
     }
 
-    this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
+    this.postService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
       .then(() => this.toggleEdit())
   }
 
@@ -157,14 +160,14 @@ export class PostModalComponent {
       this.fabricUtils._canvas.renderAll();
     }
 
-    this.postsService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
+    this.postService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
   }
 
   addTag(event, tagOption): void {
     event.stopPropagation()
     this.tags.push(tagOption);
     this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
-    this.postsService.update(this.post.postID, { tags: this.tags })
+    this.postService.update(this.post.postID, { tags: this.tags })
   }
 
   removeTag(tag) {
@@ -176,7 +179,7 @@ export class PostModalComponent {
     }
 
     this.tagOptions.push(tag);
-    this.postsService.update(this.post.postID, { tags: this.tags })
+    this.postService.update(this.post.postID, { tags: this.tags })
   }
 
   addComment() {

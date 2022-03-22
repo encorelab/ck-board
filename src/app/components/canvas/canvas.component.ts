@@ -228,20 +228,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.enableEditMode()
   }
 
-  addPost = (title: string, desc = '', left: number, top: number) => {
-    var fabricPost = new FabricPostComponent({
-      title: title,
-      author: this.user.username,
-      authorID: this.user.id,
-      desc: desc,
-      lock: !this.board.permissions.allowStudentMoveAny,
-      left: left,
-      top: top,
-      color: this.postColor
-    });
-    this.canvas.add(fabricPost);
-  }
-
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
       width: '850px',

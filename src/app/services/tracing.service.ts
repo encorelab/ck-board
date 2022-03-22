@@ -46,6 +46,7 @@ export class TracingService {
 
     private initializeTrace(): void {
         this.trace = {
+            traceId: "",
             projectId : "",
             projectName: "",
             boardId: "",
@@ -57,8 +58,11 @@ export class TracingService {
             postId: "",
             postTitle: "",
             postMessage: "", 
+            postTitleOrMessageModifiedCounter: 0,
             clientTimestamp: -1,
-            serverTimestamp: -1
+            serverTimestamp: -1,
+            commentModifiedTextCounter: 0,
+            postModifiedUpvote: 0
         }
     }
     
@@ -81,6 +85,7 @@ export class TracingService {
         const username = this.authService.userData.username;
         const userId = this.authService.userData.id;
 
+        this.trace["traceId"] = Date.now().toString() + "-" + userId;
         this.trace["agentUserId"] = userId;
         this.trace["agentUserName"] = username;
         this.trace["projectId"] = this.projectId;
@@ -89,43 +94,101 @@ export class TracingService {
         this.trace["boardName"] = board.name;
     }
 
-    private createTrace(): void {
-        this.traceCollection.doc(this.projectId).set(this.trace);
+    private async createTrace(): Promise<void> {
+        await this.traceCollection.doc(this.trace.traceId).set(this.trace);
         this.initializeTrace();
     }
 
     private async tracePost(postId: string, title: string, message: string): Promise<void> {
         await this.traceBasic();
         this.trace["postId"] = postId;
-        this.trace["title"] = title;
-        this.trace["message"] = message;
+        this.trace["postTitle"] = title;
+        this.trace["postMessage"] = message;
     } 
 
     private async traceComment(commentId: string, text: string): Promise<void> {
         await this.traceBasic();
         this.trace["commentId"] = commentId;
-        this.trace["text"] = text;
+        this.trace["commentText"] = text;
     }
     
-    public async tracePostClient(postId: string, title: string, message: string): Promise<void> {
-        await this.tracePost(postId, title, message);
+    // Parameters are kept so that it doesn't break other codes should there any logic changes to this method
+    public async traceCreatePostClient(postId: string, title: string, message: string): Promise<void> {
         this.trace["clientTimestamp"] = Date.now();
-        this.createTrace();
     }
-    public async tracePostServer(postId: string, title: string, message: string): Promise<void> {
+    public async traceCreatePostServer(postId: string, title: string, message: string): Promise<void> {
         await this.tracePost(postId, title, message);
         this.trace["serverTimestamp"] = Date.now();
         this.createTrace();
     }
 
-    public async traceCommentClient(commentId: string, text: string): Promise<void> {
-        await this.traceComment(commentId, text);
+    private async getTraceByPostId(postId: string) {
+        const trace = await this.traceCollection.ref.where("postId", "==", postId).get();
+        let traceData;
+        trace.forEach(data => traceData = data);
+        if(traceData == undefined) return null;
+        return traceData.data();
+    }
+    public async traceModifyPostClient(postId: string, title: string, message: string): Promise<void> {
         this.trace["clientTimestamp"] = Date.now();
+    }
+    public async traceModifyPostServer(postId: string, title: string, message: string): Promise<void> {
+        await this.tracePost(postId, title, message);
+        this.trace["serverTimestamp"] = Date.now();
+
+        const trace = await this.getTraceByPostId(postId);
+        if(trace == null) {
+            this.createTrace();
+            return;
+        }
+
+        const counter = trace["postTitleOrMessageModifiedCounter"];
+        this.trace["postTitleOrMessageModifiedCounter"] = counter + 1;
         this.createTrace();
     }
-    public async traceCommentServer(commentId: string, text: string): Promise<void> {
+
+    public async traceCreateCommentClient(commentId: string, text: string): Promise<void> {
+        this.trace["clientTimestamp"] = Date.now();
+    }
+    public async traceCreateCommentServer(commentId: string, text: string): Promise<void> {
         await this.traceComment(commentId, text);
         this.trace["serverTimestamp"] = Date.now();
+        this.createTrace();
+    }
+
+
+    private async getTraceByCommentId(commentId: string) {
+        const trace = await this.traceCollection.ref.where("commentId", "==", commentId).get();
+        let traceData;
+        trace.forEach(data => traceData = data);
+        if(traceData == undefined) return null;
+        return traceData.data();
+    }
+    public async traceModifiyCommentClient(commentId: string, text: string): Promise<void> {
+        this.trace["clientTimestamp"] = Date.now();
+    }
+    public async traceModifyCommentServer(commentId: string, text: string): Promise<void> {
+        await this.traceComment(commentId, text);
+        this.trace["serverTimestamp"] = Date.now();
+
+        const trace = await this.getTraceByCommentId(commentId);
+        if(trace == null) {
+            this.createTrace();
+            return;
+        }
+
+        const counter = trace["commentModifiedTextCounter"];
+        this.trace["commentModifiedTextCounter"] = counter + 1;
+        this.createTrace();
+    }
+
+    public async traceVotedPostClient(postId: string, vote: number) {
+        this.trace["clientTimestamp"] = Date.now();
+    }
+    public async traceVotedPostServer(postId: string, vote: number) {
+        await this.traceBasic();
+        this.trace["serverTimestamp"] = Date.now();
+        this.trace["postModifiedUpvote"] = vote;
         this.createTrace();
     }
 

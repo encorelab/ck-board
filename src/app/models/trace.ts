@@ -1,4 +1,5 @@
 export default interface Trace {
+    traceId: string
     projectId : string
     projectName: string
     boardId: string
@@ -10,6 +11,9 @@ export default interface Trace {
     postId: string
     postTitle: string
     postMessage: string 
+    postTitleOrMessageModifiedCounter: number
     clientTimestamp: number
     serverTimestamp: number
+    commentModifiedTextCounter: number
+    postModifiedUpvote: number
 }

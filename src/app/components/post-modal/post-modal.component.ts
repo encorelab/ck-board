@@ -15,6 +15,7 @@ import { DELETE } from '@angular/cdk/keycodes';
 import { Role } from 'src/app/utils/constants';
 import { TracingService } from 'src/app/services/tracing.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -60,6 +61,7 @@ export class PostModalComponent {
     public fabricUtils: FabricUtils,
     public tracingService: TracingService,
     public authService: AuthService,
+    public canvasService: CanvasService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
@@ -130,33 +132,18 @@ export class PostModalComponent {
     this.showComments = !this.showComments
   }
 
-  onUpdate() {
-    let changed = false;
+  async onUpdate() {
     if(this.editingTitle != this.title || this.editingDesc != this.desc) {
-      changed = true;
-      this.tracingService.tracePostClient(this.post.postID, this.editingTitle, this.editingDesc);
-    } 
-
-    this.editingTitle = this.title
-    this.editingDesc = this.desc
-    
-    var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
-    
-    obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
-    obj.set({ title: this.title, desc: this.desc })
-    this.fabricUtils._canvas.renderAll()
-
-    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
-
-    this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
-      .then(() => {
-        this.toggleEdit();
-        if(changed == true) {
-          this.tracingService.tracePostServer(this.post.postID, this.editingTitle, this.editingDesc);
-        }
-      });
-
-    // If changed == true, then store data into Firebase
+      this.editingTitle = this.title
+      this.editingDesc = this.desc
+      
+      this.canvasService.modifyPostClient(this.post, this.title, this.desc);
+      await this.canvasService.modifyPostServer(this.post, this.title, this.desc);
+      this.toggleEdit();
+    }
+    else {
+      this.close();
+    }
   }
 
   onDelete() {

@@ -31,7 +31,7 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
 import { RealtimeService } from 'src/app/services/realtime.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
-import { TracingService } from 'src/app/services/tracing.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -72,7 +72,7 @@ export class CanvasComponent {
   constructor(public postsService: PostService, public boardService: BoardService, 
     public userService: UserService, public authService: AuthService, public commentService: CommentService, 
     public likesService: LikesService, public realtimeService: RealtimeService, public dialog: MatDialog, private route: Router,
-    protected fabricUtils: FabricUtils, public tracingService: TracingService) {}
+    protected fabricUtils: FabricUtils, public canvasService: CanvasService) {}
 
   ngOnInit() {
     this.user = this.authService.userData;
@@ -328,7 +328,7 @@ export class CanvasComponent {
       fabricObject: JSON.stringify(pObject.toJSON(this.fabricUtils.serializableProperties)),
       timestamp: new Date().getTime()
     }
-    this.postsService.create(post);
+    this.canvasService.addPostServer(post);
   }
 
   // sync board using incoming/outgoing posts
@@ -368,7 +368,7 @@ export class CanvasComponent {
       this.syncBoard(obj, post.postID);
     }
   }
-
+  
   handleLikeEvent = (like: Like, change: string) => {
     var post = this.fabricUtils.getObjectFromId(like.postID)
     if (post) {
@@ -382,15 +382,13 @@ export class CanvasComponent {
   handleCommentEvent = (comment: Comment) => {
     var post = this.fabricUtils.getObjectFromId(comment.postID)
     if (post) {
-      this.tracingService.traceCommentClient(comment.commentID, comment.comment);
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
       var jsonPost = JSON.stringify(post.toJSON(this.fabricUtils.serializableProperties))
-      this.postsService.update(post.postID, { fabricObject: jsonPost }).then(() => {
-        this.tracingService.traceCommentServer(comment.commentID, comment.comment);
-      })
+      this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
+
 
   handleLikeButtonClick() {
     this.canvas.on('mouse:down', e => {

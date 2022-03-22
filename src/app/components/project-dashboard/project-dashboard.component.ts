@@ -10,7 +10,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { Role } from 'src/app/utils/constants';
-
+import { ExportToCsv } from 'export-to-csv';
+import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import Trace from 'src/app/models/trace';
 @Component({
   selector: 'app-project-dashboard',
   templateUrl: './project-dashboard.component.html',
@@ -26,11 +28,17 @@ export class ProjectDashboardComponent implements OnInit {
 
   Role: typeof Role = Role
 
+  private tracePath : string = 'trace';
+  traceCollection: AngularFirestoreCollection<Trace>;
+
   constructor(public boardService:BoardService,
     public projectService:ProjectService,
     public authService:AuthService,
     public dialog: MatDialog,
-    private router:Router) { }
+    private router:Router,
+    private db: AngularFirestore) { 
+      this.traceCollection = db.collection<Trace>(this.tracePath);
+    }
 
   async ngOnInit(): Promise<void> {
     this.user = this.authService.userData;
@@ -105,8 +113,25 @@ export class ProjectDashboardComponent implements OnInit {
     this.router.navigate(['project/' + this.projectID + '/board/'+ boardID]);
   }
 
-  exportToCSV() {
+  async exportToCSV() {
+    const options = { 
+      filename: "CKBoard Tracing",
+      fieldSeparator: ',',
+      quoteStrings: '"',
+      decimalSeparator: '.',
+      showLabels: true, 
+      showTitle: true,
+      title: 'CKBoard Tracing',
+      useTextFile: false,
+      useBom: true,
+      useKeysAsHeaders: true,
+    };
+    const csvExporter = new ExportToCsv(options);
     
+    const trace = await this.traceCollection.ref.where("projectId", "==", this.projectID).get();
+    let traceData: Trace[] = [];
+    trace.forEach(data => traceData.push(data.data()));
+    csvExporter.generateCsv(traceData);
   }
 
 }

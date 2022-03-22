@@ -4,8 +4,6 @@ import { AuthService } from "./auth.service";
 import { BoardService } from "./board.service";
 import { ProjectService } from "./project.service";
 
-import { ExportToCsv } from 'export-to-csv';
-
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Trace from '../models/trace';
 @Injectable({
@@ -190,23 +188,5 @@ export class TracingService {
         this.trace["serverTimestamp"] = Date.now();
         this.trace["postModifiedUpvote"] = vote;
         this.createTrace();
-    }
-
-    public exportToCSV(data: object[], csvPath: string = "trace"): void {
-        const options = { 
-            filename: csvPath,
-            fieldSeparator: ',',
-            quoteStrings: '"',
-            decimalSeparator: '.',
-            showLabels: true, 
-            showTitle: true,
-            title: 'CKBoard Tracing',
-            useTextFile: false,
-            useBom: true,
-            useKeysAsHeaders: true,
-            // headers: ['Column 1', 'Column 2', etc...] <-- Won't work with useKeysAsHeaders present!
-          };
-          const csvExporter = new ExportToCsv(options);
-          csvExporter.generateCsv(data);
     }
 }

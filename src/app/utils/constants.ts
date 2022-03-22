@@ -6,9 +6,7 @@ export enum Mode {
     CHOOSING_LOCATION
 }
 
-export enum CanvasEvent {
-    ADD_POST,       // created new post
-    REMOVE_POST,    // deleted a post
+export enum CanvasPostEvent {
     TITLE_CHANGE,   // change post title
     DESC_CHANGE,    // change post description
     LIKE,           // like a post

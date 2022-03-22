@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
-import { CanvasEvent } from './constants';
+import { CanvasPostEvent } from './constants';
 
 @Injectable({providedIn: 'root'})
 export class FabricUtils {
@@ -275,7 +275,7 @@ export class FabricUtils {
         })
     }
 
-    attachEvent(object: any, event: CanvasEvent) {
+    attachEvent(object: any, event: CanvasPostEvent) {
         return this.setField(object, 'canvasEvent', event);
     }
 

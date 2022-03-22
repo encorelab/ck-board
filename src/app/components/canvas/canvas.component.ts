@@ -16,7 +16,7 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { CanvasEvent, Mode, Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, Mode, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -406,20 +406,20 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const event = parseInt(obj.canvasEvent);
       delete obj.moverID && delete obj.canvasEvent
 
-      if (event == CanvasEvent.TITLE_CHANGE || event == CanvasEvent.DESC_CHANGE) {
+      if (event == CanvasPostEvent.TITLE_CHANGE || event == CanvasPostEvent.DESC_CHANGE) {
         existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc);
         this.canvas.requestRenderAll()
-      } else if (event == CanvasEvent.LIKE) {
+      } else if (event == CanvasPostEvent.LIKE) {
         existing = this.fabricUtils.updateLikeCount(existing, obj);
         this.canvas.requestRenderAll()
-      } else if (event == CanvasEvent.COMMENT) {
+      } else if (event == CanvasPostEvent.COMMENT) {
         existing = this.fabricUtils.updateCommentCount(existing, obj)
         this.canvas.requestRenderAll()
-      } else if (event == CanvasEvent.START_MOVE && !movedBySelf) {
+      } else if (event == CanvasPostEvent.START_MOVE && !movedBySelf) {
         existing = this.fabricUtils.setBorderColor(existing, 'red');
         existing = this.fabricUtils.setPostMovement(existing, true);
         this.canvas.requestRenderAll()
-      } else if (event == CanvasEvent.STOP_MOVE && !movedBySelf) {
+      } else if (event == CanvasPostEvent.STOP_MOVE && !movedBySelf) {
         this.fabricUtils.animateToPosition(existing, obj.left, obj.top, () => {
           existing = this.fabricUtils.setBorderColor(existing, 'black');
           existing = this.fabricUtils.setPostMovement(existing, false);
@@ -446,7 +446,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
       this.canvas.renderAll()
-      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasEvent.LIKE));
+      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasPostEvent.LIKE));
       this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -456,7 +456,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
-      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasEvent.COMMENT));
+      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasPostEvent.COMMENT));
       this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -605,7 +605,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.canvas.renderAll()
 
         obj.clone((clonedPost) => {
-          clonedPost.set({ moverID: this.user.id, canvasEvent: CanvasEvent.START_MOVE });
+          clonedPost.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.START_MOVE });
           let stringified = this.fabricUtils.toJSON(clonedPost);
           this.postService.update(clonedPost.postID, { fabricObject: stringified });
         }, this.fabricUtils.serializableProperties);
@@ -626,7 +626,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
       console.log('dragged to: (left, top) = ' + left + ', ' + top);
 
-      obj.set({ moverID: this.user.id, canvasEvent: CanvasEvent.STOP_MOVE })
+      obj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
       this.canvas.renderAll()
 
       var id = obj.postID
@@ -865,7 +865,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       activeObj.dirty = true
       activeObj.addWithUpdate();
   
-      activeObj.set({ moverID: this.user.id, canvasEvent: CanvasEvent.STOP_MOVE })
+      activeObj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
       this.canvas.renderAll()
   
       var id = activeObj.postID

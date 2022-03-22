@@ -78,7 +78,7 @@ export class PostService {
   }
 
   create(post: any): any {
-    return this.postsCollection.doc(post.postID).set(post)
+    return this.postsCollection.doc(post.postID).set(post);
   }
 
   cloneMany(boardID: string, posts: any[]): Promise<void> {
@@ -102,6 +102,6 @@ export class PostService {
   }
 
   delete(postID: string) {
-    return this.postsCollection.ref.doc(postID).delete().catch(e => console.log(e))
+    return this.postsCollection.ref.doc(postID).delete()
   }
 }

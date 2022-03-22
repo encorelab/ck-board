@@ -6,6 +6,17 @@ $dot-color: #d3d3d3;
 $dot-size: 2px;
 $dot-space: 40px;
 
+$controls-bg-color: whitesmoke;
+$controls-border-radius: 0.75em;
+
+.nav {
+  padding: 1em;
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  background-color: $controls-bg-color;
+  border-radius: $controls-border-radius;
+}
 
 .canvas-area {
   display: flex;
@@ -47,8 +58,8 @@ $dot-space: 40px;
   position: absolute;
   bottom: 1em;
   right: 1em;
-  background-color: whitesmoke;
-  border-radius: 0.75rem;
+  background-color: $controls-bg-color;
+  border-radius: $controls-border-radius;
 
   button {
     margin: 0.5em;

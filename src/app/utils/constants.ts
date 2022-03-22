@@ -6,6 +6,19 @@ export enum Mode {
     CHOOSING_LOCATION
 }
 
+export enum CanvasEvent {
+    ADD_POST,       // created new post
+    REMOVE_POST,    // deleted a post
+    TITLE_CHANGE,   // change post title
+    DESC_CHANGE,    // change post description
+    LIKE,           // like a post
+    COMMENT,        // comment on a post
+    START_MOVE,     // start to move a post
+    STOP_MOVE,      // post dropped
+    LOCK,           // lock a post 
+    NONE,           // no event
+}
+
 export enum Role {
     STUDENT = "student",
     TEACHER = "teacher"

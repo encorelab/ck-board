@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
+import { CanvasEvent } from './constants';
 
 @Injectable({providedIn: 'root'})
 export class FabricUtils {
@@ -11,7 +12,7 @@ export class FabricUtils {
         'name', 'postID', 'title', 'desc', 
         'author', 'authorID', 'hasControls', 
         'subTargetCheck', 'removed', 'moverID',
-        'lockMovement'
+        'lockMovement', 'canvasEvent'
     ]
 
     canvasConfig = {
@@ -143,7 +144,9 @@ export class FabricUtils {
         commentCountObj.set({ top: commentCountObj.top + titleDelta + authorDelta + descDelta, dirty: true })
         contentObj.set({ height: contentObj.height + titleDelta + descDelta, dirty: true })
 
-        obj.dirty = true
+        obj.desc = title;
+        obj.title = desc;
+        obj.dirty = true;
         obj.addWithUpdate();
         return obj
     }
@@ -270,5 +273,14 @@ export class FabricUtils {
             duration: 1000,
             onComplete: callback
         })
+    }
+
+    attachEvent(object: any, event: CanvasEvent) {
+        return this.setField(object, 'canvasEvent', event);
+    }
+
+    setPostMovement(object: any, lock: boolean) {
+        let updatedObj = this.setField(object, 'lockMovementX', lock);
+        return this.setField(updatedObj, 'lockMovementY', lock);
     }
 }

@@ -20,13 +20,16 @@ export class PostService {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }
 
-  observable(boardID: string, handleAdd: Function, handleModification: Function) {
+  observable(boardID: string, handleAdd: Function, handleModification: Function, handleDelete: Function) {
     return this.postsCollection.ref.where("boardID", "==", boardID).onSnapshot((snapshot) => {
       snapshot.docChanges().forEach((change) => {
+        const doc = change.doc.data();
         if (change.type === "added") {
-          handleAdd(change.doc.data())
+          handleAdd(doc);
         } else if (change.type === "modified") {
-          handleModification(change.doc.data())
+          handleModification(doc);
+        } else if (change.type === "removed") {
+          handleDelete(doc);
         }
       })
     })

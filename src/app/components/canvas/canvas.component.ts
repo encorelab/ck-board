@@ -16,7 +16,7 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { Mode, Role } from 'src/app/utils/constants';
+import { CanvasEvent, Mode, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -122,7 +122,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initGroupEventsListener() {
     const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
-    const unsubPosts = this.postsService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
+    const unsubPosts = this.postsService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent, this.handlePostEvent);
     const unsubLikes = this.likesService.observable(this.boardID, this.handleLikeEvent, true);
     const unsubComms = this.commentService.observable(this.boardID, this.handleCommentEvent, true);
 
@@ -413,43 +413,33 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
 
     if (existing) {
-      const postMoved = obj.left != existing.left || obj.top != existing.top;
       const movedBySelf = obj.moverID == this.user.id;
-      const titleDescUpdated = obj.title != existing.title || obj.desc != existing.desc;
+      const event = parseInt(obj.canvasEvent);
+      delete obj.moverID && delete obj.canvasEvent
 
-      if (titleDescUpdated) {
-        existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc)
-        existing.desc = obj.desc
-        existing.title = obj.title
-      }
-
-      if (!movedBySelf && obj.lockMovement != null) {
-        existing.set({lockMovementX: obj.lockMovement, lockMovementY: obj.lockMovement});
-        delete obj.lockMovement;
-        delete obj.moverID;
-      }
-
-      const contentObj = this.fabricUtils.getChildFromGroup(obj, 'content');
-      if (contentObj && contentObj.stroke == 'red') {
-        this.fabricUtils.setBorderColor(existing, contentObj.stroke);
-      }
-      existing = this.fabricUtils.updateLikeCount(existing, obj)
-      existing = this.fabricUtils.updateCommentCount(existing, obj)
-      
-      const updateExistingObject = () => {
-        if (contentObj && contentObj.stroke == 'black') {
-          this.fabricUtils.setBorderColor(existing, contentObj.stroke);
-        }
-        
-        existing.set(obj)
-        existing.setCoords()
-        this.canvas.renderAll()
-      };
-
-      if (postMoved && !movedBySelf) {
-        this.fabricUtils.animateToPosition(existing, obj.left, obj.top, updateExistingObject)
-      } else {
-        updateExistingObject();
+      if (event == CanvasEvent.TITLE_CHANGE || event == CanvasEvent.DESC_CHANGE) {
+        existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc);
+        this.canvas.requestRenderAll()
+      } else if (event == CanvasEvent.LIKE) {
+        existing = this.fabricUtils.updateLikeCount(existing, obj);
+        this.canvas.requestRenderAll()
+      } else if (event == CanvasEvent.COMMENT) {
+        existing = this.fabricUtils.updateCommentCount(existing, obj)
+        this.canvas.requestRenderAll()
+      } else if (event == CanvasEvent.REMOVE_POST) {
+        this.canvas.remove(existing);
+      } else if (event == CanvasEvent.START_MOVE && !movedBySelf) {
+        existing = this.fabricUtils.setBorderColor(existing, 'red');
+        existing = this.fabricUtils.setPostMovement(existing, true);
+        this.canvas.requestRenderAll()
+      } else if (event == CanvasEvent.STOP_MOVE && !movedBySelf) {
+        this.fabricUtils.animateToPosition(existing, obj.left, obj.top, () => {
+          existing = this.fabricUtils.setBorderColor(existing, 'black');
+          existing = this.fabricUtils.setPostMovement(existing, false);
+          existing.set(obj);
+          existing.setCoords();
+          this.canvas.requestRenderAll();
+        })
       }
     } else {
       this.fabricUtils.fromJSON(obj)
@@ -469,7 +459,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
       this.canvas.renderAll()
-      var jsonPost = this.fabricUtils.toJSON(post)
+      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasEvent.LIKE));
       this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -479,7 +469,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
-      var jsonPost = this.fabricUtils.toJSON(post);
+      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasEvent.COMMENT));
       this.postsService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -602,8 +592,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
         }
 
         this.postsService.delete(obj.postID)
-        obj.set('removed', true);
-        fabric.util.object.extend(obj, { removed: true })
+        
+        obj = this.fabricUtils.setField(obj, 'canvasEvent', CanvasEvent.REMOVE_POST);
         this.sendObjectToGroup(obj);
       }
     }
@@ -621,7 +611,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const handleFirstMove = (e: any) => {
       if (e.target && !isMovingPost) {
         var obj = e.target;
-        if (obj.lockMovement == true) return;
 
         isMovingPost = true;
 
@@ -629,7 +618,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.canvas.renderAll()
 
         obj.clone((clonedPost) => {
-          clonedPost.set({ lockMovement: true, moverID: this.user.id });
+          clonedPost.set({ moverID: this.user.id, canvasEvent: CanvasEvent.START_MOVE });
           let stringified = this.fabricUtils.toJSON(clonedPost);
           this.postsService.update(clonedPost.postID, { fabricObject: stringified });
         }, this.fabricUtils.serializableProperties);
@@ -648,9 +637,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
       var left = Math.round((e.pointer.x - postClickPosition.x));
       var top = Math.round((e.pointer.y - postClickPosition.y));
 
-      obj.set({ moverID: this.user.id, lockMovement: false })
-      obj.set({ left: left, top: top })
-      obj.setCoords()
+      console.log('dragged to: (left, top) = ' + left + ', ' + top);
+
+      obj.set({ moverID: this.user.id, canvasEvent: CanvasEvent.STOP_MOVE })
       this.canvas.renderAll()
 
       var id = obj.postID
@@ -889,7 +878,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       activeObj.dirty = true
       activeObj.addWithUpdate();
   
-      activeObj.set({ moverID: this.user.id, lockMovement: false })
+      activeObj.set({ moverID: this.user.id, canvasEvent: CanvasEvent.STOP_MOVE })
       this.canvas.renderAll()
   
       var id = activeObj.postID

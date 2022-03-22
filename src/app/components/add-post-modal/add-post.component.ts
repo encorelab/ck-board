@@ -69,7 +69,11 @@ export class AddPostComponent {
   }
 
   handleDialogSubmit() {
-    this.addPost();
+    if (this.data.addPost) {
+      this.data.addPost(this.title, this.message);
+    } else {
+      this.addPost();
+    }
     this.dialogRef.close();
   }
 

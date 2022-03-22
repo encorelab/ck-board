@@ -88,7 +88,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     this.posts = []
   }
 
-  addPost = (title: string, desc = '', left: number, top: number) => {
+  addPost = (title: string, desc = '') => {
     if (!this.activeBucket){
       return;
     }
@@ -106,14 +106,15 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     this.posts.push(post);
     let ids = this.posts.map(post=>post.postID)
     this.bucketService.add(this.activeBucket.bucketID, ids)
-
   }
 
   openAddPostDialog(){
-    const dialogData: DialogInterface = {
+    const dialogData = {
       addPost: this.addPost,
       top: 150,
       left: 150,
+      board: this.board,
+      user: this.user
     }
     this.dialog.open(AddPostComponent, {
       width: '500px',

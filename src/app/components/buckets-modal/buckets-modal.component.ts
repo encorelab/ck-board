@@ -4,12 +4,12 @@ import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
-import { AddPostComponent } from 'src/app/components/add-post-modal/add-post.component';
-import Post from 'src/app/models/post';
-import { DialogInterface } from 'src/app/interfaces/dialog.interface';
+import { AddPostComponent, AddPostDialog } from 'src/app/components/add-post-modal/add-post.component';
+import Post, { Tag } from 'src/app/models/post';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
+import { POST_COLOR } from 'src/app/utils/constants';
 
 
 @Component({
@@ -87,7 +87,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     this.posts = []
   }
 
-  addPost = (title: string, desc = '', left: number, top: number) => {
+  addPost = (title: string, desc = '', tags: Tag[]) => {
     if (!this.activeBucket){
       return;
     }
@@ -95,7 +95,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       postID: Date.now() + '-' + this.user.id,
       title: title,
       desc: desc,
-      tags: [],
+      tags: tags,
       userID: this.user.id,
       boardID: this.board.boardID,
       fabricObject: null,
@@ -109,10 +109,14 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   }
 
   openAddPostDialog(){
-    const dialogData: DialogInterface = {
-      addPost: this.addPost,
-      top: 150,
-      left: 150,
+    const dialogData: AddPostDialog = {
+      handleAddPost: this.addPost,
+      spawnPosition: {
+        top: 150,
+        left: 150,
+      },
+      board: this.board,
+      user: this.user
     }
     this.dialog.open(AddPostComponent, {
       width: '500px',
@@ -121,7 +125,6 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   }
 
   movePostToBoard(postID:string){
-
     this.postsService.get(postID).then(data =>{
       data.forEach(item =>{
         let post = item.data()
@@ -131,15 +134,16 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
           authorID: this.user.id,
           desc: post.desc,
           lock: !this.board.permissions.allowStudentMoveAny,
-          left: this.Xoffset ,
-          top: this.Yoffset
+          left: this.Xoffset,
+          top: this.Yoffset,
+          color: POST_COLOR
         });
-        fabric.util.object.extend(fabricPost, { postID: postID })
-        let updatedPost = {
-          fabricObject: this.fabricUtils.toJSON(fabricPost),
-        }
-        this.postsService.update(postID,updatedPost)
-        this.Yoffset+=50
+
+        fabricPost = this.fabricUtils.setField(fabricPost, 'postID', postID);
+        const updatedPost = this.fabricUtils.toJSON(fabricPost);
+        this.postsService.update(postID, {fabricObject: updatedPost});
+
+        this.Yoffset += 50;
       })
     })
     

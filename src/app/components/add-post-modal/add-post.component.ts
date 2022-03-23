@@ -9,6 +9,13 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { POST_COLOR } from 'src/app/utils/constants';
 
+export interface AddPostDialog {
+  user: User;
+  board: Board;
+  spawnPosition: {left: Number, top: Number};
+  handleAddPost?: (title: string, message: string, tags: Tag[]) => any;
+};
+
 @Component({
   selector: 'app-dialog',
   templateUrl: './add-post.component.html',
@@ -21,7 +28,6 @@ export class AddPostComponent {
   title: string = ''
   message: string = ''
 
-  postColor: string;
   tags: Tag[] = []
   tagOptions: Tag[] = []
   
@@ -32,11 +38,10 @@ export class AddPostComponent {
   constructor(
     public fabricUtils: FabricUtils,
     public dialogRef: MatDialogRef<AddPostComponent>,
-    @Inject(MAT_DIALOG_DATA) public data) {
+    @Inject(MAT_DIALOG_DATA) public data: AddPostDialog) {
       this.user = data.user
       this.board = data.board
       this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
-      this.postColor = POST_COLOR;
     }
 
   addTag(event, tagOption): void {
@@ -62,15 +67,19 @@ export class AddPostComponent {
       desc: this.message,
       tags: this.tags,
       lock: !this.board.permissions.allowStudentMoveAny,
-      left: this.data.left,
-      top: this.data.top,
-      color: this.postColor
+      left: this.data.spawnPosition.left,
+      top: this.data.spawnPosition.top,
+      color: POST_COLOR,
     });
     this.fabricUtils._canvas.add(fabricPost);
   }
 
   handleDialogSubmit() {
-    this.addPost();
+    if (this.data.handleAddPost) {
+      this.data.handleAddPost(this.title, this.message, this.tags);
+    } else {
+      this.addPost();
+    }
     this.dialogRef.close();
   }
 

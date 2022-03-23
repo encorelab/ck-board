@@ -1,6 +1,6 @@
-<div *ngIf="!data.description" style="display: flex; flex-direction: row;">
-  <div class="title">
-    {{ data.title }}
+<div *ngIf="!description" style="display: flex; flex-direction: row;">
+  <div class="title" [innerHTML]="title">
+    {{ title }}
   </div>
   <button mat-stroked-button color="accent" (click)="close()">
     Close!
@@ -9,12 +9,12 @@
     {{ this.action.name }}
   </button>
 </div>
-<div *ngIf="data.description">
-  <div class="title">
-    {{ data.title }}
+<div *ngIf="description">
+  <div class="title" [innerHTML]="title">
+    {{ title }}
   </div>
-  <div class="description">
-    {{ data.description }}
+  <div class="description" [innerHTML]="description">
+    {{ description }}
   </div>
   <button mat-stroked-button color="accent" (click)="close()">
     Close!

@@ -16,7 +16,7 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { CanvasPostEvent, Mode, POST_DEFAULT_BORDER, POST_MOVING_BORDER, Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, Mode, POST_DEFAULT_OPACITY, POST_MOVING_FILL, POST_MOVING_OPACITY, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -416,12 +416,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
         existing = this.fabricUtils.updateCommentCount(existing, obj)
         this.canvas.requestRenderAll()
       } else if (event == CanvasPostEvent.START_MOVE && !movedBySelf) {
-        existing = this.fabricUtils.setBorderColor(existing, POST_MOVING_BORDER);
+        existing = this.fabricUtils.setFillColor(existing, POST_MOVING_FILL);
+        existing = this.fabricUtils.setOpacity(existing, POST_MOVING_OPACITY);
         existing = this.fabricUtils.setPostMovement(existing, true);
         this.canvas.requestRenderAll()
       } else if (event == CanvasPostEvent.STOP_MOVE && !movedBySelf) {
         this.fabricUtils.animateToPosition(existing, obj.left, obj.top, () => {
-          existing = this.fabricUtils.setBorderColor(existing, POST_DEFAULT_BORDER);
+          existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
+          existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
           existing = this.fabricUtils.setPostMovement(existing, false);
           existing.set(obj);
           existing.setCoords();
@@ -601,7 +603,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
         isMovingPost = true;
 
-        obj = this.fabricUtils.setBorderColor(obj, POST_MOVING_BORDER);
+        obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
+        obj = this.fabricUtils.setOpacity(obj, POST_MOVING_OPACITY);
         this.canvas.renderAll()
 
         obj.clone((clonedPost) => {
@@ -618,7 +621,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
       isMovingPost = false;
       var obj = e.target;
 
-      this.fabricUtils.setBorderColor(obj, POST_DEFAULT_BORDER);
+      this.fabricUtils.setFillColor(obj, POST_COLOR);
+      this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
 
       obj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
       this.canvas.renderAll()

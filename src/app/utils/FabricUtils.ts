@@ -86,6 +86,25 @@ export class FabricUtils {
         return existing;
     }
 
+    setFillColor(existing: fabric.Group, color: string) {
+        const content = this.getChildFromGroup(existing, 'content');
+        
+        if (content) {
+            content.set({ fill: color, dirty: true });
+        }
+
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
+    }
+
+    setOpacity(existing: fabric.Group, level: number) {
+        existing.set({ opacity: level, dirty: true });
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
+    }
+
     updateAuthor(obj: any, author: string) {
         var children: fabric.Object[] = obj.getObjects()
         var authorObj: any = children.filter((obj) => obj.name == 'author').pop()

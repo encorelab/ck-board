@@ -23,8 +23,11 @@ export enum Role {
 }
 
 export const POST_COLOR: string = '#FFE663';
-export const POST_MOVING_BORDER: string = '#999999';
+export const POST_DEFAULT_OPACITY: number = 1;
 export const POST_DEFAULT_BORDER: string = 'black';
+
+export const POST_MOVING_FILL: string = '#999999';
+export const POST_MOVING_OPACITY: number = 0.5;
 
 export const DEFAULT_TAGS: Tag[] = [
     {name: 'Idea', color: '#5bc2cb'},

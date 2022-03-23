@@ -118,7 +118,7 @@ export class FabricPostComponent extends fabric.Group {
       author: options.author,
       tags: options.tags,
       subTargetCheck: true,
-      authorID: options.authorID
+      authorID: options.authorID,
     }
 
     super([content, title, author, desc, likeButton, likeCount, commentButton, commentCount], groupOptions);

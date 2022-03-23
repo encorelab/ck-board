@@ -10,9 +10,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { Role } from 'src/app/utils/constants';
-import { AngularFirestoreCollection } from '@angular/fire/firestore';
 import Trace from 'src/app/interfaces/trace';
 import { ExportToCsv } from 'export-to-csv';
+import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -35,8 +35,12 @@ export class ProjectDashboardComponent implements OnInit {
   constructor(public boardService:BoardService,
     public projectService:ProjectService,
     public authService:AuthService,
-    public dialog: MatDialog,
-    private router:Router) { }
+    public dialog: MatDialog, 
+    private db: AngularFirestore,
+    private router:Router) 
+    { 
+      this.traceCollection = db.collection<Trace>(this.tracePath);
+    }
 
   async ngOnInit(): Promise<void> {
     this.user = this.authService.userData;
@@ -44,7 +48,6 @@ export class ProjectDashboardComponent implements OnInit {
     await this.getBoards()
     this.user = await this.authService.getAuthenticatedUser()
     await this.getUsersProjects(this.user.id)
-
   }
 
 

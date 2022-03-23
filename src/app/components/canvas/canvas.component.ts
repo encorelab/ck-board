@@ -16,7 +16,7 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { CanvasPostEvent, Mode, Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, Mode, POST_DEFAULT_BORDER, POST_MOVING_BORDER, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -416,12 +416,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
         existing = this.fabricUtils.updateCommentCount(existing, obj)
         this.canvas.requestRenderAll()
       } else if (event == CanvasPostEvent.START_MOVE && !movedBySelf) {
-        existing = this.fabricUtils.setBorderColor(existing, 'red');
+        existing = this.fabricUtils.setBorderColor(existing, POST_MOVING_BORDER);
         existing = this.fabricUtils.setPostMovement(existing, true);
         this.canvas.requestRenderAll()
       } else if (event == CanvasPostEvent.STOP_MOVE && !movedBySelf) {
         this.fabricUtils.animateToPosition(existing, obj.left, obj.top, () => {
-          existing = this.fabricUtils.setBorderColor(existing, 'black');
+          existing = this.fabricUtils.setBorderColor(existing, POST_DEFAULT_BORDER);
           existing = this.fabricUtils.setPostMovement(existing, false);
           existing.set(obj);
           existing.setCoords();
@@ -601,7 +601,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
         isMovingPost = true;
 
-        obj = this.fabricUtils.setBorderColor(obj, 'red');
+        obj = this.fabricUtils.setBorderColor(obj, POST_MOVING_BORDER);
         this.canvas.renderAll()
 
         obj.clone((clonedPost) => {
@@ -618,13 +618,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       isMovingPost = false;
       var obj = e.target;
 
-      this.fabricUtils.setBorderColor(obj, 'black');
-
-      var postClickPosition = obj.getLocalPointer(e);
-      var left = Math.round((e.pointer.x - postClickPosition.x));
-      var top = Math.round((e.pointer.y - postClickPosition.y));
-
-      console.log('dragged to: (left, top) = ' + left + ', ' + top);
+      this.fabricUtils.setBorderColor(obj, POST_DEFAULT_BORDER);
 
       obj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
       this.canvas.renderAll()

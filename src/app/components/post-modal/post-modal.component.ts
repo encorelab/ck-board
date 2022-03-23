@@ -189,17 +189,20 @@ export class PostModalComponent {
     this.newComment = '';
   }
 
-  handleLikeClick() {
+  async handleLikeClick() {
     // if liking is locked just return (do nothing)
     if(this.user.role == Role.STUDENT && !this.data.board.permissions.allowStudentLiking){
       return;
     }
-      
+
     if (this.isLiked) {
-      this.likesService.remove(this.isLiked.likeID).then(() => {
-        this.isLiked = null
-        this.likes = this.likes.filter(like => like.likerID != this.user.id)
-      })
+      const postId = this.isLiked.postID;
+      const likeId = this.isLiked.likeID;
+      
+      [this.likes, this.isLiked] = 
+      await this.canvasService.unlikeModalPostClient(postId, this.likes, this.isLiked, this.user.id);
+      this.canvasService.unlikeModalPostServer(likeId, postId);
+
     } else {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
@@ -207,9 +210,9 @@ export class PostModalComponent {
         postID: this.post.postID,
         boardID: this.data.board.boardID
       }
-      this.likesService.add(like)
-      this.isLiked = like
-      this.likes.push(like)
+      await this.canvasService.likeModalPostClient(like, this.likes);
+      await this.canvasService.likeModalPostServer(like);
+      this.isLiked = like;
     }
   }
 }

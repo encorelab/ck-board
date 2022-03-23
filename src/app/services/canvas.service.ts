@@ -1,9 +1,11 @@
 import { Injectable } from "@angular/core";
 import { AngularFirestore, AngularFirestoreCollection } from "@angular/fire/firestore";
 import { DialogInterface } from "../interfaces/dialog.interface";
+import Like from "../models/like";
 import Post from "../models/post";
 import { FabricUtils } from "../utils/FabricUtils";
 import { CommentService } from "./comment.service";
+import { LikesService } from "./likes.service";
 import { PostService } from "./post.service";
 import { TracingService } from "./tracing.service";
 
@@ -18,6 +20,7 @@ export class CanvasService {
                 public tracingService: TracingService,
                 public postsService: PostService,
                 public commentService: CommentService,
+                public likesService: LikesService,
                 public fabricUtils: FabricUtils) 
     {
         this.postsCollection = db.collection<Post>(this.postsPath)
@@ -69,4 +72,56 @@ export class CanvasService {
             this.tracingService.traceCreateCommentServer(comment.commentID, comment.comment);
         });
     }
+
+    likeModalPostClient(like: any, likes: any) {
+        this.tracingService.traceVotedPostClient(like.postID, 1).then(() => {
+            likes.push(like);
+        });
+    }
+
+    likeModalPostServer(like: any) {
+        this.likesService.add(like).then(() => {
+            this.tracingService.traceVotedPostServer(like.postID, 1);
+        });
+    }
+
+    async unlikeModalPostClient(postId: string, likes: any, isLiked: any, userId: string) {
+        await this.tracingService.traceVotedPostClient(postId, 0);
+        isLiked = null;
+        likes = likes.filter(like => like.likerID != userId);
+        return [likes, isLiked];
+    }
+
+    unlikeModalPostServer(likeId: string, postId: string) {
+        this.likesService.remove(likeId).then(() => {
+            this.tracingService.traceVotedPostServer(postId, 0);
+        });
+    }
+
+    likeCanvasPostClient(postId: string) {
+        this.tracingService.traceVotedPostClient(postId, 1);
+    }
+    
+    likeCanvasPostServer(postId: string, userId: string, boardId: string) {
+        this.likesService.add({
+            likeID: Date.now() + '-' + userId,
+            likerID: userId,
+            postID: postId,
+            boardID: boardId
+        }).then(() => this.tracingService.traceVotedPostServer(postId, 1));
+    }
+
+    unlikeCanvasPostClient(postId: string) {
+        this.tracingService.traceVotedPostClient(postId, 0);
+    }
+
+    unlikeCanvasPostServer(data: any, postId: string) {
+        data.forEach((data) => {
+            let like: Like = data.data()
+            this.likesService.remove(like.likeID)
+        });
+        this.tracingService.traceVotedPostServer(postId, 0);
+    }
+
+
 }

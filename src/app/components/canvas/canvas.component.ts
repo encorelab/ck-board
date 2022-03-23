@@ -400,17 +400,11 @@ export class CanvasComponent {
       if (likeButton && (studentHasPerm || isTeacher)) {
         this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
           if (data.size == 0) {
-            this.likesService.add({
-              likeID: Date.now() + '-' + this.user.id,
-              likerID: this.user.id,
-              postID: post.postID,
-              boardID: this.board.boardID
-            })
+            this.canvasService.likeCanvasPostClient(post.postID);
+            this.canvasService.likeCanvasPostServer(post.postID, this.user.id, this.board.boardID);
           } else {
-            data.forEach((data) => {
-              let like: Like = data.data()
-              this.likesService.remove(like.likeID)
-            })
+            this.canvasService.unlikeCanvasPostClient(post.postID);
+            this.canvasService.unlikeCanvasPostServer(data, post.postID);
           }
         })
       }

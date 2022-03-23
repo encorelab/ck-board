@@ -105,7 +105,6 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     this.posts.push(post);
     let ids = this.posts.map(post=>post.postID)
     this.bucketService.add(this.activeBucket.bucketID, ids)
-
   }
 
   openAddPostDialog(){
@@ -133,6 +132,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
           author: this.user.username,
           authorID: this.user.id,
           desc: post.desc,
+          tags: [],
           lock: !this.board.permissions.allowStudentMoveAny,
           left: this.Xoffset,
           top: this.Yoffset,

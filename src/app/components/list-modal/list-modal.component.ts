@@ -22,6 +22,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
   activeFilters: Tag[] =[]
   filterOptions: Tag[] =[]
   filteredPosts:any[]
+  unsubListeners: Function[] = []
 
   constructor(
     public dialogRef: MatDialogRef<ListModalComponent>,
@@ -34,6 +35,12 @@ export class ListModalComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.fetchInitialPosts()
     this.filterPosts()
+    this.unsubListeners = this.initGroupEventsListener()
+  }
+
+  initGroupEventsListener() {
+    const unsubPosts = this.postService.observable(this.board.boardID, this.handlePostCreate, this.handlePostUpdate);
+    return [unsubPosts];
   }
 
   fetchInitialPosts() {
@@ -64,6 +71,21 @@ export class ListModalComponent implements OnInit, OnDestroy {
     }
   }
 
+  handlePostCreate = (post) =>{
+    this.posts.push(post);
+    this.filterPosts();
+  }
+  
+  handlePostUpdate = (post) =>{
+    // replace existing post with new one, if found
+    this.posts.forEach( (currentPost,index) =>{
+      if(currentPost.postID === post.postID){
+        this.posts[index] = post
+      }
+    })
+    this.filterPosts();
+  }
+
   addFilter(filter:Tag){
     if(!this.activeFilters.includes(filter)){
       this.activeFilters.push(filter);
@@ -92,5 +114,6 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.posts = []
+    this.unsubListeners.forEach(unsub => unsub())
   }
 }

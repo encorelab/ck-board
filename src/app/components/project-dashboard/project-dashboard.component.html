@@ -4,12 +4,6 @@
         <span style="flex: 1 1 auto"></span>
         <button 
             mat-icon-button 
-            routerLink="/dashboard" 
-            matTooltip="Return to dashboard">
-                <mat-icon>keyboard_return</mat-icon>
-        </button>
-        <button 
-            mat-icon-button 
             [matMenuTriggerFor]="addMenu"
             *ngIf="user && user.role == Role.TEACHER"
             matTooltip="Create Board">
@@ -30,7 +24,12 @@
         </button>
     </app-toolbar>
     <div class="content">
-        <h3 class="mat-title heading" *ngIf="project">Boards for {{ project.name }}</h3>
+        <div class="heading">
+            <button mat-icon-button routerLink="/dashboard" aria-label="Return to Dashboard">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <h3 class="mat-title" *ngIf="project">Boards for {{ project.name }}</h3>
+        </div>
         <div class="cards">
             <ng-container *ngFor="let board of boards">
                 <mat-card class="card"

@@ -65,7 +65,7 @@ import { ListModalComponent } from './components/list-modal/list-modal.component
   imports: [
     BrowserModule,
     AppRoutingModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
+    AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board-staging'),
     AngularFirestoreModule,
     AngularFireAuthModule,
     FormsModule, 

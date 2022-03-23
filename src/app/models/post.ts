@@ -3,9 +3,13 @@ export default class Post {
     boardID: string;
     title: string;
     desc: string;
-    tags: string[];
+    tags: Tag[];
     userID: string;
-    fabricObject: string;
-    timestamp: number
+    fabricObject: string|null;
+    timestamp: number;
 }
   
+export class Tag {
+    name: string;
+    color: string;
+}

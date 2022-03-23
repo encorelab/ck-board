@@ -1,0 +1,53 @@
+@use '@angular/material' as mat;
+@use '../../style/base' as *;
+
+app-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.content {
+  position: absolute;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  padding: 1.5em;
+
+  @media (min-width: breakpoint('sm', 'min')) {
+    top: 64px;
+  }
+}
+
+.heading {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+.title {
+  font-size: 1rem;
+  margin-bottom: 16px;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25em;
+}
+
+.cards {
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.card {
+  min-height: 100px;
+  cursor: pointer;
+
+  &:hover {
+    @include mat.elevation(5);
+  }
+}

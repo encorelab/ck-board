@@ -1,11 +1,23 @@
-<mat-card class="bucket-card" (click)="openPostDialog()" *ngIf="exists">
-    <mat-card-title>{{ post.title }}</mat-card-title>
-    <mat-card-subtitle *ngIf="showUsername">{{ user.username }}</mat-card-subtitle>
+<mat-card class="bucket-card" (click)="openPostDialog()" *ngIf="exists" [ngStyle]="{'background-color': postColor}">
+  <div class="titleRow">
+    <mat-card-title style="display:inline-block;">{{ post.title }}</mat-card-title>
+    <button 
+      mat-button 
+      *ngIf="!post.fabricObject" 
+      (click)="movePostToBoard(post.postID); $event.stopPropagation()"
+      style="display: inline-block;">
+      <mat-icon class="material-icons-outlined">download</mat-icon>
+    </button>
+  </div>
+    <mat-card-subtitle *ngIf="showUsername && postAuthor">{{ postAuthor.username }}</mat-card-subtitle>
     <mat-card-subtitle *ngIf="!showUsername">Anonymous</mat-card-subtitle>
     
     <mat-card-content class="content">
       <mat-chip-list>
-        <mat-chip color="primary" selected *ngFor="let tag of post.tags">{{ tag }}</mat-chip>
+        <mat-chip [ngStyle]="{'background-color': tag.color, 'color': 'black'}" selected 
+          *ngFor="let tag of post.tags">
+          {{ tag.name }}
+        </mat-chip>
       </mat-chip-list>
       <p>{{ post.desc }}</p>
     </mat-card-content>
@@ -19,5 +31,6 @@
         <mat-icon>comment</mat-icon>
         {{numComments}}
       </button>
+      
     </mat-card-actions>
 </mat-card>

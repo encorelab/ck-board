@@ -37,7 +37,6 @@ export class DashboardComponent implements OnInit {
     this.authService.getAuthenticatedUser().then(user => {
       this.user = user
       this.getUsersProjects(this.user.id).then(_ => this.isLoading = false)
-
     })
   }
   
@@ -48,11 +47,6 @@ export class DashboardComponent implements OnInit {
         this.yourProjects.push(project)
       })
     })
-  }
-
-
-  handleBoardClick(boardID) {
-    this.router.navigate(['canvas/' + boardID]);
   }
 
   handleProjectClick(projectID) {

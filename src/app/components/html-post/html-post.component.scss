@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
+
 .bucket-card {
   cursor: pointer;
 
@@ -6,8 +8,6 @@
   border-radius: 20px;
   border: 2px solid black;
   word-wrap: break-word;
-  
-  background-color: #f4d74b;
 }
 
 .content {
@@ -23,4 +23,8 @@
 mat-chip {
   padding: 2px 8px !important;
   font-size: 12px;
+}
+.titleRow{
+  display: flex;
+  justify-content: space-between;
 }

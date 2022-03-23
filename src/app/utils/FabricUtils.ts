@@ -24,6 +24,16 @@ export class FabricUtils {
         this._canvas = surface;
     }
 
+    setField(obj, key, value) {
+        obj.set(key, value);
+        fabric.util.object.extend(obj, { [key]: value });
+        return obj;
+    }
+
+    toJSON(fabricObj) {
+        return JSON.stringify(fabricObj.toJSON(this.serializableProperties));
+    }
+    
     renderPostFromJSON(post:any): void {
         fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => {
             var origRenderOnAddRemove = this._canvas.renderOnAddRemove;
@@ -44,6 +54,12 @@ export class FabricUtils {
             return currentObjects[i]
         }
         return null;
+    }
+
+    clonePost(post, newID) {
+        let fabricObj = this.getObjectFromId(post.postID);
+        fabricObj = this.setField(fabricObj, 'postID', newID);
+        return this.toJSON(fabricObj);
     }
 
     updateAuthor(obj: any, author: string) {
@@ -218,8 +234,8 @@ export class FabricUtils {
         return {
           top: vptCoords?.tl.y + topOffset,
           left: vptCoords?.tl.x +leftOffset,
-          width: width,
-          height: height,
+          width: img.width,
+          height: img.height,
           scaleX: scaleX,
           scaleY: scaleY
         }

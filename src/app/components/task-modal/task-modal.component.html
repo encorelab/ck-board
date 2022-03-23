@@ -1,6 +1,7 @@
-<h1 mat-dialog-title>{{ title }}</h1>
+<h1 mat-dialog-title *ngIf="title">{{ title }}</h1>
+<h1 mat-dialog-title *ngIf="!title && !message">No task created!</h1>
 <div mat-dialog-content>
-  <h4>{{ message }}</h4>
+  <h4 *ngIf="message">{{ message }}</h4>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">I've read the task!</button>

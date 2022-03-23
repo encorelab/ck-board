@@ -10,9 +10,10 @@ import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Post from 'src/app/models/post';
+import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { Role } from 'src/app/utils/constants';
+import { POST_COLOR } from 'src/app/utils/constants';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -22,8 +23,8 @@ const linkifyStr = require('linkifyjs/lib/linkify-string');
   styleUrls: ['./post-modal.component.scss']
 })
 export class PostModalComponent {
-  tags: string[] = []
-  tagOptions: string[] = []
+  tags: Tag[] = []
+  tagOptions: Tag[] = []
 
   user: User
   post: Post
@@ -34,11 +35,12 @@ export class PostModalComponent {
   desc: string
   editingDesc: string
   isEditing: boolean = false
-  showEditDelete: boolean = false
   canEditDelete: boolean
   canStudentComment:boolean
   canStudentTag:boolean
+  postColor: string;
   showComments: boolean = false
+  showEditDelete: boolean = false
   showAuthorName:boolean
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
@@ -54,12 +56,12 @@ export class PostModalComponent {
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
     public commentService: CommentService, public likesService: LikesService,
-    public postsService: PostService, public bucketService: BucketService,
+    public postService: PostService, public bucketService: BucketService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
-      this.postsService.get(data.post.postID).then((item) => {
+      this.postService.get(data.post.postID).then((item) => {
         item.forEach((post) => {
           var p = post.data()
           this.post = p
@@ -68,7 +70,8 @@ export class PostModalComponent {
           this.desc = p.desc
           this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
-          this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
+          this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
+          
           this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == Role.TEACHER
         })
       })
@@ -98,6 +101,7 @@ export class PostModalComponent {
     this.canStudentComment = (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher 
     this.canStudentTag = (isStudent && data.board.permissions.allowStudentTagging) || isTeacher 
     this.showAuthorName = (isStudent && data.board.permissions.showAuthorNameStudent) || (isTeacher && data.board.permissions.showAuthorNameTeacher)
+    this.postColor = POST_COLOR;
   }
   
   close(): void {
@@ -115,7 +119,7 @@ export class PostModalComponent {
     }
 
     let ids = bucket.posts.map(post => post.postID)
-    this.bucketService.update(bucketID, { posts: ids })
+    this.bucketService.add(bucketID, ids)
   }
 
   toggleEdit() {
@@ -131,31 +135,39 @@ export class PostModalComponent {
     this.editingDesc = this.desc
     
     var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
-    
-    obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
-    obj.set({ title: this.title, desc: this.desc })
-    this.fabricUtils._canvas.renderAll()
+    // check if post is on board
+    if (obj){
+      obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
+      obj.set({ title: this.title, desc: this.desc })
+      this.fabricUtils._canvas.renderAll()
 
-    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+      obj = this.fabricUtils.toJSON(obj)
+    }
+    // bucket only so fabricObject is {}
+    else{
+      obj ="{}"
+    }
 
-    this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
+    this.postService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
       .then(() => this.toggleEdit())
   }
 
   onDelete() {
     var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-    if (!obj || obj.type != 'group') return;
-    this.fabricUtils._canvas.remove(obj);
-    this.fabricUtils._canvas.renderAll();
+    
+    if (obj && obj.type == 'group') {
+      this.fabricUtils._canvas.remove(obj);
+      this.fabricUtils._canvas.renderAll();
+    }
 
-    this.postsService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
+    this.postService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
   }
 
   addTag(event, tagOption): void {
     event.stopPropagation()
     this.tags.push(tagOption);
     this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
-    this.postsService.update(this.post.postID, { tags: this.tags })
+    this.postService.update(this.post.postID, { tags: this.tags })
   }
 
   removeTag(tag) {
@@ -167,7 +179,7 @@ export class PostModalComponent {
     }
 
     this.tagOptions.push(tag);
-    this.postsService.update(this.post.postID, { tags: this.tags })
+    this.postService.update(this.post.postID, { tags: this.tags })
   }
 
   addComment() {

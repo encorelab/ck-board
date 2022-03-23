@@ -96,7 +96,7 @@ export class FabricPostComponent extends fabric.Group {
       top: 40,
       width: 330,
       height: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + commentButton.getScaledHeight() + CONTENT_EXTRA_HEIGHT,
-      fill: '#F4D74B',
+      fill: options.color,
       rx: 20, 
       ry: 20,
       strokeWidth: 2,
@@ -115,6 +115,7 @@ export class FabricPostComponent extends fabric.Group {
       title: options.title,
       desc: options.desc,
       author: options.author,
+      tags: options.tags,
       subTargetCheck: true,
       authorID: options.authorID
     }

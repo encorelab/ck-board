@@ -35,6 +35,7 @@ import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -85,7 +86,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils, 
     private router: Router,  private activatedRoute: ActivatedRoute,
     public snackbarService: SnackbarService, public dialog: MatDialog,
-    public fileUploadService: FileUploadService
+    public fileUploadService: FileUploadService, public canvasService: CanvasService
   ) {}
 
   ngOnInit() {
@@ -399,7 +400,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       fabricObject: this.fabricUtils.toJSON(pObject),
       timestamp: new Date().getTime(),
     }
-    this.postService.create(post);
+    this.canvasService.addPostServer(post);
   }
 
   // sync board using incoming/outgoing posts
@@ -477,17 +478,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (likeButton && (studentHasPerm || isTeacher)) {
       this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
         if (data.size == 0) {
-          this.likesService.add({
-            likeID: Date.now() + '-' + this.user.id,
-            likerID: this.user.id,
-            postID: post.postID,
-            boardID: this.board.boardID
-          })
+          this.canvasService.likeCanvasPostClient(post.postID);
+          this.canvasService.likeCanvasPostServer(post.postID, this.user.id, this.board.boardID);
         } else {
-          data.forEach((data) => {
-            let like: Like = data.data()
-            this.likesService.remove(like.likeID)
-          })
+          this.canvasService.unlikeCanvasPostClient(post.postID);
+          this.canvasService.unlikeCanvasPostServer(data, post.postID);
         }
       })
     }

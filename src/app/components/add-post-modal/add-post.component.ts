@@ -1,10 +1,10 @@
 import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogInterface } from 'src/app/interfaces/dialog.interface';
 import { Board } from 'src/app/models/board';
 import { Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
+import { CanvasService } from 'src/app/services/canvas.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
@@ -31,6 +31,7 @@ export class AddPostComponent {
   constructor(
     public fabricUtils: FabricUtils,
     public dialogRef: MatDialogRef<AddPostComponent>,
+    public canvasService: CanvasService,
     @Inject(MAT_DIALOG_DATA) public data) {
       this.user = data.user
       this.board = data.board
@@ -52,8 +53,8 @@ export class AddPostComponent {
     this.tagOptions.push(tag);
   }
 
-  addPost = () => {
-    var fabricPost = new FabricPostComponent({
+  handleDialogSubmit() {
+    const fabricPost = new FabricPostComponent({
       title: this.title,
       author: this.user.username,
       authorID: this.user.id,
@@ -63,11 +64,8 @@ export class AddPostComponent {
       left: this.data.left,
       top: this.data.top
     });
-    this.fabricUtils._canvas.add(fabricPost);
-  }
 
-  handleDialogSubmit() {
-    this.addPost();
+    this.canvasService.addPostClient(this.title, this.message, fabricPost);
     this.dialogRef.close();
   }
 

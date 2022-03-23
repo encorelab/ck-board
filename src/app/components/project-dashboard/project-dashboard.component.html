@@ -9,6 +9,12 @@
                 <mat-icon>keyboard_return</mat-icon>
         </button>
         <button 
+            *ngIf="user && user.role == Role.TEACHER" 
+            mat-icon-button (click)="exportToCSV()" 
+            matTooltip="Export Data To CSV">
+                <mat-icon>download</mat-icon>
+        </button>
+        <button 
             mat-icon-button 
             [matMenuTriggerFor]="addMenu"
             *ngIf="user && user.role == Role.TEACHER"

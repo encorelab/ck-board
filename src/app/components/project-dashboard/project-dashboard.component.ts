@@ -10,6 +10,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { Role } from 'src/app/utils/constants';
+import { AngularFirestoreCollection } from '@angular/fire/firestore';
+import Trace from 'src/app/interfaces/trace';
+import { ExportToCsv } from 'export-to-csv';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -25,6 +28,9 @@ export class ProjectDashboardComponent implements OnInit {
   yourProjects:Project[]=[]
 
   Role: typeof Role = Role
+
+  private tracePath : string = 'trace';
+  traceCollection: AngularFirestoreCollection<Trace>;
 
   constructor(public boardService:BoardService,
     public projectService:ProjectService,
@@ -103,6 +109,27 @@ export class ProjectDashboardComponent implements OnInit {
 
   handleBoardClick(boardID) {
     this.router.navigate(['project/' + this.projectID + '/board/'+ boardID]);
+  }
+
+  async exportToCSV() {
+    const options = { 
+      filename: "CKBoard Tracing",
+      fieldSeparator: ',',
+      quoteStrings: '"',
+      decimalSeparator: '.',
+      showLabels: true, 
+      showTitle: true,
+      title: 'CKBoard Tracing',
+      useTextFile: false,
+      useBom: true,
+      useKeysAsHeaders: true,
+    };
+    const csvExporter = new ExportToCsv(options);
+    
+    const trace = await this.traceCollection.ref.where("projectId", "==", this.projectID).get();
+    let traceData: Trace[] = [];
+    trace.forEach(data => traceData.push(data.data()));
+    csvExporter.generateCsv(traceData);
   }
 
 }

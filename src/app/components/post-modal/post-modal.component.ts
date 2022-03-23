@@ -14,6 +14,7 @@ import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { Role } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -57,7 +58,7 @@ export class PostModalComponent {
     public dialogRef: MatDialogRef<PostModalComponent>,
     public commentService: CommentService, public likesService: LikesService,
     public postService: PostService, public bucketService: BucketService,
-    public fabricUtils: FabricUtils,
+    public fabricUtils: FabricUtils, public canvasService: CanvasService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
@@ -130,26 +131,19 @@ export class PostModalComponent {
     this.showComments = !this.showComments
   }
 
-  onUpdate() {
-    this.editingTitle = this.title
-    this.editingDesc = this.desc
-    
-    var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
-    // check if post is on board
-    if (obj){
-      obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
-      obj.set({ title: this.title, desc: this.desc })
-      this.fabricUtils._canvas.renderAll()
-
-      obj = this.fabricUtils.toJSON(obj)
+  async onUpdate() {
+    if(this.editingTitle != this.title || this.editingDesc != this.desc) {
+      this.editingTitle = this.title
+      this.editingDesc = this.desc
+      
+      const obj = await this.canvasService.modifyPostClient(this.post, this.title, this.desc);
+  
+      await this.canvasService.modifyPostServer(obj, this.post, this.title, this.desc);
+      this.toggleEdit();
     }
-    // bucket only so fabricObject is {}
-    else{
-      obj ="{}"
+    else {
+      this.close();
     }
-
-    this.postService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
-      .then(() => this.toggleEdit())
   }
 
   onDelete() {
@@ -182,7 +176,7 @@ export class PostModalComponent {
     this.postService.update(this.post.postID, { tags: this.tags })
   }
 
-  addComment() {
+  async addComment() {
     const comment: Comment = {
       comment: this.newComment,
       commentID: Date.now() + '-' + this.data.user.id,
@@ -191,23 +185,24 @@ export class PostModalComponent {
       boardID: this.data.board.boardID,
       author: this.data.user.username
     }
-    this.commentService.add(comment).then(() => {
-      this.newComment = ''
-      this.comments.push(comment)
-    }).catch((e) => console.log(e))
+    this.canvasService.createCommentClient(comment, this.comments);
+    await this.canvasService.createCommentServer(comment);
+    this.newComment = '';
   }
 
-  handleLikeClick() {
+  async handleLikeClick() {
     // if liking is locked just return (do nothing)
     if(this.user.role == Role.STUDENT && !this.data.board.permissions.allowStudentLiking){
       return;
     }
       
     if (this.isLiked) {
-      this.likesService.remove(this.isLiked.likeID).then(() => {
-        this.isLiked = null
-        this.likes = this.likes.filter(like => like.likerID != this.user.id)
-      })
+      const postId = this.isLiked.postID;
+      const likeId = this.isLiked.likeID;
+
+      [this.likes, this.isLiked] = await this.canvasService
+                                  .unlikeModalPostClient(postId, this.likes, this.isLiked, this.user.id);                  
+      this.canvasService.unlikeModalPostServer(likeId, postId);
     } else {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
@@ -215,9 +210,10 @@ export class PostModalComponent {
         postID: this.post.postID,
         boardID: this.data.board.boardID
       }
-      this.likesService.add(like)
-      this.isLiked = like
-      this.likes.push(like)
+      await this.canvasService.likeModalPostClient(like, this.likes);
+      await this.canvasService.likeModalPostServer(like);
+      this.isLiked = like;
+
     }
   }
 }

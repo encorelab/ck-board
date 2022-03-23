@@ -80,6 +80,9 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   async loadBucketsBoards() {
+    this.sourceOptions = [];
+    this.destOptions = [];
+    
     this.bucketService.getAllByBoard(this.data.board.boardID).then((buckets) => {
       this.sourceOptions = this.sourceOptions.concat(buckets);
       this.destOptions = this.destOptions.concat(buckets);

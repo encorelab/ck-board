@@ -6,7 +6,6 @@ import { MatDialog } from '@angular/material/dialog';
 
 import Post from '../../models/post';
 import Comment from 'src/app/models/comment';
-import { DialogInterface } from '../../interfaces/dialog.interface';
 
 import { BoardService } from '../../services/board.service';
 import { PostService } from '../../services/post.service';
@@ -14,7 +13,7 @@ import { PostService } from '../../services/post.service';
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
-import { AddPostComponent } from '../add-post-modal/add-post.component';
+import { AddPostComponent, AddPostDialog } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { CanvasPostEvent, Mode, POST_DEFAULT_OPACITY, POST_MOVING_FILL, POST_MOVING_OPACITY, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
@@ -208,14 +207,17 @@ export class CanvasComponent implements OnInit, OnDestroy {
   handleChoosePostLocation = (opt) => {
     if (opt.target == null) {
       this.canvas.selection = false;
-      this.dialog.open(AddPostComponent, {
-        width: '500px',
-        data: {
-          board: this.board,
-          user: this.user,
+      const data: AddPostDialog = {
+        board: this.board,
+        user: this.user,
+        spawnPosition: {
           top: opt.absolutePointer ? opt.absolutePointer.y : 150,
           left: opt.absolutePointer ? opt.absolutePointer.x : 150
         }
+      }
+      this.dialog.open(AddPostComponent, {
+        width: '500px',
+        data: data
       });
     }
     this.snackbarService.dequeueSnackbar();

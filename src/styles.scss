@@ -26,6 +26,7 @@ $custom-typography: mat.define-typography-config(
 @include mat.menu-theme(light.$ckb-light-theme);
 @include mat.select-theme(light.$ckb-light-theme);
 @include mat.slide-toggle-theme(light.$ckb-light-theme);
+@include mat.snack-bar-theme(light.$ckb-light-theme);
 @include mat.tabs-theme(light.$ckb-light-theme);
 @include mat.toolbar-theme(light.$ckb-light-theme);
 @include mat.tooltip-theme(light.$ckb-light-theme);

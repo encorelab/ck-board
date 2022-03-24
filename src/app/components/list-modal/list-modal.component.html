@@ -1,4 +1,9 @@
-<h1 mat-dialog-title>CK List</h1>
+<h1 mat-dialog-title>
+  <span>CK List</span>
+  <button mat-icon-button [mat-dialog-close] aria-label="Close">
+    <mat-icon>close</mat-icon>
+  </button>
+</h1>
 <h3 *ngIf="!loading && posts.length == 0" style="color: grey; text-align: center;">No posts created!</h3>
 <div mat-dialog-content (scroll)="onScroll($event)">
     <mat-chip-list>
@@ -17,7 +22,7 @@
     <div mat-menu-item *ngIf="filterOptions.length == 0">No tags available.</div>
     <div mat-menu-item  *ngFor="let tag of filterOptions" (click)="addFilter(tag)">{{ tag.name }}</div>
   </mat-menu>
-  <div class="list" *ngIf="!loading" >
+  <div class="post-list" *ngIf="!loading" >
     <app-html-post [post]="post" *ngFor="let post of filteredPosts"></app-html-post>
   </div>
 </div>

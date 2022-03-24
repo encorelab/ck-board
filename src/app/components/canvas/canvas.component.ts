@@ -131,8 +131,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   showBucketsModal() {
     this.dialog.open(BucketsModalComponent, {
-      width: '73vw',
-      height: '75vh',
+      maxWidth: 1280,
+      width: '95vw',
+      autoFocus: false,
       data: {
         board: this.board,
         user: this.user,
@@ -144,11 +145,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   showListModal() {
     this.dialog.open(ListModalComponent, {
-      width: '73vw',
-      height: '75vh',
+      maxWidth: 1280,
+      width: '95vw',
+      autoFocus: false,
       data: {
         board: this.board,
-      }
+      },
     });
   }
 

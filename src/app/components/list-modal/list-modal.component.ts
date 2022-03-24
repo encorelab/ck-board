@@ -33,13 +33,16 @@ export class ListModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.fetchInitialPosts()
-    this.filterPosts()
-    this.unsubListeners = this.initGroupEventsListener()
+    this.fetchInitialPosts().then(() =>{
+      // wait until posts are fetched before filtering and adding listners
+      this.filterPosts();
+      this.unsubListeners = this.initGroupEventsListener();
+    })
+    
   }
 
   initGroupEventsListener() {
-    const unsubPosts = this.postService.observable(this.board.boardID, this.handlePostCreate, this.handlePostUpdate);
+    const unsubPosts = this.postService.observable(this.board.boardID, this.handlePostUpdate, this.handlePostUpdate, this.handlePostDelete);
     return [unsubPosts];
   }
 
@@ -47,21 +50,21 @@ export class ListModalComponent implements OnInit, OnDestroy {
     this.posts = []
     this.lastItem = null
     this.loading = true
-    this.fetchMorePosts()
+    return this.fetchMorePosts()
   }
 
   fetchMorePosts() {
-    this.postService.getPaginated(this.board.boardID, { lastItem: this.lastItem, pageSize: 20 })
-      .then(({newLastItem, data}) => {
-        data.forEach(data => this.posts.push(data.data()))
-        this.lastItem = newLastItem ?? this.lastItem
-        this.loading = false
-        this.loadingMore = false
-      })
-      .catch(_err => {
-        this.loading = false; 
-        this.loadingMore = false
-      })
+    return this.postService.getPaginated(this.board.boardID, { lastItem: this.lastItem, pageSize: 20 })
+            .then(({newLastItem, data}) => {
+              data.forEach(data => this.posts.push(data.data()))
+              this.lastItem = newLastItem ?? this.lastItem
+              this.loading = false
+              this.loadingMore = false
+            })
+            .catch(_err => {
+              this.loading = false; 
+              this.loadingMore = false
+            })
   }
 
   onScroll(event: any) {
@@ -70,19 +73,26 @@ export class ListModalComponent implements OnInit, OnDestroy {
       this.fetchMorePosts()
     }
   }
-
-  handlePostCreate = (post) =>{
-    this.posts.push(post);
-    this.filterPosts();
-  }
   
   handlePostUpdate = (post) =>{
     // replace existing post with new one, if found
-    this.posts.forEach( (currentPost,index) =>{
-      if(currentPost.postID === post.postID){
-        this.posts[index] = post
+    let replaced = false
+    for(let i=0; i<this.posts.length; i++){
+      if(this.posts[i].postID === post.postID){
+        this.posts[i] = post
+        replaced = true
+        break
       }
-    })
+    }
+    // if not existing post, push to posts
+    if(!replaced){
+      this.posts.push(post);
+    }
+    this.filterPosts();
+  }
+
+  handlePostDelete = (post) =>{
+    this.posts = this.posts.filter(currentPost => currentPost.postID !== post.postID)
     this.filterPosts();
   }
 

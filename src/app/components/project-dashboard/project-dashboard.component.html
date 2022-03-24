@@ -36,7 +36,8 @@
                     (click)="handleBoardClick(board.boardID)"
                     (keyup.enter)="handleBoardClick(board.boardID)"
                     role="button"
-                    tabindex="0">
+                    tabindex="0"
+                    [attr.aria-label]="'View ' + board.name">
                     <mat-card-title class="title accent">
                         <mat-icon color="accent">picture_in_picture</mat-icon>
                         <span>{{ board.name }}</span>

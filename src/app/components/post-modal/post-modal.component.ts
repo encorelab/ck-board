@@ -12,7 +12,7 @@ import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
-import { Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, Role } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
@@ -140,7 +140,7 @@ export class PostModalComponent {
     // check if post is on board
     if (obj){
       obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
-      obj.set({ title: this.title, desc: this.desc })
+      obj.set({ title: this.title, desc: this.desc, canvasEvent: CanvasPostEvent.TITLE_CHANGE })
       this.fabricUtils._canvas.renderAll()
 
       obj = this.fabricUtils.toJSON(obj)

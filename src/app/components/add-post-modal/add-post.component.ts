@@ -4,10 +4,10 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
 import { Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
+import { POST_COLOR } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
-import { POST_COLOR } from 'src/app/utils/constants';
 
 export interface AddPostDialog {
   user: User;

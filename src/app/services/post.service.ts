@@ -20,17 +20,18 @@ export class PostService {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }
 
-  observable(boardID: string,handleAdd: Function,handleModification: Function) {
+  observable(boardID: string, handleAdd: Function, handleModification: Function) {
     return this.postsCollection.ref
-      .where('boardID', '==', boardID)
+      .where("boardID", "==", boardID)
       .onSnapshot((snapshot) => {
         snapshot.docChanges().forEach((change) => {
-          if (change.type === 'added') {
-            handleAdd(change.doc.data());
-          } else if (change.type === 'modified') {
-            handleModification(change.doc.data());
+          const doc = change.doc.data();
+          if (change.type === "added") {
+            handleAdd(doc);
+          } else if (change.type === "modified") {
+            handleModification(doc);
           }
-        });
+        })
       });
   }
 
@@ -101,6 +102,6 @@ export class PostService {
   }
 
   delete(postID: string) {
-    return this.postsCollection.ref.doc(postID).delete().catch(e => console.log(e))
+    return this.postsCollection.ref.doc(postID).delete()
   }
 }

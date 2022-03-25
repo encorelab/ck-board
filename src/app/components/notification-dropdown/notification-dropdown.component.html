@@ -1,0 +1,14 @@
+<button
+    (click)="createNotification()">Create notification
+</button>
+<button
+    mat-icon-button 
+    [matMenuTriggerFor]="menu">
+    <mat-icon *ngIf="notifications && notifications.length; else elseBlock">notifications_active</mat-icon>
+    <ng-template #elseBlock> <mat-icon>notifications</mat-icon></ng-template>
+</button>
+<mat-menu
+    #menu="matMenu">
+    <p *ngFor="let notification of notifications">{{notification.text}}</p>
+
+</mat-menu>

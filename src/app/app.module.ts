@@ -39,6 +39,7 @@ import { ListModalComponent } from './components/list-modal/list-modal.component
 import { ToolbarComponent } from './components/toolbar/toolbar.component';
 import { SnackBarComponent } from './components/snackbar/snackbar.component';
 import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
+import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +68,8 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
     HtmlPostComponent,
     ToolbarComponent,
     SnackBarComponent,
-    ConfirmModalComponent
+    ConfirmModalComponent,
+    NotificationDropdownComponent
   ],
   imports: [
     BrowserModule,

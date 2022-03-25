@@ -119,7 +119,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
     
     this.bucketService.create(bucket).then(() => {
       this.loadBucketsBoards();
-      this.openSnackBar('Bucket created succesfully!');
+      this.openSnackBar('Bucket: ' + bucket.name + ' created succesfully!');
       this.bucketNameFormControl.reset();
     });
   }
@@ -149,7 +149,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       this.workflowService.runDistribution(workflow).then(async () => {
         this.workflowService.updateStatus(workflow.workflowID, false);
         workflow.active = false;
-        this.openSnackBar('Workflow completed successfully!')
+        this.openSnackBar('Workflow: ' + workflow.name +  ' completed successfully!')
       });
     })
   }
@@ -167,9 +167,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   }
 
   openSnackBar(message: string) {
-    this.snackbarService.queueSnackbar(message, undefined, {
-      matSnackbarConfig: this.snackbarConfig
-    });
+    this.snackbarService.queueSnackbar(message);
   }
 
   ngOnDestroy(): void {

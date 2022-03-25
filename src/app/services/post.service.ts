@@ -20,7 +20,7 @@ export class PostService {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }
 
-  observable(boardID: string, handleAdd: Function, handleModification: Function) {
+  observable(boardID: string,handleAdd: Function,handleModification: Function, handleDelete?:Function) {
     return this.postsCollection.ref
       .where("boardID", "==", boardID)
       .onSnapshot((snapshot) => {
@@ -31,7 +31,10 @@ export class PostService {
           } else if (change.type === "modified") {
             handleModification(doc);
           }
-        })
+          else if(change.type === 'removed' && handleDelete !== undefined){
+            handleDelete(change.doc.data())
+          }
+        });
       });
   }
 

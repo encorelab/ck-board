@@ -141,7 +141,12 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.unsubPosts()
-    this.unsubBucket()
+    if(this.unsubPosts){
+      this.unsubPosts()
+    }
+    if(this.unsubBucket){
+      this.unsubBucket()
+    }
+    
   }
 }

@@ -22,6 +22,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
   activeFilters: Tag[] =[]
   filterOptions: Tag[] =[]
   filteredPosts:any[]
+  unsubListeners: Function[] = []
 
   constructor(
     public dialogRef: MatDialogRef<ListModalComponent>,
@@ -32,29 +33,38 @@ export class ListModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.fetchInitialPosts()
-    this.filterPosts()
+    this.fetchInitialPosts().then(() =>{
+      // wait until posts are fetched before filtering and adding listners
+      this.filterPosts();
+      this.unsubListeners = this.initGroupEventsListener();
+    })
+    
+  }
+
+  initGroupEventsListener() {
+    const unsubPosts = this.postService.observable(this.board.boardID, this.handlePostUpdate, this.handlePostUpdate, this.handlePostDelete);
+    return [unsubPosts];
   }
 
   fetchInitialPosts() {
     this.posts = []
     this.lastItem = null
     this.loading = true
-    this.fetchMorePosts()
+    return this.fetchMorePosts()
   }
 
   fetchMorePosts() {
-    this.postService.getPaginated(this.board.boardID, { lastItem: this.lastItem, pageSize: 20 })
-      .then(({newLastItem, data}) => {
-        data.forEach(data => this.posts.push(data.data()))
-        this.lastItem = newLastItem ?? this.lastItem
-        this.loading = false
-        this.loadingMore = false
-      })
-      .catch(_err => {
-        this.loading = false; 
-        this.loadingMore = false
-      })
+    return this.postService.getPaginated(this.board.boardID, { lastItem: this.lastItem, pageSize: 20 })
+            .then(({newLastItem, data}) => {
+              data.forEach(data => this.posts.push(data.data()))
+              this.lastItem = newLastItem ?? this.lastItem
+              this.loading = false
+              this.loadingMore = false
+            })
+            .catch(_err => {
+              this.loading = false; 
+              this.loadingMore = false
+            })
   }
 
   onScroll(event: any) {
@@ -62,6 +72,28 @@ export class ListModalComponent implements OnInit, OnDestroy {
       this.loadingMore = true
       this.fetchMorePosts()
     }
+  }
+  
+  handlePostUpdate = (post) =>{
+    // replace existing post with new one, if found
+    let replaced = false
+    for(let i=0; i<this.posts.length; i++){
+      if(this.posts[i].postID === post.postID){
+        this.posts[i] = post
+        replaced = true
+        break
+      }
+    }
+    // if not existing post, push to posts
+    if(!replaced){
+      this.posts.push(post);
+    }
+    this.filterPosts();
+  }
+
+  handlePostDelete = (post) =>{
+    this.posts = this.posts.filter(currentPost => currentPost.postID !== post.postID)
+    this.filterPosts();
   }
 
   addFilter(filter:Tag){
@@ -92,5 +124,6 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.posts = []
+    this.unsubListeners.forEach(unsub => unsub())
   }
 }

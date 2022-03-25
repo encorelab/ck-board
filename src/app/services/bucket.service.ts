@@ -64,7 +64,7 @@ export class BucketService {
     })
   }
 
-  create(bucket: Bucket): any {
+  create(bucket: Bucket): Promise<void> {
     return this.bucketsCollection.doc(bucket.bucketID).set(bucket)
   }
 

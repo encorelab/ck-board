@@ -1,7 +1,8 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
+import { Subscription } from 'rxjs';
 import { Board } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
 import CustomWorkflow, { ContainerType, DistributionWorkflow, WorkflowCriteria, WorkflowType } from 'src/app/models/workflow';
@@ -17,7 +18,7 @@ import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
   templateUrl: './create-workflow-modal.component.html',
   styleUrls: ['./create-workflow-modal.component.scss']
 })
-export class CreateWorkflowModalComponent implements OnInit {
+export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   selected = new FormControl(0);
 
   board: Board
@@ -56,6 +57,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   sourceFormControl = new FormControl('valid', [Validators.required])
   destinationFormControl = new FormControl('valid', [Validators.required])
   tagsFormControl = new FormControl();
+  tagsFormSubscription: Subscription;
 
   matcher = new MyErrorStateMatcher();
   snackbarConfig: MatSnackBarConfig;
@@ -74,6 +76,15 @@ export class CreateWorkflowModalComponent implements OnInit {
   ngOnInit(): void {
     this.board = this.data.board
     this.tags = this.data.board.tags
+    this.loadBucketsBoards();
+    this.loadWorkflows()
+    this.tagsFormSubscription = this.tagsFormControl.valueChanges.subscribe((value) => this.selectedTags = value)
+  }
+
+  async loadBucketsBoards() {
+    this.sourceOptions = [];
+    this.destOptions = [];
+
     this.bucketService.getAllByBoard(this.data.board.boardID).then((buckets) => {
       this.sourceOptions = this.sourceOptions.concat(buckets);
       this.destOptions = this.destOptions.concat(buckets);
@@ -86,8 +97,6 @@ export class CreateWorkflowModalComponent implements OnInit {
           this.destOptions.push(board);
       })
     })
-    this.loadWorkflows()
-    this.tagsFormControl.valueChanges.subscribe((value) => this.selectedTags = value)
   }
 
   async loadWorkflows() {
@@ -108,8 +117,11 @@ export class CreateWorkflowModalComponent implements OnInit {
       timestamp: new Date().getTime()
     }
     
-    this.bucketService.create(bucket)
-    this.dialogRef.close();
+    this.bucketService.create(bucket).then(() => {
+      this.loadBucketsBoards();
+      this.openSnackBar('Bucket: ' + bucket.name + ' created succesfully!');
+      this.bucketNameFormControl.reset();
+    });
   }
 
   createWorkflow() {
@@ -137,7 +149,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.workflowService.runDistribution(workflow).then(async () => {
         this.workflowService.updateStatus(workflow.workflowID, false);
         workflow.active = false;
-        this.openSnackBar('Workflow completed successfully!')
+        this.openSnackBar('Workflow: ' + workflow.name +  ' completed successfully!')
       });
     })
   }
@@ -155,9 +167,11 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   openSnackBar(message: string) {
-    this.snackbarService.queueSnackbar(message, undefined, {
-      matSnackbarConfig: this.snackbarConfig
-    });
+    this.snackbarService.queueSnackbar(message);
+  }
+
+  ngOnDestroy(): void {
+    this.tagsFormSubscription.unsubscribe();
   }
 
   _isBoard(object: Board | Bucket): object is Board {

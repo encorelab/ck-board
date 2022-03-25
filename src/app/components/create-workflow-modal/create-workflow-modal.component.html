@@ -12,10 +12,10 @@
       </mat-form-field>
     </mat-tab>
     <mat-tab label="Create Workflow">
-      <mat-radio-group [(ngModel)]="workflowType">
-        <mat-radio-button style="margin-top: 20px;" [value]="WorkflowType.DISTRIBUTION">Distribution Workflow</mat-radio-button>
+      <!-- <mat-radio-group [(ngModel)]="workflowType">
+        <mat-radio-button style="margin-top: 20px;" [checked]="true" [value]="WorkflowType.DISTRIBUTION">Distribution Workflow</mat-radio-button>
         <mat-radio-button style="margin-top: 20px;" disabled="true" [value]="WorkflowType.CUSTOM">Custom Criteria Workflow - Coming Soon!</mat-radio-button>
-      </mat-radio-group>
+      </mat-radio-group> -->
       <div *ngIf="workflowType == WorkflowType.DISTRIBUTION">
         <mat-form-field appearance="outline" style="width:100%; margin-top: 10px;">
           <mat-label>Workflow Name</mat-label>

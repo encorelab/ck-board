@@ -32,6 +32,9 @@ export const POST_COLOR: string = '#FFE663';
 export const POST_DEFAULT_OPACITY: number = 1;
 export const POST_DEFAULT_BORDER: string = 'black';
 
+export const POST_DEFAULT_BORDER_THICKNESS: number = 2;
+export const POST_TAGGED_BORDER_THICKNESS: number = 4;
+
 export const POST_MOVING_FILL: string = '#999999';
 export const POST_MOVING_OPACITY: number = 0.5;
 

@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { fabric } from 'fabric';
-import { POST_DEFAULT_BORDER } from 'src/app/utils/constants';
+import { POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS } from 'src/app/utils/constants';
 
 const AUTHOR_OFFSET = 65
 const DESC_OFFSET = 80
@@ -100,7 +100,7 @@ export class FabricPostComponent extends fabric.Group {
       fill: options.color,
       rx: 20, 
       ry: 20,
-      strokeWidth: 2,
+      strokeWidth: POST_DEFAULT_BORDER_THICKNESS,
       stroke: POST_DEFAULT_BORDER,
     });
 

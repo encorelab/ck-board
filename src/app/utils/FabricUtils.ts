@@ -74,11 +74,22 @@ export class FabricUtils {
     }
 
     setBorderColor(existing: fabric.Group, color: string) {
-        console.log(existing);
         const content = this.getChildFromGroup(existing, 'content');
 
         if (content) {
             content.set({ stroke: color, dirty: true });
+        }
+
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
+    }
+
+    setBorderThickness(existing: fabric.Group, thickness: number) {
+        const content = this.getChildFromGroup(existing, 'content');
+
+        if (content) {
+            content.set({ strokeWidth: thickness, dirty: true });
         }
 
         existing.dirty = true;

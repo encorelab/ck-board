@@ -868,16 +868,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     let activeObj: any = this.canvas.getActiveObject();
+    
     if (activeObj) {
-      var children: fabric.Object[] = activeObj.getObjects()
-      var content: any = children.filter((obj) => obj.name == 'content').pop()
-  
-      content.set({ stroke: "black" })
-      activeObj.dirty = true
-      activeObj.addWithUpdate();
-  
+      activeObj = this.fabricUtils.setFillColor(activeObj, POST_COLOR);
+      activeObj = this.fabricUtils.setOpacity(activeObj, POST_DEFAULT_OPACITY);
+      activeObj = this.fabricUtils.setPostMovement(activeObj, false);
       activeObj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
-      this.canvas.renderAll()
+
+      this.canvas.discardActiveObject();
   
       var id = activeObj.postID
       activeObj = this.fabricUtils.toJSON(activeObj)

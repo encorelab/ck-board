@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { fabric } from 'fabric';
+import { POST_DEFAULT_BORDER } from 'src/app/utils/constants';
 
 const AUTHOR_OFFSET = 65
 const DESC_OFFSET = 80
@@ -100,7 +101,7 @@ export class FabricPostComponent extends fabric.Group {
       rx: 20, 
       ry: 20,
       strokeWidth: 2,
-      stroke: "black",
+      stroke: POST_DEFAULT_BORDER,
     });
 
     const groupOptions = {
@@ -117,7 +118,7 @@ export class FabricPostComponent extends fabric.Group {
       author: options.author,
       tags: options.tags,
       subTargetCheck: true,
-      authorID: options.authorID
+      authorID: options.authorID,
     }
 
     super([content, title, author, desc, likeButton, likeCount, commentButton, commentCount], groupOptions);

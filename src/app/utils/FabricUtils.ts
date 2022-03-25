@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
-import { Canvas } from 'fabric/fabric-impl';
 import { CanvasPostEvent } from './constants';
 
 @Injectable({providedIn: 'root'})
@@ -76,7 +75,7 @@ export class FabricUtils {
 
     setBorderColor(existing: fabric.Group, color: string) {
         const content = this.getChildFromGroup(existing, 'content');
-        
+
         if (content) {
             content.set({ stroke: color, dirty: true });
         }
@@ -86,9 +85,21 @@ export class FabricUtils {
         return existing;
     }
 
+    setBorderThickness(existing: fabric.Group, thickness: number) {
+        const content = this.getChildFromGroup(existing, 'content');
+
+        if (content) {
+            content.set({ strokeWidth: thickness, dirty: true });
+        }
+
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
+    }
+
     setFillColor(existing: fabric.Group, color: string) {
         const content = this.getChildFromGroup(existing, 'content');
-        
+
         if (content) {
             content.set({ fill: color, dirty: true });
         }

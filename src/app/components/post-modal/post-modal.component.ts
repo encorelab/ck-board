@@ -12,7 +12,7 @@ import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
-import { CanvasPostEvent, Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, Role } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
@@ -179,19 +179,44 @@ export class PostModalComponent {
     event.stopPropagation()
     this.tags.push(tagOption);
     this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
-    this.postService.update(this.post.postID, { tags: this.tags })
+
+    let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
+
+    if (fabricObject) {
+      if (tagOption.name == NEEDS_ATTENTION_TAG.name) {
+        fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NEEDS_ATTENTION_TAG);
+      }
+  
+      const jsonPost = this.fabricUtils.toJSON(fabricObject);
+      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+    } else {
+      this.postService.update(this.post.postID, { tags: this.tags });
+    }
   }
 
   removeTag(tag) {
     if(!this.canStudentTag)
-      return
+      return;
+
     const index = this.tags.indexOf(tag);
     if (index >= 0) {
       this.tags.splice(index, 1);
     }
 
     this.tagOptions.push(tag);
-    this.postService.update(this.post.postID, { tags: this.tags })
+
+    let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
+
+    if (fabricObject) {
+      if (tag.name == NEEDS_ATTENTION_TAG.name) {
+        fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NO_TAG);
+      }
+      
+      const jsonPost = this.fabricUtils.toJSON(fabricObject);
+      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+    } else {
+      this.postService.update(this.post.postID, { tags: this.tags });
+    }
   }
 
   addComment() {

@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
 import { Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
-import { POST_COLOR } from 'src/app/utils/constants';
+import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_TAGGED_BORDER_THICKNESS } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
@@ -60,6 +60,8 @@ export class AddPostComponent {
   }
 
   addPost = () => {
+    const containsAttentionTag = this.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
+    
     var fabricPost = new FabricPostComponent({
       title: this.title,
       author: this.user.username,
@@ -70,6 +72,8 @@ export class AddPostComponent {
       left: this.data.spawnPosition.left,
       top: this.data.spawnPosition.top,
       color: POST_COLOR,
+      stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
+      strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
     });
     this.fabricUtils._canvas.add(fabricPost);
   }

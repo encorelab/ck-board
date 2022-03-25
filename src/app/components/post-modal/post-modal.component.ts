@@ -182,12 +182,16 @@ export class PostModalComponent {
 
     let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
 
-    if (tagOption.name == NEEDS_ATTENTION_TAG.name) {
-      fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NEEDS_ATTENTION_TAG);
+    if (fabricObject) {
+      if (tagOption.name == NEEDS_ATTENTION_TAG.name) {
+        fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NEEDS_ATTENTION_TAG);
+      }
+  
+      const jsonPost = this.fabricUtils.toJSON(fabricObject);
+      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+    } else {
+      this.postService.update(this.post.postID, { tags: this.tags });
     }
-
-    const jsonPost = this.fabricUtils.toJSON(fabricObject);
-    this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
   }
 
   removeTag(tag) {
@@ -203,12 +207,16 @@ export class PostModalComponent {
 
     let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
 
-    if (tag.name == NEEDS_ATTENTION_TAG.name) {
-      fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NO_TAG);
+    if (fabricObject) {
+      if (tag.name == NEEDS_ATTENTION_TAG.name) {
+        fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NO_TAG);
+      }
+      
+      const jsonPost = this.fabricUtils.toJSON(fabricObject);
+      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+    } else {
+      this.postService.update(this.post.postID, { tags: this.tags });
     }
-    
-    const jsonPost = this.fabricUtils.toJSON(fabricObject);
-    this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
   }
 
   addComment() {

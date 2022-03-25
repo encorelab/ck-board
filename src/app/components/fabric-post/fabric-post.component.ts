@@ -100,8 +100,8 @@ export class FabricPostComponent extends fabric.Group {
       fill: options.color,
       rx: 20, 
       ry: 20,
-      strokeWidth: POST_DEFAULT_BORDER_THICKNESS,
-      stroke: POST_DEFAULT_BORDER,
+      strokeWidth: options.strokeWidth ?? POST_DEFAULT_BORDER_THICKNESS,
+      stroke: options.stroke ?? POST_DEFAULT_BORDER,
     });
 
     const groupOptions = {

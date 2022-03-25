@@ -9,7 +9,7 @@ import Post, { Tag } from 'src/app/models/post';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
-import { POST_COLOR } from 'src/app/utils/constants';
+import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_TAGGED_BORDER_THICKNESS } from 'src/app/utils/constants';
 
 
 @Component({
@@ -127,16 +127,21 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     this.postsService.get(postID).then(data =>{
       data.forEach(item =>{
         let post = item.data()
+
+        const containsAttentionTag = post.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
+
         let fabricPost = new FabricPostComponent({
           title: post.title,
           author: this.user.username,
           authorID: this.user.id,
           desc: post.desc,
-          tags: [],
+          tags: post.tags ?? [],
           lock: !this.board.permissions.allowStudentMoveAny,
           left: this.Xoffset,
           top: this.Yoffset,
-          color: POST_COLOR
+          color: POST_COLOR,
+          stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
+          strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
         });
 
         fabricPost = this.fabricUtils.setField(fabricPost, 'postID', postID);

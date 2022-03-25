@@ -1,11 +1,15 @@
-.list {
-  display: flex; 
+@use '../../../style/layout/post-list';
 
-  flex-flow: row wrap; 
-  justify-content: space-evenly;
-  row-gap: 10px;
+.mat-dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-::ng-deep .mat-dialog-container {
-  overflow-y: hidden !important;
+.mat-dialog-content {
+  max-height: 75vh;
+}
+
+.tag-form {
+  width: 100%;
 }

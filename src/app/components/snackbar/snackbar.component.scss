@@ -1,0 +1,30 @@
+.title {
+  color: white; 
+  line-height: 34px;
+}
+
+.description {
+  color: whitesmoke; 
+  font-size: 0.9rem; 
+  
+  margin-bottom: 0.5em;
+
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* number of lines to show */
+          line-clamp: 2; 
+  -webkit-box-orient: vertical;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.complex-actions {
+  justify-content: end;
+}

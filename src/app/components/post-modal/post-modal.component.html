@@ -18,19 +18,12 @@
         <mat-checkbox id={{bucket.bucketID}} [checked]="bucket.includesPost" (change)="updateBucket($event)">{{ bucket.name }}</mat-checkbox>
       </div>
     </mat-menu>
-    <button mat-icon-button [matMenuTriggerFor]="menu" *ngIf="showEditDelete">
-      <mat-icon>more_vert</mat-icon>
+    <button mat-icon-button *ngIf="!isEditing && showEditDelete && canEditDelete" (click)="toggleEdit()">
+      <mat-icon>edit</mat-icon>
     </button>
-    <mat-menu #menu="matMenu" >
-      <button mat-menu-item *ngIf="!isEditing && canEditDelete" (click)="toggleEdit()">
-        <mat-icon>edit</mat-icon>
-        <span>Edit Post</span>
-      </button>
-      <button mat-menu-item *ngIf="canEditDelete" (click)="onDelete()">
-        <mat-icon>delete</mat-icon>
-        <span>Delete Post</span>
-      </button>
-    </mat-menu>
+    <button mat-icon-button *ngIf="showEditDelete && canEditDelete" (click)="onDelete()">
+      <mat-icon>delete</mat-icon>
+    </button>
   </mat-card-header>
   <mat-card-content>
     <p style="overflow-wrap: break-word;" [innerHTML]="editingDesc"> {{ editingDesc }} </p>
@@ -49,13 +42,13 @@
           Add Tag 
           <mat-icon>add</mat-icon>
         </mat-chip>
-        <mat-chip style="background-color: #F4D74B" *ngFor="let tag of tags">
-          {{ tag }}
+        <mat-chip [ngStyle]="{'background-color': tag.color}" *ngFor="let tag of tags">
+          {{ tag.name }}
           <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
         </mat-chip>
         <mat-menu #menu1="matMenu">
           <div mat-menu-item *ngIf="tagOptions && tagOptions.length == 0">No tags available.</div>
-          <div mat-menu-item (click)="addTag($event, tagOption)" *ngFor="let tagOption of tagOptions">{{ tagOption }}</div>
+          <div mat-menu-item (click)="addTag($event, tagOption)" *ngFor="let tagOption of tagOptions">{{ tagOption.name }}</div>
         </mat-menu>
       </mat-chip-list>
     </mat-form-field>

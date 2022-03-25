@@ -1,46 +1,5 @@
-.card {
-    width: 250px;
-    height: 100px;
-    padding: 16px;
-    cursor: pointer;
-}
+@use '../../../style/layout/dashboard';
 
-.header {
-    margin-left: 3%;
-}
-
-mat-toolbar {
-    justify-content: space-between;
-}
-
-.content {
-    padding: 1px;
-}
-
-.content > mat-card {
-    margin-bottom: 1px;
-}
-
-.column-label {
-    margin-right: 8px;
-    font-size: 1rem;
-}
-
-.title {
-    margin-left: -16px;
-}
-
-.no-boards {
-    position: absolute;
-    transform: translate(-50%,-50%);
-    left: 50%;
-    top: 40%;
-    font-size: xx-large;
-    color: grey;
-}
-
-.icons {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
+.heading {
+  margin-top: -0.5em;
 }

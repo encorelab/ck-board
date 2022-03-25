@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import Comment from 'src/app/models/comment';
 import { CommentService } from 'src/app/services/comment.service';
@@ -10,9 +10,11 @@ import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Post from 'src/app/models/post';
+import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
-import { Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, Role } from 'src/app/utils/constants';
+import { POST_COLOR } from 'src/app/utils/constants';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -22,8 +24,8 @@ const linkifyStr = require('linkifyjs/lib/linkify-string');
   styleUrls: ['./post-modal.component.scss']
 })
 export class PostModalComponent {
-  tags: string[] = []
-  tagOptions: string[] = []
+  tags: Tag[] = []
+  tagOptions: Tag[] = []
 
   user: User
   post: Post
@@ -34,11 +36,12 @@ export class PostModalComponent {
   desc: string
   editingDesc: string
   isEditing: boolean = false
-  showEditDelete: boolean = false
   canEditDelete: boolean
   canStudentComment:boolean
   canStudentTag:boolean
+  postColor: string;
   showComments: boolean = false
+  showEditDelete: boolean = false
   showAuthorName:boolean
 
   titleControl = new FormControl('', [Validators.required, Validators.maxLength(50)]);
@@ -53,13 +56,14 @@ export class PostModalComponent {
 
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
+    public dialog: MatDialog,
     public commentService: CommentService, public likesService: LikesService,
-    public postsService: PostService, public bucketService: BucketService,
+    public postService: PostService, public bucketService: BucketService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
-      this.postsService.get(data.post.postID).then((item) => {
+      this.postService.get(data.post.postID).then((item) => {
         item.forEach((post) => {
           var p = post.data()
           this.post = p
@@ -68,7 +72,8 @@ export class PostModalComponent {
           this.desc = p.desc
           this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
           this.tags = p.tags
-          this.tagOptions = data.board.tags.filter(n => !this.tags.includes(n))
+          this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
+          
           this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == Role.TEACHER
         })
       })
@@ -98,6 +103,7 @@ export class PostModalComponent {
     this.canStudentComment = (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher 
     this.canStudentTag = (isStudent && data.board.permissions.allowStudentTagging) || isTeacher 
     this.showAuthorName = (isStudent && data.board.permissions.showAuthorNameStudent) || (isTeacher && data.board.permissions.showAuthorNameTeacher)
+    this.postColor = POST_COLOR;
   }
   
   close(): void {
@@ -115,7 +121,7 @@ export class PostModalComponent {
     }
 
     let ids = bucket.posts.map(post => post.postID)
-    this.bucketService.update(bucketID, { posts: ids })
+    this.bucketService.add(bucketID, ids)
   }
 
   toggleEdit() {
@@ -131,43 +137,86 @@ export class PostModalComponent {
     this.editingDesc = this.desc
     
     var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
-    
-    obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
-    obj.set({ title: this.title, desc: this.desc })
-    this.fabricUtils._canvas.renderAll()
+    // check if post is on board
+    if (obj){
+      obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
+      obj.set({ title: this.title, desc: this.desc, canvasEvent: CanvasPostEvent.TITLE_CHANGE })
+      this.fabricUtils._canvas.renderAll()
 
-    obj = JSON.stringify(obj.toJSON(this.fabricUtils.serializableProperties))
+      obj = this.fabricUtils.toJSON(obj)
+    }
+    // bucket only so fabricObject is {}
+    else{
+      obj ="{}"
+    }
 
-    this.postsService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
+    this.postService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
       .then(() => this.toggleEdit())
   }
 
   onDelete() {
-    var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-    if (!obj || obj.type != 'group') return;
-    this.fabricUtils._canvas.remove(obj);
-    this.fabricUtils._canvas.renderAll();
-
-    this.postsService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to permanently delete this post?',
+        handleConfirm: () => {
+          this.postService.delete(this.post.postID).then(() => {
+            var obj = this.fabricUtils.getObjectFromId(this.post.postID);
+    
+            if (obj && obj.type == 'group') {
+              this.fabricUtils._canvas.remove(obj);
+              this.fabricUtils._canvas.renderAll();
+            }
+            this.dialogRef.close(DELETE);
+          })
+        }
+      }
+    });
   }
 
   addTag(event, tagOption): void {
     event.stopPropagation()
     this.tags.push(tagOption);
     this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
-    this.postsService.update(this.post.postID, { tags: this.tags })
+
+    let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
+
+    if (fabricObject) {
+      if (tagOption.name == NEEDS_ATTENTION_TAG.name) {
+        fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NEEDS_ATTENTION_TAG);
+      }
+  
+      const jsonPost = this.fabricUtils.toJSON(fabricObject);
+      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+    } else {
+      this.postService.update(this.post.postID, { tags: this.tags });
+    }
   }
 
   removeTag(tag) {
     if(!this.canStudentTag)
-      return
+      return;
+
     const index = this.tags.indexOf(tag);
     if (index >= 0) {
       this.tags.splice(index, 1);
     }
 
     this.tagOptions.push(tag);
-    this.postsService.update(this.post.postID, { tags: this.tags })
+
+    let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
+
+    if (fabricObject) {
+      if (tag.name == NEEDS_ATTENTION_TAG.name) {
+        fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NO_TAG);
+      }
+      
+      const jsonPost = this.fabricUtils.toJSON(fabricObject);
+      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+    } else {
+      this.postService.update(this.post.postID, { tags: this.tags });
+    }
   }
 
   addComment() {

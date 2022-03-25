@@ -6,7 +6,6 @@ import { MatDialog } from '@angular/material/dialog';
 
 import Post from '../../models/post';
 import Comment from 'src/app/models/comment';
-import { DialogInterface } from '../../interfaces/dialog.interface';
 
 import { BoardService } from '../../services/board.service';
 import { PostService } from '../../services/post.service';
@@ -14,9 +13,9 @@ import { PostService } from '../../services/post.service';
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
-import { AddPostComponent } from '../add-post-modal/add-post.component';
+import { AddPostComponent, AddPostDialog } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { Mode, Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, Mode, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_DEFAULT_OPACITY, POST_MOVING_FILL, POST_MOVING_OPACITY, POST_TAGGED_BORDER_THICKNESS, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -100,6 +99,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const unsubGroupEvents = this.initGroupEventsListener();
 
     this.unsubListeners = unsubCanvasEvents.concat(unsubGroupEvents);
+    window.onbeforeunload = () => this.ngOnDestroy();
   }
 
   initCanvasEventsListener() {
@@ -207,14 +207,17 @@ export class CanvasComponent implements OnInit, OnDestroy {
   handleChoosePostLocation = (opt) => {
     if (opt.target == null) {
       this.canvas.selection = false;
-      this.dialog.open(AddPostComponent, {
-        width: '500px',
-        data: {
-          board: this.board,
-          user: this.user,
+      const data: AddPostDialog = {
+        board: this.board,
+        user: this.user,
+        spawnPosition: {
           top: opt.absolutePointer ? opt.absolutePointer.y : 150,
           left: opt.absolutePointer ? opt.absolutePointer.x : 150
         }
+      }
+      this.dialog.open(AddPostComponent, {
+        width: '500px',
+        data: data
       });
     }
     this.snackbarService.dequeueSnackbar();
@@ -226,20 +229,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
-  }
-
-  addPost = (title: string, desc = '', left: number, top: number) => {
-    var fabricPost = new FabricPostComponent({
-      title: title,
-      author: this.user.username,
-      authorID: this.user.id,
-      desc: desc,
-      lock: !this.board.permissions.allowStudentMoveAny,
-      left: left,
-      top: top,
-      color: this.postColor
-    });
-    this.canvas.add(fabricPost);
   }
 
   openSettingsDialog() {
@@ -415,20 +404,45 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
 
     if (existing) {
-      // if title or desc was updated, need to re-render with updated properties
-      if (obj.title != existing.title || obj.desc != existing.desc) {
-        existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc)
-        existing.desc = obj.desc
-        existing.title = obj.title
-      }
+      const movedBySelf = obj.moverID == this.user.id;
+      const event = parseInt(obj.canvasEvent);
+      delete obj.moverID && delete obj.canvasEvent
 
-      existing = this.fabricUtils.updateLikeCount(existing, obj)
-      existing = this.fabricUtils.updateCommentCount(existing, obj)
-      existing.set(obj)
-      existing.setCoords()
-      this.canvas.renderAll()
+      console.log(event);
+      if (event == CanvasPostEvent.TITLE_CHANGE || event == CanvasPostEvent.DESC_CHANGE) {
+        existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc);
+        this.canvas.requestRenderAll()
+      } else if (event == CanvasPostEvent.LIKE) {
+        existing = this.fabricUtils.updateLikeCount(existing, obj);
+        this.canvas.requestRenderAll()
+      } else if (event == CanvasPostEvent.COMMENT) {
+        existing = this.fabricUtils.updateCommentCount(existing, obj)
+        this.canvas.requestRenderAll()
+      } else if (event == CanvasPostEvent.NEEDS_ATTENTION_TAG) {
+        existing = this.fabricUtils.setBorderColor(existing, NEEDS_ATTENTION_TAG.color);
+        existing = this.fabricUtils.setBorderThickness(existing, POST_TAGGED_BORDER_THICKNESS);
+        this.canvas.requestRenderAll();
+      } else if (event == CanvasPostEvent.NO_TAG) {
+        existing = this.fabricUtils.setBorderColor(existing, POST_DEFAULT_BORDER);
+        existing = this.fabricUtils.setBorderThickness(existing, POST_DEFAULT_BORDER_THICKNESS);
+        this.canvas.requestRenderAll();
+      } else if (event == CanvasPostEvent.START_MOVE && !movedBySelf) {
+        existing = this.fabricUtils.setFillColor(existing, POST_MOVING_FILL);
+        existing = this.fabricUtils.setOpacity(existing, POST_MOVING_OPACITY);
+        existing = this.fabricUtils.setPostMovement(existing, true);
+        this.canvas.requestRenderAll()
+      } else if (event == CanvasPostEvent.STOP_MOVE && !movedBySelf) {
+        this.fabricUtils.animateToPosition(existing, obj.left, obj.top, () => {
+          existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
+          existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
+          existing = this.fabricUtils.setPostMovement(existing, false);
+          existing.set(obj);
+          existing.setCoords();
+          this.canvas.requestRenderAll();
+        })
+      }
     } else {
-      this.fabricUtils.renderPostFromJSON(obj)
+      this.fabricUtils.fromJSON(obj)
     }
 
   }
@@ -445,7 +459,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
       this.canvas.renderAll()
-      var jsonPost = this.fabricUtils.toJSON(post)
+      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasPostEvent.LIKE));
       this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -455,7 +469,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (post) {
       post = this.fabricUtils.incrementComments(post)
       this.canvas.renderAll()
-      var jsonPost = this.fabricUtils.toJSON(post);
+      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasPostEvent.COMMENT));
       this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
@@ -555,8 +569,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
         var obj: any = e.target;
 
         if (!obj.postID) {
-          obj.set('postID', Date.now() + '-' + this.user.id);
-          fabric.util.object.extend(obj, { postID: obj.postID })
+          const id = Date.now() + '-' + this.user.id;
+          obj = this.fabricUtils.setField(obj, 'postID', id);
           this.sendObjectToGroup(obj)
         }
       }
@@ -578,8 +592,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
         }
 
         this.postService.delete(obj.postID)
-        obj.set('removed', true);
-        fabric.util.object.extend(obj, { removed: true })
+        
+        obj = this.fabricUtils.setField(obj, 'removed', true);
         this.sendObjectToGroup(obj);
       }
     }
@@ -592,30 +606,49 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initMovingPostListener() {
-    const handleMovingPost = (e: any) => {
-      if (e.target) {
+    let isMovingPost = false;
+
+    const handleFirstMove = (e: any) => {
+      if (e.target && !isMovingPost) {
         var obj = e.target;
 
-        // Coordinates at which the post was clicked
-        var postClickPosition = obj.getLocalPointer(e);
+        isMovingPost = true;
 
-        var left = Math.round((e.pointer.x - postClickPosition.x));
-        var top = Math.round((e.pointer.y - postClickPosition.y));
-
-        obj.set({ left: left, top: top })
-        obj.setCoords()
+        obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
+        obj = this.fabricUtils.setOpacity(obj, POST_MOVING_OPACITY);
         this.canvas.renderAll()
 
-        var id = obj.postID
-        obj = this.fabricUtils.toJSON(obj)
-        this.postService.update(id, { fabricObject: obj })
+        obj.clone((clonedPost) => {
+          clonedPost.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.START_MOVE });
+          let stringified = this.fabricUtils.toJSON(clonedPost);
+          this.postService.update(clonedPost.postID, { fabricObject: stringified });
+        }, this.fabricUtils.serializableProperties);
       }
     }
+   
+    const handleDroppedPost = (e) => {
+      if (!isMovingPost) return;
 
-    this.canvas.on('object:moving', handleMovingPost);
+      isMovingPost = false;
+      var obj = e.target;
+
+      this.fabricUtils.setFillColor(obj, POST_COLOR);
+      this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
+
+      obj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
+      this.canvas.renderAll()
+
+      var id = obj.postID
+      obj = this.fabricUtils.toJSON(obj)
+      this.postService.update(id, { fabricObject: obj })
+    };
+
+    this.canvas.on('object:moving', handleFirstMove);
+    this.canvas.on('mouse:up', handleDroppedPost);
 
     return () => {
-      this.canvas.off('object:moving', handleMovingPost);
+      this.canvas.off('object:moving', handleFirstMove);
+      this.canvas.off('mouse:up', handleDroppedPost);
     }
   }
 
@@ -832,6 +865,24 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    let activeObj: any = this.canvas.getActiveObject();
+    if (activeObj) {
+      var children: fabric.Object[] = activeObj.getObjects()
+      var content: any = children.filter((obj) => obj.name == 'content').pop()
+  
+      content.set({ stroke: "black" })
+      activeObj.dirty = true
+      activeObj.addWithUpdate();
+  
+      activeObj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
+      this.canvas.renderAll()
+  
+      var id = activeObj.postID
+      activeObj = this.fabricUtils.toJSON(activeObj)
+      this.postService.update(id, { fabricObject: activeObj })
+    }
+    
+
     this.snackbarService.ngOnDestroy();
     for (let unsubFunc of this.unsubListeners) {
       unsubFunc();

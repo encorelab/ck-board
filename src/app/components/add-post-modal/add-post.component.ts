@@ -1,13 +1,20 @@
 import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { DialogInterface } from 'src/app/interfaces/dialog.interface';
 import { Board } from 'src/app/models/board';
 import { Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
+import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_TAGGED_BORDER_THICKNESS } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
+
+export interface AddPostDialog {
+  user: User;
+  board: Board;
+  spawnPosition: {left: Number, top: Number};
+  handleAddPost?: (title: string, message: string, tags: Tag[]) => any;
+};
 
 @Component({
   selector: 'app-dialog',
@@ -31,7 +38,7 @@ export class AddPostComponent {
   constructor(
     public fabricUtils: FabricUtils,
     public dialogRef: MatDialogRef<AddPostComponent>,
-    @Inject(MAT_DIALOG_DATA) public data) {
+    @Inject(MAT_DIALOG_DATA) public data: AddPostDialog) {
       this.user = data.user
       this.board = data.board
       this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
@@ -53,6 +60,8 @@ export class AddPostComponent {
   }
 
   addPost = () => {
+    const containsAttentionTag = this.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
+    
     var fabricPost = new FabricPostComponent({
       title: this.title,
       author: this.user.username,
@@ -60,14 +69,21 @@ export class AddPostComponent {
       desc: this.message,
       tags: this.tags,
       lock: !this.board.permissions.allowStudentMoveAny,
-      left: this.data.left,
-      top: this.data.top
+      left: this.data.spawnPosition.left,
+      top: this.data.spawnPosition.top,
+      color: POST_COLOR,
+      stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
+      strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
     });
     this.fabricUtils._canvas.add(fabricPost);
   }
 
   handleDialogSubmit() {
-    this.addPost();
+    if (this.data.handleAddPost) {
+      this.data.handleAddPost(this.title, this.message, this.tags);
+    } else {
+      this.addPost();
+    }
     this.dialogRef.close();
   }
 

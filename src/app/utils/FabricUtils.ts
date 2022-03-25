@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
-import { Canvas } from 'fabric/fabric-impl';
+import { CanvasPostEvent } from './constants';
 
 @Injectable({providedIn: 'root'})
 export class FabricUtils {
@@ -10,7 +10,8 @@ export class FabricUtils {
     serializableProperties = [
         'name', 'postID', 'title', 'desc', 
         'author', 'authorID', 'hasControls', 
-        'subTargetCheck', 'removed'
+        'subTargetCheck', 'removed', 'moverID',
+        'tags', 'canvasEvent'
     ]
 
     canvasConfig = {
@@ -34,7 +35,7 @@ export class FabricUtils {
         return JSON.stringify(fabricObj.toJSON(this.serializableProperties));
     }
     
-    renderPostFromJSON(post:any): void {
+    fromJSON(post: any): void {
         fabric.util.enlivenObjects([post], (objects:[fabric.Object]) => {
             var origRenderOnAddRemove = this._canvas.renderOnAddRemove;
             this._canvas.renderOnAddRemove = false;
@@ -60,6 +61,59 @@ export class FabricUtils {
         let fabricObj = this.getObjectFromId(post.postID);
         fabricObj = this.setField(fabricObj, 'postID', newID);
         return this.toJSON(fabricObj);
+    }
+
+    getChildFromGroup(group: fabric.Group | any, child: string) {
+        if (group instanceof fabric.Group) {
+            const childObj = group.getObjects().find((obj) => obj.name == child);
+            return childObj;
+        } else {
+            const childObj = group.objects.find((obj) => obj.name == child);
+            return childObj;
+        }
+    }
+
+    setBorderColor(existing: fabric.Group, color: string) {
+        const content = this.getChildFromGroup(existing, 'content');
+
+        if (content) {
+            content.set({ stroke: color, dirty: true });
+        }
+
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
+    }
+
+    setBorderThickness(existing: fabric.Group, thickness: number) {
+        const content = this.getChildFromGroup(existing, 'content');
+
+        if (content) {
+            content.set({ strokeWidth: thickness, dirty: true });
+        }
+
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
+    }
+
+    setFillColor(existing: fabric.Group, color: string) {
+        const content = this.getChildFromGroup(existing, 'content');
+
+        if (content) {
+            content.set({ fill: color, dirty: true });
+        }
+
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
+    }
+
+    setOpacity(existing: fabric.Group, level: number) {
+        existing.set({ opacity: level, dirty: true });
+        existing.dirty = true;
+        existing.addWithUpdate();
+        return existing;
     }
 
     updateAuthor(obj: any, author: string) {
@@ -120,7 +174,9 @@ export class FabricUtils {
         commentCountObj.set({ top: commentCountObj.top + titleDelta + authorDelta + descDelta, dirty: true })
         contentObj.set({ height: contentObj.height + titleDelta + descDelta, dirty: true })
 
-        obj.dirty = true
+        obj.desc = title;
+        obj.title = desc;
+        obj.dirty = true;
         obj.addWithUpdate();
         return obj
     }
@@ -239,5 +295,22 @@ export class FabricUtils {
           scaleX: scaleX,
           scaleY: scaleY
         }
+    }
+
+    animateToPosition(object: fabric.Object, left: number, top: number, callback: Function) {
+        object.animate({left, top}, {
+            onChange: this._canvas.renderAll.bind(this._canvas),
+            duration: 1000,
+            onComplete: callback
+        })
+    }
+
+    attachEvent(object: any, event: CanvasPostEvent) {
+        return this.setField(object, 'canvasEvent', event);
+    }
+
+    setPostMovement(object: any, lock: boolean) {
+        let updatedObj = this.setField(object, 'lockMovementX', lock);
+        return this.setField(updatedObj, 'lockMovementY', lock);
     }
 }

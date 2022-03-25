@@ -410,7 +410,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const event = parseInt(obj.canvasEvent);
       delete obj.moverID && delete obj.canvasEvent
 
-      console.log(event);
       if (event == CanvasPostEvent.TITLE_CHANGE || event == CanvasPostEvent.DESC_CHANGE) {
         existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc);
         this.canvas.requestRenderAll()

@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 import { CanvasPostEvent } from './constants';
+import { Tag } from '../models/post';
+import { NEEDS_ATTENTION_TAG } from './constants';
 
 @Injectable({providedIn: 'root'})
 export class FabricUtils {
@@ -65,6 +67,7 @@ export class FabricUtils {
     }
 
     getChildFromGroup(group: fabric.Group | any, child: string) {
+        console.log(group);
         if (group instanceof fabric.Group) {
             const childObj = group.getObjects().find((obj) => obj.name == child);
             return childObj;
@@ -75,8 +78,9 @@ export class FabricUtils {
     }
 
     setBorderColor(existing: fabric.Group, color: string) {
+        console.log(existing);
         const content = this.getChildFromGroup(existing, 'content');
-        
+
         if (content) {
             content.set({ stroke: color, dirty: true });
         }
@@ -88,7 +92,7 @@ export class FabricUtils {
 
     setFillColor(existing: fabric.Group, color: string) {
         const content = this.getChildFromGroup(existing, 'content');
-        
+
         if (content) {
             content.set({ fill: color, dirty: true });
         }
@@ -239,6 +243,17 @@ export class FabricUtils {
         obj.addWithUpdate();
         return obj
     }
+
+    // updateTags(obj: any, tags: Tag[]) {
+    //     tags.forEach(tag => {
+    //         if (tag.name == NEEDS_ATTENTION_TAG.name) {
+    //             obj = this.setBorderColor(obj, NEEDS_ATTENTION_TAG.color);
+    //             obj.set({ canvasEvent: CanvasPostEvent.NEEDS_ATTENTION_TAG });
+    //         }
+    //     })
+
+    //     return this.setField(obj, 'tags', tags);
+    // }
 
     createImageSettings(canvas, img) {
         let vptCoords = canvas.vptCoords

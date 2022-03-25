@@ -15,7 +15,7 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent, AddPostDialog } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { CanvasPostEvent, Mode, POST_DEFAULT_OPACITY, POST_MOVING_FILL, POST_MOVING_OPACITY, Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, Mode, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, POST_DEFAULT_OPACITY, POST_MOVING_FILL, POST_MOVING_OPACITY, Role } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -408,6 +408,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const event = parseInt(obj.canvasEvent);
       delete obj.moverID && delete obj.canvasEvent
 
+      console.log(event);
       if (event == CanvasPostEvent.TITLE_CHANGE || event == CanvasPostEvent.DESC_CHANGE) {
         existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc);
         this.canvas.requestRenderAll()
@@ -417,6 +418,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
       } else if (event == CanvasPostEvent.COMMENT) {
         existing = this.fabricUtils.updateCommentCount(existing, obj)
         this.canvas.requestRenderAll()
+      } else if (event == CanvasPostEvent.NEEDS_ATTENTION_TAG) {
+        existing = this.fabricUtils.setBorderColor(existing, NEEDS_ATTENTION_TAG.color);
+        this.canvas.requestRenderAll();
+      } else if (event == CanvasPostEvent.NO_TAG) {
+        existing = this.fabricUtils.setBorderColor(existing, POST_DEFAULT_BORDER);
+        this.canvas.requestRenderAll();
       } else if (event == CanvasPostEvent.START_MOVE && !movedBySelf) {
         existing = this.fabricUtils.setFillColor(existing, POST_MOVING_FILL);
         existing = this.fabricUtils.setOpacity(existing, POST_MOVING_OPACITY);

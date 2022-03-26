@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireAuthModule } from '@angular/fire/auth'
+import { AngularFireAnalyticsModule } from '@angular/fire/analytics';
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
@@ -73,6 +74,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
     BrowserModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
+    AngularFireAnalyticsModule,
     AngularFirestoreModule,
     AngularFireAuthModule,
     FormsModule, 

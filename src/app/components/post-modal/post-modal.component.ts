@@ -159,8 +159,8 @@ export class PostModalComponent {
 
   async addTag(event, tagOption): Promise<void> {
     event.stopPropagation();
-    [this.tags, this.tagOptions] = await this.canvasService.modifyTagClient(this.post.postID, tagOption, this.tagOptions, this.tags);
-    this.canvasService.modifyTagServer(this.post.postID, tagOption, this.tags);
+    [this.tags, this.tagOptions] = await this.canvasService.modifyTagClient(tagOption, this.tagOptions, this.tags);
+    this.canvasService.modifyTagServer(this.post.postID, this.tags);
   }
 
   removeTag(tag) {
@@ -200,8 +200,8 @@ export class PostModalComponent {
       const likeId = this.isLiked.likeID;
 
       [this.likes, this.isLiked] = await this.canvasService
-                                  .unlikeModalPostClient(postId, this.likes, this.isLiked, this.user.id);                  
-      this.canvasService.unlikeModalPostServer(likeId, postId);
+                                  .unlikeModalPostClient(this.likes, this.isLiked, this.user.id);                  
+      this.canvasService.unlikeModalPostServer(postId, likeId);
     } else {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
@@ -210,7 +210,7 @@ export class PostModalComponent {
         boardID: this.data.board.boardID
       }
       await this.canvasService.likeModalPostClient(like, this.likes);
-      await this.canvasService.likeModalPostServer(like);
+      await this.canvasService.likeModalPostServer(this.post.postID, like);
       this.isLiked = like;
 
     }

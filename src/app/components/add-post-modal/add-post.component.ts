@@ -40,7 +40,7 @@ export class AddPostComponent {
 
   addTag(event, tagOption): void {
     event.stopPropagation();
-    this.canvasService.addTagClient("", tagOption, this.tagOptions, this.tags);
+    this.canvasService.addTagClient(tagOption, this.tagOptions, this.tags);
   }
 
   removeTag(tag) {
@@ -64,7 +64,7 @@ export class AddPostComponent {
       top: this.data.top
     });
 
-    this.canvasService.addPostClient(this.title, this.message, fabricPost);
+    this.canvasService.addPostClient(fabricPost);
     this.dialogRef.close();
   }
 

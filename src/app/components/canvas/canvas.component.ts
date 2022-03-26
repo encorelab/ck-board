@@ -479,7 +479,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (likeButton && (studentHasPerm || isTeacher)) {
       this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
         if (data.size == 0) {
-          this.canvasService.likeCanvasPostClient(post.postID);
+          this.canvasService.likeCanvasPostClient();
           this.canvasService.likeCanvasPostServer(post.postID, this.user.id, this.board.boardID);
         } else {
           this.canvasService.unlikeCanvasPostClient(post.postID);

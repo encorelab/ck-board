@@ -28,10 +28,9 @@ export class CanvasService {
         this.postsCollection = db.collection<Post>(this.postsPath)
     }
 
-    addPostClient(title: string, message: string, fabricPost: FabricPostComponent): void {
-        this.tracingService.traceCreatePostClient("", title, message).then(() => {
-            this.fabricUtils._canvas.add(fabricPost);
-        });
+    addPostClient(fabricPost: FabricPostComponent): void {
+        this.tracingService.traceCreatePostClient();
+        this.fabricUtils._canvas.add(fabricPost);
     }
     
     addPostServer(post: any): any {
@@ -40,8 +39,8 @@ export class CanvasService {
         })
     }
 
-    modifyPostClient(post: Post, title: string, desc: string) {
-        this.tracingService.traceModifyPostClient(post.postID, title, desc);
+    modifyPostClient(post: Post, title: string, desc: string): any {
+        this.tracingService.traceModifyPostClient();
 
         let obj: any = this.fabricUtils.getObjectFromId(post.postID);
         // check if post is on board
@@ -60,54 +59,52 @@ export class CanvasService {
         return obj;
     }
 
-    modifyPostServer(obj: any, post: Post, title: string, desc: string) {
+    modifyPostServer(obj: any, post: Post, title: string, desc: string): void {
         this.postsService.update(post.postID, { fabricObject: obj, title: title, desc: desc }).then(() => {
             this.tracingService.traceModifyPostServer(post.postID, title, desc);
         });
     }
 
-    createCommentClient(comment: any, comments: any) {
-        this.tracingService.traceCreateCommentClient(comment.commentID, comment.comment).then(() => {
-            comments.push(comment);
-        });
+    createCommentClient(comment: any, comments: any): void {
+        this.tracingService.traceCreateCommentClient();
+        comments.push(comment);
     }
 
-    createCommentServer(comment: any) {
+    createCommentServer(comment: any): void {
         this.commentService.add(comment).then(() => {
             this.tracingService.traceCreateCommentServer(comment.commentID, comment.comment);
         });
     }
 
-    likeModalPostClient(like: any, likes: any) {
-        this.tracingService.traceVotedPostClient(like.postID, 1).then(() => {
-            likes.push(like);
-        });
+    likeModalPostClient(like: any, likes: any): void {
+        this.tracingService.traceVotedPostClient();
+        likes.push(like);
     }
 
-    likeModalPostServer(like: any) {
+    likeModalPostServer(postId: string, like: any): void {
         this.likesService.add(like).then(() => {
-            this.tracingService.traceVotedPostServer(like.postID, 1);
+            this.tracingService.traceVotedPostServer(postId, 1);
         });
     }
 
-    async unlikeModalPostClient(postId: string, likes: any, isLiked: any, userId: string) {
-        await this.tracingService.traceVotedPostClient(postId, 0);
+    async unlikeModalPostClient(likes: any, isLiked: any, userId: string): Promise<[any, any]> {
+        await this.tracingService.traceVotedPostClient();
         isLiked = null;
         likes = likes.filter(like => like.likerID != userId);
         return [likes, isLiked];
     }
 
-    unlikeModalPostServer(likeId: string, postId: string) {
+    unlikeModalPostServer(postId: string, likeId: string): void {
         this.likesService.remove(likeId).then(() => {
             this.tracingService.traceVotedPostServer(postId, 0);
         });
     }
 
-    likeCanvasPostClient(postId: string) {
-        this.tracingService.traceVotedPostClient(postId, 1);
+    likeCanvasPostClient(): void {
+        this.tracingService.traceVotedPostClient();
     }
     
-    likeCanvasPostServer(postId: string, userId: string, boardId: string) {
+    likeCanvasPostServer(postId: string, userId: string, boardId: string): void {
         this.likesService.add({
             likeID: Date.now() + '-' + userId,
             likerID: userId,
@@ -117,10 +114,10 @@ export class CanvasService {
     }
 
     unlikeCanvasPostClient(postId: string) {
-        this.tracingService.traceVotedPostClient(postId, 0);
+        this.tracingService.traceVotedPostClient();
     }
 
-    unlikeCanvasPostServer(data: any, postId: string) {
+    unlikeCanvasPostServer(data: any, postId: string): void {
         data.forEach((data) => {
             let like: Like = data.data()
             this.likesService.remove(like.likeID)
@@ -128,26 +125,26 @@ export class CanvasService {
         this.tracingService.traceVotedPostServer(postId, 0);
     }
 
-    async modifyTagClient(postId: string, tagOption: Tag, tagOptions: Tag[], tags: Tag[]) {
-        await this.tracingService.traceAddedTagClient(postId, [tagOption.name]);
+    async modifyTagClient(tagOption: Tag, tagOptions: Tag[], tags: Tag[]): Promise<[Tag[], Tag[]]> {
+        await this.tracingService.traceAddedTagClient([tagOption.name]);
         tags.push(tagOption);
         tagOptions = tagOptions.filter(tag => tag != tagOption);
         return [tags, tagOptions];
     }
 
-    modifyTagServer(postId: string, tagOption: Tag, tags: Tag[]) {
-        this.tracingService.traceAddedTagServer(postId, [tagOption.name]).then(() => {
+    modifyTagServer(postId: string, tags: Tag[]): void {
+        this.tracingService.traceAddedTagServer(postId).then(() => {
             this.postService.update(postId, { tags: tags });
         });
     }
 
-    async addTagClient(postId: string, tagOption: Tag, tagOptions: Tag[], tags: Tag[]) {
+    async addTagClient(tagOption: Tag, tagOptions: Tag[], tags: Tag[]): Promise<[Tag[], Tag[]]> {
         tags.push(tagOption);
 
         let tagNames: string[] = [];
         tags.forEach(tag => tagNames.push(tag.name));
 
-        await this.tracingService.traceAddedTagClient(postId, tagNames);
+        await this.tracingService.traceAddedTagClient(tagNames);
         tagOptions = tagOptions.filter(tag => tag != tagOption);
         return [tags, tagOptions];
     }

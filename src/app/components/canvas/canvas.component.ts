@@ -258,6 +258,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   updateBackground = (fileString, settings?) => {
+    if (fileString == null) {
+      const image = new fabric.Image('');
+      this.canvas.setBackgroundImage(image, this.canvas.renderAll.bind(this.canvas))
+      this.boardService.update(this.boardID, { bgImage: null })
+      return;
+    } 
+
     fabric.Image.fromURL(fileString, (img) => {
       if (img && settings) {
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
@@ -276,9 +283,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
           }
         })
 
-      } else {
-        //this.canvas.setBackgroundImage('', this.canvas.renderAll.bind(this.canvas))
-        //this.boardService.update(this.boardID, { bgImage: null })
       }
     });
   }
@@ -560,7 +564,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.lockPostsMovement(!board.permissions.allowStudentMoveAny)
     this.setAuthorVisibilityAll()
 
-    board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
+    if (board.bgImage) {
+      this.updateBackground(board.bgImage.url, board.bgImage.imgSettings)
+    } else {
+      this.updateBackground(null);
+    }
+    
     board.name ? this.updateBoardName(board.name) : null
   }
 

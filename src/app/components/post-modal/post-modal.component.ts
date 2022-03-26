@@ -157,11 +157,10 @@ export class PostModalComponent {
     this.postService.delete(this.post.postID).then(() => this.dialogRef.close(DELETE))
   }
 
-  addTag(event, tagOption): void {
-    event.stopPropagation()
-    this.tags.push(tagOption);
-    this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
-    this.postService.update(this.post.postID, { tags: this.tags })
+  async addTag(event, tagOption): Promise<void> {
+    event.stopPropagation();
+    [this.tags, this.tagOptions] = await this.canvasService.modifyTagClient(this.post.postID, tagOption, this.tagOptions, this.tags);
+    this.canvasService.modifyTagServer(this.post.postID, tagOption, this.tags);
   }
 
   removeTag(tag) {

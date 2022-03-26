@@ -39,9 +39,8 @@ export class AddPostComponent {
     }
 
   addTag(event, tagOption): void {
-    event.stopPropagation()
-    this.tags.push(tagOption);
-    this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
+    event.stopPropagation();
+    this.canvasService.addTagClient("", tagOption, this.tagOptions, this.tags);
   }
 
   removeTag(tag) {

@@ -400,6 +400,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       fabricObject: this.fabricUtils.toJSON(pObject),
       timestamp: new Date().getTime(),
     }
+
     this.canvasService.addPostServer(post);
   }
 

@@ -6,6 +6,7 @@ import { ProjectService } from "./project.service";
 
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Trace from '../interfaces/trace';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -60,7 +61,8 @@ export class TracingService {
             clientTimestamp: -1,
             serverTimestamp: -1,
             commentModifiedTextCounter: 0,
-            postModifiedUpvote: 0
+            postModifiedUpvote: 0,
+            postTagNameAdded: []
         }
     }
     
@@ -187,6 +189,17 @@ export class TracingService {
         await this.traceBasic();
         this.trace["serverTimestamp"] = Date.now();
         this.trace["postModifiedUpvote"] = vote;
+        this.createTrace();
+    }
+
+    public async traceAddedTagClient(postId: string, tagNames: string[]) {
+        this.trace["clientTimestamp"] = Date.now();
+        this.trace["postTagNameAdded"] = tagNames;
+    }
+    public async traceAddedTagServer(postId: string, tagNames: string[]) {
+        await this.traceBasic();
+        this.trace["serverTimestamp"] = Date.now();
+        this.trace["postId"] = postId;
         this.createTrace();
     }
 }

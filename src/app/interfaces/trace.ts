@@ -1,3 +1,5 @@
+import { Tag } from "../models/post"
+
 export default interface Trace {
     traceId: string
     projectId : string
@@ -16,4 +18,5 @@ export default interface Trace {
     serverTimestamp: number
     commentModifiedTextCounter: number
     postModifiedUpvote: number
+    postTagNameAdded: string[]
 }

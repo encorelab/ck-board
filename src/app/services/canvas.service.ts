@@ -3,7 +3,7 @@ import { AngularFirestore, AngularFirestoreCollection } from "@angular/fire/fire
 import { FabricPostComponent } from "../components/fabric-post/fabric-post.component";
 import { DialogInterface } from "../interfaces/dialog.interface";
 import Like from "../models/like";
-import Post from "../models/post";
+import Post, { Tag } from "../models/post";
 import { FabricUtils } from "../utils/FabricUtils";
 import { CommentService } from "./comment.service";
 import { LikesService } from "./likes.service";
@@ -22,6 +22,7 @@ export class CanvasService {
                 public postsService: PostService,
                 public commentService: CommentService,
                 public likesService: LikesService,
+                public postService: PostService,
                 public fabricUtils: FabricUtils) 
     {
         this.postsCollection = db.collection<Post>(this.postsPath)
@@ -125,5 +126,29 @@ export class CanvasService {
             this.likesService.remove(like.likeID)
         });
         this.tracingService.traceVotedPostServer(postId, 0);
+    }
+
+    async modifyTagClient(postId: string, tagOption: Tag, tagOptions: Tag[], tags: Tag[]) {
+        await this.tracingService.traceAddedTagClient(postId, [tagOption.name]);
+        tags.push(tagOption);
+        tagOptions = tagOptions.filter(tag => tag != tagOption);
+        return [tags, tagOptions];
+    }
+
+    modifyTagServer(postId: string, tagOption: Tag, tags: Tag[]) {
+        this.tracingService.traceAddedTagServer(postId, [tagOption.name]).then(() => {
+            this.postService.update(postId, { tags: tags });
+        });
+    }
+
+    async addTagClient(postId: string, tagOption: Tag, tagOptions: Tag[], tags: Tag[]) {
+        tags.push(tagOption);
+
+        let tagNames: string[] = [];
+        tags.forEach(tag => tagNames.push(tag.name));
+
+        await this.tracingService.traceAddedTagClient(postId, tagNames);
+        tagOptions = tagOptions.filter(tag => tag != tagOption);
+        return [tags, tagOptions];
     }
 }

@@ -135,7 +135,7 @@ export class CanvasService {
     modifyTagServer(postId: string, value: object): void {
         this.postService.update(postId, value).then(() => {
             this.tracingService.traceAddedTagServer(postId);
-        })
+        });
     }
 
     async addTagClient(tagOption: Tag, tagOptions: Tag[], tags: Tag[]): Promise<[Tag[], Tag[]]> {
@@ -147,5 +147,21 @@ export class CanvasService {
         await this.tracingService.traceAddedTagClient(tagNames);
         tagOptions = tagOptions.filter(tag => tag != tagOption);
         return [tags, tagOptions];
+    }
+
+    removeTagClient(tags: Tag[], tagOptions: Tag[], tag: Tag): [Tag[], Tag[]] {
+        this.tracingService.traceRemovedTagClient(tag.name);
+        const index = tags.indexOf(tag);
+        if (index >= 0) {
+            tags.splice(index, 1);
+        }
+        tagOptions.push(tag);
+        return [tags, tagOptions];
+    }
+
+    removeTagServer(postId: string, value: object): void {
+        this.postService.update(postId, value).then(() => {
+            this.tracingService.traceRemovedTagServer(postId);
+        });
     }
 }

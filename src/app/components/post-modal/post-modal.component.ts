@@ -190,12 +190,7 @@ export class PostModalComponent {
     if(!this.canStudentTag)
       return;
 
-    const index = this.tags.indexOf(tag);
-    if (index >= 0) {
-      this.tags.splice(index, 1);
-    }
-
-    this.tagOptions.push(tag);
+    [this.tags, this.tagOptions] = this.canvasService.removeTagClient(this.tags, this.tagOptions, tag);
 
     let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
 
@@ -205,9 +200,9 @@ export class PostModalComponent {
       }
       
       const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+      this.canvasService.removeTagServer(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
     } else {
-      this.postService.update(this.post.postID, { tags: this.tags });
+      this.canvasService.removeTagServer(this.post.postID, { tags: this.tags });
     }
   }
 

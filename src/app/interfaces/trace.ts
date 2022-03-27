@@ -19,4 +19,5 @@ export default interface Trace {
     commentModifiedTextCounter: number
     postModifiedUpvote: number
     postTagNameAdded: string[]
+    postTagNameRemoved: string
 }

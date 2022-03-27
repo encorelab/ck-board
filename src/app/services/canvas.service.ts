@@ -9,6 +9,7 @@ import { CommentService } from "./comment.service";
 import { LikesService } from "./likes.service";
 import { PostService } from "./post.service";
 import { TracingService } from "./tracing.service";
+import { Canvas } from "fabric/fabric-impl";
 
 @Injectable({
     providedIn: 'root'
@@ -164,4 +165,28 @@ export class CanvasService {
             this.tracingService.traceRemovedTagServer(postId);
         });
     }
+
+    movePostClient(canvas: Canvas, obj: any, userId: string) {
+        const left = obj.left;
+        const top = obj.top;
+        const width = obj.getScaledWidth();
+        const height =  obj.getScaledHeight();
+
+        const centerX = left + (width/2);
+        const centerY = top + (height/2);
+
+        this.tracingService.traceMovedPostClient(centerX, centerY);
+
+        obj.set({ moverID: userId, canvasEvent: CanvasPostEvent.STOP_MOVE });
+        canvas.renderAll();
+    }
+
+    movePostServer(obj: any) {
+        let id = obj.postID;
+        obj = this.fabricUtils.toJSON(obj);
+        this.postService.update(id, { fabricObject: obj }).then(() => {
+            this.tracingService.traceMovedPostServer(id);
+        });
+    }
+
 }

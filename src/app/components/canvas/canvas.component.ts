@@ -641,12 +641,17 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.fabricUtils.setFillColor(obj, POST_COLOR);
       this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
 
-      obj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
-      this.canvas.renderAll()
+      this.canvasService.movePostClient(this.canvas, obj, this.user.id);
 
+      /*obj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
+      this.canvas.renderAll()*/
+
+      this.canvasService.movePostServer(obj);
+
+      /*
       var id = obj.postID
       obj = this.fabricUtils.toJSON(obj)
-      this.postService.update(id, { fabricObject: obj })
+      this.postService.update(id, { fabricObject: obj }) */
     };
 
     this.canvas.on('object:moving', handleFirstMove);

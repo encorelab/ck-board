@@ -63,7 +63,9 @@ export class TracingService {
             commentModifiedTextCounter: 0,
             postModifiedUpvote: 0,
             postTagNameAdded: [],
-            postTagNameRemoved: ""
+            postTagNameRemoved: "",
+            postModifiedLocationX: null,
+            postModifiedLocationY: null
         }
     }
     
@@ -209,6 +211,19 @@ export class TracingService {
         this.trace["postTagNameRemoved"] = tagName;
     } 
     public async traceRemovedTagServer(postId: string) {
+        await this.traceBasic();
+        this.trace["serverTimestamp"] = Date.now();
+        this.trace["postId"] = postId;
+        this.createTrace();
+    }
+
+    public traceMovedPostClient(centerX, centerY) {
+        this.trace["clientTimestamp"] = Date.now();
+        this.trace["postModifiedLocationX"] = centerX;
+        this.trace["postModifiedLocationY"] = centerY;
+    }
+
+    public async traceMovedPostServer(postId: string) {
         await this.traceBasic();
         this.trace["serverTimestamp"] = Date.now();
         this.trace["postId"] = postId;

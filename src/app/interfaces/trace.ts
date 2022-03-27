@@ -20,4 +20,6 @@ export default interface Trace {
     postModifiedUpvote: number
     postTagNameAdded: string[]
     postTagNameRemoved: string
+    postModifiedLocationX: number | null
+    postModifiedLocationY: number | null
 }

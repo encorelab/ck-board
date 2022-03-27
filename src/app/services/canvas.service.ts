@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { AngularFirestore, AngularFirestoreCollection } from "@angular/fire/firestore";
 import { FabricPostComponent } from "../components/fabric-post/fabric-post.component";
-import { DialogInterface } from "../interfaces/dialog.interface";
+import { CanvasPostEvent } from "../utils/constants";
 import Like from "../models/like";
 import Post, { Tag } from "../models/post";
 import { FabricUtils } from "../utils/FabricUtils";
@@ -46,7 +46,7 @@ export class CanvasService {
         // check if post is on board
         if (obj){
             obj = this.fabricUtils.updatePostTitleDesc(obj, title, desc)
-            obj.set({ title: title, desc: desc })
+            obj.set({ title: title, desc: desc, canvasEvent: CanvasPostEvent.TITLE_CHANGE })
             this.fabricUtils._canvas.renderAll()
     
             obj = this.fabricUtils.toJSON(obj)
@@ -132,10 +132,10 @@ export class CanvasService {
         return [tags, tagOptions];
     }
 
-    modifyTagServer(postId: string, tags: Tag[]): void {
-        this.tracingService.traceAddedTagServer(postId).then(() => {
-            this.postService.update(postId, { tags: tags });
-        });
+    modifyTagServer(postId: string, value: object): void {
+        this.postService.update(postId, value).then(() => {
+            this.tracingService.traceAddedTagServer(postId);
+        })
     }
 
     async addTagClient(tagOption: Tag, tagOptions: Tag[], tags: Tag[]): Promise<[Tag[], Tag[]]> {

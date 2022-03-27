@@ -18,3 +18,13 @@
           line-clamp: 2; 
   -webkit-box-orient: vertical;
 }
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.complex-actions {
+  justify-content: end;
+}

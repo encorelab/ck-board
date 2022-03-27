@@ -1,8 +1,16 @@
-<mat-card class="bucket-card" (click)="openPostDialog()" *ngIf="exists" [ngStyle]="{'background-color': postColor}">
+<mat-card
+  class="bucket-card" 
+  (click)="openPostDialog()"
+  (keyup.enter)="openPostDialog()"
+  *ngIf="exists"
+  [ngStyle]="{'background-color': postColor}"
+  role="button"
+  tabindex="0"
+  aria-label="View post details">
   <div class="titleRow">
-    <mat-card-title style="display:inline-block;">{{ post.title }}</mat-card-title>
+    <div class="mat-title">{{ post.title }}</div>
     <button 
-      mat-button 
+      mat-icon-button 
       *ngIf="!post.fabricObject" 
       (click)="movePostToBoard(post.postID); $event.stopPropagation()"
       style="display: inline-block;">
@@ -12,14 +20,14 @@
     <mat-card-subtitle *ngIf="showUsername && postAuthor">{{ postAuthor.username }}</mat-card-subtitle>
     <mat-card-subtitle *ngIf="!showUsername">Anonymous</mat-card-subtitle>
     
-    <mat-card-content class="content">
+    <mat-card-content>
       <mat-chip-list>
         <mat-chip [ngStyle]="{'background-color': tag.color, 'color': 'black'}" selected 
           *ngFor="let tag of post.tags">
           {{ tag.name }}
         </mat-chip>
       </mat-chip-list>
-      <p>{{ post.desc }}</p>
+      <p class="content">{{ post.desc }}</p>
     </mat-card-content>
     <mat-card-actions>
       <button mat-button (click)="handleLike(); $event.stopPropagation()">

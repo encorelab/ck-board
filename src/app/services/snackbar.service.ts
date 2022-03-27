@@ -51,10 +51,6 @@ export class SnackbarService implements OnDestroy {
   }
 
   queueSnackbar(title: string, description: string = '', configParams: SnackbarConfig = {}) {
-    if (this.snackBarQueue.value.find(snack => snack.title == title && snack.description == description)) {
-      return;
-    }
-    
     this.snackBarQueue.next(
       this.snackBarQueue.value.concat([{title, description, configParams}]),
     );

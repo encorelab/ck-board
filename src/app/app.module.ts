@@ -38,6 +38,7 @@ import { BucketsModalComponent } from './components/buckets-modal/buckets-modal.
 import { ListModalComponent } from './components/list-modal/list-modal.component';
 import { ToolbarComponent } from './components/toolbar/toolbar.component';
 import { SnackBarComponent } from './components/snackbar/snackbar.component';
+import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
 
 @NgModule({
   declarations: [
@@ -65,7 +66,8 @@ import { SnackBarComponent } from './components/snackbar/snackbar.component';
     ListModalComponent,
     HtmlPostComponent,
     ToolbarComponent,
-    SnackBarComponent
+    SnackBarComponent,
+    ConfirmModalComponent
   ],
   imports: [
     BrowserModule,

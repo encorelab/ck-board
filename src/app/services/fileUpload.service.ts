@@ -46,17 +46,14 @@ export class FileUploadService{
     compressFile(){
         const MAX_BYTE = 2 * Math.pow(10, 6);
         return this.imageCompress.uploadFile()
-                .then(({ image, orientation }) => {
-                        console.log("Size in bytes before compression is : " + this.imageCompress.byteCount(image))
-                        let compressAmount = Math.min((MAX_BYTE / this.imageCompress.byteCount(image)) * 100,100)
-                        console.log(compressAmount)
-                        return this.imageCompress
-                                .compressFile(image, orientation, compressAmount, compressAmount)
-                })
-                .then((compressedImage) => {
-                        console.log("Size in bytes after compression is now:", this.imageCompress.byteCount(compressedImage));
-                        return compressedImage
-                });
+            .then(({ image, orientation }) => {
+                let compressAmount = Math.min((MAX_BYTE / this.imageCompress.byteCount(image)) * 100,100)
+                return this.imageCompress
+                        .compressFile(image, orientation, compressAmount, compressAmount)
+            })
+            .then((compressedImage) => {
+                return compressedImage
+            });
     }
 
 }

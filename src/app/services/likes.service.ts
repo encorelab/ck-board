@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Like from '../models/like';
+import Notification, { notificationFactory } from '../models/notification';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +12,10 @@ export class LikesService {
   private likesPath : string = 'likes';
   likesCollection: AngularFirestoreCollection<Like>;
 
-  constructor(private db: AngularFirestore) {
+  constructor(
+    private db: AngularFirestore, 
+    public notificationService:NotificationService
+  ) {
     this.likesCollection = db.collection<Like>(this.likesPath);
   }
 
@@ -39,6 +44,10 @@ export class LikesService {
   }
 
   add(like: Like): any {
+    let notification:Notification = notificationFactory("{likerID} liked your post");
+    notification.postID =like.postID
+    notification.IDMap = {likerID:like.likerID}
+    this.notificationService.add(notification)
     return this.likesCollection.doc(like.likeID).set(like)
   }
 

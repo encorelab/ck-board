@@ -51,13 +51,7 @@ export class NotificationDropdownComponent implements OnInit {
 
   }
   createNotification(){
-    this.notificationService.add({
-      notificationID:Date.now()+'-'+this.user.id,
-      text:"Hello",
-      timestamp:Date.now(),
-      viewed:false,
-      userID:this.user.id
-    })
+
 
   }
   ngOnDestroy(): void {

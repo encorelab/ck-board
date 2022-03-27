@@ -4,4 +4,19 @@ export default class Notification{
     timestamp:number;
     viewed:boolean;
     userID:string;
+    postID:string;
+    IDMap:any;
 }
+export function notificationFactory(text:string,userID:string = "", postID:string="", timestamp:number = Date.now(), viewed:boolean = false):Notification{
+    return {
+        notificationID :timestamp+'-'+userID,
+        text :text,
+        timestamp :timestamp,
+        viewed  :viewed,
+        userID :userID,
+        postID  :postID,
+        IDMap  :{},
+    }
+
+}
+

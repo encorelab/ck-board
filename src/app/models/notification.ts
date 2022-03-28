@@ -5,9 +5,8 @@ export default class Notification{
     viewed:boolean;
     userID:string;
     postID:string;
-    IDMap:any;
 }
-export function notificationFactory(text:string,userID:string = "", postID:string="", timestamp:number = Date.now(), viewed:boolean = false):Notification{
+export function notificationFactory(text:string ="",userID:string = "", postID:string="", timestamp:number = Date.now(), viewed:boolean = false):Notification{
     return {
         notificationID :timestamp+'-'+userID,
         text :text,
@@ -15,7 +14,6 @@ export function notificationFactory(text:string,userID:string = "", postID:strin
         viewed  :viewed,
         userID :userID,
         postID  :postID,
-        IDMap  :{},
     }
 
 }

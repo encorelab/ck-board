@@ -3,6 +3,7 @@ import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/fire
 import Like from '../models/like';
 import Notification, { notificationFactory } from '../models/notification';
 import { NotificationService } from './notification.service';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,8 @@ export class LikesService {
 
   constructor(
     private db: AngularFirestore, 
-    public notificationService:NotificationService
+    public notificationService:NotificationService,
+    public userService:UserService
   ) {
     this.likesCollection = db.collection<Like>(this.likesPath);
   }
@@ -43,11 +45,14 @@ export class LikesService {
     return this.likesCollection.ref.where("postID", "==", postID).where("likerID", "==", likerID).get().then((snapshot) => snapshot)
   }
 
-  add(like: Like): any {
-    let notification:Notification = notificationFactory("{likerID} liked your post");
+  async add(like: Like) {
+    // send like notification to user
+    let notification:Notification = notificationFactory();
     notification.postID =like.postID
-    notification.IDMap = {likerID:like.likerID}
+    let user = await this.userService.getOneById(like.likerID)
+    notification.text = user?.username +" liked your post"
     this.notificationService.add(notification)
+    
     return this.likesCollection.doc(like.likeID).set(like)
   }
 

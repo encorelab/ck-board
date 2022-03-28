@@ -52,12 +52,6 @@ export class NotificationService {
       // can't create notification. either userID or postID must be defined
       return
     }
-    // populate text with id map
-    if(notification.IDMap){
-      for( let key in notification.IDMap){
-        notification.text = notification.text.replace("{"+key+"}",notification.IDMap[key])
-      }
-    }
     return this.notificationCollection.doc(notification.notificationID).set(notification)
   }
 

@@ -1,3 +1,4 @@
+import {v4 as uuidv4} from 'uuid'
 export default class Notification{
     notificationID:string;
     text:string;
@@ -8,7 +9,7 @@ export default class Notification{
 }
 export function notificationFactory(text:string ="",userID:string = "", postID:string="", timestamp:number = Date.now(), viewed:boolean = false):Notification{
     return {
-        notificationID :timestamp+'-'+userID,
+        notificationID :uuidv4(),
         text :text,
         timestamp :timestamp,
         viewed  :viewed,

@@ -188,9 +188,9 @@ export class PostModalComponent {
       }
   
       const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+      this.postService.addTag(this.user.username, this.post.postID, { tags: this.tags, fabricObject: jsonPost });
     } else {
-      this.postService.update(this.post.postID, { tags: this.tags });
+      this.postService.addTag(this.user.username,this.post.postID, { tags: this.tags });
     }
   }
 

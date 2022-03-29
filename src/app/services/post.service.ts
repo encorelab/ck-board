@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import Notification, { notificationFactory } from '../models/notification';
 import Post from '../models/post';
 import { FabricUtils } from '../utils/FabricUtils';
+import { NotificationService } from './notification.service';
+import { UserService } from './user.service';
 
 interface Options {
   pageSize: number;
@@ -16,7 +19,11 @@ export class PostService {
   private postsPath : string = '/posts';
   postsCollection: AngularFirestoreCollection<Post>;
 
-  constructor(private db: AngularFirestore, protected fabricUtils: FabricUtils) {
+  constructor(
+    private db: AngularFirestore, 
+    protected fabricUtils: FabricUtils,
+    private notificationService: NotificationService,
+  ) {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }
 
@@ -98,6 +105,25 @@ export class PostService {
     })
 
     return batch.commit()
+  }
+
+  async addTag(username:string,postID:string, value:any){
+    await this.update(postID,value)
+    // send like notification to user
+    try{
+      console.log("ran")
+      let data = await this.get(postID);
+      let post = data.docs[0].data();
+      let notification:Notification = notificationFactory(post.userID);
+      notification.postID =postID
+      notification.text = username +" tagged your post"
+      this.notificationService.add(notification)
+    }
+    catch(e){
+      console.error("Failed to send notification:\n "+ e)
+    }
+
+
   }
 
   update(postID: string, value: any) {

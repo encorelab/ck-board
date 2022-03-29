@@ -3,6 +3,7 @@ import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/fire
 import Like from '../models/like';
 import Notification, { notificationFactory } from '../models/notification';
 import { NotificationService } from './notification.service';
+import { PostService } from './post.service';
 import { UserService } from './user.service';
 
 @Injectable({
@@ -15,8 +16,9 @@ export class LikesService {
 
   constructor(
     private db: AngularFirestore, 
-    public notificationService:NotificationService,
-    public userService:UserService
+    private notificationService:NotificationService,
+    private userService:UserService,
+    private postService:PostService
   ) {
     this.likesCollection = db.collection<Like>(this.likesPath);
   }
@@ -46,14 +48,21 @@ export class LikesService {
   }
 
   async add(like: Like) {
+    await this.likesCollection.doc(like.likeID).set(like);
     // send like notification to user
-    let notification:Notification = notificationFactory();
-    notification.postID =like.postID
-    let user = await this.userService.getOneById(like.likerID)
-    notification.text = user?.username +" liked your post"
-    this.notificationService.add(notification)
+    try{
+      let data = await this.postService.get(like.postID);
+      let post = data.docs[0].data();
+      let notification:Notification = notificationFactory(post.userID);
+      let user = await this.userService.getOneById(like.likerID)
+      notification.text = user?.username +" liked your post"
+      this.notificationService.add(notification)
+    }
+    catch(e){
+      console.error("Failed to send notification:\n "+ e)
+    }
     
-    return this.likesCollection.doc(like.likeID).set(like)
+    
   }
 
   remove(likeID: string) {

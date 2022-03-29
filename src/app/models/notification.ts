@@ -7,7 +7,7 @@ export default class Notification{
     userID:string;
     postID:string;
 }
-export function notificationFactory(text:string ="",userID:string = "", postID:string="", timestamp:number = Date.now(), viewed:boolean = false):Notification{
+export function notificationFactory(userID:string,text:string ="", postID:string="", timestamp:number = Date.now(), viewed:boolean = false):Notification{
     return {
         notificationID :uuidv4(),
         text :text,

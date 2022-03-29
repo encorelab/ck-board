@@ -14,8 +14,6 @@ export class NotificationService {
 
   constructor(
     private db: AngularFirestore,
-    public postService: PostService,
-    public userService: UserService
   ) {
     this.notificationCollection = db.collection<Notification>(this.notificationPath);
   }
@@ -38,20 +36,6 @@ export class NotificationService {
 
 
   async add(notification: Notification) {
-   
-    if(notification.userID){
-
-    }
-     // no userid defined, but postID defined so can find userID of that post's author
-    else if(!notification.userID && notification.postID){
-      let data = await this.postService.get(notification.postID);
-      let post = data.docs[0].data();
-      notification.userID = post.userID      
-    }
-    else{
-      // can't create notification. either userID or postID must be defined
-      return
-    }
     return this.notificationCollection.doc(notification.notificationID).set(notification)
   }
 

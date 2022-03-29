@@ -6,6 +6,6 @@
 </button>
 <mat-menu
     #menu="matMenu">
-    <p *ngFor="let notification of notifications.reverse()">{{notification.text}}</p>
+    <button mat-menu-item (click)="openPost(notification)" *ngFor="let notification of notifications.reverse()">{{notification.text}}</button>
 
 </mat-menu>

@@ -1,7 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { Board } from 'src/app/models/board';
 import Notification from 'src/app/models/notification';
 import User from 'src/app/models/user';
 import { NotificationService } from 'src/app/services/notification.service';
+import { PostService } from 'src/app/services/post.service';
+import { PostModalComponent } from '../post-modal/post-modal.component';
 
 @Component({
   selector: 'app-notification-dropdown',
@@ -9,17 +13,20 @@ import { NotificationService } from 'src/app/services/notification.service';
   styleUrls: ['./notification-dropdown.component.scss']
 })
 export class NotificationDropdownComponent implements OnInit {
-  @Input()
-  user:User
+  @Input() props:{  user:User, board:Board}
+
   notifications: Notification[] =[]
   unsubListeners: Function[] = []
 
   constructor(
-    public notificationService: NotificationService
+    private notificationService: NotificationService,
+    private postService: PostService,
+    public dialog: MatDialog
+
   ) { }
 
   ngOnInit(): void {
-    this.notificationService.getNotificationsByUser(this.user.id).then(notifications=>{
+    this.notificationService.getNotificationsByUser(this.props.user.id).then(notifications=>{
      
       notifications.forEach((data)=>{
         this.notifications.push(data.data());
@@ -30,7 +37,7 @@ export class NotificationDropdownComponent implements OnInit {
   }
 
   initGroupEventsListener() {
-    const unsubPosts = this.notificationService.observable(this.user.id, this.handleNotificationUpdate);
+    const unsubPosts = this.notificationService.observable(this.props.user.id, this.handleNotificationUpdate);
     return [unsubPosts];
   }
 
@@ -50,9 +57,21 @@ export class NotificationDropdownComponent implements OnInit {
     }
 
   }
-  createNotification(){
-
-
+  async openPost(notification:Notification){
+    // if postID is defined then open the corresponding post when user clicks on notification
+    if(notification.postID){
+      let data = await this.postService.get(notification.postID);
+      let post = data.docs[0].data();
+      this.dialog.open(PostModalComponent, {
+        minWidth: '700px',
+        width: 'auto',
+        data: {
+          user: this.props.user,
+          post:post,
+          board: this.props.board
+        }
+      });
+    }
   }
   ngOnDestroy(): void {
     this.notifications= []

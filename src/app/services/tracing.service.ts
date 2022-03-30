@@ -65,7 +65,9 @@ export class TracingService {
             postTagNameAdded: [],
             postTagNameRemoved: "",
             postModifiedLocationX: null,
-            postModifiedLocationY: null
+            postModifiedLocationY: null,
+            bucketId: "",
+            bucketName: ""
         }
     }
     
@@ -222,8 +224,19 @@ export class TracingService {
         this.trace["postModifiedLocationX"] = centerX;
         this.trace["postModifiedLocationY"] = centerY;
     }
-
     public async traceMovedPostServer(postId: string) {
+        await this.traceBasic();
+        this.trace["serverTimestamp"] = Date.now();
+        this.trace["postId"] = postId;
+        this.createTrace();
+    }
+
+    public traceMovedPostToBucketClient(bucketId: string, bucketName: string) {
+        this.trace["clientTimestamp"] = Date.now();
+        this.trace["bucketId"] = bucketId;
+        this.trace["bucketName"] = bucketName;
+    }
+    public async traceMovedPostToBucketServer(postId: string) {
         await this.traceBasic();
         this.trace["serverTimestamp"] = Date.now();
         this.trace["postId"] = postId;

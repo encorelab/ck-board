@@ -113,16 +113,16 @@ export class PostModalComponent {
   
   updateBucket(event) {
     const bucketID = event.source.id
-    const bucket: any = this.buckets.find(bucket => bucket.bucketID === bucketID)
+    let bucket: any = this.buckets.find(bucket => bucket.bucketID === bucketID)
 
     if (event.checked) {
-      bucket.posts.push(this.post)
+      bucket = this.canvasService.movePostToBucketClient(bucket, this.post);
+      this.canvasService.movePostToBucketServer(this.post.postID, bucket);
     } else {
-      bucket.posts = bucket.posts.filter(post => post.postID !== this.post.postID)
+      bucket.posts = bucket.posts.filter(post => post.postID !== this.post.postID);
+      let ids = bucket.posts.map(post => post.postID)
+      this.bucketService.add(bucketID, ids)
     }
-
-    let ids = bucket.posts.map(post => post.postID)
-    this.bucketService.add(bucketID, ids)
   }
 
   toggleEdit() {

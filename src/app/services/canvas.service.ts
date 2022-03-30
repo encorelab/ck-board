@@ -10,6 +10,8 @@ import { LikesService } from "./likes.service";
 import { PostService } from "./post.service";
 import { TracingService } from "./tracing.service";
 import { Canvas } from "fabric/fabric-impl";
+import Bucket from "../models/bucket";
+import { BucketService } from "./bucket.service";
 
 @Injectable({
     providedIn: 'root'
@@ -24,6 +26,7 @@ export class CanvasService {
                 public commentService: CommentService,
                 public likesService: LikesService,
                 public postService: PostService,
+                public bucketService: BucketService,
                 public fabricUtils: FabricUtils) 
     {
         this.postsCollection = db.collection<Post>(this.postsPath)
@@ -189,4 +192,16 @@ export class CanvasService {
         });
     }
 
+    movePostToBucketClient(bucket: any, post: Post) {
+        this.tracingService.traceMovedPostToBucketClient(bucket.bucketID, bucket.name);
+        bucket.posts.push(post);
+        return bucket;
+    }
+
+    movePostToBucketServer(postId: string, bucket: any) {
+        let ids = bucket.posts.map(post => post.postID);
+        this.bucketService.add(bucket.bucketID, ids).then(() => {
+            this.tracingService.traceMovedPostToBucketServer(postId);
+        });
+    }
 }

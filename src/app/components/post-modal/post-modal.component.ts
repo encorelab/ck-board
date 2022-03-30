@@ -155,15 +155,9 @@ export class PostModalComponent {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this post?',
         handleConfirm: () => {
-          this.postService.delete(this.post.postID).then(() => {
-            var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-    
-            if (obj && obj.type == 'group') {
-              this.fabricUtils._canvas.remove(obj);
-              this.fabricUtils._canvas.renderAll();
-            }
-            this.dialogRef.close(DELETE);
-          })
+          this.canvasService.deletePostClient(this.post.postID);
+          this.canvasService.deletePostServer(this.post.postID);
+          this.dialogRef.close(DELETE);
         }
       }
     });

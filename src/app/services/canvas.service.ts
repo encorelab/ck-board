@@ -204,4 +204,19 @@ export class CanvasService {
             this.tracingService.traceMovedPostToBucketServer(postId);
         });
     }
+
+    deletePostClient(postId: string) {
+        this.tracingService.traceDeletedPostClient();
+        let obj = this.fabricUtils.getObjectFromId(postId);
+        if (obj && obj.type == 'group') {
+            this.fabricUtils._canvas.remove(obj);
+            this.fabricUtils._canvas.renderAll();
+        }
+    }
+
+    deletePostServer(postId: string) {
+        this.postService.delete(postId).then(() => {
+            this.tracingService.traceDeletedPostServer(postId);
+        });
+    }
 }

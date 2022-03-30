@@ -22,6 +22,7 @@ export default interface Trace {
     postTagNameRemoved: string
     postModifiedLocationX: number | null
     postModifiedLocationY: number | null
+    postDeleted: number
     bucketId: string
     bucketName: string
 }

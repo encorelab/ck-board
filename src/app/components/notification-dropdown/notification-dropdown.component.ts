@@ -37,7 +37,11 @@ export class NotificationDropdownComponent implements OnInit {
   }
 
   initGroupEventsListener() {
-    const unsubPosts = this.notificationService.observable(this.props.user.id, this.handleNotificationUpdate);
+    const unsubPosts = this.notificationService.observable(
+      this.props.user.id, this.handleNotificationUpdate, 
+      this.handleNotificationUpdate, 
+      this.handleNotifcationDelete
+    );
     return [unsubPosts];
   }
 
@@ -57,6 +61,12 @@ export class NotificationDropdownComponent implements OnInit {
     }
 
   }
+
+  handleNotifcationDelete = (notification:Notification) =>{
+    if (this.notifications){
+      this.notifications = this.notifications.filter(currentNotification => currentNotification.notificationID != notification.notificationID)
+    }
+  }
   async openPost(notification:Notification){
     // if postID is defined then open the corresponding post when user clicks on notification
     if(notification.postID){
@@ -71,7 +81,16 @@ export class NotificationDropdownComponent implements OnInit {
           board: this.props.board
         }
       });
+      await this.notificationService.markAsRead(notification.notificationID);
+      // for now we'll delete when users click the notification
+      this.notificationService.remove(notification.notificationID);
     }
+  }
+  async markAllAsRead(){
+    this.notifications.forEach(notification =>{
+      this.notificationService.markAsRead(notification.notificationID);
+      this.notificationService.remove(notification.notificationID);
+    })
   }
   ngOnDestroy(): void {
     this.notifications= []

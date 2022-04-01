@@ -18,12 +18,18 @@ export class NotificationService {
     this.notificationCollection = db.collection<Notification>(this.notificationPath);
   }
 
-  observable(userID: string, handleChange: Function) {
+  observable(userID: string, handleAdd?: Function, handleModification?:Function, handleDelete?:Function) {
     return this.notificationCollection.ref.where("userID", "==", userID).onSnapshot((snapshot) => {
         snapshot.docChanges().forEach((change) => {
-            if (change.type === "added") {
-                const doc = change.doc.data();
-                handleChange(doc)
+          const doc = change.doc.data();
+            if (handleAdd !== undefined && change.type === "added") {
+                handleAdd(doc)
+            }
+           else if (handleModification !== undefined && change.type === "modified") {
+              handleModification(doc);
+            }
+            else if(handleDelete !== undefined && change.type === 'removed'){
+              handleDelete(change.doc.data())
             }
         })
      
@@ -37,6 +43,10 @@ export class NotificationService {
 
   async add(notification: Notification) {
     return this.notificationCollection.doc(notification.notificationID).set(notification)
+  }
+
+  markAsRead(notificationID:string){
+    return this.notificationCollection.ref.doc(notificationID).update({viewed:true})
   }
 
   remove(notificationID: string) {

@@ -1,9 +1,14 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import { Tag } from 'src/app/models/post';
+import Post, { Tag } from 'src/app/models/post';
+import User from 'src/app/models/user';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
+import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_TAGGED_BORDER_THICKNESS } from 'src/app/utils/constants';
+import { FabricUtils } from 'src/app/utils/FabricUtils';
+import { AddPostComponent, AddPostDialog } from '../add-post-modal/add-post.component';
+import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 
 @Component({
   selector: 'app-list-modal',
@@ -13,6 +18,7 @@ import { PostService } from 'src/app/services/post.service';
 export class ListModalComponent implements OnInit, OnDestroy {
 
   board: Board
+  user:User
 
   loading: boolean = true
   loadingMore: boolean = false
@@ -24,12 +30,18 @@ export class ListModalComponent implements OnInit, OnDestroy {
   filteredPosts:any[]
   unsubListeners: Function[] = []
 
+  Yoffset:number
+  Xoffset:number
+
   constructor(
     public dialogRef: MatDialogRef<ListModalComponent>,
     public bucketService: BucketService,
     public postService: PostService,
+    protected fabricUtils: FabricUtils,
+    public dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) public data: any) {
     this.board = data.board
+    this.user = data.user
   }
 
   ngOnInit(): void {
@@ -120,6 +132,69 @@ export class ListModalComponent implements OnInit, OnDestroy {
     else{
       this.filteredPosts = this.posts 
     }
+  }
+
+  openAddPostDialog(){
+    const dialogData: AddPostDialog = {
+      handleAddPost: this.addPost,
+      spawnPosition: {
+        top: 150,
+        left: 150,
+      },
+      board: this.board,
+      user: this.user
+    }
+    this.dialog.open(AddPostComponent, {
+      width: '500px',
+      data: dialogData
+    });
+  }
+
+  addPost = (title: string, desc = '', tags: Tag[]) => {
+    const post: Post = {
+      postID: Date.now() + '-' + this.user.id,
+      title: title,
+      desc: desc,
+      tags: tags,
+      userID: this.user.id,
+      boardID: this.board.boardID,
+      fabricObject: null,
+      timestamp: new Date().getTime(),
+    }
+    this.postService.create(post);
+    this.posts.push(post);
+    this.filterPosts();
+  }
+
+  movePostToBoard(postID:string){
+    this.postService.get(postID).then(data =>{
+      data.forEach(item =>{
+        let post = item.data()
+
+        const containsAttentionTag = post.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
+
+        let fabricPost = new FabricPostComponent({
+          title: post.title,
+          author: this.user.username,
+          authorID: this.user.id,
+          desc: post.desc,
+          tags: post.tags ?? [],
+          lock: !this.board.permissions.allowStudentMoveAny,
+          left: this.Xoffset,
+          top: this.Yoffset,
+          color: POST_COLOR,
+          stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
+          strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
+        });
+
+        fabricPost = this.fabricUtils.setField(fabricPost, 'postID', postID);
+        const updatedPost = this.fabricUtils.toJSON(fabricPost);
+        this.postService.update(postID, {fabricObject: updatedPost});
+
+        this.Yoffset += 50;
+      })
+    })
+    
   }
 
   ngOnDestroy(): void {

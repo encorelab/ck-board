@@ -151,6 +151,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: {
         board: this.board,
+        user:this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top
       },
     });
   }

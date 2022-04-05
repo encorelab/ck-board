@@ -42,6 +42,8 @@ export class ListModalComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: any) {
     this.board = data.board
     this.user = data.user
+    this.Xoffset = data.centerX
+    this.Yoffset = data.centerY
   }
 
   ngOnInit(): void {

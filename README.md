@@ -6,6 +6,7 @@ This Common Knowledge (CK) Board is the latest rebuild of the ENCORE Lab's colla
 
 #### 1. Install Node.js and Angular
 * Node: https://nodejs.org/
+  * Use the LTS versions. v16 works, v17 has some compatabily issues 
 * Angular: ```npm install -g @angular/cli ```
 
 #### 2. Clone the repository

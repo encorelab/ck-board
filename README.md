@@ -14,6 +14,13 @@ $ git clone https://github.com/encorelab/ck-board.git
 ```
 
 #### 3. Install required dependencies
+
+If you are building locally or on an instance install depedancies with
+```shell
+$ npm ci
+```
+
+Only if you are installing a NEW package use
 ```shell
 $ npm install
 ```

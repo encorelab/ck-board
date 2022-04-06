@@ -81,6 +81,7 @@ export class PostService {
   }
 
   create(post: any): any {
+    console.log("CREATE POST");
     return this.postsCollection.doc(post.postID).set(post);
   }
 

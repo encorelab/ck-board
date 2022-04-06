@@ -8,6 +8,7 @@ import Post from 'src/app/models/post';
 import User from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { BoardService } from 'src/app/services/board.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import { PostService } from 'src/app/services/post.service';
@@ -44,7 +45,8 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
   postAuthor: User | undefined
   
   constructor(public commentService: CommentService, public likesService: LikesService, public postService: PostService,
-    public authService: AuthService, public userSevice: UserService, public boardService: BoardService, public dialog: MatDialog) { }
+    public authService: AuthService, public userSevice: UserService, public boardService: BoardService, public dialog: MatDialog,
+    public canvasService: CanvasService) { }
 
   ngOnInit(): void {
     this.user = this.authService.userData;
@@ -71,15 +73,7 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
   }
 
   openPostDialog() {
-    this.dialog.open(PostModalComponent, {
-      minWidth: '700px',
-      width: 'auto',
-      data: { 
-        user: this.user, 
-        post: this.post, 
-        board: this.board
-      }
-    })
+    this.canvasService.readPost(this.user, this.post, this.board);
   }
 
   handleLike() {

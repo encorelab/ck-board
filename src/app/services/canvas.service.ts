@@ -12,6 +12,10 @@ import { TracingService } from "./tracing.service";
 import { Canvas } from "fabric/fabric-impl";
 import Bucket from "../models/bucket";
 import { BucketService } from "./bucket.service";
+import User from "../models/user";
+import { Board } from "../models/board";
+import { MatDialog } from "@angular/material/dialog";
+import { PostModalComponent } from "../components/post-modal/post-modal.component";
 
 @Injectable({
     providedIn: 'root'
@@ -27,6 +31,7 @@ export class CanvasService {
                 public likesService: LikesService,
                 public postService: PostService,
                 public bucketService: BucketService,
+                public dialog: MatDialog,
                 public fabricUtils: FabricUtils) 
     {
         this.postsCollection = db.collection<Post>(this.postsPath)
@@ -217,6 +222,19 @@ export class CanvasService {
     deletePostServer(postId: string) {
         this.postService.delete(postId).then(() => {
             this.tracingService.traceDeletedPostServer(postId);
+        });
+    }
+
+    readPost(user: User, post: Post, board: Board) {
+        this.tracingService.traceReadPostClient(post.postID);
+        this.dialog.open(PostModalComponent, {
+            minWidth: '700px',
+            width: 'auto',
+            data: {
+              user: user,
+              post: post,
+              board: board
+            }
         });
     }
 }

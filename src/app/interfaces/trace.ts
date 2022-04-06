@@ -1,5 +1,3 @@
-import { Tag } from "../models/post"
-
 export default interface Trace {
     traceId: string
     projectId : string
@@ -25,4 +23,5 @@ export default interface Trace {
     postDeleted: number
     bucketId: string
     bucketName: string
+    postRead: number 
 }

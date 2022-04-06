@@ -68,7 +68,8 @@ export class TracingService {
             postModifiedLocationY: null,
             postDeleted: 0,
             bucketId: "",
-            bucketName: ""
+            bucketName: "",
+            postRead: 0 
         }
     }
     
@@ -252,6 +253,14 @@ export class TracingService {
         await this.traceBasic();
         this.trace["serverTimestamp"] = Date.now();
         this.trace["postId"] = postId;
+        this.createTrace();
+    }
+
+    public async traceReadPostClient(postId: string) {
+        await this.traceBasic();
+        this.trace["clientTimestamp"] = Date.now();
+        this.trace["postId"] = postId;
+        this.trace["postRead"] = 1;
         this.createTrace();
     }
 }

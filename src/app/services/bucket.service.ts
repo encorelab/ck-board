@@ -69,7 +69,6 @@ export class BucketService {
   }
 
   add(bucketID: string, posts: string[]) {
-    console.log(bucketID);
     return this.bucketsCollection.ref.doc(bucketID).update({
       posts: firebase.firestore.FieldValue.arrayUnion(...posts)
     })

@@ -76,7 +76,7 @@ export class AddPostComponent {
       stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
       strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
     });
-    this.canvasService.addPostClient(fabricPost);
+    this.fabricUtils._canvas.add(fabricPost);
   }
   
   handleDialogSubmit() {

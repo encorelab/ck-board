@@ -4,6 +4,7 @@ import { FabricPostComponent } from "../components/fabric-post/fabric-post.compo
 import { CanvasPostEvent } from "../utils/constants";
 import Like from "../models/like";
 import Post, { Tag } from "../models/post";
+import Comment from "../models/comment";
 import { FabricUtils } from "../utils/FabricUtils";
 import { CommentService } from "./comment.service";
 import { LikesService } from "./likes.service";
@@ -36,50 +37,23 @@ export class CanvasService {
     {
         this.postsCollection = db.collection<Post>(this.postsPath)
     }
-
-    addPostClient(fabricPost: FabricPostComponent): void {
+    
+    addPost(post: Post): void {
         this.tracingService.traceCreatePostClient();
-        this.fabricUtils._canvas.add(fabricPost);
-    }
-    
-    addPostServer(post: any): any {
-        this.tracingService.traceCreatePostServer(post.postID, post.title, post.desc).then(() => {
-            this.postsService.create(post);
-        })
+        this.postsService.create(post).then(() => {
+            this.tracingService.traceCreatePostServer(post.postID, post.title, post.desc);
+        });
     }
 
-    modifyPostClient(post: Post, title: string, desc: string): any {
+    modifyPost(obj: any, post: Post, title: string, desc: string): void {
         this.tracingService.traceModifyPostClient();
-
-        let obj: any = this.fabricUtils.getObjectFromId(post.postID);
-        // check if post is on board
-        if (obj){
-            obj = this.fabricUtils.updatePostTitleDesc(obj, title, desc)
-            obj.set({ title: title, desc: desc, canvasEvent: CanvasPostEvent.TITLE_CHANGE })
-            this.fabricUtils._canvas.renderAll()
-    
-            obj = this.fabricUtils.toJSON(obj)
-        }
-        // bucket only so fabricObject is {}
-        else{
-            obj ="{}"
-        }
-        
-        return obj;
-    }
-
-    modifyPostServer(obj: any, post: Post, title: string, desc: string): void {
         this.postsService.update(post.postID, { fabricObject: obj, title: title, desc: desc }).then(() => {
             this.tracingService.traceModifyPostServer(post.postID, title, desc);
         });
     }
 
-    createCommentClient(comment: any, comments: any): void {
+    createComment(comment: Comment): void {
         this.tracingService.traceCreateCommentClient();
-        comments.push(comment);
-    }
-
-    createCommentServer(comment: any): void {
         this.commentService.add(comment).then(() => {
             this.tracingService.traceCreateCommentServer(comment.commentID, comment.comment);
         });

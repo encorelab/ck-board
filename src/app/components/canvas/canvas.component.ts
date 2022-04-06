@@ -396,7 +396,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       timestamp: new Date().getTime(),
     }
 
-    this.canvasService.addPostServer(post);
+    this.canvasService.addPost(post);
   }
 
   // sync board using incoming/outgoing posts
@@ -531,18 +531,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       if (!isDragEnd && !likePress && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this.canvasService.readPost(this.user, obj, this.board);
-        /*
-        console.log("POST IS OPENED");
-        this.dialog.open(PostModalComponent, {
-          minWidth: '700px',
-          width: 'auto',
-          data: {
-            user: this.user,
-            post: obj,
-            board: this.board
-          }
-        });
-        */
       }
     };
 

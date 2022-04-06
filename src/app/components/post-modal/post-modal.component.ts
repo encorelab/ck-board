@@ -138,9 +138,20 @@ export class PostModalComponent {
       this.editingTitle = this.title
       this.editingDesc = this.desc
       
-      const obj = await this.canvasService.modifyPostClient(this.post, this.title, this.desc);
-  
-      await this.canvasService.modifyPostServer(obj, this.post, this.title, this.desc);
+      let obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
+      // check if post is on board
+      if (obj){
+          obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
+          obj.set({ title: this.title, desc: this.desc, canvasEvent: CanvasPostEvent.TITLE_CHANGE })
+          this.fabricUtils._canvas.renderAll()
+          obj = this.fabricUtils.toJSON(obj)
+      }
+      // bucket only so fabricObject is {}
+      else{
+          obj ="{}"
+      }
+
+      await this.canvasService.modifyPost(obj, this.post, this.title, this.desc);
       this.toggleEdit();
     }
     else {
@@ -209,9 +220,10 @@ export class PostModalComponent {
       boardID: this.data.board.boardID,
       author: this.data.user.username
     }
-    this.canvasService.createCommentClient(comment, this.comments);
-    await this.canvasService.createCommentServer(comment);
+    
+    this.canvasService.createComment(comment);
     this.newComment = '';
+    this.comments.push(comment);
   }
 
   async handleLikeClick() {

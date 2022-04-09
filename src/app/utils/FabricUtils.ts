@@ -181,70 +181,28 @@ export class FabricUtils {
         return obj
     }
 
-    updateLikeCount(existing, obj) {
-        var likeCountExisting: any = existing.getObjects().find((obj) => obj.name == 'likeCount')
+    copyLikeCount(existing, obj) {
         var likeCountObj: any = obj.objects.find((obj) => obj.name == 'likeCount')
-
-        likeCountExisting.set({ text: likeCountObj.text, dirty: true })
-
-        existing.dirty = true
-        existing.addWithUpdate();
-        return existing
+        return this.setLikeCount(existing, likeCountObj.text);
     }
 
-    incrementLikes(obj: any) {
-        var children: fabric.Object[] = obj.getObjects()
-        var likeCountObj: any = children.find((obj) => obj.name == 'likeCount')
-
-        var numlikes = parseInt(likeCountObj.text)
-        likeCountObj.set({ text: (numlikes + 1).toString(), dirty: true })
-
-        obj.dirty = true
-        obj.addWithUpdate();
-        return obj
-    }
-
-    decrementLikes(obj: any) {
-        var children: fabric.Object[] = obj.getObjects()
-        var likeCountObj: any = children.find((obj) => obj.name == 'likeCount')
-
-        var numlikes = parseInt(likeCountObj.text)
-        likeCountObj.set({ text: (numlikes - 1).toString(), dirty: true })
+    setLikeCount(obj, count: number) {
+        var likeCountExisting: any = obj.getObjects().find((obj) => obj.name == 'likeCount')
+        likeCountExisting.set({ text: count.toString(), dirty: true })
 
         obj.dirty = true
         obj.addWithUpdate();
         return obj
     }
     
-    updateCommentCount(existing, obj) {
-        var commentCountExisting: any = existing.getObjects().find((obj) => obj.name == 'commentCount')
+    copyCommentCount(existing, obj) {
         var commentCountObj: any = obj.objects.find((obj) => obj.name == 'commentCount')
-
-        commentCountExisting.set({ text: commentCountObj.text, dirty: true })
-
-        existing.dirty = true
-        existing.addWithUpdate();
-        return existing
+        return this.setCommentCount(existing, commentCountObj.text);
     }
 
-    incrementComments(obj: any) {
-        var children: fabric.Object[] = obj.getObjects()
-        var commentCountObj: any = children.find((obj) => obj.name == 'commentCount')
-
-        var numComments = parseInt(commentCountObj.text)
-        commentCountObj.set({ text: (numComments + 1).toString(), dirty: true })
-
-        obj.dirty = true
-        obj.addWithUpdate();
-        return obj
-    }
-
-    decrementComments(obj: any) {
-        var children: fabric.Object[] = obj.getObjects()
-        var commentCountObj: any = children.find((obj) => obj.name == 'commentCount')
-
-        var numComments = parseInt(commentCountObj.text)
-        commentCountObj.set({ text: (numComments - 1).toString(), dirty: true })
+    setCommentCount(obj, count: number) {
+        var commentCountObj: any = obj.getObjects().find((obj) => obj.name == 'commentCount')
+        commentCountObj.set({ text: count.toString(), dirty: true })
 
         obj.dirty = true
         obj.addWithUpdate();

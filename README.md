@@ -6,6 +6,7 @@ This Common Knowledge (CK) Board is the latest rebuild of the ENCORE Lab's colla
 
 #### 1. Install Node.js and Angular
 * Node: https://nodejs.org/
+  * Use the LTS versions. v16 works, v17 has some compatabily issues 
 * Angular: ```npm install -g @angular/cli ```
 
 #### 2. Clone the repository
@@ -14,6 +15,13 @@ $ git clone https://github.com/encorelab/ck-board.git
 ```
 
 #### 3. Install required dependencies
+
+If you are building locally or on an instance install depedancies with
+```shell
+$ npm ci
+```
+
+Only if you are installing a NEW package use
 ```shell
 $ npm install
 ```

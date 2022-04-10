@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
 import Notification from 'src/app/models/notification';
@@ -12,7 +12,7 @@ import { PostModalComponent } from '../post-modal/post-modal.component';
   templateUrl: './notification-dropdown.component.html',
   styleUrls: ['./notification-dropdown.component.scss']
 })
-export class NotificationDropdownComponent implements OnInit {
+export class NotificationDropdownComponent implements OnInit, OnDestroy {
   @Input() props:{  user:User, board:Board}
 
   notifications: Notification[] =[]
@@ -38,9 +38,7 @@ export class NotificationDropdownComponent implements OnInit {
 
   initGroupEventsListener() {
     const unsubPosts = this.notificationService.observable(
-      this.props.user.id, this.handleNotificationUpdate, 
-      this.handleNotificationUpdate, 
-      this.handleNotifcationDelete
+      this.props.user.id, this.handleNotificationUpdate
     );
     return [unsubPosts];
   }
@@ -66,6 +64,7 @@ export class NotificationDropdownComponent implements OnInit {
     if (this.notifications){
       this.notifications = this.notifications.filter(currentNotification => currentNotification.notificationID != notification.notificationID)
     }
+    this.notificationService.remove(notification.notificationID);
   }
   async openPost(notification:Notification){
     // if postID is defined then open the corresponding post when user clicks on notification
@@ -83,7 +82,7 @@ export class NotificationDropdownComponent implements OnInit {
       });
       await this.notificationService.markAsRead(notification.notificationID);
       // for now we'll delete when users click the notification
-      this.notificationService.remove(notification.notificationID);
+      this.handleNotifcationDelete(notification);
     }
   }
   async markAllAsRead(){

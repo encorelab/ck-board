@@ -15,6 +15,7 @@ import { DELETE } from '@angular/cdk/keycodes';
 import { CanvasPostEvent, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, Role } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -60,6 +61,7 @@ export class PostModalComponent {
     public commentService: CommentService, public likesService: LikesService,
     public postService: PostService, public bucketService: BucketService,
     public fabricUtils: FabricUtils,
+    private canvasService: CanvasService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
@@ -188,9 +190,9 @@ export class PostModalComponent {
       }
   
       const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.postService.addTag(this.user.username, this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+      this.canvasService.modifyTag(this.user.id, this.post.postID, { tags: this.tags, fabricObject: jsonPost });
     } else {
-      this.postService.addTag(this.user.username,this.post.postID, { tags: this.tags });
+      this.canvasService.modifyTag(this.user.id,this.post.postID, { tags: this.tags });
     }
   }
 
@@ -219,7 +221,7 @@ export class PostModalComponent {
     }
   }
 
-  addComment() {
+  async addComment() {
     const comment: Comment = {
       comment: this.newComment,
       commentID: Date.now() + '-' + this.data.user.id,
@@ -228,13 +230,12 @@ export class PostModalComponent {
       boardID: this.data.board.boardID,
       author: this.data.user.username
     }
-    this.commentService.add(comment).then(() => {
-      this.newComment = ''
-      this.comments.push(comment)
-    }).catch((e) => console.log(e))
+    await  this.canvasService.createComment(comment);
+    this.newComment = '';
+    await this.comments.push(comment);
   }
 
-  handleLikeClick() {
+  async handleLikeClick() {
     // if liking is locked just return (do nothing)
     if(this.user.role == Role.STUDENT && !this.data.board.permissions.allowStudentLiking){
       return;
@@ -252,7 +253,7 @@ export class PostModalComponent {
         postID: this.post.postID,
         boardID: this.data.board.boardID
       }
-      this.likesService.add(like)
+      await this.canvasService.likeModalPost(like);
       this.isLiked = like
       this.likes.push(like)
     }

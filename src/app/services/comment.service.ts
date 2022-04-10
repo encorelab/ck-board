@@ -39,14 +39,7 @@ export class CommentService {
     return this.commentCollection.ref.where("postID", "==", postID).get().then((snapshot) => snapshot)
   }
 
-  async add(comment: Comment){
-    // notifiy post author of new comment
-    let data = await this.postService.get(comment.postID);
-    let post = data.docs[0].data();
-    let notification:Notification = notificationFactory(post.userID);
-    notification.text = comment.author + " commented on your post";
-    this.notificationService.add(notification);
-    
+  async add(comment: Comment){    
     return this.commentCollection.doc(comment.commentID).set(comment)
   }
 

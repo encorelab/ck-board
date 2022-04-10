@@ -34,6 +34,7 @@ import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -84,7 +85,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils, 
     private router: Router,  private activatedRoute: ActivatedRoute,
     public snackbarService: SnackbarService, public dialog: MatDialog,
-    public fileUploadService: FileUploadService
+    public fileUploadService: FileUploadService,
+    private canvasService:CanvasService
   ) {}
 
   ngOnInit() {
@@ -496,7 +498,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (likeButton && (studentHasPerm || isTeacher)) {
       this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
         if (data.size == 0) {
-          this.likesService.add({
+          this.canvasService.likeModalPost({
             likeID: Date.now() + '-' + this.user.id,
             likerID: this.user.id,
             postID: post.postID,

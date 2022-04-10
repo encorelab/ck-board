@@ -48,21 +48,7 @@ export class LikesService {
   }
 
   async add(like: Like) {
-    await this.likesCollection.doc(like.likeID).set(like);
-    // send like notification to user
-    try{
-      let data = await this.postService.get(like.postID);
-      let post = data.docs[0].data();
-      let notification:Notification = notificationFactory(post.userID);
-      let user = await this.userService.getOneById(like.likerID)
-      notification.text = user?.username +" liked your post"
-      this.notificationService.add(notification)
-    }
-    catch(e){
-      console.error("Failed to send notification:\n "+ e)
-    }
-    
-    
+    await this.likesCollection.doc(like.likeID).set(like); 
   }
 
   remove(likeID: string) {

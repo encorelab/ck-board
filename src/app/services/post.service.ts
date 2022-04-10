@@ -107,25 +107,6 @@ export class PostService {
     return batch.commit()
   }
 
-  async addTag(username:string,postID:string, value:any){
-    await this.update(postID,value)
-    // send like notification to user
-    try{
-      console.log("ran")
-      let data = await this.get(postID);
-      let post = data.docs[0].data();
-      let notification:Notification = notificationFactory(post.userID);
-      notification.postID =postID
-      notification.text = username +" tagged your post"
-      this.notificationService.add(notification)
-    }
-    catch(e){
-      console.error("Failed to send notification:\n "+ e)
-    }
-
-
-  }
-
   update(postID: string, value: any) {
     return this.postsCollection.ref.doc(postID).update(value);
   }

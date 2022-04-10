@@ -1,0 +1,40 @@
+<h1 mat-dialog-title> Add Post </h1>
+<div mat-dialog-content>
+  <mat-form-field appearance="fill" style="width:100%">
+    <mat-label>Title</mat-label>
+    <input name="title" [formControl]="titleControl" [errorStateMatcher]="matcher" matInput autocomplete="off" cdkFocusInitial [(ngModel)]="title">
+    <mat-error *ngIf="!title">
+      Title is <strong>required</strong>
+    </mat-error>
+    <mat-error *ngIf="title && title.length > 50">
+      Title is <strong>too long!</strong>
+    </mat-error>
+  </mat-form-field>
+  <mat-form-field appearance="fill" style="width:100%">
+    <mat-label>Message</mat-label>
+    <textarea [formControl]="msgControl" [errorStateMatcher]="matcher" matInput rows="5" cols="40" [(ngModel)]='message'></textarea>
+    <mat-error *ngIf="message && message.length > 1000">
+      Message is <strong>too long!</strong>
+    </mat-error>
+  </mat-form-field>
+  <mat-form-field class="tag-form" appearance="standard">
+    <mat-chip-list #chipList>
+      <mat-chip style="background-color: #78C2C0" [matMenuTriggerFor]="menu1">
+        Add Tag 
+        <mat-icon>add</mat-icon>
+      </mat-chip>
+      <mat-chip [ngStyle]="{'background-color': tag.color}" *ngFor="let tag of tags">
+        {{ tag.name }}
+        <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
+      </mat-chip>
+      <mat-menu #menu1="matMenu">
+        <div mat-menu-item *ngIf="tagOptions && tagOptions.length == 0">No tags available.</div>
+        <div mat-menu-item (click)="addTag($event, tagOption)" *ngFor="let tagOption of tagOptions">{{ tagOption.name }}</div>
+      </mat-menu>
+    </mat-chip-list>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Cancel</button>
+  <button type="submit" [disabled]="!titleControl.valid || !msgControl.valid" mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Add Post</button>
+</div>

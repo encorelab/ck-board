@@ -1,0 +1,33 @@
+.tags-list {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.mat-radio-button ~ .mat-radio-button {
+  margin-left: 16px;
+}
+
+.chip-icon {
+  padding-right: 10px;
+  width: 12px;
+  height: 15px;
+  font-size: medium;
+}
+
+.image-form {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  margin-top: 15px;
+}
+
+.image-form > * {
+  margin: 5px 0;
+}
+
+.cancel {
+  padding-left: 10px;
+  width: 12px;
+  height: 15px;
+  font-size: medium;
+}

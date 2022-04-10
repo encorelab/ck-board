@@ -1,0 +1,16 @@
+@use '../../../style/layout/post-list';
+
+.mat-dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mat-dialog-content {
+  max-height: 75vh;
+}
+
+.spinner {
+  margin: 70px auto; 
+  background: transparent; 
+}

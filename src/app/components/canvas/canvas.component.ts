@@ -498,11 +498,18 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (likeButton && (studentHasPerm || isTeacher)) {
       this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
         if (data.size == 0) {
-          this.canvasService.likeCanvasPostClient();
-          this.canvasService.likeCanvasPostServer(post.postID, this.user.id, this.board.boardID);
+          const like: Like = {
+            likeID: Date.now() + '-' + this.user.id,
+            likerID: this.user.id,
+            postID: post.postID,
+            boardID: this.board.boardID
+          }
+          this.canvasService.likePost(post.postID, like);
         } else {
-          this.canvasService.unlikeCanvasPostClient(post.postID);
-          this.canvasService.unlikeCanvasPostServer(data, post.postID);
+          data.forEach(async (data) => {
+            let like: Like = data.data()
+            await this.canvasService.unlikePost(post.postID, like.likeID);
+          });
         }
       })
     }

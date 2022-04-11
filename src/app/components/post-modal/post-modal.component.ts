@@ -176,18 +176,20 @@ export class PostModalComponent {
 
   async addTag(event, tagOption): Promise<void> {
     event.stopPropagation();
-    [this.tags, this.tagOptions] = await this.canvasService.modifyTagClient(tagOption, this.tagOptions, this.tags);
+    this.tags.push(tagOption);
+    this.tagOptions = this.tagOptions.filter(tag => tag != tagOption);
 
     let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
+
     if (fabricObject) {
       if (tagOption.name == NEEDS_ATTENTION_TAG.name) {
         fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NEEDS_ATTENTION_TAG);
       }
   
       const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.canvasService.modifyTagServer(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+      this.canvasService.addTagsExistingPost(this.post.postID, tagOption, { tags: this.tags, fabricObject: jsonPost });
     } else {
-      this.canvasService.modifyTagServer(this.post.postID, { tags: this.tags });
+      this.canvasService.addTagsExistingPost(this.post.postID, tagOption, { tags: this.tags });
     }
   }
 
@@ -221,7 +223,7 @@ export class PostModalComponent {
       author: this.data.user.username
     }
     
-    this.canvasService.createComment(comment);
+    await this.canvasService.createComment(comment);
     this.newComment = '';
     this.comments.push(comment);
   }
@@ -233,12 +235,9 @@ export class PostModalComponent {
     }
       
     if (this.isLiked) {
-      const postId = this.isLiked.postID;
-      const likeId = this.isLiked.likeID;
-
-      [this.likes, this.isLiked] = await this.canvasService
-                                  .unlikeModalPostClient(this.likes, this.isLiked, this.user.id);                  
-      this.canvasService.unlikeModalPostServer(postId, likeId);
+      await this.canvasService.unlikePost(this.isLiked.postID, this.isLiked.likeID);
+      this.isLiked = null;
+      this.likes = this.likes.filter(like => like.likerID != this.user.id);
     } else {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
@@ -246,10 +245,9 @@ export class PostModalComponent {
         postID: this.post.postID,
         boardID: this.data.board.boardID
       }
-      await this.canvasService.likeModalPostClient(like, this.likes);
-      await this.canvasService.likeModalPostServer(this.post.postID, like);
+      await this.canvasService.likePost(this.post.postID, like);
       this.isLiked = like;
-
+      this.likes.push(like);
     }
   }
 }

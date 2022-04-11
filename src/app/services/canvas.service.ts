@@ -59,64 +59,23 @@ export class CanvasService {
         });
     }
 
-    likeModalPostClient(like: any, likes: any): void {
+    likePost(postId: string, like: Like): void {
         this.tracingService.traceVotedPostClient();
-        likes.push(like);
-    }
-
-    likeModalPostServer(postId: string, like: any): void {
         this.likesService.add(like).then(() => {
             this.tracingService.traceVotedPostServer(postId, 1);
         });
     }
 
-    async unlikeModalPostClient(likes: any, isLiked: any, userId: string): Promise<[any, any]> {
-        await this.tracingService.traceVotedPostClient();
-        isLiked = null;
-        likes = likes.filter(like => like.likerID != userId);
-        return [likes, isLiked];
-    }
-
-    unlikeModalPostServer(postId: string, likeId: string): void {
+    unlikePost(postId: string, likeId: string): void {
+        this.tracingService.traceVotedPostClient();
         this.likesService.remove(likeId).then(() => {
             this.tracingService.traceVotedPostServer(postId, 0);
         });
     }
 
-    likeCanvasPostClient(): void {
-        this.tracingService.traceVotedPostClient();
-    }
-    
-    likeCanvasPostServer(postId: string, userId: string, boardId: string): void {
-        this.likesService.add({
-            likeID: Date.now() + '-' + userId,
-            likerID: userId,
-            postID: postId,
-            boardID: boardId
-        }).then(() => this.tracingService.traceVotedPostServer(postId, 1));
-    }
-
-    unlikeCanvasPostClient(postId: string) {
-        this.tracingService.traceVotedPostClient();
-    }
-
-    unlikeCanvasPostServer(data: any, postId: string): void {
-        data.forEach((data) => {
-            let like: Like = data.data()
-            this.likesService.remove(like.likeID)
-        });
-        this.tracingService.traceVotedPostServer(postId, 0);
-    }
-
-    async modifyTagClient(tagOption: Tag, tagOptions: Tag[], tags: Tag[]): Promise<[Tag[], Tag[]]> {
-        await this.tracingService.traceAddedTagClient([tagOption.name]);
-        tags.push(tagOption);
-        tagOptions = tagOptions.filter(tag => tag != tagOption);
-        return [tags, tagOptions];
-    }
-
-    modifyTagServer(postId: string, value: object): void {
-        this.postService.update(postId, value).then(() => {
+    addTagsExistingPost(postId: string, tagOption: Tag, tags: object) {
+        this.tracingService.traceAddedTagClient([tagOption.name]);
+        this.postService.update(postId, tags).then(() => {
             this.tracingService.traceAddedTagServer(postId);
         });
     }

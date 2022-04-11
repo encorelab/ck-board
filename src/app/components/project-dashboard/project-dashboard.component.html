@@ -17,7 +17,7 @@
             </button>
         </mat-menu>
         <button 
-            *ngIf="user && user.role == Role.TEACHER" 
+            *ngIf="user && user.role == Role.TEACHER && boards.length > 0" 
             mat-icon-button (click)="exportToCSV()" 
             matTooltip="Export Data To CSV">
                 <mat-icon>download</mat-icon>

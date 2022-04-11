@@ -13,6 +13,7 @@ import { Role } from 'src/app/utils/constants';
 import Trace from 'src/app/interfaces/trace';
 import { ExportToCsv } from 'export-to-csv';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import { E } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -132,7 +133,41 @@ export class ProjectDashboardComponent implements OnInit {
     const trace = await this.traceCollection.ref.where("projectId", "==", this.projectID).get();
     let traceData: Trace[] = [];
     trace.forEach(data => traceData.push(data.data()));
-    csvExporter.generateCsv(traceData);
+    console.log(traceData);
+    if(traceData.length == 0) {
+      traceData.push({
+        traceId: "",
+        projectId : "",
+        projectName: "",
+        boardId: "",
+        boardName: "",
+        agentUserId: "",
+        agentUserName: "",
+        commentId: "",
+        commentText: "",
+        postId: "",
+        postTitle: "",
+        postMessage: "", 
+        postTitleOrMessageModifiedCounter: 0,
+        clientTimestamp: -1,
+        serverTimestamp: -1,
+        commentModifiedTextCounter: 0,
+        postModifiedUpvote: 0,
+        postTagNameAdded: [],
+        postTagNameRemoved: "",
+        postModifiedLocationX: null,
+        postModifiedLocationY: null,
+        postDeleted: 0,
+        bucketId: "",
+        bucketName: "",
+        postRead: 0 
+      })
+      csvExporter.generateCsv(traceData);
+    }
+    else {
+      console.log(traceData);
+      csvExporter.generateCsv(traceData);
+    }
   }
 
 }

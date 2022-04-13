@@ -16,6 +16,6 @@ export function notificationFactory(userID:string,postID:string="",text:string =
         userID :userID,
         postID  :postID,
     }
-
 }
+
 

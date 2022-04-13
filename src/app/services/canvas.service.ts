@@ -31,7 +31,7 @@ export class CanvasService {
         let data = await this.postsService.get(comment.postID);
         let post = await data.docs[0].data();
         let notification:Notification = notificationFactory(post.userID,post.postID);
-        notification.text = comment.author + " commented on your post";
+        notification.text = comment.author + " commented on \""+ post.title+"\"" ;
         await this.notificationService.add(notification);
 
     }
@@ -45,7 +45,7 @@ export class CanvasService {
         let post = data.docs[0].data();
         let notification:Notification = notificationFactory(post.userID,post.postID);
         let user = await this.userService.getOneById(like.likerID)
-        notification.text = user?.username +" liked your post"
+        notification.text = user?.username +" liked \""+ post.title+"\"";
         await this.notificationService.add(notification);
 
       
@@ -59,7 +59,7 @@ export class CanvasService {
         let post = data.docs[0].data();
         let notification:Notification = notificationFactory(post.userID,post.postID);
         let user = await this.userService.getOneById(userId)
-        notification.text = user?.username +" tagged your post"
+        notification.text = user?.username +" tagged \""+ post.title+"\"";
         await this.notificationService.add(notification)
 
 

@@ -30,8 +30,8 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
      
       notifications.forEach((data)=>{
         this.notifications.push(data.data());
-        this.unsubListeners = this.initGroupEventsListener();
       })
+      this.unsubListeners = this.initGroupEventsListener();
     })
    
   }
@@ -44,6 +44,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   }
 
   handleNotificationUpdate = (notification:Notification) =>{
+    console.log("ran")
     // replace existing notification with new one, if found
     let replaced = false
     for(let i=0; i<this.notifications.length; i++){
@@ -88,7 +89,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   async markAllAsRead(){
     this.notifications.forEach(notification =>{
       this.notificationService.markAsRead(notification.notificationID);
-      this.notificationService.remove(notification.notificationID);
+      this.handleNotifcationDelete(notification);
     })
   }
   ngOnDestroy(): void {

@@ -219,15 +219,8 @@ export class FabricUtils {
     updateCommentCount(existing, obj) {
         var commentCountExisting: any = existing.getObjects().find((obj) => obj.name == 'commentCount')
         var commentCountObj: any = obj.objects.find((obj) => obj.name == 'commentCount')
-        var commentExisting: any = existing.getObjects().find((obj) => obj.name == 'comment')
+
         commentCountExisting.set({ text: commentCountObj.text, dirty: true })
-        // by default comment and comment count are hidden
-        // if there is at least 1 comment, comment and comment count should be displayed
-        if(parseInt(commentCountObj.text) >=1){
-            commentExisting.set({opacity:1, dirty: true})
-            commentCountExisting.set({opacity:1, dirty: true})
-        }
-            
 
         existing.dirty = true
         existing.addWithUpdate();

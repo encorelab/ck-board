@@ -78,8 +78,7 @@ export class FabricPostComponent extends fabric.Group {
       fontSize: 20,
       fontFamily: 'Helvetica',
       fill: '#000000',
-      splitByGrapheme: true,
-      opacity:0
+      splitByGrapheme: true
     });
 
     var commentCount = new fabric.Textbox('0', {
@@ -90,8 +89,7 @@ export class FabricPostComponent extends fabric.Group {
       fontSize: 20,
       fontFamily: 'Helvetica',
       fill: '#555555',
-      splitByGrapheme: true,
-      opacity:0
+      splitByGrapheme: true
     });
 
     var content = new fabric.Rect({

@@ -35,6 +35,7 @@ import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
 
+
 interface PostIDNamePair {
   postID: string,
   username: string
@@ -93,7 +94,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.fabricUtils._canvas = this.canvas;
     this.postColor = POST_COLOR;
 
-    this.configureBoard();
+    this.configureBoard()
+      .then(_=>{
+        this.configureZoom();
+      })
+    
+    
     
     const unsubCanvasEvents = this.initCanvasEventsListener();
     const unsubGroupEvents = this.initGroupEventsListener();
@@ -158,8 +164,20 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
+  configureZoom(){
+    if(this.board.initialZoom){
+      let zoom = this.board.initialZoom / 100
+      this.zoom = parseFloat(zoom.toPrecision(2))
+      this.handleZoom('zoomIn')
+    }
+    else{
+      this.zoom = 1
+    }
+    
+  }
+
   // configure board
-  configureBoard() {
+  async configureBoard() {
     const map = this.activatedRoute.snapshot.paramMap;
 
     if (map.has('boardID') && map.has('projectID')) {
@@ -168,26 +186,30 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else {
       this.router.navigate(['error']);
     }
-    
-    this.postService.getAll(this.boardID).then((data) => {
-      data.forEach((data) => {
-        let post = data.data() ?? {}
-        if(post.fabricObject){
-          let obj = JSON.parse(post.fabricObject);
-          this.syncBoard(obj, post.postID);
-        }
-      })
-      this.boardService.get(this.boardID).then((board) => {
-        if (board) {
-          this.board = board
-          board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
-          board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
-          this.updateShowAddPost(this.board.permissions)
-          this.setAuthorVisibilityAll()
-        }
-      })
+    let posts = await this.postService.getAll(this.boardID)
+    posts.forEach((data) => {
+      let post = data.data() ?? {}
+      if(post.fabricObject){
+        let obj = JSON.parse(post.fabricObject);
+        this.syncBoard(obj, post.postID);
+      }
     })
-    this.projectService.get(this.projectID).then(project => this.project = project)
+    let board = await this.boardService.get(this.boardID)
+    if (board) {
+      alert(board.initialZoom)
+      this.board = board
+      board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
+      if(board.bgImage){
+        await this.updateBackground(board.bgImage.url, board.bgImage.imgSettings)
+        alert("ran")
+      }
+        
+      await this.updateShowAddPost(this.board.permissions)
+      await this.setAuthorVisibilityAll()
+    }
+    
+    await this.projectService.get(this.projectID).then(project => this.project = project)
+    
   }
 
   openWorkflowDialog() {
@@ -235,6 +257,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
+  updateInitialZoom = (zoom:number) =>{
+    this.boardService.update(this.boardID,{initialZoom:zoom})
+
+  }
 
   openSettingsDialog() {
     this.dialog.open(ConfigurationModalComponent, {
@@ -246,7 +272,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
         updateTask: this.updateTask,
         updateBackground: this.updateBackground,
         updateBoardName: this.updateBoardName,
-        updateTags: this.updateTags
+        updateTags: this.updateTags,
+        updateInitialZoom: this.updateInitialZoom
       }
     });
   }
@@ -260,34 +287,38 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.boardService.update(this.boardID, { name: name })
   }
 
-  updateBackground = (fileString, settings?) => {
+  updateBackground =  async(fileString, settings?) => {
     if (fileString == null) {
       const image = new fabric.Image('');
       this.canvas.setBackgroundImage(image, this.canvas.renderAll.bind(this.canvas))
-      this.boardService.update(this.boardID, { bgImage: null })
-      return;
-    } 
+      return await this.boardService.update(this.boardID, { bgImage: null })
 
-    fabric.Image.fromURL(fileString, (img) => {
-      if (img && settings) {
-        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
-      } else if (img && !settings) {
-        // TODO: delete old background image
-        const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
-        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-        this.fileUploadService.upload(fileString).then(firebaseUrl => {
+    } 
+    return new Promise((resolve, reject) => {
+      fabric.Image.fromURL(fileString, async (img) => {
+        if (img && settings) {
+          this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
+          
+        } else if (img && !settings) {
+          // TODO: delete old background image
+          const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
+          await this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
+          // TODO: Debug and handle error in image upload
+          let firebaseUrl = await this.fileUploadService.upload(fileString)
           if (this.board.bgImage?.url) {
-            this.fileUploadService.delete(this.board.bgImage?.url).then(_ => {
-              this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
-            })
+            await this.fileUploadService.delete(this.board.bgImage?.url)
+            await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+            
           }
           else {
-            this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+            await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
           }
-        })
+          
 
-      }
-    });
+        }
+        resolve("hi")
+      });
+    })
   }
 
   updatePostPermissions = (permissions: Permissions) => {

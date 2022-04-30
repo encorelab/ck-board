@@ -29,6 +29,7 @@ export class ConfigurationModalComponent {
   tags: Tag[]
   newTagText: string = ''
   newTagColor: any = TAG_DEFAULT_COLOR;
+  initialZoom: number = 100
 
   members: string[] = []
 
@@ -80,6 +81,7 @@ export class ConfigurationModalComponent {
     this.data.updateTask(this.taskTitle, this.taskMessage)
     this.data.updatePermissions(this.permissions)
     this.data.updateTags(this.tags)
+    this.data.updateInitialZoom(this.initialZoom)
     this.dialogRef.close();
   }
 

@@ -46,6 +46,7 @@ export class ConfigurationModalComponent {
       this.taskMessage = data.board.task.message
       this.tags = data.board.tags ?? []
       this.permissions= data.board.permissions
+      this.initialZoom = data.board.initialZoom
       data.board.members.map(id => {
         userService.getOneById(id).then(user => {
           if (user) {
@@ -66,14 +67,14 @@ export class ConfigurationModalComponent {
 
   compressFile(){
     this.fileUploadService.compressFile().then((compressedImage) =>{
-      this.data.updateBackground(compressedImage,null);
+      this.data.updateExistingBackground(compressedImage);
     })
   
   }
 
   removeImage() {
     this.currentBgImage = null
-    this.data.updateBackground(null)
+    this.data.updateExistingBackground(null)
   }
 
   handleDialogSubmit() {

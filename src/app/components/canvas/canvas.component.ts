@@ -168,7 +168,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if(this.board.initialZoom){
       let zoom = this.board.initialZoom / 100
       this.zoom = parseFloat(zoom.toPrecision(2))
-      this.handleZoom('zoomIn')
+      this.handleZoom('setZoom')
     }
     else{
       this.zoom = 1
@@ -196,12 +196,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     })
     let board = await this.boardService.get(this.boardID)
     if (board) {
-      alert(board.initialZoom)
       this.board = board
       board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
       if(board.bgImage){
         await this.updateBackground(board.bgImage.url, board.bgImage.imgSettings)
-        alert("ran")
       }
         
       await this.updateShowAddPost(this.board.permissions)
@@ -257,9 +255,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
     this.enableEditMode()
   }
-  updateInitialZoom = (zoom:number) =>{
+  updateInitialZoom = async (zoom:number) =>{
     this.boardService.update(this.boardID,{initialZoom:zoom})
-
+    await this.configureBoard()
+    this.configureZoom()
   }
 
   openSettingsDialog() {
@@ -270,7 +269,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         updatePermissions: this.updatePostPermissions,
         updatePublic: this.updatePublic,
         updateTask: this.updateTask,
-        updateBackground: this.updateBackground,
+        updateExistingBackground: this.updateExistingBackground,
         updateBoardName: this.updateBoardName,
         updateTags: this.updateTags,
         updateInitialZoom: this.updateInitialZoom
@@ -286,6 +285,34 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.board.name = name
     this.boardService.update(this.boardID, { name: name })
   }
+  updateExistingBackground = async(fileString)=>{
+    if (fileString == null) {
+      const image = new fabric.Image('');
+      this.canvas.setBackgroundImage(image, this.canvas.renderAll.bind(this.canvas))
+      return await this.boardService.update(this.boardID, { bgImage: null })
+
+    }
+    return new Promise((resolve, reject) => {
+      fabric.Image.fromURL(fileString, async (img) => {
+        const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
+        await this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
+        // TODO: Debug and handle error in image upload
+        let firebaseUrl = await this.fileUploadService.upload(fileString)
+        if (this.board.bgImage?.url) {
+          await this.fileUploadService.delete(this.board.bgImage?.url)
+          await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+          
+        }
+        else {
+          await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+        }
+        resolve("hi")
+    })
+    
+  
+})
+
+  }
 
   updateBackground =  async(fileString, settings?) => {
     if (fileString == null) {
@@ -296,26 +323,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } 
     return new Promise((resolve, reject) => {
       fabric.Image.fromURL(fileString, async (img) => {
-        if (img && settings) {
-          this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
-          
-        } else if (img && !settings) {
-          // TODO: delete old background image
-          const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
-          await this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-          // TODO: Debug and handle error in image upload
-          let firebaseUrl = await this.fileUploadService.upload(fileString)
-          if (this.board.bgImage?.url) {
-            await this.fileUploadService.delete(this.board.bgImage?.url)
-            await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
-            
-          }
-          else {
-            await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
-          }
-          
-
+        let imgSettings = settings
+        if (!settings) {
+          imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
         }
+        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings)
         resolve("hi")
       });
     })
@@ -869,6 +881,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
     else if (event === 'reset') {
       this.zoom = 1;
+    }
+    else if (event === 'setZoom'){
+      this.zoom = this.zoom
     }
 
     if (this.zoom > 20) {

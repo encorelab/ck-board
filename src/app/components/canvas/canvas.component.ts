@@ -34,6 +34,7 @@ import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
+import { async } from '@angular/core/testing';
 
 
 interface PostIDNamePair {
@@ -199,7 +200,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.board = board
       board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
       if(board.bgImage){
-        await this.updateBackground(board.bgImage.url, board.bgImage.imgSettings)
+        await this.setCanvasBackground(board.bgImage.url, board.bgImage.imgSettings)
       }
         
       await this.updateShowAddPost(this.board.permissions)
@@ -269,7 +270,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         updatePermissions: this.updatePostPermissions,
         updatePublic: this.updatePublic,
         updateTask: this.updateTask,
-        updateExistingBackground: this.updateExistingBackground,
+        uploadBackgroundImage: this.uploadBackgroundImage,
         updateBoardName: this.updateBoardName,
         updateTags: this.updateTags,
         updateInitialZoom: this.updateInitialZoom
@@ -285,12 +286,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.board.name = name
     this.boardService.update(this.boardID, { name: name })
   }
-  updateExistingBackground = async(fileString)=>{
-    if (fileString == null) {
-      const image = new fabric.Image('');
-      this.canvas.setBackgroundImage(image, this.canvas.renderAll.bind(this.canvas))
-      return await this.boardService.update(this.boardID, { bgImage: null })
-
+  /**
+   * Set filestring as canvas background and upload background to firebase
+   * 
+   * @param fileString base64 string representing an image
+   * @returns 
+   */
+  uploadBackgroundImage = async(fileString)=>{
+    if (!fileString) {
+      return
     }
     return new Promise((resolve, reject) => {
       fabric.Image.fromURL(fileString, async (img) => {
@@ -301,34 +305,44 @@ export class CanvasComponent implements OnInit, OnDestroy {
         if (this.board.bgImage?.url) {
           await this.fileUploadService.delete(this.board.bgImage?.url)
           await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
-          
         }
         else {
           await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
         }
-        resolve("hi")
+        resolve("")
     })
     
   
 })
 
   }
-
-  updateBackground =  async(fileString, settings?) => {
-    if (fileString == null) {
-      const image = new fabric.Image('');
-      this.canvas.setBackgroundImage(image, this.canvas.renderAll.bind(this.canvas))
-      return await this.boardService.update(this.boardID, { bgImage: null })
-
-    } 
+  /**
+   * Removes canvas background
+   * 
+   * @returns Promise<any>
+   */
+  removeBackground = async():Promise<any> =>{
+    const image = new fabric.Image('');
+    this.canvas.setBackgroundImage(image, this.canvas.renderAll.bind(this.canvas))
+    return await this.boardService.update(this.boardID, { bgImage: null })
+  }
+  /**
+   * Set firebase image or base64 string as canvas background
+   * 
+   * @param fileString firebase image url or base64 string
+   * @param settings image settings
+   * @returns Promise<any>
+   */
+  setCanvasBackground =  async(fileString, settings?):Promise<any> => {
     return new Promise((resolve, reject) => {
       fabric.Image.fromURL(fileString, async (img) => {
         let imgSettings = settings
+        // create default image settings if not specified
         if (!settings) {
           imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
         }
         this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings)
-        resolve("hi")
+        resolve("")
       });
     })
   }
@@ -611,9 +625,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.setAuthorVisibilityAll()
 
     if (board.bgImage) {
-      this.updateBackground(board.bgImage.url, board.bgImage.imgSettings)
+      this.setCanvasBackground(board.bgImage.url, board.bgImage.imgSettings)
     } else {
-      this.updateBackground(null);
+      this.removeBackground();
     }
     
     board.name ? this.updateBoardName(board.name) : null

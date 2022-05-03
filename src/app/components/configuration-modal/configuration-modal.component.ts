@@ -65,16 +65,16 @@ export class ConfigurationModalComponent {
     this.tags = this.tags.filter(tag => tag != tagRemove)
   }
 
-  compressFile(){
-    this.fileUploadService.compressFile().then((compressedImage) =>{
-      this.data.updateBackgroundImage(compressedImage);
-    })
+  async compressFile(){
+    let compressedImage = await this.fileUploadService.compressFile();
+    await this.data.updateBackgroundImage(compressedImage);
+    this.dialogRef.close();
   
   }
 
   removeImage() {
     this.currentBgImage = null
-    this.data.removeBackground()
+    this.data.removeBackgroundImage()
   }
 
   handleDialogSubmit() {

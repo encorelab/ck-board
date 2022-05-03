@@ -33,9 +33,7 @@ export class BoardGuard implements CanActivate {
           return false
         })
         .then(isValid => {
-          if (isValid && this.board.public) {
-            return true
-          } else if (isValid) {
+          if (isValid) {
             return this.isBoardMember()
           }
           return false

@@ -8,6 +8,8 @@ import { PostService } from "./post.service";
 import { NotificationService } from "./notification.service";
 import Notification, { notificationFactory } from "../models/notification";
 import { UserService } from "./user.service";
+import { AuthService } from "./auth.service";
+
 
 @Injectable({
     providedIn: 'root'
@@ -18,7 +20,8 @@ export class CanvasService {
                 private commentService: CommentService,
                 private likesService: LikesService,
                 private notificationService:NotificationService,
-                private userService: UserService) 
+                private userService: UserService,
+                private authService: AuthService) 
     {
 
     }
@@ -51,14 +54,14 @@ export class CanvasService {
       
     }
 
-    async modifyTag(userId:string,postId: string, value: object,): Promise<any>{
+    async modifyTag(postId: string, value: object,): Promise<any>{
         await this.postsService.update(postId, value)
 
         // send like notification to user
         let data = await this.postsService.get(postId);
         let post = data.docs[0].data();
         let notification:Notification = notificationFactory(post.userID,post.postID);
-        let user = await this.userService.getOneById(userId)
+        let user = await this.authService.getAuthenticatedUser()
         notification.text = user?.username +" tagged \""+ post.title+"\"";
         await this.notificationService.add(notification)
 

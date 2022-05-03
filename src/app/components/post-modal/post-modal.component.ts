@@ -190,9 +190,9 @@ export class PostModalComponent {
       }
   
       const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.canvasService.modifyTag(this.user.id, this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+      this.canvasService.modifyTag(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
     } else {
-      this.canvasService.modifyTag(this.user.id,this.post.postID, { tags: this.tags });
+      this.canvasService.modifyTag(this.post.postID, { tags: this.tags });
     }
   }
 

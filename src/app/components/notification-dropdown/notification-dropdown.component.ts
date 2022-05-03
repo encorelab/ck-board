@@ -13,7 +13,8 @@ import { PostModalComponent } from '../post-modal/post-modal.component';
   styleUrls: ['./notification-dropdown.component.scss']
 })
 export class NotificationDropdownComponent implements OnInit, OnDestroy {
-  @Input() props:{  user:User, board:Board}
+  @Input() user:User
+  @Input() board:Board
 
   notifications: Notification[] =[]
   unsubListeners: Function[] = []
@@ -26,7 +27,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.notificationService.getNotificationsByUser(this.props.user.id).then(notifications=>{
+    this.notificationService.getNotificationsByUser(this.user.id).then(notifications=>{
      
       notifications.forEach((data)=>{
         this.notifications.push(data.data());
@@ -38,13 +39,12 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
 
   initGroupEventsListener() {
     const unsubPosts = this.notificationService.observable(
-      this.props.user.id, this.handleNotificationUpdate
+      this.user.id, this.handleNotificationUpdate
     );
     return [unsubPosts];
   }
 
   handleNotificationUpdate = (notification:Notification) =>{
-    console.log("ran")
     // replace existing notification with new one, if found
     let replaced = false
     for(let i=0; i<this.notifications.length; i++){
@@ -76,9 +76,9 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
         minWidth: '700px',
         width: 'auto',
         data: {
-          user: this.props.user,
+          user: this.user,
           post:post,
-          board: this.props.board
+          board: this.board
         }
       });
       await this.notificationService.markAsRead(notification.notificationID);

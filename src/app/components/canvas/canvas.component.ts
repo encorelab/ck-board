@@ -253,8 +253,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
   updateInitialZoom = async (zoom:number) =>{
     this.boardService.update(this.boardID,{initialZoom:zoom})
-    await this.configureBoard()
-    this.configureZoom()
   }
 
   openSettingsDialog() {

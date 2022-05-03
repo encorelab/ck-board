@@ -17,7 +17,6 @@ export class ConfigurationModalComponent {
   readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
   boardName: string
-  isPublic: boolean = false
 
   currentBgImage: any 
 
@@ -39,7 +38,6 @@ export class ConfigurationModalComponent {
     public fileUploadService: FileUploadService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       this.boardName = data.board.name
-      this.isPublic = data.board.public
       this.currentBgImage = data.board.bgImage
       this.taskTitle = data.board.task.title
       this.taskMessage = data.board.task.message

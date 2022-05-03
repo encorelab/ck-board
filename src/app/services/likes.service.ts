@@ -31,19 +31,22 @@ export class LikesService {
     })
   }
 
-  getLikesByPost(postID: string) {
+  async getLikesByPost(postID: string) {
     return this.likesCollection.ref.where("postID", "==", postID).get().then((snapshot) => snapshot)
   }
 
-  isLikedBy(postID: string, likerID: string) {
-    return this.likesCollection.ref.where("postID", "==", postID).where("likerID", "==", likerID).get().then((snapshot) => snapshot)
+  async isLikedBy(postID: string, likerID: string): Promise<[any, boolean]> {
+    return this.likesCollection.ref.where("postID", "==", postID).where("likerID", "==", likerID).get().then((snapshot) => {
+      if (snapshot.size == 0) return [null, false];
+      return [snapshot.docs[0].data(), true];
+    })
   }
 
-  async add(like: Like) {
-    await this.likesCollection.doc(like.likeID).set(like); 
+  add(like: Like): Promise<void> {
+    return this.likesCollection.doc(like.likeID).set(like)
   }
 
-  remove(likeID: string) {
+  remove(likeID: string): Promise<void> {
     return this.likesCollection.ref.doc(likeID).delete()
   }
 }

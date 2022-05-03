@@ -67,14 +67,14 @@ export class ConfigurationModalComponent {
 
   compressFile(){
     this.fileUploadService.compressFile().then((compressedImage) =>{
-      this.data.updateExistingBackground(compressedImage);
+      this.data.updateBackgroundImage(compressedImage);
     })
   
   }
 
   removeImage() {
     this.currentBgImage = null
-    this.data.updateExistingBackground(null)
+    this.data.removeBackground()
   }
 
   handleDialogSubmit() {

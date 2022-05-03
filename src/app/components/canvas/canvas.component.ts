@@ -270,7 +270,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
         updatePermissions: this.updatePostPermissions,
         updatePublic: this.updatePublic,
         updateTask: this.updateTask,
-        uploadBackgroundImage: this.uploadBackgroundImage,
+        updateBackgroundImage: this.updateBackgroundImage,
+        removeBackground:this.removeBackground,
         updateBoardName: this.updateBoardName,
         updateTags: this.updateTags,
         updateInitialZoom: this.updateInitialZoom
@@ -287,27 +288,27 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.boardService.update(this.boardID, { name: name })
   }
   /**
-   * Set filestring as canvas background and upload background to firebase
+   * Convert filestring to image and upload to firebase. If board has exisiting background image delete it.
    * 
    * @param fileString base64 string representing an image
    * @returns 
    */
-  uploadBackgroundImage = async(fileString)=>{
+  updateBackgroundImage = async(fileString)=>{
     if (!fileString) {
       return
     }
     return new Promise((resolve, reject) => {
       fabric.Image.fromURL(fileString, async (img) => {
         const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
-        await this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
         // TODO: Debug and handle error in image upload
         let firebaseUrl = await this.fileUploadService.upload(fileString)
+        // if board has existing background image delete it and replace it with the new one
         if (this.board.bgImage?.url) {
           await this.fileUploadService.delete(this.board.bgImage?.url)
-          await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+          await this.boardService.update(this.boardID, { initialZoom:100, bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
         }
         else {
-          await this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
+          await this.boardService.update(this.boardID, { initialZoom:100, bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
         }
         resolve("")
     })
@@ -618,17 +619,26 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   // listen to configuration/permission changes
-  handleBoardChange = (board) => {
+  handleBoardChange = async (board) => {
+    let previousBoard = this.board
     this.board = board
 
     this.lockPostsMovement(!board.permissions.allowStudentMoveAny)
     this.setAuthorVisibilityAll()
 
+    
+
     if (board.bgImage) {
-      this.setCanvasBackground(board.bgImage.url, board.bgImage.imgSettings)
+      await this.setCanvasBackground(board.bgImage.url, board.bgImage.imgSettings)
     } else {
       this.removeBackground();
     }
+    // TODO: when initial zoom is not 100, updating background does not scale properly
+    if (previousBoard.initialZoom !== board.initialZoom){
+      this.configureZoom()
+    }
+
+    
     
     board.name ? this.updateBoardName(board.name) : null
   }

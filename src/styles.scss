@@ -3,6 +3,7 @@
 @use 'sass:map';
 @use "@angular/material" as mat;
 @use "./style/themes/light";
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
 $font-family-default: '"Roboto", sans-serif';
 

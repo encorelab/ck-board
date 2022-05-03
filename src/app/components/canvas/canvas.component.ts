@@ -160,7 +160,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   configureZoom(){
-    if(this.board.initialZoom){
+    if(this.board.initialZoom !== undefined){
       let zoom = this.board.initialZoom / 100
       this.zoom = parseFloat(zoom.toPrecision(2))
       this.handleZoom('setZoom')

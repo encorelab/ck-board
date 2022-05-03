@@ -482,10 +482,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
         existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc);
         this.canvas.requestRenderAll()
       } else if (event == CanvasPostEvent.LIKE) {
-        existing = this.fabricUtils.updateLikeCount(existing, obj);
+        existing = this.fabricUtils.copyLikeCount(existing, obj);
         this.canvas.requestRenderAll()
       } else if (event == CanvasPostEvent.COMMENT) {
-        existing = this.fabricUtils.updateCommentCount(existing, obj)
+        existing = this.fabricUtils.copyCommentCount(existing, obj)
         this.canvas.requestRenderAll()
       } else if (event == CanvasPostEvent.NEEDS_ATTENTION_TAG) {
         existing = this.fabricUtils.setBorderColor(existing, NEEDS_ATTENTION_TAG.color);
@@ -523,20 +523,22 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   }
 
-  handleLikeEvent = (like: Like, change: string) => {
+  handleLikeEvent = async (like: Like, change: string) => {
     var post = this.fabricUtils.getObjectFromId(like.postID)
     if (post) {
-      post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
+      const likes = await this.likesService.getLikesByPost(post.postID);
+      post = this.fabricUtils.setLikeCount(post, likes.docs.length);
       this.canvas.renderAll()
       var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasPostEvent.LIKE));
       this.postService.update(post.postID, { fabricObject: jsonPost })
     }
   }
 
-  handleCommentEvent = (comment: Comment) => {
+  handleCommentEvent = async (comment: Comment) => {
     var post = this.fabricUtils.getObjectFromId(comment.postID)
     if (post) {
-      post = this.fabricUtils.incrementComments(post)
+      const comments = await this.commentService.getCommentsByPost(post.postID);
+      post = this.fabricUtils.setCommentCount(post, comments.docs.length);
       this.canvas.renderAll()
       var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasPostEvent.COMMENT));
       this.postService.update(post.postID, { fabricObject: jsonPost })
@@ -544,35 +546,41 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initLikeClickListener() {
-    this.canvas.on('mouse:down', this.handleLikeClick);
+    let waiting = false;
+
+    const handleAsyncLikes = async (e) => {
+      if (!waiting) {
+        waiting = true;
+        await this.handleLikeClick(e);
+        waiting = false;
+      }
+    }
+
+    this.canvas.on('mouse:down', handleAsyncLikes);
 
     return () => { 
-      this.canvas.off('mouse:down', this.handleLikeClick)
+      this.canvas.off('mouse:down', handleAsyncLikes);
     };
   }
 
-  handleLikeClick = (e: fabric.IEvent) => {
+  handleLikeClick = async (e: fabric.IEvent) => {
     var post: any = e.target
     var likeButton = e.subTargets?.find(o => o.name == 'like')
     let isStudent = this.user.role == Role.STUDENT
     let isTeacher = this.user.role == Role.TEACHER
     let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
     if (likeButton && (studentHasPerm || isTeacher)) {
-      this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
-        if (data.size == 0) {
-          this.likesService.add({
-            likeID: Date.now() + '-' + this.user.id,
-            likerID: this.user.id,
-            postID: post.postID,
-            boardID: this.board.boardID
-          })
-        } else {
-          data.forEach((data) => {
-            let like: Like = data.data()
-            this.likesService.remove(like.likeID)
-          })
-        }
-      })
+      let [like, isLiked] = await this.likesService.isLikedBy(post.postID, this.user.id);
+      if (!isLiked) {
+        await this.likesService.add({
+          likeID: Date.now() + '-' + this.user.id,
+          likerID: this.user.id,
+          postID: post.postID,
+          boardID: this.board.boardID
+        })
+      } else {
+        await this.likesService.remove(like.likeID)
+      }
     }
   }
 

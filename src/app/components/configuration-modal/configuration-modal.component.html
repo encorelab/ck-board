@@ -9,9 +9,6 @@
           Board Name is required.
         </mat-error>
       </mat-form-field>
-      <mat-slide-toggle [(ngModel)]="isPublic">
-        Public Board
-      </mat-slide-toggle>
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Initial Zoom</mat-label>
         <input matInput [(ngModel)]="initialZoom" #initialZoomInput="ngModel" type="number" min="1" required>

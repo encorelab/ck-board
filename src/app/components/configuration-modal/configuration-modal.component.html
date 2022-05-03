@@ -14,9 +14,9 @@
       </mat-slide-toggle>
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Initial Zoom</mat-label>
-        <input matInput [(ngModel)]="initialZoom" #initialZoomInput="ngModel" type="number" required>
+        <input matInput [(ngModel)]="initialZoom" #initialZoomInput="ngModel" type="number" min="1" required>
         <mat-error *ngIf="initialZoomInput.invalid">
-          Initial Zoom is required.
+          Please enter a value greater than 0
         </mat-error>
       </mat-form-field>
       <div class="image-form">

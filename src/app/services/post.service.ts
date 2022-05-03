@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
-import Notification, { notificationFactory } from '../models/notification';
 import Post from '../models/post';
 import { FabricUtils } from '../utils/FabricUtils';
-import { NotificationService } from './notification.service';
-import { UserService } from './user.service';
-
 interface Options {
   pageSize: number;
   lastItem: any;
@@ -22,7 +18,6 @@ export class PostService {
   constructor(
     private db: AngularFirestore, 
     protected fabricUtils: FabricUtils,
-    private notificationService: NotificationService,
   ) {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }

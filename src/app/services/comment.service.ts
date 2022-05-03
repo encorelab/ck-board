@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Comment from '../models/comment';
-import Notification, { notificationFactory } from '../models/notification';
-import { NotificationService } from './notification.service';
-import { PostService } from './post.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +12,6 @@ export class CommentService {
 
   constructor(
     private db: AngularFirestore,
-    private notificationService: NotificationService,
-    private postService: PostService
   ) {
     this.commentCollection = db.collection<Comment>(this.commentsPath);
   }

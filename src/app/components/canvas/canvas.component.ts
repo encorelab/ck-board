@@ -34,7 +34,6 @@ import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
-import { async } from '@angular/core/testing';
 
 
 interface PostIDNamePair {

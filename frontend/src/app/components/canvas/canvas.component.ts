@@ -34,6 +34,8 @@ import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
+import { Socket } from 'ngx-socket-io';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -84,7 +86,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils, 
     private router: Router,  private activatedRoute: ActivatedRoute,
     public snackbarService: SnackbarService, public dialog: MatDialog,
-    public fileUploadService: FileUploadService
+    public fileUploadService: FileUploadService,
+    private socket: Socket
   ) {}
 
   ngOnInit() {
@@ -94,6 +97,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.postColor = POST_COLOR;
 
     this.configureBoard();
+    this.socket.emit('join', this.boardID);
+    this.socket.fromEvent<string[]>('notifyAddPost').subscribe(doc => console.log('doc'));
     
     const unsubCanvasEvents = this.initCanvasEventsListener();
     const unsubGroupEvents = this.initGroupEventsListener();
@@ -199,6 +204,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   // open dialog to get message for a new post
   handleCreatePost() {
+    this.socket.emit('handleAddPost', { id: '1', doc: '2' });
     this.mode = Mode.CHOOSING_LOCATION
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'

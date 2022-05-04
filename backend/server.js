@@ -1,31 +1,48 @@
-const app = require('express')();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http, {
+const app = require("express")();
+const http = require("http").createServer(app);
+const mongoose = require("mongoose");
+const dotenv = require("dotenv").config();
+
+const io = require("socket.io")(http, {
   cors: {
-    origins: ['http://localhost:4200']
-  }
+    origins: ["http://localhost:4200"],
+  },
 });
 
 const port = process.env.PORT || 8000;
-const documents = {};
 
-io.on('connection', (socket) => {
-  console.log('User connected!');
-  let previousId;
+const dbUsername = process.env.DB_USER;
+const dbPassword = process.env.DB_PASSWORD;
+const dbName = process.env.DB_NAME;
+const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@ck-board-cluster.f2vut.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
-  const safeJoin = currentId => {
-    socket.leave(previousId);
-    socket.join(currentId, () => console.log(`Socket ${socket.id} joined room ${currentId}`));
-    previousId = currentId;
+io.on("connection", (socket) => {
+  console.log("User connected!");
+
+  let currentRoom;
+
+  const safeJoin = (nextRoom) => {
+    if (currentRoom) socket.leave(currentRoom);
+
+    socket.join(nextRoom);
+    currentRoom = nextRoom;
+    console.log(`Socket ${socket.id} joined room ${nextRoom}`);
   };
 
-  socket.on("addDoc", doc => {
-    console.log(doc);
-    documents[doc.id] = doc;
-    safeJoin(doc.id);
-    io.emit("documents", Object.keys(documents));
-  });
-})
+  socket.on("join", (room) => safeJoin(room));
 
-http.listen(port);
-console.log('App running at ' + port);
+  /* User adds post to canvas and now added to DB */
+  socket.on("handleAddPost", (post) => {
+    /* Everyone connected is notified of post */
+    socket.to(currentRoom).emit("notifyAddPost", post);
+  });
+});
+
+mongoose
+  .connect(dbURI)
+  .then(() => {
+    console.log("Connected to MongoDB");
+    http.listen(port);
+    console.log("App running at " + port);
+  })
+  .catch((err) => console.log(err));

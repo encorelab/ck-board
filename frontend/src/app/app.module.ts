@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms'
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -40,6 +41,8 @@ import { ToolbarComponent } from './components/toolbar/toolbar.component';
 import { SnackBarComponent } from './components/snackbar/snackbar.component';
 import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
 
+const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -76,6 +79,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
     AngularFirestoreModule,
     AngularFireAuthModule,
     FormsModule, 
+    SocketIoModule.forRoot(config),
     BrowserAnimationsModule,
     ReactiveFormsModule,
     ColorPickerModule,

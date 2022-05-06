@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Post from '../models/post';
 import { FabricUtils } from '../utils/FabricUtils';
-
 interface Options {
   pageSize: number;
   lastItem: any;
@@ -16,7 +15,10 @@ export class PostService {
   private postsPath : string = '/posts';
   postsCollection: AngularFirestoreCollection<Post>;
 
-  constructor(private db: AngularFirestore, protected fabricUtils: FabricUtils) {
+  constructor(
+    private db: AngularFirestore, 
+    protected fabricUtils: FabricUtils,
+  ) {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }
 

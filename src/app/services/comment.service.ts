@@ -10,7 +10,9 @@ export class CommentService {
   private commentsPath : string = 'comments';
   commentCollection: AngularFirestoreCollection<Comment>;
 
-  constructor(private db: AngularFirestore) {
+  constructor(
+    private db: AngularFirestore,
+  ) {
     this.commentCollection = db.collection<Comment>(this.commentsPath);
   }
 
@@ -32,7 +34,7 @@ export class CommentService {
     return this.commentCollection.ref.where("postID", "==", postID).get().then((snapshot) => snapshot)
   }
 
-  add(comment: Comment): any {
+  async add(comment: Comment){    
     return this.commentCollection.doc(comment.commentID).set(comment)
   }
 

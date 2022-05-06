@@ -60,7 +60,8 @@ export class PostModalComponent {
     public dialog: MatDialog,
     public commentService: CommentService, public likesService: LikesService,
     public postService: PostService, public bucketService: BucketService,
-    public fabricUtils: FabricUtils, public canvasService: CanvasService,
+    public fabricUtils: FabricUtils,
+    private canvasService: CanvasService,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
@@ -222,10 +223,9 @@ export class PostModalComponent {
       boardID: this.data.board.boardID,
       author: this.data.user.username
     }
-    
-    await this.canvasService.createComment(comment);
+    await  this.canvasService.createComment(comment);
     this.newComment = '';
-    this.comments.push(comment);
+    await this.comments.push(comment);
   }
 
   async handleLikeClick() {
@@ -245,7 +245,7 @@ export class PostModalComponent {
         postID: this.post.postID,
         boardID: this.data.board.boardID
       }
-      await this.canvasService.likePost(this.post.postID, like);
+      await this.canvasService.likePost(like);
       this.isLiked = like;
       this.likes.push(like);
     }

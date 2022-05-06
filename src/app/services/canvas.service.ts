@@ -17,6 +17,10 @@ import User from "../models/user";
 import { Board } from "../models/board";
 import { MatDialog } from "@angular/material/dialog";
 import { PostModalComponent } from "../components/post-modal/post-modal.component";
+import { NotificationService } from "./notification.service";
+import Notification, { notificationFactory } from "../models/notification";
+import { UserService } from "./user.service";
+import { AuthService } from "./auth.service";
 
 @Injectable({
     providedIn: 'root'
@@ -33,7 +37,10 @@ export class CanvasService {
                 public postService: PostService,
                 public bucketService: BucketService,
                 public dialog: MatDialog,
-                public fabricUtils: FabricUtils) 
+                public fabricUtils: FabricUtils,
+                private notificationService:NotificationService,
+                private userService: UserService,
+                private authService: AuthService) 
     {
         this.postsCollection = db.collection<Post>(this.postsPath)
     }
@@ -52,18 +59,38 @@ export class CanvasService {
         });
     }
 
-    createComment(comment: Comment): void {
+    async createComment(comment: Comment): Promise<void> {
         this.tracingService.traceCreateCommentClient();
-        this.commentService.add(comment).then(() => {
-            this.tracingService.traceCreateCommentServer(comment.commentID, comment.comment);
-        });
+        await this.commentService.add(comment)
+        this.tracingService.traceCreateCommentServer(comment.commentID, comment.comment);
+        
+
+        // notifiy post author of new comment
+        let data = await this.postsService.get(comment.postID);
+        let post = await data.docs[0].data();
+        let notification:Notification = notificationFactory(post.userID,post.postID);
+        notification.text = comment.author + " commented on \""+ post.title+"\"" ;
+        await this.notificationService.add(notification);
     }
 
-    likePost(postId: string, like: Like): void {
+    async likePost(like: Like): Promise<void> {
         this.tracingService.traceVotedPostClient();
-        this.likesService.add(like).then(() => {
-            this.tracingService.traceVotedPostServer(postId, 1);
-        });
+        // get liked post
+        let data = await this.postsService.get(like.postID);
+        let post = data.docs[0].data();
+
+        await this.likesService.add(like)
+
+        this.tracingService.traceVotedPostServer(post.postID, 1);
+
+        // send like notification to user
+        let notification:Notification = notificationFactory(post.userID,post.postID);
+        let user = await this.userService.getOneById(like.likerID)
+        notification.text = user?.username +" liked \""+ post.title+"\"";
+        await this.notificationService.add(notification);
+
+
+        
     }
 
     unlikePost(postId: string, likeId: string): void {
@@ -73,11 +100,18 @@ export class CanvasService {
         });
     }
 
-    addTagsExistingPost(postId: string, tagOption: Tag, tags: object) {
+    async addTagsExistingPost(postId: string, tagOption: Tag, tags: object) {
         this.tracingService.traceAddedTagClient([tagOption.name]);
-        this.postService.update(postId, tags).then(() => {
-            this.tracingService.traceAddedTagServer(postId);
-        });
+        await this.postService.update(postId, tags)
+        this.tracingService.traceAddedTagServer(postId);
+
+        // send like notification to user
+        let data = await this.postsService.get(postId);
+        let post = data.docs[0].data();
+        let notification:Notification = notificationFactory(post.userID,post.postID);
+        let user = await this.authService.getAuthenticatedUser()
+        notification.text = user?.username +" tagged \""+ post.title+"\"";
+        await this.notificationService.add(notification)
     }
 
     async addTagClient(tagOption: Tag, tagOptions: Tag[], tags: Tag[]): Promise<[Tag[], Tag[]]> {
@@ -170,4 +204,5 @@ export class CanvasService {
             }
         });
     }
+
 }

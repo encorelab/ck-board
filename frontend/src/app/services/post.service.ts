@@ -85,8 +85,8 @@ export class PostService {
     return batch.commit()
   }
 
-  update(postID: string, value: any) {
-    return this.postsCollection.ref.doc(postID).update(value);
+  update(postID: string, value: Partial<Post>) {
+    return this.http.post('/' + postID, value).toPromise();
   }
 
   delete(postID: string) {

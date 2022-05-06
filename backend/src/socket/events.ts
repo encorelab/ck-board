@@ -11,6 +11,15 @@ class PostCreate {
   }
 }
 
+class PostUpdate {
+  static type: SocketEvent = SocketEvent.POST_UPDATE;
+  
+  static async handleEvent(eventData: Partial<PostModel> & Pick<PostModel, 'postID'>): Promise<PostModel | null> {
+    const post = await dalPost.update(eventData.postID, eventData);
+    return post;
+  }
+}
+
 class PostDelete {
   static type: SocketEvent = SocketEvent.POST_DELETE;
   
@@ -40,6 +49,7 @@ class PostStopMove {
 
 const events = [
   PostCreate, 
+  PostUpdate,
   PostDelete,
   PostStartMove,
   PostStopMove

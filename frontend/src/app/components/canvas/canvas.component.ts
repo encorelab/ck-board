@@ -130,6 +130,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const obj = JSON.parse(post.fabricObject ?? '{}');
       this.fabricUtils.fromJSON(obj);
     });
+    this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
+      let existing = this.fabricUtils.getObjectFromId(post.postID);
+      existing = this.fabricUtils.updatePostTitleDesc(existing, post.title, post.desc);
+      this.canvas.requestRenderAll();
+    });
     this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
       const obj = this.fabricUtils.getObjectFromId(id);
       this.canvas.remove(obj);
@@ -163,12 +168,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   showBucketsModal() {
-    this.socketService.emit(SocketEvent.POST_CREATE, {postID: 'a', userID: 'b', title: 'c', desc: 'd', tags: [{
-      boardID: "a",
-      name: "ammar",
-      color: "green",
-      _id: "62745aa2c629bd58368d1c40"
-    }], fabricObject: 'e'});
     this.dialog.open(BucketsModalComponent, {
       maxWidth: 1280,
       width: '95vw',

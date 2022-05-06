@@ -131,26 +131,23 @@ export class PostModalComponent {
     this.showComments = !this.showComments
   }
 
-  onUpdate() {
+  async onUpdate() {
     this.editingTitle = this.title
     this.editingDesc = this.desc
     
     var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
+    var update: Partial<Post> = {postID: this.post.postID, title: this.title, desc: this.desc};
+
     // check if post is on board
-    if (obj){
+    if (obj) {
       obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc)
-      obj.set({ title: this.title, desc: this.desc, canvasEvent: CanvasPostEvent.TITLE_CHANGE })
+      obj.set({ title: this.title, desc: this.desc })
       this.fabricUtils._canvas.renderAll()
-
-      obj = this.fabricUtils.toJSON(obj)
-    }
-    // bucket only so fabricObject is {}
-    else{
-      obj ="{}"
+      update.fabricObject = this.fabricUtils.toJSON(obj);
     }
 
-    this.postService.update(this.post.postID, { fabricObject: obj, title: this.title, desc: this.desc })
-      .then(() => this.toggleEdit())
+    this.socketService.emit(SocketEvent.POST_UPDATE, update);
+    this.toggleEdit();
   }
 
   onDelete() {

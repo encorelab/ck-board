@@ -35,7 +35,7 @@ export const remove = async (id: string) => {
   }
 };
 
-export const update = async (id: string, post: PostModel) => {
+export const update = async (id: string, post: Partial<PostModel>) => {
   try {
     const updatedPost = await Post.findOneAndUpdate({postID: id}, post, {new:true});
     return updatedPost;

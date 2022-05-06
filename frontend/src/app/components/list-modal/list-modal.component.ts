@@ -18,7 +18,8 @@ export class ListModalComponent implements OnInit, OnDestroy {
   loadingMore: boolean = false
 
   posts: any[]
-  lastItem: any = null
+  page: number = 0
+
   activeFilters: Tag[] =[]
   filterOptions: Tag[] =[]
   filteredPosts:any[]
@@ -48,23 +49,23 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   fetchInitialPosts() {
     this.posts = []
-    this.lastItem = null
+    this.page = 0
     this.loading = true
     return this.fetchMorePosts()
   }
 
   fetchMorePosts() {
-    return this.postService.getPaginated(this.board.boardID, { lastItem: this.lastItem, pageSize: 20 })
-            .then(({newLastItem, data}) => {
-              data.forEach(data => this.posts.push(data.data()))
-              this.lastItem = newLastItem ?? this.lastItem
-              this.loading = false
-              this.loadingMore = false
-            })
-            .catch(_err => {
-              this.loading = false; 
-              this.loadingMore = false
-            })
+    const opts = {size: 20, page: this.page};
+
+    return this.postService.getAllByBoard(this.board.boardID, opts).then((data) => {
+      this.posts = this.posts.concat(data);
+      this.page += 1;
+      this.loading = false
+      this.loadingMore = false
+    }).catch(_err => {
+      this.loading = false; 
+      this.loadingMore = false
+    });
   }
 
   onScroll(event: any) {

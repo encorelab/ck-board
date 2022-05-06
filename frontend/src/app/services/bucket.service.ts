@@ -88,13 +88,12 @@ export class BucketService {
 
         if (postIDs.length > 0) {
             postIDs.forEach((postID, index, arr) => {
-                this.postService.get(postID).then((value) => {
-                    if (!value.empty) {
-                        var post = value.docs[0].data()
+                this.postService.get(postID).then((post) => {
+                    if (post) {
                         posts.push(post)
                     }
                     if (index == arr.length - 1) {
-                        posts.sort((a, b) => a.timestamp - b.timestamp)
+                        posts.sort((a, b) => a.timestamp! - b.timestamp!)
                         resolve(posts)
                     }
                 }).catch(_err => reject())

@@ -109,7 +109,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initCanvasEventsListener() {
     const unsubAdd = this.initAddPostListener();
-    const unsubRemove = this.initRemovePostListener();
+    // const unsubRemove = this.initRemovePostListener();
     const unsubMoving = this.initMovingPostListener();
     const unsubExpand = this.initPostClickListener();
     const unsubLike = this.initLikeClickListener();
@@ -122,19 +122,22 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const unsubArrowKeyUnlock = this.unlockArrowKeysWhenModalClose();
     
     return [unsubLike, unsubExpand, unsubModal, unsubAdd, 
-            unsubRemove, unsubMoving, unsubZoom, unsubPan, 
+            unsubMoving, unsubZoom, unsubPan, 
             unsubSwipePan, unsubKeyPan, unsubArrowKeyLock, unsubArrowKeyUnlock];
   }
 
   initGroupEventsListener() {
-    this.socketService.listen(SocketEvent.POST_CREATE, (post) => console.log(post));
+    this.socketService.listen(SocketEvent.POST_CREATE, (post: Post) => {
+      const obj = JSON.parse(post.fabricObject ?? '{}');
+      this.fabricUtils.fromJSON(obj);
+    });
 
     const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
-    const unsubPosts = this.postService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
+    // const unsubPosts = this.postService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
     const unsubLikes = this.likesService.observable(this.boardID, this.handleLikeEvent, true);
     const unsubComms = this.commentService.observable(this.boardID, this.handleCommentEvent, true);
 
-    return [unsubBoard, unsubPosts, unsubLikes, unsubComms];
+    return [unsubBoard, unsubLikes, unsubComms];
   }
 
   showBucketsModal() {
@@ -179,10 +182,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.router.navigate(['error']);
     }
     
-    this.postService.getAll(this.boardID).then((data) => {
-      data.forEach((data) => {
-        let post = data.data() ?? {}
-        if(post.fabricObject){
+    this.postService.getAllByBoard(this.boardID).then((data) => {
+      data.forEach((post) => {
+        if (post.fabricObject) {
           let obj = JSON.parse(post.fabricObject);
           this.syncBoard(obj, post.postID);
         }
@@ -361,10 +363,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   setAuthorVisibilityAll() {
-    this.postService.getAll(this.boardID).then((data) => {
+    this.postService.getAllByBoard(this.boardID).then((data) => {
       // update all the post names to to the poster's name rather than anonymous
-      data.forEach((data) => {
-        let post = data.data() ?? {}
+      data.forEach((post) => {
         this.setAuthorVisibilityOne(post)
       })
     })
@@ -404,10 +405,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
       tags: pObject.tags,
       userID: this.user.id,
       boardID: this.boardID,
-      fabricObject: this.fabricUtils.toJSON(pObject),
-      timestamp: new Date().getTime(),
+      fabricObject: this.fabricUtils.toJSON(pObject)
     }
-    this.postService.create(post);
+
+    this.socketService.emit(SocketEvent.POST_CREATE, post);
   }
 
   // sync board using incoming/outgoing posts
@@ -603,28 +604,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     return () => {
       this.canvas.off('object:added', handleAddPost);
-    }
-  }
-
-  initRemovePostListener() {
-    const handleRemovePost = (e: fabric.IEvent) => {
-      if (e.target) {
-        var obj: any = e.target;
-        if (obj.removed) {
-          return // already removed
-        }
-
-        this.postService.delete(obj.postID)
-        
-        obj = this.fabricUtils.setField(obj, 'removed', true);
-        this.sendObjectToGroup(obj);
-      }
-    }
-
-    this.canvas.on('object:removed', handleRemovePost);
-
-    return () => {
-      this.canvas.off('object:removed', handleRemovePost);
     }
   }
 

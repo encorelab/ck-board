@@ -9,7 +9,8 @@ import Post, { Tag } from 'src/app/models/post';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
-import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_TAGGED_BORDER_THICKNESS } from 'src/app/utils/constants';
+import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_TAGGED_BORDER_THICKNESS, SocketEvent } from 'src/app/utils/constants';
+import { SocketService } from 'src/app/services/socket.service';
 
 
 @Component({
@@ -38,6 +39,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     public dialogRef: MatDialogRef<BucketsModalComponent>,
     public bucketService: BucketService,
     public postsService:PostService,
+    public socketService: SocketService,
     public dialog: MatDialog,
     protected fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
@@ -101,7 +103,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       fabricObject: null,
       timestamp: new Date().getTime(),
     }
-    this.postsService.create(post);
+    this.socketService.emit(SocketEvent.POST_CREATE, post);
     this.posts.push(post);
     let ids = this.posts.map(post=>post.postID)
     this.bucketService.add(this.activeBucket.bucketID, ids)
@@ -124,33 +126,28 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   }
 
   movePostToBoard(postID:string){
-    this.postsService.get(postID).then(data =>{
-      data.forEach(item =>{
-        let post = item.data()
+    this.postsService.get(postID).then(post => {
+      const containsAttentionTag = post.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
 
-        const containsAttentionTag = post.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
+      let fabricPost = new FabricPostComponent({
+        title: post.title,
+        author: this.user.username,
+        authorID: this.user.id,
+        desc: post.desc,
+        tags: post.tags ?? [],
+        lock: !this.board.permissions.allowStudentMoveAny,
+        left: this.Xoffset,
+        top: this.Yoffset,
+        color: POST_COLOR,
+        stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
+        strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
+      });
 
-        let fabricPost = new FabricPostComponent({
-          title: post.title,
-          author: this.user.username,
-          authorID: this.user.id,
-          desc: post.desc,
-          tags: post.tags ?? [],
-          lock: !this.board.permissions.allowStudentMoveAny,
-          left: this.Xoffset,
-          top: this.Yoffset,
-          color: POST_COLOR,
-          stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
-          strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
-        });
+      fabricPost = this.fabricUtils.setField(fabricPost, 'postID', postID);
+      const updatedPost = this.fabricUtils.toJSON(fabricPost);
+      this.postsService.update(postID, {fabricObject: updatedPost});
 
-        fabricPost = this.fabricUtils.setField(fabricPost, 'postID', postID);
-        const updatedPost = this.fabricUtils.toJSON(fabricPost);
-        this.postsService.update(postID, {fabricObject: updatedPost});
-
-        this.Yoffset += 50;
-      })
+      this.Yoffset += 50;
     })
-    
   }
 }

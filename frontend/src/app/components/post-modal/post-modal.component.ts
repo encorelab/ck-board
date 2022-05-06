@@ -12,9 +12,10 @@ import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
-import { CanvasPostEvent, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, Role, SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { SocketService } from 'src/app/services/socket.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -59,23 +60,21 @@ export class PostModalComponent {
     public dialog: MatDialog,
     public commentService: CommentService, public likesService: LikesService,
     public postService: PostService, public bucketService: BucketService,
+    public socketService: SocketService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
-      this.postService.get(data.post.postID).then((item) => {
-        item.forEach((post) => {
-          var p = post.data()
-          this.post = p
-          this.title = p.title
-          this.editingTitle = linkifyStr(p.title, { defaultProtocol: 'https', target: "_blank"})
-          this.desc = p.desc
-          this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
-          this.tags = p.tags
-          this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
-          
-          this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == Role.TEACHER
-        })
+      this.postService.get(data.post.postID).then((p: Post) => {
+        this.post = p
+        this.title = p.title
+        this.editingTitle = linkifyStr(p.title, { defaultProtocol: 'https', target: "_blank"})
+        this.desc = p.desc
+        this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
+        this.tags = p.tags
+        this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
+        
+        this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == Role.TEACHER
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
         data.forEach((comment) => {
@@ -161,15 +160,14 @@ export class PostModalComponent {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this post?',
         handleConfirm: () => {
-          this.postService.delete(this.post.postID).then(() => {
-            var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-    
-            if (obj && obj.type == 'group') {
-              this.fabricUtils._canvas.remove(obj);
-              this.fabricUtils._canvas.renderAll();
-            }
-            this.dialogRef.close(DELETE);
-          })
+          this.socketService.emit(SocketEvent.POST_DELETE, this.post)
+
+          var obj = this.fabricUtils.getObjectFromId(this.post.postID);
+          if (obj && obj.type == 'group') {
+            this.fabricUtils._canvas.remove(obj);
+            this.fabricUtils._canvas.renderAll();
+          }
+          this.dialogRef.close(DELETE);
         }
       }
     });

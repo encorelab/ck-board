@@ -48,8 +48,7 @@ export class WorkflowService {
       let bucket = await this.bucketService.get(source.id);
       sourcePosts = bucket ? bucket.posts : [];
     } else if (source.type == ContainerType.BOARD) {
-      let rawPosts = await this.postService.getAll(source.id)
-      sourcePosts = rawPosts.docs.map(data => data.data());
+      let sourcePosts = await this.postService.getAllByBoard(source.id)
     }
 
     Utils.shuffle(sourcePosts);
@@ -86,8 +85,7 @@ export class WorkflowService {
         let bucket = await this.bucketService.get(destination.id);
         destPosts = bucket ? bucket.posts : [];
       } else if (destination.type == ContainerType.BOARD) {
-        let rawPosts = await this.postService.getAll(destination.id)
-        destPosts = rawPosts.docs.map(data => data.data());
+        let destPosts = await this.postService.getAllByBoard(destination.id)
       }
       
       // Remove posts that are already in destination

@@ -1,4 +1,3 @@
-import {Server} from 'http';
 import * as socketIO from 'socket.io';
 import events from './events';
 
@@ -9,15 +8,16 @@ class Socket {
    * Initializes websocket server which will listen for users
    * joining boards and handle all board events.
    * 
-   * @param server http server to be used by socketIO
    * @returns void
    */
-  init(server: Server) {
-    const io = new socketIO.Server(server, {
+  init() {
+    const io = new socketIO.Server(8000, {
       cors: {
         origin: ['http://localhost:4200', 'http://localhost:4201']
       },
     });
+
+    console.log('Socket server running at ' + 8000);
 
     io.on("connection", (socket) => {
       socket.on("join", (room) => {

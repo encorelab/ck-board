@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms'
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -40,6 +41,7 @@ import { ListModalComponent } from './components/list-modal/list-modal.component
 import { ToolbarComponent } from './components/toolbar/toolbar.component';
 import { SnackBarComponent } from './components/snackbar/snackbar.component';
 import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
+import { APIInterceptor } from './utils/interceptor';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -74,6 +76,7 @@ const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
     AngularFirestoreModule,
@@ -85,7 +88,11 @@ const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
     ColorPickerModule,
     MaterialModule
   ],
-  providers: [],
+  providers: [{
+    provide: HTTP_INTERCEPTORS,
+    useClass: APIInterceptor,
+    multi: true,
+  }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

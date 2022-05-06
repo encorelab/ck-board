@@ -1,13 +1,16 @@
-import { prop, Ref, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 import {TagModel} from './Tag';
 
-@modelOptions({ schemaOptions: { collection: 'posts' } })
+@modelOptions({ schemaOptions: { collection: 'posts', timestamps: true } })
 export class PostModel {
   @prop({ required: true })
   public postID!: string;
 
   @prop({ required: true })
   public userID!: string;
+
+  @prop({ required: true })
+  public boardID!: string;
 
   @prop({ required: true })
   public title!: string;

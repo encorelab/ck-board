@@ -1,11 +1,12 @@
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Post from '../models/post';
 import { FabricUtils } from '../utils/FabricUtils';
 
 interface Options {
-  pageSize: number;
-  lastItem: any;
+  size: number;
+  page: number;
 }
 
 @Injectable({
@@ -16,7 +17,7 @@ export class PostService {
   private postsPath : string = '/posts';
   postsCollection: AngularFirestoreCollection<Post>;
 
-  constructor(private db: AngularFirestore, protected fabricUtils: FabricUtils) {
+  constructor(private db: AngularFirestore, protected fabricUtils: FabricUtils, public http: HttpClient) {
     this.postsCollection = db.collection<Post>(this.postsPath)
   }
 
@@ -53,35 +54,19 @@ export class PostService {
       });
   }
 
-  get(postID: string) {
-    return this.postsCollection.ref
-      .where('postID', '==', postID)
-      .get()
-      .then((snapshot) => snapshot);
+  get(postID: string): Promise<Post> {
+    return this.http.get<Post>('posts/' + postID).toPromise();
   }
 
-  getAll(boardID: string) {
-    return this.postsCollection.ref
-      .where('boardID', '==', boardID)
-      .get()
-      .then((snapshot) => snapshot);
-  }
+  getAllByBoard(boardID: string, opts?: Options): Promise<Post[]> {
+    let params = new HttpParams();
 
-  getPaginated(boardID: string, opts: Options) {
-    return this.postsCollection.ref
-      .where('boardID', '==', boardID)
-      .orderBy('timestamp')
-      .startAfter(opts.lastItem)
-      .limit(opts.pageSize)
-      .get()
-      .then((data) => {
-        let newLastItem = data.docs[data.docs.length - 1];
-        return { newLastItem, data };
-      });
-  }
-
-  create(post: any): any {
-    return this.postsCollection.doc(post.postID).set(post);
+    if (opts) {
+      params = params.append('size', opts.size);
+      params = params.append('page', opts.page);
+    }
+    
+    return this.http.get<Post[]>('posts/boards/' + boardID, {params}).toPromise();
   }
 
   cloneMany(boardID: string, posts: any[]): Promise<void> {

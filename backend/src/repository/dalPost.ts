@@ -1,5 +1,23 @@
 import Post, { PostModel } from "../models/Post";
 
+export const getById = async (id: string) => {
+  try {
+    const post = await Post.findOne({postID: id});
+    return post;
+  } catch (err) {
+    throw new Error('500');
+  }
+};
+
+export const getByBoard = async (boardID: string) => {
+  try {
+    const posts = await Post.find({boardID});
+    return posts;
+  } catch (err) {
+    throw new Error('500');
+  }
+};
+
 export const create = async (post: PostModel) => {
   try {
     const savedPost = await Post.create(post);
@@ -27,6 +45,8 @@ export const update = async (id: string, post: PostModel) => {
 };
 
 const dalPost = {
+  getById,
+  getByBoard,
   create,
   remove,
   update,

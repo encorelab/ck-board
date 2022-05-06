@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Like from '../models/like';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -10,7 +9,9 @@ export class LikesService {
   private likesPath : string = 'likes';
   likesCollection: AngularFirestoreCollection<Like>;
 
-  constructor(private db: AngularFirestore) {
+  constructor(
+    private db: AngularFirestore, 
+  ) {
     this.likesCollection = db.collection<Like>(this.likesPath);
   }
 

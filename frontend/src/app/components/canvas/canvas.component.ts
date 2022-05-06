@@ -15,7 +15,7 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent, AddPostDialog } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { CanvasPostEvent, Mode, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_DEFAULT_OPACITY, POST_MOVING_FILL, POST_MOVING_OPACITY, POST_TAGGED_BORDER_THICKNESS, Role } from 'src/app/utils/constants';
+import { CanvasPostEvent, Mode, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_DEFAULT_OPACITY, POST_MOVING_FILL, POST_MOVING_OPACITY, POST_TAGGED_BORDER_THICKNESS, Role, SocketEvent } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
@@ -35,7 +35,7 @@ import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
 import { Socket } from 'ngx-socket-io';
-import { CanvasService } from 'src/app/services/canvas.service';
+import { SocketService } from 'src/app/services/socket.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -87,7 +87,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     private router: Router,  private activatedRoute: ActivatedRoute,
     public snackbarService: SnackbarService, public dialog: MatDialog,
     public fileUploadService: FileUploadService,
-    private socket: Socket
+    private socketService: SocketService
   ) {}
 
   ngOnInit() {
@@ -97,8 +97,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.postColor = POST_COLOR;
 
     this.configureBoard();
-    this.socket.emit('join', this.boardID);
-    this.socket.fromEvent<string[]>('notifyAddPost').subscribe(doc => console.log('doc'));
+
+    this.socketService.connect(this.boardID);
     
     const unsubCanvasEvents = this.initCanvasEventsListener();
     const unsubGroupEvents = this.initGroupEventsListener();
@@ -127,6 +127,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initGroupEventsListener() {
+    this.socketService.listen(SocketEvent.POST_CREATE, (post) => console.log(post));
+
     const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
     const unsubPosts = this.postService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
     const unsubLikes = this.likesService.observable(this.boardID, this.handleLikeEvent, true);
@@ -136,6 +138,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   showBucketsModal() {
+    this.socketService.emit(SocketEvent.POST_CREATE, {postID: 'a', userID: 'b', title: 'c', desc: 'd', tags: [{
+      boardID: "a",
+      name: "ammar",
+      color: "green",
+      _id: "62745aa2c629bd58368d1c40"
+    }], fabricObject: 'e'});
     this.dialog.open(BucketsModalComponent, {
       maxWidth: 1280,
       width: '95vw',
@@ -204,7 +212,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   // open dialog to get message for a new post
   handleCreatePost() {
-    this.socket.emit('handleAddPost', { id: '1', doc: '2' });
     this.mode = Mode.CHOOSING_LOCATION
     this.canvas.defaultCursor = 'copy'
     this.canvas.hoverCursor = 'not-allowed'
@@ -882,6 +889,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.socketService.disconnect();
+    
     let activeObj: any = this.canvas.getActiveObject();
     
     if (activeObj) {

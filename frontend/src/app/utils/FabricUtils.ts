@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
+import Post from '../models/post';
 import { CanvasPostEvent } from './constants';
 
 @Injectable({providedIn: 'root'})
@@ -45,6 +46,18 @@ export class FabricUtils {
             this._canvas.renderOnAddRemove = origRenderOnAddRemove;
             this._canvas.renderAll();
         }, "fabric");
+    }
+
+    fromFabricPost(post: any): Post {
+        return {
+            postID: post.postID,
+            userID: post.userID,
+            boardID: post.boardID,
+            title: post.title,
+            desc: post.desc,
+            tags: post.tags,
+            fabricObject: this.toJSON(post)
+        };
     }
 
     getObjectFromId(postID: string){

@@ -37,7 +37,7 @@ export const remove = async (id: string) => {
 
 export const update = async (id: string, post: PostModel) => {
   try {
-    const updatedPost = await Post.findByIdAndUpdate(id, post);
+    const updatedPost = await Post.findOneAndUpdate({postID: id}, post, {new:true});
     return updatedPost;
   } catch (err) {
     throw new Error('500');

@@ -15,7 +15,7 @@ export class PostModel {
   @prop({ required: true })
   public title!: string;
 
-  @prop({ required: true })
+  @prop({ required: false })
   public desc!: string;
 
   @prop({ required: true, type: () => [TagModel] })

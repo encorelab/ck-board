@@ -109,7 +109,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initCanvasEventsListener() {
     const unsubAdd = this.initAddPostListener();
-    // const unsubRemove = this.initRemovePostListener();
     const unsubMoving = this.initMovingPostListener();
     const unsubExpand = this.initPostClickListener();
     const unsubLike = this.initLikeClickListener();
@@ -131,9 +130,32 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const obj = JSON.parse(post.fabricObject ?? '{}');
       this.fabricUtils.fromJSON(obj);
     });
+    this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
+      const obj = this.fabricUtils.getObjectFromId(id);
+      this.canvas.remove(obj);
+    });
+    this.socketService.listen(SocketEvent.POST_START_MOVE, (post: Post) => {
+      let obj = this.fabricUtils.getObjectFromId(post.postID);
+      obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
+      obj = this.fabricUtils.setOpacity(obj, POST_MOVING_OPACITY);
+      obj = this.fabricUtils.setPostMovement(obj, true);
+      this.canvas.requestRenderAll();
+    });
+    this.socketService.listen(SocketEvent.POST_STOP_MOVE, (post: Post) => {
+      const next = JSON.parse(post.fabricObject || '{}');
+      let existing = this.fabricUtils.getObjectFromId(post.postID);
+
+      this.fabricUtils.animateToPosition(existing, next.left, next.top, () => {
+        existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
+        existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
+        existing = this.fabricUtils.setPostMovement(existing, false);
+        existing.set(next);
+        existing.setCoords();
+        this.canvas.renderAll();
+      })
+    });
 
     const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
-    // const unsubPosts = this.postService.observable(this.boardID, this.handlePostEvent, this.handlePostEvent);
     const unsubLikes = this.likesService.observable(this.boardID, this.handleLikeEvent, true);
     const unsubComms = this.commentService.observable(this.boardID, this.handleCommentEvent, true);
 
@@ -186,7 +208,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       data.forEach((post) => {
         if (post.fabricObject) {
           let obj = JSON.parse(post.fabricObject);
-          this.syncBoard(obj, post.postID);
+          this.fabricUtils.fromJSON(obj);
         }
       })
       this.boardService.get(this.boardID).then((board) => {
@@ -415,16 +437,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   syncBoard(obj: any, postID: any) {
     var existing = this.fabricUtils.getObjectFromId(postID)
 
-    // delete object from board
-    if (obj.removed) {
-      if (existing) {
-        this.canvas.remove(existing)
-      }
-      return;
-    }
-
     if (existing) {
-      const movedBySelf = obj.moverID == this.user.id;
       const event = parseInt(obj.canvasEvent);
       delete obj.moverID && delete obj.canvasEvent
 
@@ -445,31 +458,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         existing = this.fabricUtils.setBorderColor(existing, POST_DEFAULT_BORDER);
         existing = this.fabricUtils.setBorderThickness(existing, POST_DEFAULT_BORDER_THICKNESS);
         this.canvas.requestRenderAll();
-      } else if (event == CanvasPostEvent.START_MOVE && !movedBySelf) {
-        existing = this.fabricUtils.setFillColor(existing, POST_MOVING_FILL);
-        existing = this.fabricUtils.setOpacity(existing, POST_MOVING_OPACITY);
-        existing = this.fabricUtils.setPostMovement(existing, true);
-        this.canvas.requestRenderAll()
-      } else if (event == CanvasPostEvent.STOP_MOVE && !movedBySelf) {
-        this.fabricUtils.animateToPosition(existing, obj.left, obj.top, () => {
-          existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
-          existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
-          existing = this.fabricUtils.setPostMovement(existing, false);
-          existing.set(obj);
-          existing.setCoords();
-          this.canvas.requestRenderAll();
-        })
       }
-    } else {
-      this.fabricUtils.fromJSON(obj)
-    }
-
-  }
-
-  handlePostEvent = (post) => {
-    if (post && post.fabricObject) {
-      var obj = JSON.parse(post.fabricObject);
-      this.syncBoard(obj, post.postID);
     }
   }
 
@@ -613,36 +602,27 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const handleFirstMove = (e: any) => {
       if (e.target && !isMovingPost) {
         var obj = e.target;
-
         isMovingPost = true;
 
         obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
         obj = this.fabricUtils.setOpacity(obj, POST_MOVING_OPACITY);
         this.canvas.renderAll()
 
-        obj.clone((clonedPost) => {
-          clonedPost.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.START_MOVE });
-          let stringified = this.fabricUtils.toJSON(clonedPost);
-          this.postService.update(clonedPost.postID, { fabricObject: stringified });
-        }, this.fabricUtils.serializableProperties);
+        this.socketService.emit(SocketEvent.POST_START_MOVE, this.fabricUtils.fromFabricPost(obj));
       }
     }
    
     const handleDroppedPost = (e) => {
       if (!isMovingPost) return;
 
-      isMovingPost = false;
       var obj = e.target;
-
-      this.fabricUtils.setFillColor(obj, POST_COLOR);
-      this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
-
-      obj.set({ moverID: this.user.id, canvasEvent: CanvasPostEvent.STOP_MOVE })
+      isMovingPost = false;
+      
+      obj = this.fabricUtils.setFillColor(obj, POST_COLOR);
+      obj = this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
       this.canvas.renderAll()
 
-      var id = obj.postID
-      obj = this.fabricUtils.toJSON(obj)
-      this.postService.update(id, { fabricObject: obj })
+      this.socketService.emit(SocketEvent.POST_STOP_MOVE, this.fabricUtils.fromFabricPost(obj));
     };
 
     this.canvas.on('object:moving', handleFirstMove);

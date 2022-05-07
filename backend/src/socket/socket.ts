@@ -21,8 +21,9 @@ class Socket {
 
     io.on("connection", (socket) => {
       socket.on("join", (room) => {
+        socket.data.room = room;
         this._safeJoin(socket, room);
-        this._listenForEvents(socket);
+        this._listenForEvents(io, socket);
       });
     });
   }
@@ -31,14 +32,14 @@ class Socket {
    * Setup socket to listen for all events from connected user, 
    * handle them accordingly, then emit resulting event back to all users.
    * 
+   * @param io socket server
    * @param socket socket which will act on events
    * @returns void
    */
-  private _listenForEvents(socket: socketIO.Socket) {
-    events.map(event => socket.on(event.type, (data) => {
-      event
-      .handleEvent(data)
-      .then((result) => socket.to(this._currentRoom).emit(event.type, result));
+  private _listenForEvents(io: socketIO.Server, socket: socketIO.Socket) {
+    events.map(event => socket.on(event.type, async (data) => {
+      const result = await event.handleEvent(data);
+      return await event.handleResult(io, socket, result as never);
     }));
   }
 

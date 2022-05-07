@@ -194,6 +194,26 @@ export class FabricUtils {
         return obj
     }
 
+    setLikeCount(fabricObject: fabric.Group, amount: number): fabric.Group {
+        var likeCount: any = fabricObject.getObjects().find((obj) => obj.name == 'likeCount');
+
+        likeCount.set({ text: amount.toString(), dirty: true });
+
+        fabricObject.dirty = true;
+        fabricObject.addWithUpdate();
+        return fabricObject;
+    }
+
+    setCommentCount(fabricObject: fabric.Group, amount: number): fabric.Group {
+        var commentCount: any = fabricObject.getObjects().find((obj) => obj.name == 'commentCount');
+
+        commentCount.set({ text: amount.toString(), dirty: true });
+
+        fabricObject.dirty = true;
+        fabricObject.addWithUpdate();
+        return fabricObject;
+    }
+
     updateLikeCount(existing, obj) {
         var likeCountExisting: any = existing.getObjects().find((obj) => obj.name == 'likeCount')
         var likeCountObj: any = obj.objects.find((obj) => obj.name == 'likeCount')

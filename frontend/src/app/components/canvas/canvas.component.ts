@@ -5,14 +5,12 @@ import { Canvas } from 'fabric/fabric-impl';
 import { MatDialog } from '@angular/material/dialog';
 
 import Post from '../../models/post';
-import Comment from 'src/app/models/comment';
 
 import { BoardService } from '../../services/board.service';
 import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
-import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { AddPostComponent, AddPostDialog } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { CanvasPostEvent, Mode, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_DEFAULT_OPACITY, POST_MOVING_FILL, POST_MOVING_OPACITY, POST_TAGGED_BORDER_THICKNESS, Role, SocketEvent } from 'src/app/utils/constants';
@@ -34,8 +32,8 @@ import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
-import { Socket } from 'ngx-socket-io';
 import { SocketService } from 'src/app/services/socket.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -87,7 +85,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     private router: Router,  private activatedRoute: ActivatedRoute,
     public snackbarService: SnackbarService, public dialog: MatDialog,
     public fileUploadService: FileUploadService,
-    private socketService: SocketService
+    private socketService: SocketService,
+    private canvasService: CanvasService
   ) {}
 
   ngOnInit() {
@@ -159,12 +158,25 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.canvas.renderAll();
       })
     });
+    this.socketService.listen(SocketEvent.POST_LIKE_ADD, (result: any) => {
+      let existing = this.fabricUtils.getObjectFromId(result.like.postID);
+      existing = this.fabricUtils.setLikeCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    });
+    this.socketService.listen(SocketEvent.POST_LIKE_REMOVE, (result: any) => {
+      let existing = this.fabricUtils.getObjectFromId(result.like.postID);
+      existing = this.fabricUtils.setLikeCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    });
+    this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
+      let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
+      existing = this.fabricUtils.setCommentCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    });
 
     const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
-    const unsubLikes = this.likesService.observable(this.boardID, this.handleLikeEvent, true);
-    const unsubComms = this.commentService.observable(this.boardID, this.handleCommentEvent, true);
 
-    return [unsubBoard, unsubLikes, unsubComms];
+    return [unsubBoard];
   }
 
   showBucketsModal() {
@@ -440,16 +452,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const event = parseInt(obj.canvasEvent);
       delete obj.moverID && delete obj.canvasEvent
 
-      if (event == CanvasPostEvent.TITLE_CHANGE || event == CanvasPostEvent.DESC_CHANGE) {
-        existing = this.fabricUtils.updatePostTitleDesc(existing, obj.title, obj.desc);
-        this.canvas.requestRenderAll()
-      } else if (event == CanvasPostEvent.LIKE) {
-        existing = this.fabricUtils.updateLikeCount(existing, obj);
-        this.canvas.requestRenderAll()
-      } else if (event == CanvasPostEvent.COMMENT) {
-        existing = this.fabricUtils.updateCommentCount(existing, obj)
-        this.canvas.requestRenderAll()
-      } else if (event == CanvasPostEvent.NEEDS_ATTENTION_TAG) {
+      if (event == CanvasPostEvent.NEEDS_ATTENTION_TAG) {
         existing = this.fabricUtils.setBorderColor(existing, NEEDS_ATTENTION_TAG.color);
         existing = this.fabricUtils.setBorderThickness(existing, POST_TAGGED_BORDER_THICKNESS);
         this.canvas.requestRenderAll();
@@ -461,26 +464,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   }
 
-  handleLikeEvent = (like: Like, change: string) => {
-    var post = this.fabricUtils.getObjectFromId(like.postID)
-    if (post) {
-      post = change == "added" ? this.fabricUtils.incrementLikes(post) : this.fabricUtils.decrementLikes(post)
-      this.canvas.renderAll()
-      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasPostEvent.LIKE));
-      this.postService.update(post.postID, { fabricObject: jsonPost })
-    }
-  }
-
-  handleCommentEvent = (comment: Comment) => {
-    var post = this.fabricUtils.getObjectFromId(comment.postID)
-    if (post) {
-      post = this.fabricUtils.incrementComments(post)
-      this.canvas.renderAll()
-      var jsonPost = this.fabricUtils.toJSON(this.fabricUtils.attachEvent(post, CanvasPostEvent.COMMENT));
-      this.postService.update(post.postID, { fabricObject: jsonPost })
-    }
-  }
-
   initLikeClickListener() {
     this.canvas.on('mouse:down', this.handleLikeClick);
 
@@ -489,28 +472,25 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
   }
 
-  handleLikeClick = (e: fabric.IEvent) => {
+  handleLikeClick = async (e: fabric.IEvent) => {
     var post: any = e.target
     var likeButton = e.subTargets?.find(o => o.name == 'like')
     let isStudent = this.user.role == Role.STUDENT
     let isTeacher = this.user.role == Role.TEACHER
     let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking
     if (likeButton && (studentHasPerm || isTeacher)) {
-      this.likesService.isLikedBy(post.postID, this.user.id).then((data) => {
-        if (data.size == 0) {
-          this.likesService.add({
-            likeID: Date.now() + '-' + this.user.id,
-            likerID: this.user.id,
-            postID: post.postID,
-            boardID: this.board.boardID
-          })
-        } else {
-          data.forEach((data) => {
-            let like: Like = data.data()
-            this.likesService.remove(like.likeID)
-          })
+      const isLiked = await this.likesService.isLikedBy(post.postID, this.user.id)
+      if (!isLiked) {
+        const like: Like = {
+          likeID: Date.now() + '-' + this.user.id,
+          likerID: this.user.id,
+          postID: post.postID,
+          boardID: this.board.boardID
         }
-      })
+        await this.canvasService.like(like);
+      } else {
+        await this.canvasService.unlike(isLiked);
+      }
     }
   }
 

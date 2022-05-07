@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Comment from '../models/comment';
@@ -10,7 +11,7 @@ export class CommentService {
   private commentsPath : string = 'comments';
   commentCollection: AngularFirestoreCollection<Comment>;
 
-  constructor(private db: AngularFirestore) {
+  constructor(private db: AngularFirestore, private http: HttpClient) {
     this.commentCollection = db.collection<Comment>(this.commentsPath);
   }
 
@@ -28,12 +29,12 @@ export class CommentService {
     })
   }
 
-  getCommentsByPost(postID: string) {
-    return this.commentCollection.ref.where("postID", "==", postID).get().then((snapshot) => snapshot)
+  getCommentsByPost(postID: string): Promise<Comment[]> {
+    return this.http.get<Comment[]>('comments/posts/' + postID).toPromise();
   }
 
   add(comment: Comment): any {
-    return this.commentCollection.doc(comment.commentID).set(comment)
+    return this.http.post('comments/', {comment}).toPromise();
   }
 
   remove(commentID: string) {

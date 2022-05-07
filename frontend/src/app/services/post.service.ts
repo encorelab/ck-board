@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Post from '../models/post';
@@ -86,7 +86,7 @@ export class PostService {
   }
 
   update(postID: string, value: Partial<Post>) {
-    return this.http.post('/' + postID, value).toPromise();
+    return this.http.post('posts/' + postID, value).toPromise();
   }
 
   delete(postID: string) {

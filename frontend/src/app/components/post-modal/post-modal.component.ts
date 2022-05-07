@@ -16,6 +16,7 @@ import { CanvasPostEvent, NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, Role, Socket
 import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { SocketService } from 'src/app/services/socket.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -61,6 +62,7 @@ export class PostModalComponent {
     public commentService: CommentService, public likesService: LikesService,
     public postService: PostService, public bucketService: BucketService,
     public socketService: SocketService,
+    public canvasService: CanvasService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
@@ -78,14 +80,13 @@ export class PostModalComponent {
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
         data.forEach((comment) => {
-          this.comments.push(comment.data())
+          this.comments.push(comment)
         })
       })
       this.likesService.getLikesByPost(data.post.postID).then((data) => {
         data.forEach((like) => {
-          var likeObj = like.data()
-          if (likeObj.likerID == this.user.id) this.isLiked = likeObj
-          this.likes.push(likeObj)
+          if (like.likerID == this.user.id) this.isLiked = like;
+          this.likes.push(like);
         })
       })
       this.bucketService.getAllByBoard(this.data.board.boardID).then(buckets => {
@@ -222,11 +223,11 @@ export class PostModalComponent {
       postID: this.post.postID,
       boardID: this.data.board.boardID,
       author: this.data.user.username
-    }
-    this.commentService.add(comment).then(() => {
-      this.newComment = ''
-      this.comments.push(comment)
-    }).catch((e) => console.log(e))
+    };
+
+    this.canvasService.comment(comment);
+    this.newComment = '';
+    this.comments.push(comment);
   }
 
   handleLikeClick() {
@@ -236,10 +237,9 @@ export class PostModalComponent {
     }
       
     if (this.isLiked) {
-      this.likesService.remove(this.isLiked.likeID).then(() => {
-        this.isLiked = null
-        this.likes = this.likes.filter(like => like.likerID != this.user.id)
-      })
+      this.canvasService.unlike(this.isLiked);
+      this.isLiked = null;
+      this.likes = this.likes.filter(like => like.likerID != this.user.id);
     } else {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
@@ -247,7 +247,7 @@ export class PostModalComponent {
         postID: this.post.postID,
         boardID: this.data.board.boardID
       }
-      this.likesService.add(like)
+      this.canvasService.like(like);
       this.isLiked = like
       this.likes.push(like)
     }

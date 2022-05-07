@@ -8,11 +8,13 @@ import Post from 'src/app/models/post';
 import User from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { BoardService } from 'src/app/services/board.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import { PostService } from 'src/app/services/post.service';
+import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
-import { Role } from 'src/app/utils/constants';
+import { Role, SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
 
 @Component({
@@ -44,7 +46,8 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
   postAuthor: User | undefined
   
   constructor(public commentService: CommentService, public likesService: LikesService, public postService: PostService,
-    public authService: AuthService, public userSevice: UserService, public boardService: BoardService, public dialog: MatDialog) { }
+    public authService: AuthService, public userSevice: UserService, public canvasService: CanvasService, 
+    public boardService: BoardService, public dialog: MatDialog) { }
 
   ngOnInit(): void {
     this.user = this.authService.userData;
@@ -53,11 +56,11 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
   }
 
   configurePost() {
-    this.commentService.getCommentsByPost(this.post.postID).then(data => this.numComments = data.docs.length)
+    this.commentService.getCommentsByPost(this.post.postID).then(data => this.numComments = data.length)
     this.likesService.getLikesByPost(this.post.postID).then(data => {
-      this.numLikes = data.docs.length
-      let foundLike = data.docs.find(like => like.data().likerID == this.user.id)
-      this.isLiked = foundLike ? foundLike.data() : null
+      this.numLikes = data.length;
+      let foundLike = data.find(like => like.likerID == this.user.id)
+      this.isLiked = foundLike ?? null;
     })
     this.boardService.get(this.post.boardID).then(board => {
       this.board = board
@@ -84,10 +87,9 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
 
   handleLike() {
     if (this.isLiked) {
-      this.likesService.remove(this.isLiked.likeID).then(() => {
-        this.isLiked = null
-        this.numLikes -= 1
-      })
+      this.canvasService.unlike(this.isLiked);
+      this.isLiked = null;
+      this.numLikes -= 1;
     } else {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
@@ -95,9 +97,9 @@ export class HtmlPostComponent implements OnInit, OnDestroy {
         postID: this.post.postID,
         boardID: this.board.boardID
       }
-      this.likesService.add(like)
-      this.numLikes += 1
+      this.canvasService.like(like);
       this.isLiked = like
+      this.numLikes += 1
     }
   }
 

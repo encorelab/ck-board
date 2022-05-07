@@ -130,22 +130,22 @@ export class ProjectDashboardComponent implements OnInit {
     };
     const csvExporter = new ExportToCsv(options);
     
-    const trace = await this.traceCollection.ref.where("projectId", "==", this.projectID).get();
+    const trace = await this.traceCollection.ref.where("projectID", "==", this.projectID).get();
     let traceData: Trace[] = [];
     trace.forEach(data => traceData.push(data.data()));
     console.log(traceData);
     if(traceData.length == 0) {
       traceData.push({
-        traceId: "",
-        projectId : "",
+        traceID: "",
+        projectID : "",
         projectName: "",
-        boardId: "",
+        boardID: "",
         boardName: "",
-        agentUserId: "",
+        agentUserID: "",
         agentUserName: "",
-        commentId: "",
+        commentID: "",
         commentText: "",
-        postId: "",
+        postID: "",
         postTitle: "",
         postMessage: "", 
         postTitleOrMessageModifiedCounter: 0,
@@ -158,7 +158,7 @@ export class ProjectDashboardComponent implements OnInit {
         postModifiedLocationX: null,
         postModifiedLocationY: null,
         postDeleted: 0,
-        bucketId: "",
+        bucketID: "",
         bucketName: "",
         postRead: 0 
       })

@@ -93,20 +93,20 @@ export class CanvasService {
         
     }
 
-    unlikePost(postId: string, likeId: string): void {
+    unlikePost(postID: string, likeID: string): void {
         this.tracingService.traceVotedPostClient();
-        this.likesService.remove(likeId).then(() => {
-            this.tracingService.traceVotedPostServer(postId, 0);
+        this.likesService.remove(likeID).then(() => {
+            this.tracingService.traceVotedPostServer(postID, 0);
         });
     }
 
-    async addTagsExistingPost(postId: string, tagOption: Tag, tags: object) {
+    async addTagsExistingPost(postID: string, tagOption: Tag, tags: object) {
         this.tracingService.traceAddedTagClient([tagOption.name]);
-        await this.postService.update(postId, tags)
-        this.tracingService.traceAddedTagServer(postId);
+        await this.postService.update(postID, tags)
+        this.tracingService.traceAddedTagServer(postID);
 
         // send like notification to user
-        let data = await this.postsService.get(postId);
+        let data = await this.postsService.get(postID);
         let post = data.docs[0].data();
         let notification:Notification = notificationFactory(post.userID,post.postID);
         let user = await this.authService.getAuthenticatedUser()
@@ -135,13 +135,13 @@ export class CanvasService {
         return [tags, tagOptions];
     }
 
-    removeTagServer(postId: string, value: object): void {
-        this.postService.update(postId, value).then(() => {
-            this.tracingService.traceRemovedTagServer(postId);
+    removeTagServer(postID: string, value: object): void {
+        this.postService.update(postID, value).then(() => {
+            this.tracingService.traceRemovedTagServer(postID);
         });
     }
 
-    movePostClient(canvas: Canvas, obj: any, userId: string) {
+    movePostClient(canvas: Canvas, obj: any, userID: string) {
         const left = obj.left;
         const top = obj.top;
         const width = obj.getScaledWidth();
@@ -152,7 +152,7 @@ export class CanvasService {
 
         this.tracingService.traceMovedPostClient(centerX, centerY);
 
-        obj.set({ moverID: userId, canvasEvent: CanvasPostEvent.STOP_MOVE });
+        obj.set({ moverID: userID, canvasEvent: CanvasPostEvent.STOP_MOVE });
         canvas.renderAll();
     }
 
@@ -170,25 +170,25 @@ export class CanvasService {
         return bucket;
     }
 
-    movePostToBucketServer(postId: string, bucket: any) {
+    movePostToBucketServer(postID: string, bucket: any) {
         let ids = bucket.posts.map(post => post.postID);
         this.bucketService.add(bucket.bucketID, ids).then(() => {
-            this.tracingService.traceMovedPostToBucketServer(postId);
+            this.tracingService.traceMovedPostToBucketServer(postID);
         });
     }
 
-    deletePostClient(postId: string) {
+    deletePostClient(postID: string) {
         this.tracingService.traceDeletedPostClient();
-        let obj = this.fabricUtils.getObjectFromId(postId);
+        let obj = this.fabricUtils.getObjectFromId(postID);
         if (obj && obj.type == 'group') {
             this.fabricUtils._canvas.remove(obj);
             this.fabricUtils._canvas.renderAll();
         }
     }
 
-    deletePostServer(postId: string) {
-        this.postService.delete(postId).then(() => {
-            this.tracingService.traceDeletedPostServer(postId);
+    deletePostServer(postID: string) {
+        this.postService.delete(postID).then(() => {
+            this.tracingService.traceDeletedPostServer(postID);
         });
     }
 

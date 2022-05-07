@@ -1,14 +1,14 @@
 export default interface Trace {
-    traceId: string
-    projectId : string
+    traceID: string
+    projectID : string
     projectName: string
-    boardId: string
+    boardID: string
     boardName: string
-    agentUserId: string
+    agentUserID: string
     agentUserName: string
-    commentId: string
+    commentID: string
     commentText: string
-    postId: string
+    postID: string
     postTitle: string
     postMessage: string 
     postTitleOrMessageModifiedCounter: number
@@ -21,7 +21,7 @@ export default interface Trace {
     postModifiedLocationX: number | null
     postModifiedLocationY: number | null
     postDeleted: number
-    bucketId: string
+    bucketID: string
     bucketName: string
     postRead: number 
 }

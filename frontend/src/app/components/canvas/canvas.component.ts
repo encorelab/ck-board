@@ -34,6 +34,7 @@ import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
+import { ComponentType } from '@angular/cdk/portal';
 
 interface PostIDNamePair {
   postID: string,
@@ -180,27 +181,17 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   showBucketsModal() {
-    this.dialog.open(BucketsModalComponent, {
-      maxWidth: 1280,
-      width: '95vw',
-      autoFocus: false,
-      data: {
-        board: this.board,
-        user: this.user,
-        centerX: this.canvas.getCenter().left,
-        centerY: this.canvas.getCenter().top,
-      }
+    this._openDialog(BucketsModalComponent, {
+      board: this.board,
+      user: this.user,
+      centerX: this.canvas.getCenter().left,
+      centerY: this.canvas.getCenter().top,
     });
   }
 
   showListModal() {
-    this.dialog.open(ListModalComponent, {
-      maxWidth: 1280,
-      width: '95vw',
-      autoFocus: false,
-      data: {
-        board: this.board,
-      },
+    this._openDialog(ListModalComponent, {
+      board: this.board,
     });
   }
 
@@ -236,12 +227,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openWorkflowDialog() {
-    this.dialog.open(CreateWorkflowModalComponent, {
-      width: '700px',
-      data: {
-        board: this.board,
-        project: this.project
-      }
+    this._openDialog(CreateWorkflowModalComponent, {
+      board: this.board,
+      project: this.project
     });
   }
 
@@ -257,18 +245,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
   handleChoosePostLocation = (opt) => {
     if (opt.target == null) {
       this.canvas.selection = false;
-      const data: AddPostDialog = {
+      this._openDialog(AddPostComponent, {
         board: this.board,
         user: this.user,
         spawnPosition: {
           top: opt.absolutePointer ? opt.absolutePointer.y : 150,
           left: opt.absolutePointer ? opt.absolutePointer.x : 150
         }
-      }
-      this.dialog.open(AddPostComponent, {
-        width: '500px',
-        data: data
-      });
+      })
     }
     this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation)
@@ -282,17 +266,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openSettingsDialog() {
-    this.dialog.open(ConfigurationModalComponent, {
-      width: '850px',
-      data: {
-        board: this.board,
-        updatePermissions: this.updatePostPermissions,
-        updatePublic: this.updatePublic,
-        updateTask: this.updateTask,
-        updateBackground: this.updateBackground,
-        updateBoardName: this.updateBoardName,
-        updateTags: this.updateTags
-      }
+    this._openDialog(ConfigurationModalComponent, {
+      board: this.board,
+      updatePermissions: this.updatePostPermissions,
+      updatePublic: this.updatePublic,
+      updateTask: this.updateTask,
+      updateBackground: this.updateBackground,
+      updateBoardName: this.updateBoardName,
+      updateTags: this.updateTags
     });
   }
 
@@ -409,12 +390,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const message = this.board.task.message;
 
     const openDialogCloseSnack = () => {
-      this.dialog.open(TaskModalComponent, {
-        width: '500px',
-        data: {
-          title: title,
-          message: message
-        }
+      this._openDialog(TaskModalComponent, {
+        title: title,
+        message: message
       });
       this.snackbarService.dequeueSnackbar();
     };
@@ -516,14 +494,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
       if (!isDragEnd && !likePress && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
-        this.dialog.open(PostModalComponent, {
-          minWidth: '700px',
-          width: 'auto',
-          data: {
-            user: this.user,
-            post: obj,
-            board: this.board
-          }
+        this._openDialog(PostModalComponent, {
+          user: this.user,
+          post: obj,
+          board: this.board
         });
       }
     };
@@ -824,6 +798,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     return ()=>{
       subscription.unsubscribe();
     }
+  }
+
+  private _openDialog(component: ComponentType<unknown>, data: any) {
+    this.dialog.open(component, {
+      maxWidth: 1280,
+      width: '95vw',
+      autoFocus: false,
+      data: data
+    });
   }
 
   ngOnDestroy(): void {

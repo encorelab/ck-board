@@ -15,6 +15,6 @@ export class Board {
         imgSettings: {};
     };
     permissions: Permissions; 
-    members: [];
+    members: string[];
     tags: Tag[];
 }

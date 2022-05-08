@@ -2,8 +2,8 @@ export class Project{
     projectID:string;
     teacherID:string;
     name:string;
-    boards:[];
-    members:[];
+    boards: string[];
+    members: string[];
     joinCode: string;
 
 }

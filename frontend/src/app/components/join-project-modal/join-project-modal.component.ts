@@ -28,9 +28,8 @@ export class JoinProjectModalComponent implements OnInit {
   }
 
   joinProject(){
-    this.projectService.getByJoinCode(this.inputCode).then(snapshot=>{
-      if(!snapshot.empty){
-        const project = snapshot.docs[0].data()
+    this.projectService.getByJoinCode(this.inputCode).then(project => {
+      if (project) {
         const members: string[] = project.members
         const userID = this.authService.userData.id
         if (members.includes(userID)) {

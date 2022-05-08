@@ -8,6 +8,8 @@ import Socket from './socket/socket';
 import posts from './api/posts';
 import likes from './api/likes';
 import comments from './api/comments'; 
+import boards from './api/boards';
+import projects from './api/projects';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -24,6 +26,8 @@ const server = http.createServer(app);
 const socket = new Socket();
 socket.init();
 
+app.use('/api/projects', projects);
+app.use('/api/boards', boards);
 app.use('/api/posts', posts);
 app.use('/api/likes', likes);
 app.use('/api/comments', comments);

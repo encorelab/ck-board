@@ -284,10 +284,10 @@ export class FabricUtils {
         return obj
     }
 
-    createImageSettings(canvas, img) {
-        let vptCoords = canvas.vptCoords
-        let width = canvas.getWidth()
-        let height = canvas.getHeight()
+    createImageSettings(img) {
+        let vptCoords = this._canvas.vptCoords!
+        let width = this._canvas.getWidth()
+        let height = this._canvas.getHeight()
 
         if (vptCoords) {
           width = Math.abs(vptCoords.tr.x - vptCoords.tl.x)
@@ -345,5 +345,12 @@ export class FabricUtils {
     setPostMovement(object: any, lock: boolean) {
         let updatedObj = this.setField(object, 'lockMovementX', lock);
         return this.setField(updatedObj, 'lockMovementY', lock);
+    }
+
+    setBackgroundImage(image: fabric.Image | string | undefined, settings?: any) {
+        if (image == null) {
+            image = new fabric.Image('');
+        }
+        this._canvas.setBackgroundImage(image, this._canvas.renderAll.bind(this._canvas), settings);
     }
 }

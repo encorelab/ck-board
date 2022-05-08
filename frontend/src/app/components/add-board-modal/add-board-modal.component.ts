@@ -19,7 +19,7 @@ export class AddBoardModalComponent implements OnInit {
   permissions: Permissions
 
   boardName: string = ''
-  bgImgURL: any = ''
+  bgImgURL: any = null
 
   taskTitle: string = ''
   taskMessage: string = ''
@@ -80,9 +80,7 @@ export class AddBoardModalComponent implements OnInit {
         title: this.taskTitle,
         message: this.taskMessage
       },
-      bgImage: {
-        url: this.bgImgURL
-      },
+      bgImage: this.bgImgURL ? {url: this.bgImgURL} : null,
       permissions: this.permissions,
       members: [this.authService.userData.id],
       tags: this.tags.concat(this.defaultTags),

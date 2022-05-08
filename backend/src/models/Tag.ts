@@ -2,7 +2,7 @@ import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 
 @modelOptions({ schemaOptions: { collection: 'tags' } })
 export class TagModel {
-  @prop({ required: true })
+  @prop({ required: false })
   public boardID!: string;
 
   @prop({ required: true })

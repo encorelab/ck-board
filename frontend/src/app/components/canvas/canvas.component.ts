@@ -174,10 +174,27 @@ export class CanvasComponent implements OnInit, OnDestroy {
       existing = this.fabricUtils.setCommentCount(existing, result.amount);
       this.canvas.requestRenderAll();
     });
+    this.socketService.listen(SocketEvent.BOARD_IMAGE_UPDATE, (board: Board) => {
+      this.board = board
+      this.fabricUtils.setBackgroundImage(board.bgImage?.url, board.bgImage?.imgSettings);
+    });
+    this.socketService.listen(SocketEvent.BOARD_NAME_UPDATE, (board: Board) => {
+      this.board = board;
+    });
+    this.socketService.listen(SocketEvent.BOARD_PERMISSIONS_UPDATE, (board: Board) => {
+      this.board = board;
+      this.updateShowAddPost(board.permissions);
+      this.lockPostsMovement(!board.permissions.allowStudentMoveAny);
+      this.setAuthorVisibilityAll();
+    });
+    this.socketService.listen(SocketEvent.BOARD_TAGS_UPDATE, (board: Board) => {
+      this.board = board;
+    });
+    this.socketService.listen(SocketEvent.BOARD_TASK_UPDATE, (board: Board) => {
+      this.board = board;
+    });
 
-    const unsubBoard = this.boardService.subscribe(this.boardID, this.handleBoardChange);
-
-    return [unsubBoard];
+    return [];
   }
 
   showBucketsModal() {
@@ -216,10 +233,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.boardService.get(this.boardID).then((board) => {
         if (board) {
           this.board = board
-          board.permissions.allowStudentMoveAny ? this.lockPostsMovement(false) : this.lockPostsMovement(true)
-          board.bgImage ? this.updateBackground(board.bgImage.url, board.bgImage.imgSettings) : null
-          this.updateShowAddPost(this.board.permissions)
-          this.setAuthorVisibilityAll()
+          this.fabricUtils.setBackgroundImage(board.bgImage?.url, board.bgImage?.imgSettings);
+          this.lockPostsMovement(!board.permissions.allowStudentMoveAny);
+          this.updateShowAddPost(this.board.permissions);
+          this.setAuthorVisibilityAll();
         }
       })
     })
@@ -268,73 +285,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   openSettingsDialog() {
     this._openDialog(ConfigurationModalComponent, {
       board: this.board,
-      updatePermissions: this.updatePostPermissions,
-      updatePublic: this.updatePublic,
-      updateTask: this.updateTask,
-      updateBackground: this.updateBackground,
-      updateBoardName: this.updateBoardName,
-      updateTags: this.updateTags
+      update: (board: Board) => this.board = board
     });
-  }
-
-  updateTags = (tags) => {
-    this.boardService.update(this.boardID, { tags: tags })
-  }
-
-  updateBoardName = (name) => {
-    this.board.name = name
-    this.boardService.update(this.boardID, { name: name })
-  }
-
-  updateBackground = (fileString, settings?) => {
-    if (fileString == null) {
-      const image = new fabric.Image('');
-      this.canvas.setBackgroundImage(image, this.canvas.renderAll.bind(this.canvas))
-      this.boardService.update(this.boardID, { bgImage: null })
-      return;
-    } 
-
-    fabric.Image.fromURL(fileString, (img) => {
-      if (img && settings) {
-        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), settings);
-      } else if (img && !settings) {
-        // TODO: delete old background image
-        const imgSettings = this.fabricUtils.createImageSettings(this.canvas, img)
-        this.canvas.setBackgroundImage(img, this.canvas.renderAll.bind(this.canvas), imgSettings);
-        this.fileUploadService.upload(fileString).then(firebaseUrl => {
-          if (this.board.bgImage?.url) {
-            this.fileUploadService.delete(this.board.bgImage?.url).then(_ => {
-              this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
-            })
-          }
-          else {
-            this.boardService.update(this.boardID, { bgImage: { url: firebaseUrl, imgSettings: imgSettings } })
-          }
-        })
-
-      }
-    });
-  }
-
-  updatePostPermissions = (permissions: Permissions) => {
-    this.boardService.update(this.boardID, { permissions: permissions })
-    this.lockPostsMovement(!permissions.allowStudentMoveAny)
-    this.updateShowAddPost(permissions)
-    this.configureBoard()
-  }
-
-  updateShowAddPost(permissions: Permissions) {
-    let isStudent = this.user.role == Role.STUDENT
-    let isTeacher = this.user.role == Role.TEACHER
-    this.showAddPost = (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
-  }
-
-  updateTask = (title, message) => {
-    this.boardService.update(this.boardID, { task: { title: title, message: message } })
-  }
-
-  updatePublic = (isPublic) => {
-    this.boardService.update(this.boardID, { public: isPublic })
   }
 
   lockPostsMovement(value) {
@@ -383,6 +335,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.setAuthorVisibilityOne(post)
       })
     })
+  }
+
+  updateShowAddPost(permissions: Permissions) {
+    let isStudent = this.user.role == Role.STUDENT
+    let isTeacher = this.user.role == Role.TEACHER
+    this.showAddPost = (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher
   }
 
   openTaskDialog() {
@@ -511,22 +469,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.canvas.off('mouse:move', postMovingHandler);
       this.canvas.off('mouse:up', mouseUpHandler);
     }
-  }
-
-  // listen to configuration/permission changes
-  handleBoardChange = (board) => {
-    this.board = board
-
-    this.lockPostsMovement(!board.permissions.allowStudentMoveAny)
-    this.setAuthorVisibilityAll()
-
-    if (board.bgImage) {
-      this.updateBackground(board.bgImage.url, board.bgImage.imgSettings)
-    } else {
-      this.updateBackground(null);
-    }
-    
-    board.name ? this.updateBoardName(board.name) : null
   }
 
   initAddPostListener() {

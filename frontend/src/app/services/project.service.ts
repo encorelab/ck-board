@@ -1,63 +1,29 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import { Project } from '../models/project';
 @Injectable({
   providedIn: 'root'
 })
 export class ProjectService {
-  projectRef: AngularFirestoreCollection<Project>;
-  projectPath: string = '/projects'
+  constructor(private http: HttpClient) {}
 
-  constructor(private db: AngularFirestore) { 
-    this.projectRef = db.collection<Project>(this.projectPath)
+  get(projectID: string): Promise<Project> {
+    return this.http.get<Project>('projects/' + projectID).toPromise();
   }
 
-  observable(projectID: string, handleProjectChange: Function) {
-    return this.projectRef.ref.where("projectID", "==", projectID).onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "modified") {
-          handleProjectChange(change.doc.data())
-        }
-      })
-    })
+  getByJoinCode(code: string): Promise<Project> {
+    return this.http.get<Project>('projects/code/' + code).toPromise();
   }
 
-  get(projectID: string): Promise<any> {
-    return this.projectRef.ref.where("projectID", "==", projectID).get().then((snapshot) => {
-      if (!snapshot.empty) {
-        return snapshot.docs[0].data()
-      } 
-      return null;
-    })
+  getByUserID(id: string): Promise<Project[]> {
+    return this.http.get<Project[]>('projects/users/' + id).toPromise();
   }
 
-  getPublic() {
-    return this.projectRef.ref.where("public", "==", true).get().then((snapshot) => snapshot)
+  create(project: Project): Promise<Project> {
+    return this.http.post<Project>('projects/', project).toPromise();
   }
 
-  getByJoinCode(code: string) {
-    return this.projectRef.ref.where("joinCode", "==", code).get().then((snapshot) => snapshot)
+  update(projectID: string, project: Partial<Project>): Promise<Project> {
+    return this.http.post<Project>('projects/' + projectID, project).toPromise();
   }
-
-  getByUserID(id: string): Promise<any> {
-    return this.projectRef.ref.where("members", "array-contains", id).get().then((snapshot) => snapshot)
-  }
-
-  getAll(): Promise<any> {
-    return this.projectRef.ref.get().then((snapshot) => snapshot)
-  }
-
-  update(projectID: string, settings: any) {
-    return this.projectRef.ref.doc(projectID).update(settings)
-  }
-
-  create(project: Project) {
-    return this.projectRef.doc(project.projectID).set(project) 
-  }
-
-  delete(projectID: string) {
-    return this.projectRef.ref.doc(projectID).delete()
-  }
-
-
 }

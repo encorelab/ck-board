@@ -41,11 +41,8 @@ export class DashboardComponent implements OnInit {
   }
   
   getUsersProjects(id){
-    return this.projectService.getByUserID(id).then(project => {
-      project.forEach((data) => {
-        let project = data.data() ?? {}
-        this.yourProjects.push(project)
-      })
+    return this.projectService.getByUserID(id).then(projects => {
+      this.yourProjects = this.yourProjects.concat(projects);
     })
   }
 

@@ -38,24 +38,20 @@ export class ProjectDashboardComponent implements OnInit {
     await this.getBoards()
     this.user = await this.authService.getAuthenticatedUser()
     await this.getUsersProjects(this.user.id)
-
   }
 
 
   async getBoards(){
-    this.project = await this.projectService.get(this.projectID)
-    for( let boardID of this.project.boards){
-      let board = await this.boardService.get(boardID)
-      this.boards.push(board)
+    this.project = await this.projectService.get(this.projectID);
+    for (let boardID of this.project.boards) {
+      let board = await this.boardService.get(boardID);
+      this.boards.push(board);
     }
   }
 
   async getUsersProjects(id){
-    let project = await this.projectService.getByUserID(id)
-    project.forEach((data) => {
-      let project = data.data() ?? {}
-      this.yourProjects.push(project)
-    })
+    let projects = await this.projectService.getByUserID(id);
+    this.yourProjects = this.yourProjects.concat(projects);
   }
 
   openCreateBoardDialog() {
@@ -70,19 +66,15 @@ export class ProjectDashboardComponent implements OnInit {
     });
   }
 
-  createBoard = (board: Board, selectedProjectID:string) => {
-    let projectBoards = this.yourProjects.find(project=>project.projectID == selectedProjectID)?.boards
-    if(projectBoards){
-      this.projectService.update(selectedProjectID,{boards:[...projectBoards,board.boardID]})
-      .then(_=>{
-        return this.boardService.create(board)
-      })
-      .then(_ => {
-        this.router.navigate(['project/' +selectedProjectID+"/board/"+ board.boardID])
-      })
+  createBoard = async (board: Board, selectedProjectID:string) => {
+    let projectBoards = this.yourProjects.find(project=>project.projectID == selectedProjectID)?.boards;
+    
+    if (projectBoards) {
+      await this.boardService.create(board);
+      await this.projectService.update(selectedProjectID, {boards: [...projectBoards, board.boardID]});
+
+      this.router.navigate(['project/' +selectedProjectID+"/board/"+ board.boardID]);
     }
-    
-    
   }
 
   updateProjectName = (name) =>{

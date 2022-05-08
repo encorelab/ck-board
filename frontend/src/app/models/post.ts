@@ -10,6 +10,7 @@ export default class Post {
 }
   
 export class Tag {
+    boardID?: string;
     name: string;
     color: string;
 }

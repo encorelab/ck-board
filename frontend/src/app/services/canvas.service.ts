@@ -4,8 +4,8 @@ import { Board } from '../models/board';
 import Comment from '../models/comment';
 import Like from '../models/like';
 import { Permissions } from '../models/permissions';
-import { Tag } from '../models/post';
-import { SocketEvent } from '../utils/constants';
+import Post, { Tag } from '../models/post';
+import { NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_TAGGED_BORDER_THICKNESS, SocketEvent } from '../utils/constants';
 import { FabricUtils } from '../utils/FabricUtils';
 import { BoardService } from './board.service';
 import { CommentService } from './comment.service';
@@ -26,6 +26,17 @@ export class CanvasService {
     private commentService: CommentService,
     private boardService: BoardService, 
     private fabricUtils: FabricUtils) { }
+
+  async createPost(post: Post) {
+    const fabricObject = JSON.parse(post.fabricObject || '{}');
+    this.fabricUtils.fromJSON(fabricObject);
+
+    this.socketService.emit(SocketEvent.POST_CREATE, post);
+  }
+
+  async createBucketPost(post: Post): Promise<Post> {
+    return await this.postService.create(post);
+  }
 
   async like(like: Like) {
     const result = await this.likesService.add(like);
@@ -63,6 +74,57 @@ export class CanvasService {
     const fabricObject = this.fabricUtils.toJSON(existing);
     await this.postService.update(result.comment.postID, {fabricObject});
     this.socketService.emit(SocketEvent.POST_COMMENT_ADD, comment);
+  }
+
+  async tag(post: Post, tag: Tag): Promise<Post> {
+    const tags = [...post.tags, tag];
+
+    let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
+    if (!fabricObject) {
+      return await this.postService.update(post.postID, { tags: tags });
+    }
+    
+    if (tag.name == NEEDS_ATTENTION_TAG.name) {
+      fabricObject = this.fabricUtils.setBorderColor(fabricObject, NEEDS_ATTENTION_TAG.color);
+      fabricObject = this.fabricUtils.setBorderThickness(fabricObject, POST_TAGGED_BORDER_THICKNESS);
+      this.fabricUtils._canvas.requestRenderAll();
+    }
+
+    const jsonPost = this.fabricUtils.toJSON(fabricObject);
+    const savedPost: Post = await this.postService.update(post.postID, { tags, fabricObject: jsonPost });
+
+    if (tag.name == NEEDS_ATTENTION_TAG.name) {
+      this.socketService.emit(SocketEvent.POST_NEEDS_ATTENTION_TAG, savedPost);
+    }
+    
+    return savedPost;
+  }
+
+  async untag(post: Post, tag: Tag): Promise<Post> {
+    const index = post.tags.indexOf(tag);
+    if (index >= 0) {
+      post.tags.splice(index, 1);
+    }
+
+    let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
+    if (!fabricObject) {
+      return await this.postService.update(post.postID, { tags: post.tags });
+    }
+
+    if (tag.name == NEEDS_ATTENTION_TAG.name) {
+      fabricObject = this.fabricUtils.setBorderColor(fabricObject, POST_DEFAULT_BORDER);
+      fabricObject = this.fabricUtils.setBorderThickness(fabricObject, POST_DEFAULT_BORDER_THICKNESS);
+      this.fabricUtils._canvas.requestRenderAll();
+    }
+
+    const jsonPost = this.fabricUtils.toJSON(fabricObject);
+    const savedPost: Post = await this.postService.update(post.postID, { tags: post.tags, fabricObject: jsonPost });
+
+    if (tag.name == NEEDS_ATTENTION_TAG.name) {
+      this.socketService.emit(SocketEvent.POST_NO_TAG, savedPost);
+    }
+
+    return savedPost;
   }
 
   async updateBoardTask(boardID: string, title: string, message?: string): Promise<Board> {

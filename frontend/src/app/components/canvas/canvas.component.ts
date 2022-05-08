@@ -50,7 +50,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   boardID: string
   projectID: string
   canvas: Canvas;
-  postColor: string;
 
   user: User
   board: Board
@@ -94,7 +93,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.user = this.authService.userData;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas;
-    this.postColor = POST_COLOR;
 
     this.configureBoard();
 
@@ -108,7 +106,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initCanvasEventsListener() {
-    const unsubAdd = this.initAddPostListener();
     const unsubMoving = this.initMovingPostListener();
     const unsubExpand = this.initPostClickListener();
     const unsubLike = this.initLikeClickListener();
@@ -120,9 +117,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const unsubArrowKeyLock = this.lockArrowKeysWhenModalOpen();
     const unsubArrowKeyUnlock = this.unlockArrowKeysWhenModalClose();
     
-    return [unsubLike, unsubExpand, unsubModal, unsubAdd, 
+    return [unsubLike, unsubExpand, unsubModal, 
             unsubMoving, unsubZoom, unsubPan, 
-            unsubSwipePan, unsubKeyPan, unsubArrowKeyLock, unsubArrowKeyUnlock];
+            unsubSwipePan, unsubKeyPan, 
+            unsubArrowKeyLock, unsubArrowKeyUnlock];
   }
 
   initGroupEventsListener() {
@@ -192,6 +190,18 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
     this.socketService.listen(SocketEvent.BOARD_TASK_UPDATE, (board: Board) => {
       this.board = board;
+    });
+    this.socketService.listen(SocketEvent.POST_NEEDS_ATTENTION_TAG, (post: Post) => {
+      let existing = this.fabricUtils.getObjectFromId(post.postID);
+      existing = this.fabricUtils.setBorderColor(existing, NEEDS_ATTENTION_TAG.color);
+      existing = this.fabricUtils.setBorderThickness(existing, POST_TAGGED_BORDER_THICKNESS);
+      this.canvas.requestRenderAll();
+    });
+    this.socketService.listen(SocketEvent.POST_NO_TAG, (post: Post) => {
+      let existing = this.fabricUtils.getObjectFromId(post.postID);
+      existing = this.fabricUtils.setBorderColor(existing, POST_DEFAULT_BORDER);
+      existing = this.fabricUtils.setBorderThickness(existing, POST_DEFAULT_BORDER_THICKNESS);
+      this.canvas.requestRenderAll();
     });
 
     return [];
@@ -365,40 +375,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  // send your post to the rest of the group
-  sendObjectToGroup(pObject: any) {
-    const post: Post = {
-      postID: pObject.postID,
-      title: pObject.title,
-      desc: pObject.desc,
-      tags: pObject.tags,
-      userID: this.user.id,
-      boardID: this.boardID,
-      fabricObject: this.fabricUtils.toJSON(pObject)
-    }
-
-    this.socketService.emit(SocketEvent.POST_CREATE, post);
-  }
-
-  // sync board using incoming/outgoing posts
-  syncBoard(obj: any, postID: any) {
-    var existing = this.fabricUtils.getObjectFromId(postID)
-
-    if (existing) {
-      const event = parseInt(obj.canvasEvent);
-      delete obj.moverID && delete obj.canvasEvent
-
-      if (event == CanvasPostEvent.NEEDS_ATTENTION_TAG) {
-        existing = this.fabricUtils.setBorderColor(existing, NEEDS_ATTENTION_TAG.color);
-        existing = this.fabricUtils.setBorderThickness(existing, POST_TAGGED_BORDER_THICKNESS);
-        this.canvas.requestRenderAll();
-      } else if (event == CanvasPostEvent.NO_TAG) {
-        existing = this.fabricUtils.setBorderColor(existing, POST_DEFAULT_BORDER);
-        existing = this.fabricUtils.setBorderThickness(existing, POST_DEFAULT_BORDER_THICKNESS);
-        this.canvas.requestRenderAll();
-      }
-    }
-  }
+  // one event for all tags - PostSpecialTag
+  // data will be passed into event i.e. colors, thickness, etc.
+  // define interface SpecialTag{borderColor, borderThickness}
+  // TODO: also remove creating custom ids wiht data + id, find auto way of it happening
+  // TODO: remove all firebase calls - observables, etc. from all services, remove npm dep also
+  // TODO: remove all extra methods not being used anymroe
+  // TODO: fix students cant create post permission
+  // TODO: add id and boardID to tag model
+  // TODO: add validation/error handling to events/api calls
+  // TODO: add eslint to frontend too
 
   initLikeClickListener() {
     this.canvas.on('mouse:down', this.handleLikeClick);
@@ -468,26 +454,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.canvas.off('mouse:down', postClickHandler);
       this.canvas.off('mouse:move', postMovingHandler);
       this.canvas.off('mouse:up', mouseUpHandler);
-    }
-  }
-
-  initAddPostListener() {
-    const handleAddPost = (e: fabric.IEvent) => {
-      if (e.target) {
-        var obj: any = e.target;
-
-        if (!obj.postID) {
-          const id = Date.now() + '-' + this.user.id;
-          obj = this.fabricUtils.setField(obj, 'postID', id);
-          this.sendObjectToGroup(obj)
-        }
-      }
-    }
-
-    this.canvas.on('object:added', handleAddPost);
-
-    return () => {
-      this.canvas.off('object:added', handleAddPost);
     }
   }
 

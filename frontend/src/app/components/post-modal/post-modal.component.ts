@@ -171,48 +171,25 @@ export class PostModalComponent {
     });
   }
 
-  addTag(event, tagOption): void {
-    event.stopPropagation()
+  async addTag(event, tagOption) {
+    event.stopPropagation();
+
+    this.post = await this.canvasService.tag(this.post, tagOption);
     this.tags.push(tagOption);
-    this.tagOptions = this.tagOptions.filter(tag => tag != tagOption)
-
-    let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
-
-    if (fabricObject) {
-      if (tagOption.name == NEEDS_ATTENTION_TAG.name) {
-        fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NEEDS_ATTENTION_TAG);
-      }
-  
-      const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
-    } else {
-      this.postService.update(this.post.postID, { tags: this.tags });
-    }
+    this.tagOptions = this.tagOptions.filter(tag => tag != tagOption);
   }
 
-  removeTag(tag) {
-    if(!this.canStudentTag)
+  async removeTag(tag) {
+    if (!this.canStudentTag)
       return;
+
+    this.post = await this.canvasService.untag(this.post, tag);
 
     const index = this.tags.indexOf(tag);
     if (index >= 0) {
       this.tags.splice(index, 1);
     }
-
     this.tagOptions.push(tag);
-
-    let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
-
-    if (fabricObject) {
-      if (tag.name == NEEDS_ATTENTION_TAG.name) {
-        fabricObject = this.fabricUtils.attachEvent(fabricObject, CanvasPostEvent.NO_TAG);
-      }
-      
-      const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.postService.update(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
-    } else {
-      this.postService.update(this.post.postID, { tags: this.tags });
-    }
   }
 
   addComment() {

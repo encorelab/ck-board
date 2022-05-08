@@ -2,8 +2,9 @@ import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import { Tag } from 'src/app/models/post';
+import Post, { Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
+import { CanvasService } from 'src/app/services/canvas.service';
 import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_TAGGED_BORDER_THICKNESS } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
@@ -36,6 +37,7 @@ export class AddPostComponent {
   matcher = new MyErrorStateMatcher();
 
   constructor(
+    public canvasService: CanvasService,
     public fabricUtils: FabricUtils,
     public dialogRef: MatDialogRef<AddPostComponent>,
     @Inject(MAT_DIALOG_DATA) public data: AddPostDialog) {
@@ -63,6 +65,8 @@ export class AddPostComponent {
     const containsAttentionTag = this.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
     
     var fabricPost = new FabricPostComponent({
+      postID: Date.now() + '-' + this.user.id,
+      boardID: this.board.boardID,
       title: this.title,
       author: this.user.username,
       authorID: this.user.id,
@@ -75,7 +79,9 @@ export class AddPostComponent {
       stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
       strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
     });
-    this.fabricUtils._canvas.add(fabricPost);
+    
+    const post: Post = this.fabricUtils.fromFabricPost(fabricPost);
+    this.canvasService.createPost(post);
   }
 
   handleDialogSubmit() {

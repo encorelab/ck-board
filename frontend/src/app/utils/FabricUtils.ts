@@ -11,8 +11,8 @@ export class FabricUtils {
     serializableProperties = [
         'name', 'postID', 'title', 'desc', 
         'author', 'authorID', 'hasControls', 
-        'subTargetCheck', 'removed', 'moverID',
-        'tags', 'canvasEvent'
+        'subTargetCheck', 'removed',
+        'tags', 'boardID'
     ]
 
     canvasConfig = {
@@ -51,7 +51,7 @@ export class FabricUtils {
     fromFabricPost(post: any): Post {
         return {
             postID: post.postID,
-            userID: post.userID,
+            userID: post.authorID,
             boardID: post.boardID,
             title: post.title,
             desc: post.desc,

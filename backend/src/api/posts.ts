@@ -18,6 +18,13 @@ router.get('/boards/:id', async (req, res) => {
   res.json(posts);
 });
 
+router.post('/', async (req, res) => {
+  const post: PostModel = req.body;
+
+  const savedPost = await dalPost.create(post);
+  res.json(savedPost);
+});
+
 router.post('/:id', async (req, res) => {
   const id = req.params.id;
   const {title, desc, tags, fabricObject} = req.body;

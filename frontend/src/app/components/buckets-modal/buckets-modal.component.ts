@@ -11,6 +11,7 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
 import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_TAGGED_BORDER_THICKNESS, SocketEvent } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
+import { CanvasService } from 'src/app/services/canvas.service';
 
 
 @Component({
@@ -37,6 +38,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
 
   constructor(
     public dialogRef: MatDialogRef<BucketsModalComponent>,
+    public canvasService: CanvasService,
     public bucketService: BucketService,
     public postsService:PostService,
     public socketService: SocketService,
@@ -103,7 +105,8 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       fabricObject: null,
       timestamp: new Date().getTime(),
     }
-    this.socketService.emit(SocketEvent.POST_CREATE, post);
+
+    this.canvasService.createBucketPost(post);
     this.posts.push(post);
     let ids = this.posts.map(post=>post.postID)
     this.bucketService.add(this.activeBucket.bucketID, ids)

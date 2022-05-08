@@ -110,7 +110,31 @@ class PostCommentAdd {
     return {comment: eventData, amount: commentAmount};
   }
 
-  static async handleResult(io: Server, socket: Socket, result: number) {
+  static async handleResult(io: Server, socket: Socket, result: object) {
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+class PostNeedsAttentionTag {
+  static type: SocketEvent = SocketEvent.POST_NEEDS_ATTENTION_TAG;
+  
+  static async handleEvent(eventData: PostModel): Promise<PostModel> {
+    return eventData;
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: PostModel) {
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+class PostNoTag {
+  static type: SocketEvent = SocketEvent.POST_NO_TAG;
+  
+  static async handleEvent(eventData: PostModel): Promise<PostModel> {
+    return eventData;
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: PostModel) {
     socket.to(socket.data.room).emit(this.type, result);
   }
 }
@@ -184,6 +208,8 @@ const events = [
   PostLikeAdd,
   PostLikeRemove,
   PostCommentAdd,
+  PostNeedsAttentionTag,
+  PostNoTag,
   BoardNameUpdate,
   BoardPermissionsUpdate,
   BoardImageUpdate,

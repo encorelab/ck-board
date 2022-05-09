@@ -5,13 +5,16 @@ import { BoardService } from "./board.service";
 import { ProjectService } from "./project.service";
 
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
-import Trace from '../interfaces/trace';
+import Trace from '../models/trace';
+import CKEvent from "../models/ckEvent";
+import PostAddedEvent from "../models/ckEvents/post/postAddedEvent";
 
 @Injectable({
     providedIn: 'root'
 })
 export class TracingService {
     private trace: Trace;
+    private ckEvent: CKEvent;
 
     private startIndexProjectInd: number;
     private endIndexProjectInd: number;
@@ -44,33 +47,7 @@ export class TracingService {
     }
 
     private initializeTrace(): void {
-        this.trace = {
-            traceID: "",
-            projectID : "",
-            projectName: "",
-            boardID: "",
-            boardName: "",
-            agentUserID: "",
-            agentUserName: "",
-            commentID: "",
-            commentText: "",
-            postID: "",
-            postTitle: "",
-            postMessage: "", 
-            postTitleOrMessageModifiedCounter: 0,
-            clientTimestamp: -1,
-            serverTimestamp: -1,
-            commentModifiedTextCounter: 0,
-            postModifiedUpvote: 0,
-            postTagNameAdded: [],
-            postTagNameRemoved: "",
-            postModifiedLocationX: null,
-            postModifiedLocationY: null,
-            postDeleted: 0,
-            bucketID: "",
-            bucketName: "",
-            postRead: 0 
-        }
+        this.trace = new Trace()
     }
     
     private getProjectID(): void {
@@ -92,25 +69,33 @@ export class TracingService {
         const username = this.authService.userData.username;
         const userID = this.authService.userData.id;
 
-        this.trace["traceID"] = Date.now().toString() + "-" + userID;
-        this.trace["agentUserID"] = userID;
-        this.trace["agentUserName"] = username;
-        this.trace["projectID"] = this.projectID;
-        this.trace["projectName"] = project.name;
-        this.trace["boardID"] = boardID;
-        this.trace["boardName"] = board.name;
+        this.trace.traceID = Date.now().toString() + "-" + userID;
+        this.trace.agentUserID = userID;
+        this.trace.agentUserName = username;
+        this.trace.projectID = this.projectID;
+        this.trace.projectName = project.name;
+        this.trace.boardID = boardID;
+        this.trace.boardName = board.name;
     }
 
     private async createTrace(): Promise<void> {
-        await this.traceCollection.doc(this.trace.traceID).set(this.trace);
+        let convertedObj = Object.assign({},this.trace)
+        convertedObj.event = Object.assign({},this.trace.event)
+        await this.traceCollection.doc(this.trace.traceID).set(convertedObj);
         this.initializeTrace();
     }
 
     private async tracePost(postID: string, title: string, message: string): Promise<void> {
         await this.traceBasic();
-        this.trace["postID"] = postID;
-        this.trace["postTitle"] = title;
-        this.trace["postMessage"] = message;
+        let postAddedEvent  = new PostAddedEvent();
+        postAddedEvent.postID = postID;
+        postAddedEvent.postMessage = message;
+        postAddedEvent.postTitle = title;
+        this.trace.event=postAddedEvent;
+        this.trace.eventType= PostAddedEvent.name;
+        // this.trace["postID"] = postID;
+        // this.trace["postTitle"] = title;
+        // this.trace["postMessage"] = message;
     } 
 
     private async traceComment(commentID: string, text: string): Promise<void> {

@@ -10,10 +10,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { Role } from 'src/app/utils/constants';
-import Trace from 'src/app/interfaces/trace';
+import Trace from 'src/app/models/trace';
 import { ExportToCsv } from 'export-to-csv';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import { E } from '@angular/cdk/keycodes';
+import { json2csvAsync } from 'json-2-csv';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -134,40 +135,40 @@ export class ProjectDashboardComponent implements OnInit {
     let traceData: Trace[] = [];
     trace.forEach(data => traceData.push(data.data()));
     console.log(traceData);
-    if(traceData.length == 0) {
-      traceData.push({
-        traceID: "",
-        projectID : "",
-        projectName: "",
-        boardID: "",
-        boardName: "",
-        agentUserID: "",
-        agentUserName: "",
-        commentID: "",
-        commentText: "",
-        postID: "",
-        postTitle: "",
-        postMessage: "", 
-        postTitleOrMessageModifiedCounter: 0,
-        clientTimestamp: -1,
-        serverTimestamp: -1,
-        commentModifiedTextCounter: 0,
-        postModifiedUpvote: 0,
-        postTagNameAdded: [],
-        postTagNameRemoved: "",
-        postModifiedLocationX: null,
-        postModifiedLocationY: null,
-        postDeleted: 0,
-        bucketID: "",
-        bucketName: "",
-        postRead: 0 
-      })
-      csvExporter.generateCsv(traceData);
-    }
-    else {
+    // if(traceData.length == 0) {
+    //   traceData.push({
+    //     traceID: "",
+    //     projectID : "",
+    //     projectName: "",
+    //     boardID: "",
+    //     boardName: "",
+    //     agentUserID: "",
+    //     agentUserName: "",
+    //     commentID: "",
+    //     commentText: "",
+    //     postID: "",
+    //     postTitle: "",
+    //     postMessage: "", 
+    //     postTitleOrMessageModifiedCounter: 0,
+    //     clientTimestamp: -1,
+    //     serverTimestamp: -1,
+    //     commentModifiedTextCounter: 0,
+    //     postModifiedUpvote: 0,
+    //     postTagNameAdded: [],
+    //     postTagNameRemoved: "",
+    //     postModifiedLocationX: null,
+    //     postModifiedLocationY: null,
+    //     postDeleted: 0,
+    //     bucketID: "",
+    //     bucketName: "",
+    //     postRead: 0 
+    //   })
+    //   csvExporter.generateCsv(traceData);
+    // }
+    // else {
       console.log(traceData);
       csvExporter.generateCsv(traceData);
-    }
+      //}
   }
 
 }

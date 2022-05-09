@@ -17,6 +17,7 @@ import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
+import { UserService } from 'src/app/services/user.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -31,6 +32,7 @@ export class PostModalComponent {
 
   user: User
   post: Post
+  author: User | undefined
   buckets: any[]
 
   title: string
@@ -63,11 +65,12 @@ export class PostModalComponent {
     public postService: PostService, public bucketService: BucketService,
     public socketService: SocketService,
     public canvasService: CanvasService,
+    public userService: UserService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any) {
       dialogRef.backdropClick().subscribe(() => this.close())
       this.user = data.user
-      this.postService.get(data.post.postID).then((p: Post) => {
+      this.postService.get(data.post.postID).then(async (p: Post) => {
         this.post = p
         this.title = p.title
         this.editingTitle = linkifyStr(p.title, { defaultProtocol: 'https', target: "_blank"})
@@ -75,8 +78,8 @@ export class PostModalComponent {
         this.editingDesc = linkifyStr(p.desc, { defaultProtocol: 'https', target: "_blank"})
         this.tags = p.tags
         this.tagOptions = data.board.tags.filter(n => !this.tags.map(b => b.name).includes(n.name))
-        
         this.canEditDelete = this.data.post.authorID == this.user.id || this.user.role == Role.TEACHER
+        this.author = await this.userService.getOneById(p.userID);
       })
       this.commentService.getCommentsByPost(data.post.postID).then((data) => {
         data.forEach((comment) => {
@@ -115,13 +118,12 @@ export class PostModalComponent {
     const bucket: any = this.buckets.find(bucket => bucket.bucketID === bucketID)
 
     if (event.checked) {
-      bucket.posts.push(this.post)
+      bucket.posts.push(this.post);
+      this.bucketService.add(bucketID, this.post.postID);
     } else {
-      bucket.posts = bucket.posts.filter(post => post.postID !== this.post.postID)
+      bucket.posts = bucket.posts.filter(post => post.postID !== this.post.postID);
+      this.bucketService.remove(bucketID, this.post.postID);
     }
-
-    let ids = bucket.posts.map(post => post.postID)
-    this.bucketService.add(bucketID, ids)
   }
 
   toggleEdit() {

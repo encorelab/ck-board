@@ -3,7 +3,7 @@
     <div mat-card-avatar class="avatar"></div>
     <mat-card-title [innerHTML]="editingTitle">{{ editingTitle }}</mat-card-title>
     <span class="fill-remaining-space"></span>
-    <mat-card-subtitle *ngIf="showAuthorName; else elseBlock">{{ data.post.author }}</mat-card-subtitle>
+    <mat-card-subtitle *ngIf="showAuthorName && author; else elseBlock">{{ author.username }}</mat-card-subtitle>
     <ng-template #elseBlock>
       <mat-card-subtitle >Anonymous</mat-card-subtitle>
     </ng-template>

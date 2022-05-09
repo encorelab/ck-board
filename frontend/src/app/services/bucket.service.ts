@@ -1,106 +1,40 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
-import firebase from 'firebase/app';
 import 'firebase/firestore';
 import Bucket from '../models/bucket';
-import Post from '../models/post';
-import { PostService } from './post.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BucketService {
 
-  private bucketsPath : string = 'buckets';
-  bucketsCollection: AngularFirestoreCollection<Bucket>;
+  constructor(private http: HttpClient) {}
 
-  constructor(public db: AngularFirestore, private postService: PostService) {
-    this.bucketsCollection = db.collection<Bucket>(this.bucketsPath)
-  }
-
-  get(bucketID: string) {
-    return this.bucketsCollection.ref.where("bucketID", "==", bucketID).get().then((data) => {
-        let rawBucket: Bucket
-
-        if (!data.empty) {
-            rawBucket = data.docs[0].data()
-            return this.parsePosts(rawBucket.posts).then(posts => {
-                const bucket = {
-                    bucketID: rawBucket.bucketID,
-                    boardID: rawBucket.boardID,
-                    name: rawBucket.name,
-                    posts: posts
-                }
-                return bucket
-            })
-        } 
-
-        return null
-    })
+  get(bucketID: string): Promise<any> {
+    return this.http.get<any>('buckets/' + bucketID).toPromise();
   }
 
   getAllByBoard(boardID: string): Promise<any[]> {
-    return new Promise<any[]>((resolve, reject) => {
-        let buckets: any[] = []
-
-        this.bucketsCollection.ref.where("boardID", "==", boardID).get().then(async (data) => {
-            if (!data.empty) {
-                for (const rawBucket of data.docs) {
-                    let bucket: any = rawBucket.data()
-                    const parsedPosts = await this.parsePosts(bucket.posts)
-                    const parsedBucket = {
-                        bucketID: bucket.bucketID,
-                        boardID: bucket.boardID,
-                        name: bucket.name,
-                        posts: parsedPosts
-                    }
-                    buckets.push(parsedBucket)
-                }
-                resolve(buckets)
-            } else {
-                resolve([])
-            }
-        })
-    })
+    return this.http.get<any[]>('buckets/board/' + boardID).toPromise();
   }
 
-  create(bucket: Bucket): Promise<void> {
-    return this.bucketsCollection.doc(bucket.bucketID).set(bucket)
+  create(bucket: Bucket): Promise<Bucket> {
+    return this.http.post<Bucket>('buckets/', bucket).toPromise();
   }
 
-  add(bucketID: string, posts: string[]) {
-    return this.bucketsCollection.ref.doc(bucketID).update({
-      posts: firebase.firestore.FieldValue.arrayUnion(...posts)
-    })
+  add(bucketID: string, ...posts: string[]): Promise<Bucket> {
+    return this.http.post<Bucket>('buckets/' + bucketID + '/add', {posts}).toPromise();
   }
 
-  update(bucketID: string, value: any) {
-    return this.bucketsCollection.ref.doc(bucketID).update(value)
+  remove(bucketID: string, ...posts: string[]): Promise<Bucket> {
+    return this.http.post<Bucket>('buckets/' + bucketID + '/remove', {posts}).toPromise();
   }
 
-  delete(bucketID: string) {
-    return this.bucketsCollection.ref.doc(bucketID).delete()
+  update(bucketID: string, bucket: Partial<Bucket>) {
+    return this.http.post<Bucket>('buckets/' + bucketID, bucket).toPromise();
   }
 
-  private async parsePosts(postIDs: string[]) {
-    return new Promise<Post[]>((resolve, reject) => {
-        let posts: Post[] = []
-
-        if (postIDs.length > 0) {
-            postIDs.forEach((postID, index, arr) => {
-                this.postService.get(postID).then((post) => {
-                    if (post) {
-                        posts.push(post)
-                    }
-                    if (index == arr.length - 1) {
-                        posts.sort((a, b) => a.timestamp! - b.timestamp!)
-                        resolve(posts)
-                    }
-                }).catch(_err => reject())
-            })
-        } else {
-            resolve(posts)
-        }
-      });    
+  delete(bucketID: string): Promise<Bucket> {
+    return this.http.delete<Bucket>('buckets/' + bucketID).toPromise();
   }
 }

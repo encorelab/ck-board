@@ -8,6 +8,7 @@ import Post, { Tag } from '../models/post';
 import { NEEDS_ATTENTION_TAG, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_TAGGED_BORDER_THICKNESS, SocketEvent } from '../utils/constants';
 import { FabricUtils } from '../utils/FabricUtils';
 import { BoardService } from './board.service';
+import { BucketService } from './bucket.service';
 import { CommentService } from './comment.service';
 import { FileUploadService } from './fileUpload.service';
 import { LikesService } from './likes.service';
@@ -24,18 +25,33 @@ export class CanvasService {
     private postService: PostService,
     private likesService: LikesService, 
     private commentService: CommentService,
-    private boardService: BoardService, 
+    private boardService: BoardService,
+    private bucketService: BucketService, 
     private fabricUtils: FabricUtils) { }
 
   async createPost(post: Post) {
+    const savedPost = await this.postService.create(post);
+
     const fabricObject = JSON.parse(post.fabricObject || '{}');
     this.fabricUtils.fromJSON(fabricObject);
 
-    this.socketService.emit(SocketEvent.POST_CREATE, post);
+    this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
   }
 
-  async createBucketPost(post: Post): Promise<Post> {
-    return await this.postService.create(post);
+  async createBucketPost(bucketID: string, post: Post): Promise<Post> {
+    const savedPost = await this.postService.create(post);
+    await this.bucketService.add(bucketID, post.postID);
+
+    return savedPost;
+  }
+
+  async createBoardPostFromBucket(post: Post) {
+    const fabricObject = post.fabricObject;
+
+    post = await this.postService.update(post.postID, {fabricObject});
+    this.fabricUtils.fromJSON(JSON.parse(fabricObject ?? '{}'));
+
+    this.socketService.emit(SocketEvent.POST_CREATE, post);
   }
 
   async like(like: Like) {

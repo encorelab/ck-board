@@ -5,7 +5,7 @@ import User from 'src/app/models/user';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
 import { AddPostComponent, AddPostDialog } from 'src/app/components/add-post-modal/add-post.component';
-import Post, { Tag } from 'src/app/models/post';
+import Post, { PostType, Tag } from 'src/app/models/post';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
@@ -91,36 +91,21 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     this.posts = []
   }
 
-  addPost = (title: string, desc = '', tags: Tag[]) => {
-    if (!this.activeBucket){
+  openAddPostDialog() {
+    if (!this.activeBucket) {
       return;
     }
-    const post: Post = {
-      postID: Date.now() + '-' + this.user.id,
-      title: title,
-      desc: desc,
-      tags: tags,
-      userID: this.user.id,
-      boardID: this.board.boardID,
-      fabricObject: null,
-      timestamp: new Date().getTime(),
-    }
 
-    this.canvasService.createBucketPost(post);
-    this.posts.push(post);
-    let ids = this.posts.map(post=>post.postID)
-    this.bucketService.add(this.activeBucket.bucketID, ids)
-  }
-
-  openAddPostDialog(){
     const dialogData: AddPostDialog = {
-      handleAddPost: this.addPost,
+      type: PostType.BUCKET,
       spawnPosition: {
         top: 150,
         left: 150,
       },
       board: this.board,
-      user: this.user
+      bucket: this.activeBucket,
+      user: this.user,
+      onComplete: (post: Post) => this.posts.push(post)
     }
     this.dialog.open(AddPostComponent, {
       width: '500px',
@@ -133,6 +118,8 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       const containsAttentionTag = post.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
 
       let fabricPost = new FabricPostComponent({
+        postID: postID,
+        boardID: this.board.boardID,
         title: post.title,
         author: this.user.username,
         authorID: this.user.id,
@@ -146,9 +133,8 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
       });
 
-      fabricPost = this.fabricUtils.setField(fabricPost, 'postID', postID);
-      const updatedPost = this.fabricUtils.toJSON(fabricPost);
-      this.postsService.update(postID, {fabricObject: updatedPost});
+      const canvasPost: Post = this.fabricUtils.fromFabricPost(fabricPost);
+      this.canvasService.createBoardPostFromBucket(canvasPost);
 
       this.Yoffset += 50;
     })

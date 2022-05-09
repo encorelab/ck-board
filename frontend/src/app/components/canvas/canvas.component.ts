@@ -4,7 +4,7 @@ import { Canvas } from 'fabric/fabric-impl';
 
 import { MatDialog } from '@angular/material/dialog';
 
-import Post from '../../models/post';
+import Post, { PostType } from '../../models/post';
 
 import { BoardService } from '../../services/board.service';
 import { PostService } from '../../services/post.service';
@@ -273,6 +273,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (opt.target == null) {
       this.canvas.selection = false;
       this._openDialog(AddPostComponent, {
+        type: PostType.BOARD,
         board: this.board,
         user: this.user,
         spawnPosition: {

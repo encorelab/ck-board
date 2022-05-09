@@ -48,7 +48,7 @@ export class WorkflowService {
       let bucket = await this.bucketService.get(source.id);
       sourcePosts = bucket ? bucket.posts : [];
     } else if (source.type == ContainerType.BOARD) {
-      let sourcePosts = await this.postService.getAllByBoard(source.id)
+      sourcePosts = await this.postService.getAllByBoard(source.id)
     }
 
     Utils.shuffle(sourcePosts);

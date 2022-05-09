@@ -14,3 +14,8 @@ export class Tag {
     name: string;
     color: string;
 }
+
+export enum PostType {
+    BOARD,
+    BUCKET
+}

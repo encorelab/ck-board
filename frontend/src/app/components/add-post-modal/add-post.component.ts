@@ -2,7 +2,8 @@ import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import Post, { Tag } from 'src/app/models/post';
+import Bucket from 'src/app/models/bucket';
+import Post, { PostType, Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_TAGGED_BORDER_THICKNESS } from 'src/app/utils/constants';
@@ -11,10 +12,12 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 
 export interface AddPostDialog {
+  type: PostType;
   user: User;
   board: Board;
+  bucket?: Bucket;
   spawnPosition: {left: Number, top: Number};
-  handleAddPost?: (title: string, message: string, tags: Tag[]) => any;
+  onComplete?: (post: Post) => any;
 };
 
 @Component({
@@ -61,7 +64,7 @@ export class AddPostComponent {
     this.tagOptions.push(tag);
   }
 
-  addPost = () => {
+  async addPost() {
     const containsAttentionTag = this.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
     
     var fabricPost = new FabricPostComponent({
@@ -81,15 +84,38 @@ export class AddPostComponent {
     });
     
     const post: Post = this.fabricUtils.fromFabricPost(fabricPost);
-    this.canvasService.createPost(post);
+    await this.canvasService.createPost(post);
+    return post;
   }
 
-  handleDialogSubmit() {
-    if (this.data.handleAddPost) {
-      this.data.handleAddPost(this.title, this.message, this.tags);
-    } else {
-      this.addPost();
+  async addBucketPost() {
+    const boardID: string = this.data.bucket!.bucketID;
+    const post: Post = {
+      postID: Date.now() + '-' + this.user.id,
+      title: this.title,
+      desc: this.message,
+      tags: this.tags,
+      userID: this.user.id,
+      boardID: this.board.boardID,
+      fabricObject: null
     }
+
+    return await this.canvasService.createBucketPost(boardID, post);
+  }
+
+  async handleDialogSubmit() {
+    let post: Post;
+
+    if (this.data.type == PostType.BUCKET && this.data.bucket) {
+      post = await this.addBucketPost();
+    } else {
+      post = await this.addPost();
+    }
+
+    if (this.data.onComplete) {
+      this.data.onComplete(post);
+    }
+    
     this.dialogRef.close();
   }
 

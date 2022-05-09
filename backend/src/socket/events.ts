@@ -12,8 +12,7 @@ class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
   
   static async handleEvent(eventData: PostModel): Promise<PostModel> {
-    const post = await dalPost.create(eventData);
-    return post;
+    return eventData;
   }
 
   static async handleResult(io: Server, socket: Socket, result: PostModel) {

@@ -9,6 +9,7 @@ import posts from './api/posts';
 import likes from './api/likes';
 import comments from './api/comments'; 
 import boards from './api/boards';
+import buckets from './api/buckets';
 import projects from './api/projects';
 dotenv.config();
 
@@ -28,6 +29,7 @@ socket.init();
 
 app.use('/api/projects', projects);
 app.use('/api/boards', boards);
+app.use('/api/buckets', buckets);
 app.use('/api/posts', posts);
 app.use('/api/likes', likes);
 app.use('/api/comments', comments);

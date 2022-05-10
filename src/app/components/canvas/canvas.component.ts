@@ -915,6 +915,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
     else if (event === 'setZoom'){
       this.zoom = this.zoom
+      centerX = center.left;
+      centerY = center.top;
     }
 
     if (this.zoom > 20) {

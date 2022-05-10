@@ -47,34 +47,12 @@ export class FabricPostComponent extends fabric.Group {
       fill: '#000000',
       splitByGrapheme: true
     });
-    
-    var likeButton = new fabric.Textbox('👍🏼', {
-      name: 'like',
-      width: 55,
-      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
-      left: 170,
-      fontSize: 20,
-      fontFamily: 'Helvetica',
-      fill: '#000000',
-      splitByGrapheme: true
-    });
-
-    var likeCount = new fabric.Textbox('0', {
-      name: 'likeCount',
-      width: 55,
-      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
-      left: (likeButton.left ?? 0) + 28,
-      fontSize: 20,
-      fontFamily: 'Helvetica',
-      fill: '#555555',
-      splitByGrapheme: true
-    });
 
     var commentButton = new fabric.Textbox('💬', {
       name: 'comment',
       width: 55,
       top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
-      left: (likeCount.left ?? 0) + 45,
+      left: 170 ,
       fontSize: 20,
       fontFamily: 'Helvetica',
       fill: '#000000',
@@ -93,6 +71,30 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
       opacity:0
     });
+    
+    var likeButton = new fabric.Textbox('👍🏼', {
+      name: 'like',
+      width: 55,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      left: (commentCount.left??0) +45,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#000000',
+      splitByGrapheme: true
+    });
+
+    var likeCount = new fabric.Textbox('0', {
+      name: 'likeCount',
+      width: 55,
+      top: title.getScaledHeight() + author.getScaledHeight() + desc.getScaledHeight() + 90,
+      left: (likeButton.left ?? 0) + 28,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#555555',
+      splitByGrapheme: true
+    });
+
+    
 
     var content = new fabric.Rect({
       name: 'content',

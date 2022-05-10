@@ -21,7 +21,7 @@ export class LikesService {
     return this.http.post('likes/', {like}).toPromise();
   }
 
-  remove(likeID: string): Promise<any> {
-    return this.http.delete('likes/' + likeID).toPromise();
+  remove(userID: string, postID: string): Promise<any> {
+    return this.http.delete('likes/?user=' + userID + '&post=' + postID).toPromise();
   }
 }

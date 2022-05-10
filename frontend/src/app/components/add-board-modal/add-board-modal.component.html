@@ -29,7 +29,10 @@
     <mat-tab label="Task">
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Task Title</mat-label>
-        <input matInput [(ngModel)]="taskTitle">
+        <input matInput [(ngModel)]="taskTitle" #taskTitleInput="ngModel" required minlength="1">
+        <mat-error *ngIf="taskTitleInput.invalid">
+          Task title is required.
+        </mat-error>
       </mat-form-field>
       <mat-form-field appearance="outline" style="width:100%">
         <mat-label>Task Message</mat-label>
@@ -87,5 +90,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button  cdkFocusInitial [disabled]="boardNameInput.invalid || projectInput.invalid" (click) ="handleDialogSubmit()">Create Board!</button>
+  <button mat-button  cdkFocusInitial [disabled]="boardNameInput.invalid || taskTitleInput.invalid || projectInput.invalid" (click) ="handleDialogSubmit()">Create Board!</button>
 </div>

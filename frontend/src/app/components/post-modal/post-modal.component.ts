@@ -216,7 +216,7 @@ export class PostModalComponent {
     }
       
     if (this.isLiked) {
-      this.canvasService.unlike(this.isLiked);
+      this.canvasService.unlike(this.user.id, this.post.postID);
       this.isLiked = null;
       this.likes = this.likes.filter(like => like.likerID != this.user.id);
     } else {

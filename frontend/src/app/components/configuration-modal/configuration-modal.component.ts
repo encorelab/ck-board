@@ -9,32 +9,31 @@ import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { Board } from 'src/app/models/board';
 
-
 @Component({
   selector: 'app-configuration-modal',
   templateUrl: './configuration-modal.component.html',
-  styleUrls: ['./configuration-modal.component.scss']
+  styleUrls: ['./configuration-modal.component.scss'],
 })
 export class ConfigurationModalComponent {
   readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
-  boardID: string
-  boardName: string
-  isPublic: boolean = false
+  boardID: string;
+  boardName: string;
+  isPublic: boolean = false;
 
-  currentBgImage: any 
-  newCompressedImage: any
+  currentBgImage: any;
+  newCompressedImage: any;
 
-  taskTitle: string
-  taskMessage: string
+  taskTitle: string;
+  taskMessage: string;
 
-  permissions: Permissions
+  permissions: Permissions;
 
-  tags: Tag[]
-  newTagText: string = ''
+  tags: Tag[];
+  newTagText: string = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
 
-  members: string[] = []
+  members: string[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
@@ -42,40 +41,48 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public canvasService: CanvasService,
     public fileUploadService: FileUploadService,
-    @Inject(MAT_DIALOG_DATA) public data: any) {
-      this.boardID = data.board.boardID;
-      this.boardName = data.board.name
-      this.isPublic = data.board.public
-      this.currentBgImage = data.board.bgImage
-      this.taskTitle = data.board.task.title
-      this.taskMessage = data.board.task.message
-      this.tags = data.board.tags ?? []
-      this.permissions= data.board.permissions
-      data.board.members.map(id => {
-        userService.getOneById(id).then(user => {
-          if (user) {
-            this.members.push(user.username)
-          }
-        })
-      })
-    }
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.boardID = data.board.boardID;
+    this.boardName = data.board.name;
+    this.isPublic = data.board.public;
+    this.currentBgImage = data.board.bgImage;
+    this.taskTitle = data.board.task.title;
+    this.taskMessage = data.board.task.message;
+    this.tags = data.board.tags ?? [];
+    this.permissions = data.board.permissions;
+    data.board.members.map((id) => {
+      userService.getOneById(id).then((user) => {
+        if (user) {
+          this.members.push(user.username);
+        }
+      });
+    });
+  }
 
   addTag() {
-    this.tags.push({name: this.newTagText, color: this.newTagColor})
-    this.newTagText = ''
+    this.tags.push({
+      boardID: this.boardID,
+      name: this.newTagText,
+      color: this.newTagColor,
+    });
+    this.newTagText = '';
   }
 
   removeTag(tagRemove) {
-    this.tags = this.tags.filter(tag => tag != tagRemove)
+    this.tags = this.tags.filter((tag) => tag != tagRemove);
   }
 
-  compressFile(){
+  compressFile() {
     this.fileUploadService.compressFile().then(async (compressedImage) => {
       this.newCompressedImage = compressedImage;
 
-      let board = await this.canvasService.updateBoardImage(this.boardID, this.newCompressedImage);
+      let board = await this.canvasService.updateBoardImage(
+        this.boardID,
+        this.newCompressedImage
+      );
       this.data.update(board);
-    })
+    });
   }
 
   removeImage() {
@@ -84,9 +91,19 @@ export class ConfigurationModalComponent {
 
   async handleDialogSubmit() {
     let board: Board;
-    board = await this.canvasService.updateBoardName(this.boardID, this.boardName);
-    board = await this.canvasService.updateBoardTask(this.boardID, this.taskTitle, this.taskMessage);
-    board = await this.canvasService.updateBoardPermissions(this.boardID, this.permissions);
+    board = await this.canvasService.updateBoardName(
+      this.boardID,
+      this.boardName
+    );
+    board = await this.canvasService.updateBoardTask(
+      this.boardID,
+      this.taskTitle,
+      this.taskMessage
+    );
+    board = await this.canvasService.updateBoardPermissions(
+      this.boardID,
+      this.permissions
+    );
     board = await this.canvasService.updateBoardTags(this.boardID, this.tags);
     this.data.update(board);
     this.dialogRef.close();

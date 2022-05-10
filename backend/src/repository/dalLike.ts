@@ -36,9 +36,9 @@ export const create = async (like: LikeModel) => {
   }
 };
 
-export const remove = async (id: string) => {
+export const remove = async (userID: string, postID: string) => {
   try {
-    return await Like.findOneAndDelete({likeID: id});
+    return await Like.findOneAndDelete({likerID: userID, postID});
   } catch (err) {
     throw new Error('500');
   }

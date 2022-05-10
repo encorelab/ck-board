@@ -1,8 +1,16 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+} from '@angular/fire/firestore';
+import { HTMLPost } from '../components/html-post/html-post.component';
 import Post from '../models/post';
 import { FabricUtils } from '../utils/FabricUtils';
+import { BoardService } from './board.service';
+import { CommentService } from './comment.service';
+import { LikesService } from './likes.service';
+import { UserService } from './user.service';
 
 interface Options {
   size: number;
@@ -10,48 +18,22 @@ interface Options {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PostService {
-
-  private postsPath : string = '/posts';
+  private postsPath: string = '/posts';
   postsCollection: AngularFirestoreCollection<Post>;
 
-  constructor(private db: AngularFirestore, protected fabricUtils: FabricUtils, public http: HttpClient) {
-    this.postsCollection = db.collection<Post>(this.postsPath)
-  }
-
-  observable(boardID: string,handleAdd: Function,handleModification: Function, handleDelete?:Function) {
-    return this.postsCollection.ref
-      .where("boardID", "==", boardID)
-      .onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          const doc = change.doc.data();
-          if (change.type === "added") {
-            handleAdd(doc);
-          } else if (change.type === "modified") {
-            handleModification(doc);
-          }
-          else if(change.type === 'removed' && handleDelete !== undefined){
-            handleDelete(change.doc.data())
-          }
-        });
-      });
-  }
-
-  observeOne(postID: string, handleUpdate: Function, handleDelete: Function) {
-    return this.postsCollection.ref
-      .where('postID', '==', postID)
-      .onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          let post = change.doc.data();
-          if (change.type == 'modified') {
-            handleUpdate(post);
-          } else if (change.type == 'removed') {
-            handleDelete(post);
-          }
-        });
-      });
+  constructor(
+    private db: AngularFirestore,
+    protected fabricUtils: FabricUtils,
+    private userService: UserService,
+    private boardService: BoardService,
+    private likeService: LikesService,
+    private commentService: CommentService,
+    public http: HttpClient
+  ) {
+    this.postsCollection = db.collection<Post>(this.postsPath);
   }
 
   get(postID: string): Promise<Post> {
@@ -65,24 +47,26 @@ export class PostService {
       params = params.append('size', opts.size);
       params = params.append('page', opts.page);
     }
-    
-    return this.http.get<Post[]>('posts/boards/' + boardID, {params}).toPromise();
+
+    return this.http
+      .get<Post[]>('posts/boards/' + boardID, { params })
+      .toPromise();
   }
 
   cloneMany(boardID: string, posts: any[]): Promise<void> {
     const batch = this.db.firestore.batch();
-    posts.forEach(post => {
+    posts.forEach((post) => {
       const newID = Date.now() + '-' + boardID;
 
       post.fabricObject = this.fabricUtils.clonePost(post, newID);
       post.boardID = boardID;
       post.postID = newID;
-      post.tags = []
-      
-      batch.set(this.db.firestore.doc(`${this.postsPath}/${newID}`), post);
-    })
+      post.tags = [];
 
-    return batch.commit()
+      batch.set(this.db.firestore.doc(`${this.postsPath}/${newID}`), post);
+    });
+
+    return batch.commit();
   }
 
   create(post: Post) {
@@ -93,7 +77,22 @@ export class PostService {
     return this.http.post<Post>('posts/' + postID, value).toPromise();
   }
 
-  delete(postID: string) {
-    return this.postsCollection.ref.doc(postID).delete()
+  async toHTMLPost(post: Post): Promise<HTMLPost> {
+    const board = await this.boardService.get(post.boardID);
+    const author = await this.userService.getOneById(post.userID);
+    const likes = await this.likeService.getLikesByPost(post.postID);
+    const comments = await this.commentService.getCommentsByPost(post.postID);
+
+    return {
+      board: board,
+      post: post,
+      author: author!.username,
+      likes: likes.map((like) => like.likerID),
+      comments: comments.length,
+    };
+  }
+
+  async toHTMLPosts(posts: Post[]): Promise<HTMLPost[]> {
+    return Promise.all(posts.map((post) => this.toHTMLPost(post)));
   }
 }

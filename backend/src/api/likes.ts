@@ -30,10 +30,15 @@ router.get('/posts/:postID/users/:userID', async (req, res) => {
   res.json(like);
 });
 
-router.delete('/:id', async (req, res) => {
-  const id = req.params.id;
+router.delete('/', async (req, res) => {
+  const postID = req.query.post as string;
+  const userID = req.query.user as string;
 
-  const likeRemoved = await dalLike.remove(id);
+  if (!postID || !userID) {
+    return res.status(404).end();
+  }
+
+  const likeRemoved = await dalLike.remove(userID, postID);
 
   if (likeRemoved) {
     const amount = await dalLike.getAmountByPost(likeRemoved.postID);

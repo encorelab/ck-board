@@ -1,10 +1,17 @@
 import { DELETE } from '@angular/cdk/keycodes';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PostModalComponent } from 'src/app/components/post-modal/post-modal.component';
 import { Board } from 'src/app/models/board';
 import Like from 'src/app/models/like';
-import Post from 'src/app/models/post';
+import Post, { Tag } from 'src/app/models/post';
 import User from 'src/app/models/user';
 import { AuthService } from 'src/app/services/auth.service';
 import { BoardService } from 'src/app/services/board.service';
@@ -17,138 +24,101 @@ import { UserService } from 'src/app/services/user.service';
 import { Role, SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
 
+export interface HTMLPost {
+  /* Board which contains this post */
+  board: Board;
+
+  /* Associated post */
+  post: Post;
+
+  /* Author name */
+  author: string;
+
+  /* Array of user IDs who've liked the post */
+  likes: string[];
+
+  /* Number of comments */
+  comments: number;
+
+  /* If post is only stored in a bucket */
+  bucketOnly?: boolean;
+
+  /* Display author's name as 'Anonymous' */
+  hideAuthorName?: boolean;
+}
+
 @Component({
   selector: 'app-html-post',
   templateUrl: './html-post.component.html',
-  styleUrls: ['./html-post.component.scss']
+  styleUrls: ['./html-post.component.scss'],
 })
-export class HtmlPostComponent implements OnInit, OnDestroy {
-
-  @Input() post: Post
+export class HtmlPostComponent implements OnInit {
+  @Input() post: HTMLPost;
   @Output() movePostToBoardEvent = new EventEmitter<string>();
 
-  exists: boolean = true
+  exists: boolean = true;
 
-  user: User
-  board: Board
+  user: User;
 
-  numComments: number = 0
-  numLikes: number = 0
-  postColor: string;
+  postColor: string = POST_COLOR;
 
-  isLiked: Like | null
+  isLiked: boolean = false;
+  showUsername: boolean = false;
 
-  showUsername: boolean = false
-
-  unsubPosts: Function
-  unsubBucket: Function
-
-  postAuthor: User | undefined
-  
-  constructor(public commentService: CommentService, public likesService: LikesService, public postService: PostService,
-    public authService: AuthService, public userSevice: UserService, public canvasService: CanvasService, 
-    public boardService: BoardService, public dialog: MatDialog) { }
+  constructor(
+    public commentService: CommentService,
+    public likesService: LikesService,
+    public postService: PostService,
+    public authService: AuthService,
+    public userSevice: UserService,
+    public socketService: SocketService,
+    public canvasService: CanvasService,
+    public boardService: BoardService,
+    public dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.user = this.authService.userData;
-    this.postColor = POST_COLOR;
-    this.configurePost()
-  }
-
-  configurePost() {
-    this.commentService.getCommentsByPost(this.post.postID).then(data => this.numComments = data.length)
-    this.likesService.getLikesByPost(this.post.postID).then(data => {
-      this.numLikes = data.length;
-      let foundLike = data.find(like => like.likerID == this.user.id)
-      this.isLiked = foundLike ?? null;
-    })
-    this.boardService.get(this.post.boardID).then(board => {
-      this.board = board
-      this.listenForUpdatesIfNot()
-      this.setUsernameAnonymity(board)
-    })
-    this.userSevice.getOneById(this.post.userID)
-      .then(user =>{
-        this.postAuthor = user
-      })
+    this.isLiked = this.post.likes.includes(this.user.id);
   }
 
   openPostDialog() {
     this.dialog.open(PostModalComponent, {
       minWidth: '700px',
       width: 'auto',
-      data: { 
-        user: this.user, 
-        post: this.post, 
-        board: this.board
-      }
-    })
+      data: {
+        user: this.user,
+        post: this.post.post,
+        board: this.post.board,
+      },
+    });
   }
 
-  handleLike() {
+  handleLike(event) {
+    event.stopPropagation();
+
     if (this.isLiked) {
-      this.canvasService.unlike(this.isLiked);
-      this.isLiked = null;
-      this.numLikes -= 1;
+      this.canvasService.unlike(this.user.id, this.post.post.postID);
+      this.isLiked = false;
+      this.post.likes = this.post.likes.filter((like) => like !== this.user.id);
     } else {
       const like: Like = {
         likeID: Date.now() + '-' + this.user.id,
         likerID: this.user.id,
-        postID: this.post.postID,
-        boardID: this.board.boardID
-      }
+        postID: this.post.post.postID,
+        boardID: this.post.board.boardID,
+      };
       this.canvasService.like(like);
-      this.isLiked = like
-      this.numLikes += 1
+      this.isLiked = true;
+      this.post.likes.push(this.user.id);
     }
-  }
-
-  listenForUpdatesIfNot() {
-    if (!this.unsubBucket && !this.unsubPosts) {
-      this.unsubPosts = this.postService.observeOne(this.post.postID, this.handleUpdate, this.handleDelete);
-      this.unsubBucket = this.boardService.subscribe(this.board.boardID, this.handleBoardChange);
-    }
-  }
-
-  handleUpdate = (post) => {
-    this.post = post
-    this.configurePost()
   }
 
   handleDelete = (_post) => {
-    this.exists = false
-  }
+    this.exists = false;
+  };
 
-  handleBoardChange = (board: Board) => {
-    this.setUsernameAnonymity(board)
-  }
-
-  setUsernameAnonymity(board) {
-    const permissions = board.permissions
-    const isStudent = this.user.role == Role.STUDENT
-    const isTeacher = this.user.role == Role.TEACHER
-    const showUsernameForStudent = permissions.showAuthorNameStudent
-    const showUsernameForTeacher = permissions.showAuthorNameTeacher
-
-    if (isStudent && showUsernameForStudent) {
-      this.showUsername = true
-    } else if (isTeacher && showUsernameForTeacher) {
-      this.showUsername = true
-    } else {
-      this.showUsername = false
-    }
-  }
-  movePostToBoard(postID:string){
-    this.movePostToBoardEvent.next(postID)
-  }
-
-  ngOnDestroy(): void {
-    if(this.unsubPosts){
-      this.unsubPosts()
-    }
-    if(this.unsubBucket){
-      this.unsubBucket()
-    }
-    
+  movePostToBoard(postID: string) {
+    this.movePostToBoardEvent.next(postID);
   }
 }

@@ -1,28 +1,20 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import {
+  AngularFirestore,
+  AngularFirestoreCollection,
+} from '@angular/fire/firestore';
 import { Board } from '../models/board';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class BoardService {
-
   boardRef: AngularFirestoreCollection<Board>;
-  boardPath: string = '/boards'
+  boardPath: string = '/boards';
 
   constructor(private db: AngularFirestore, private http: HttpClient) {
-    this.boardRef = db.collection<Board>(this.boardPath)
-  }
-
-  subscribe(boardID: string, handleBoardChange: Function) {
-    return this.boardRef.ref.where("boardID", "==", boardID).onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "modified") {
-          handleBoardChange(change.doc.data())
-        }
-      })
-    })
+    this.boardRef = db.collection<Board>(this.boardPath);
   }
 
   get(boardID: string): Promise<Board> {
@@ -30,13 +22,19 @@ export class BoardService {
   }
 
   getMultiple(ids: string[]) {
-    return this.boardRef.ref.where("boardID", "in", ids).get().then((snapshot) => {
-      return snapshot.docs;
-    });
+    return this.boardRef.ref
+      .where('boardID', 'in', ids)
+      .get()
+      .then((snapshot) => {
+        return snapshot.docs;
+      });
   }
 
   getByJoinCode(code: string) {
-    return this.boardRef.ref.where("joinCode", "==", code).get().then((snapshot) => snapshot)
+    return this.boardRef.ref
+      .where('joinCode', '==', code)
+      .get()
+      .then((snapshot) => snapshot);
   }
 
   getByUserID(id: string): Promise<Board[]> {

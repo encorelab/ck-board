@@ -7,38 +7,44 @@ import { Project } from 'src/app/models/project';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { DEFAULT_TAGS, TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { Tag } from 'src/app/models/post';
+import Utils from 'src/app/utils/utils';
+import { FabricUtils } from 'src/app/utils/FabricUtils';
 
 @Component({
   selector: 'app-add-board-modal',
   templateUrl: './add-board-modal.component.html',
-  styleUrls: ['./add-board-modal.component.scss']
+  styleUrls: ['./add-board-modal.component.scss'],
 })
 export class AddBoardModalComponent implements OnInit {
   readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
-  permissions: Permissions
+  boardID: string;
 
-  boardName: string = ''
-  bgImgURL: any = null
+  permissions: Permissions;
 
-  taskTitle: string = ''
-  taskMessage: string = ''
-  
+  boardName: string = '';
+  bgImgURL: any = null;
+
+  taskTitle: string = '';
+  taskMessage: string = '';
+
   tags: Tag[] = [];
-  defaultTags: Tag[] = DEFAULT_TAGS;
-  newTagText: string = ''
+  defaultTags: Tag[];
+
+  newTagText: string = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
 
-  projects:Project[]
-  selectedProject:string=''
-
+  projects: Project[];
+  selectedProject: string = '';
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
     public authService: AuthService,
     public userService: UserService,
     public fileUploadService: FileUploadService,
-    @Inject(MAT_DIALOG_DATA) public data: any) {
+    public fabricUtils: FabricUtils,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
     this.permissions = {
       allowStudentMoveAny: true,
       allowStudentLiking: true,
@@ -46,45 +52,58 @@ export class AddBoardModalComponent implements OnInit {
       allowStudentCommenting: true,
       allowStudentTagging: true,
       showAuthorNameStudent: true,
-      showAuthorNameTeacher: true
-    }
-    this.projects = data.projects
-    this.selectedProject = data.defaultProject || ''
+      showAuthorNameTeacher: true,
+    };
+    this.projects = data.projects;
+    this.selectedProject = data.defaultProject || '';
   }
-  ngOnInit(): void { }
+
+  ngOnInit(): void {
+    this.boardID = Utils.generateUniqueID();
+    this.defaultTags = this.fabricUtils.getDefaultTagsForBoard(this.boardID);
+  }
 
   addTag() {
-    this.tags.push({name: this.newTagText, color: this.newTagColor})
-    this.newTagText = ''
+    this.tags.push({
+      boardID: this.boardID,
+      name: this.newTagText,
+      color: this.newTagColor,
+    });
+    this.newTagText = '';
   }
 
   removeTag(tagRemove) {
-    this.tags = this.tags.filter(tag => tag != tagRemove)
+    this.tags = this.tags.filter((tag) => tag != tagRemove);
   }
 
   compressFile() {
-    this.fileUploadService.compressFile().then((compressedImage) =>{
-      this.fileUploadService.upload(compressedImage).then(firebaseUrl => {
-        this.bgImgURL = firebaseUrl
-      })
-    })
+    this.fileUploadService.compressFile().then((compressedImage) => {
+      this.fileUploadService.upload(compressedImage).then((firebaseUrl) => {
+        this.bgImgURL = firebaseUrl;
+      });
+    });
   }
 
   handleDialogSubmit() {
-    const boardID = Date.now() + '-' + this.data.user.id
-    this.data.createBoard({
-      boardID: boardID,
-      teacherID: this.data.user.id,
-      name: this.boardName,
-      task: {
-        title: this.taskTitle,
-        message: this.taskMessage
+    console.log(this.fabricUtils.getDefaultTagsForBoard(this.boardID));
+    console.log(this.defaultTags);
+    console.log(this.tags.concat(this.defaultTags));
+    this.data.createBoard(
+      {
+        boardID: this.boardID,
+        teacherID: this.data.user.id,
+        name: this.boardName,
+        task: {
+          title: this.taskTitle,
+          message: this.taskMessage,
+        },
+        bgImage: this.bgImgURL ? { url: this.bgImgURL } : null,
+        permissions: this.permissions,
+        members: [this.authService.userData.id],
+        tags: this.tags.concat(this.defaultTags),
       },
-      bgImage: this.bgImgURL ? {url: this.bgImgURL} : null,
-      permissions: this.permissions,
-      members: [this.authService.userData.id],
-      tags: this.tags.concat(this.defaultTags),
-    }, this.selectedProject)
+      this.selectedProject
+    );
     this.dialogRef.close();
   }
 

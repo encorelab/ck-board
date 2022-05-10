@@ -46,23 +46,23 @@ export class CanvasService {
     }
     
     addPost(post: Post): void {
-        this.tracingService.traceCreatePostClient();
+        this.tracingService.traceClientTimestamp();
         this.postsService.create(post).then(() => {
-            this.tracingService.traceCreatePostServer(post.postID, post.title, post.desc);
+            this.tracingService.traceCreatePost(post.postID, post.title, post.desc);
         });
     }
 
     modifyPost(obj: any, post: Post, title: string, desc: string): void {
-        this.tracingService.traceModifyPostClient();
+        this.tracingService.traceClientTimestamp();
         this.postsService.update(post.postID, { fabricObject: obj, title: title, desc: desc }).then(() => {
-            this.tracingService.traceModifyPostServer(post.postID, title, desc);
+            this.tracingService.traceModifyPost(post.postID, title, desc);
         });
     }
 
     async createComment(comment: Comment): Promise<void> {
-        this.tracingService.traceCreateCommentClient();
+        this.tracingService.traceClientTimestamp();
         await this.commentService.add(comment)
-        this.tracingService.traceCreateCommentServer(comment.commentID, comment.comment);
+        this.tracingService.traceCreateComment(comment.commentID, comment.comment);
         
 
         // notifiy post author of new comment

@@ -1,30 +1,30 @@
 import { Injectable } from "@angular/core";
-import { Router } from "@angular/router";
 import { AuthService } from "./auth.service";
 import { BoardService } from "./board.service";
 import { ProjectService } from "./project.service";
 
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import Trace from '../models/trace';
-import CKEvent from "../models/ckEvent";
-import PostAddedEvent from "../models/ckEvents/post/postAddedEvent";
+import PostAdded from "../models/ckEvents/post/postAdded";
+import CommentAdded from "../models/ckEvents/comment/commentAdded";
+import PostModified from "../models/ckEvents/post/postModified";
+import PostUpvote from "../models/ckEvents/post/postUpvote";
+import { E } from "@angular/cdk/keycodes";
+import CommentModified from "../models/ckEvents/comment/commentModified";
 
 @Injectable({
     providedIn: 'root'
 })
 export class TracingService {
     private trace: Trace;
-    private ckEvent: CKEvent;
 
-    private startIndexProjectInd: number;
-    private endIndexProjectInd: number;
     private projectID: string;
+    private boardID:string;
 
     private tracePath : string = 'trace';
     traceCollection: AngularFirestoreCollection<Trace>;
 
     constructor(
-        private router: Router,
         public authService: AuthService,
         public projectService: ProjectService,
         public boardService: BoardService,
@@ -34,37 +34,28 @@ export class TracingService {
         this.traceCollection = db.collection<Trace>(this.tracePath);
     }
 
-    private findIndex(st: string, key: string, occurrence: number) {
-        let count = 0;
-        let i;
-        for(i = 0; i < st.length; i++) {
-            if(st.charAt(i) === key) {
-                count += 1;
-            }
-            if(count == occurrence) break;
-        }
-        return i;
-    }
-
     private initializeTrace(): void {
         this.trace = new Trace()
     }
     
-    private getProjectID(): void {
-        this.startIndexProjectInd = this.findIndex(this.router.url, '/', 2) + 1;
-        this.endIndexProjectInd = this.findIndex(this.router.url, '/', 3);
-        this.projectID = this.router.url.substring
-        (this.startIndexProjectInd, this.endIndexProjectInd);
+    /**
+     * Set projectID and boardID for tracing. Should be involked by canvas component
+     * @param projectID 
+     * @param boardID 
+     */
+    public setProjectIDBoardID(projectID:string,boardID:string){
+        this.projectID = projectID;
+        this.boardID = boardID;
     }
 
+    /**
+     * Initializes trace fields except timestamps
+     */
     private async traceBasic(): Promise<void> {
-        this.getProjectID();
 
         const project = await this.projectService.get(this.projectID);
 
-        const boardID = this.router.url.substring
-            (this.findIndex(this.router.url, '/', 4) + 1);
-        const board = await this.boardService.get(boardID);
+        const board = await this.boardService.get(this.boardID);
 
         const username = this.authService.userData.username;
         const userID = this.authService.userData.id;
@@ -74,176 +65,197 @@ export class TracingService {
         this.trace.agentUserName = username;
         this.trace.projectID = this.projectID;
         this.trace.projectName = project.name;
-        this.trace.boardID = boardID;
+        this.trace.boardID = this.boardID;
         this.trace.boardName = board.name;
     }
 
+    /**
+     * Adds this.trace to firebase collection
+     */
     private async createTrace(): Promise<void> {
+        // convert custom objects to javascript objects for firebase
         let convertedObj = Object.assign({},this.trace)
         convertedObj.event = Object.assign({},this.trace.event)
         await this.traceCollection.doc(this.trace.traceID).set(convertedObj);
         this.initializeTrace();
     }
-
-    private async tracePost(postID: string, title: string, message: string): Promise<void> {
-        await this.traceBasic();
-        let postAddedEvent  = new PostAddedEvent();
-        postAddedEvent.postID = postID;
-        postAddedEvent.postMessage = message;
-        postAddedEvent.postTitle = title;
-        this.trace.event=postAddedEvent;
-        this.trace.eventType= PostAddedEvent.name;
-        // this.trace["postID"] = postID;
-        // this.trace["postTitle"] = title;
-        // this.trace["postMessage"] = message;
-    } 
-
-    private async traceComment(commentID: string, text: string): Promise<void> {
-        await this.traceBasic();
-        this.trace["commentID"] = commentID;
-        this.trace["commentText"] = text;
+    /**
+     * Updates existing trace in firebase to this.trace
+     */
+    private async updateTrace():Promise<void>{
+        let convertedObj = Object.assign({},this.trace)
+        convertedObj.event = Object.assign({},this.trace.event)
+        await this.traceCollection.doc(this.trace.traceID).update(convertedObj)
     }
-    
-    public traceCreatePostClient(): void {
-        this.trace["clientTimestamp"] = Date.now();
+
+    /**
+     * Sets trace.clientTimestamp to current time
+     */
+    public traceClientTimestamp(): void {
+        this.trace.clientTimestamp = Date.now();
     }
-    public async traceCreatePostServer(postID: string, title: string, message: string): Promise<void> {
-        await this.tracePost(postID, title, message);
-        this.trace["serverTimestamp"] = Date.now();
+
+    /**
+     * Trace post creation. Creates PostAdded event
+     * @param postID 
+     * @param title 
+     * @param message 
+     */
+    public async traceCreatePost(postID: string, title: string, message: string): Promise<void> {
+        await this.traceBasic();
+        this.trace.event=new PostAdded(postID,title,message);
+        this.trace.eventType= PostAdded.name;
+        this.trace.serverTimestamp = Date.now();
+        this.createTrace();
+    }
+    /**
+     * Get post object that matches specifed postID and eventType
+     * @param postID 
+     * @param eventType 
+     * @returns Trace or null if not found
+     */
+    private async getTraceByPostIDEventType(postID: string, eventType:string):Promise<Trace | null> {
+        const trace = await this.traceCollection.ref.where("event.postID", "==", postID).where("eventType","==",eventType).get();
+        if(trace.size === 0) return null;
+        let result
+        trace.forEach(e => result=e)
+        return result.data()
+    }
+    /**
+     * Trace post modification. Creates PostModified Event
+     * @param postID 
+     * @param title 
+     * @param message 
+     */
+    public async traceModifyPost(postID: string, title: string, message: string): Promise<void> {
+        let trace = await this.getTraceByPostIDEventType(postID, PostModified.name)
+        await this.traceBasic()
+        if (!trace){
+            this.trace.event = new PostModified(postID,title,message,1);
+            this.trace.eventType = PostModified.name;
+            this.trace.serverTimestamp = Date.now();
+            this.createTrace();
+        }
+        else{
+            let counter = (trace.event as PostModified).postTitleOrMessageModifiedCounter;
+            this.trace.serverTimestamp = Date.now();
+            this.trace.event = new PostModified(postID,title,message,counter+1);
+            this.trace.eventType = PostModified.name;
+            this.trace.traceID = trace.traceID;
+            this.updateTrace();
+        }
+    }
+    /**
+     * Trace comment creation. Creates CommentAdded Event
+     * @param commentID 
+     * @param text 
+     */
+    public async traceCreateComment(commentID: string, text: string): Promise<void> {
+        await this.traceBasic();
+        this.trace.event = new CommentAdded(commentID,text);
+        this.trace.eventType = CommentAdded.name;
+        this.trace.serverTimestamp = Date.now();
         this.createTrace();
     }
 
-    private async getTraceByPostID(postID: string) {
-        const trace = await this.traceCollection.ref.where("postID", "==", postID).get();
-        let traceData;
-        trace.forEach(data => traceData = data);
-        if(traceData == undefined) return null;
-        return traceData.data();
-    }
-    public traceModifyPostClient(): void {
-        this.trace["clientTimestamp"] = Date.now();
-    }
-    public async traceModifyPostServer(postID: string, title: string, message: string): Promise<void> {
-        await this.tracePost(postID, title, message);
-        this.trace["serverTimestamp"] = Date.now();
 
-        const trace = await this.getTraceByPostID(postID);
-        if(trace == null) {
+    private async getTraceByCommentID(commentID: string, eventType:string) {
+        const trace = await this.traceCollection.ref.where("event.commentID", "==", commentID).where("eventType","==",eventType).get();
+        if(trace.size === 0) return null;
+        let result
+        trace.forEach(e => result=e)
+        return result.data()
+    }
+    public async traceModifyComment(commentID: string, text: string): Promise<void> {
+        let trace = await this.getTraceByCommentID(commentID, CommentModified.name)
+        await this.traceBasic()
+        if (!trace){
+            this.trace.event = new CommentModified(commentID,text,1);
+            this.trace.eventType = CommentModified.name;
+            this.trace.serverTimestamp = Date.now();
             this.createTrace();
-            return;
+        }
+        else{
+            let counter = (trace.event as PostModified).postTitleOrMessageModifiedCounter;
+            this.trace.serverTimestamp = Date.now();
+            this.trace.event = new CommentModified(commentID,text,counter+1);
+            this.trace.eventType = CommentModified.name;
+            this.trace.traceID = trace.traceID;
+            this.updateTrace();
         }
 
-        const counter = trace["postTitleOrMessageModifiedCounter"];
-        this.trace["postTitleOrMessageModifiedCounter"] = counter + 1;
-        this.createTrace();
-    }
-
-    public traceCreateCommentClient(): void {
-        this.trace["clientTimestamp"] = Date.now();
-    }
-    public async traceCreateCommentServer(commentID: string, text: string): Promise<void> {
-        await this.traceComment(commentID, text);
-        this.trace["serverTimestamp"] = Date.now();
-        this.createTrace();
-    }
-
-
-    private async getTraceByCommentID(commentID: string) {
-        const trace = await this.traceCollection.ref.where("commentID", "==", commentID).get();
-        let traceData;
-        trace.forEach(data => traceData = data);
-        if(traceData == undefined) return null;
-        return traceData.data();
-    }
-    public traceModifiyCommentClient(): void {
-        this.trace["clientTimestamp"] = Date.now();
-    }
-    public async traceModifyCommentServer(commentID: string, text: string): Promise<void> {
-        await this.traceComment(commentID, text);
-        this.trace["serverTimestamp"] = Date.now();
-
-        const trace = await this.getTraceByCommentID(commentID);
-        if(trace == null) {
-            this.createTrace();
-            return;
-        }
-
-        const counter = trace["commentModifiedTextCounter"];
-        this.trace["commentModifiedTextCounter"] = counter + 1;
-        this.createTrace();
     }
 
     public traceVotedPostClient() {
-        this.trace["clientTimestamp"] = Date.now();
+        this.trace.clientTimestamp = Date.now();
     }
     public async traceVotedPostServer(postID: string, vote: number) {
         await this.traceBasic();
-        this.trace["serverTimestamp"] = Date.now();
-        this.trace["postID"] = postID;
-        this.trace["postModifiedUpvote"] = vote;
+        this.trace.serverTimestamp = Date.now();
+        this.trace.event = new PostUpvote(postID, vote)
         this.createTrace();
     }
 
     public traceAddedTagClient(tagNames: string[]) {
-        this.trace["clientTimestamp"] = Date.now();
+        this.trace.clientTimestamp = Date.now();
         this.trace["postTagNameAdded"] = tagNames;
     }
     public async traceAddedTagServer(postID: string) {
         await this.traceBasic();
-        this.trace["serverTimestamp"] = Date.now();
+        this.trace.serverTimestamp = Date.now();
         this.trace["postID"] = postID;
         this.createTrace();
     }
 
     public async traceRemovedTagClient(tagName: string) {
-        this.trace["clientTimestamp"] = Date.now();
+        this.trace.clientTimestamp = Date.now();
         this.trace["postTagNameRemoved"] = tagName;
     } 
     public async traceRemovedTagServer(postID: string) {
         await this.traceBasic();
-        this.trace["serverTimestamp"] = Date.now();
+        this.trace.serverTimestamp = Date.now();
         this.trace["postID"] = postID;
         this.createTrace();
     }
 
     public traceMovedPostClient(centerX, centerY) {
-        this.trace["clientTimestamp"] = Date.now();
+        this.trace.clientTimestamp = Date.now();
         this.trace["postModifiedLocationX"] = centerX;
         this.trace["postModifiedLocationY"] = centerY;
     }
     public async traceMovedPostServer(postID: string) {
         await this.traceBasic();
-        this.trace["serverTimestamp"] = Date.now();
+        this.trace.serverTimestamp = Date.now();
         this.trace["postID"] = postID;
         this.createTrace();
     }
 
     public traceMovedPostToBucketClient(bucketID: string, bucketName: string) {
-        this.trace["clientTimestamp"] = Date.now();
+        this.trace.clientTimestamp = Date.now();
         this.trace["bucketID"] = bucketID;
         this.trace["bucketName"] = bucketName;
     }
     public async traceMovedPostToBucketServer(postID: string) {
         await this.traceBasic();
-        this.trace["serverTimestamp"] = Date.now();
+        this.trace.serverTimestamp = Date.now();
         this.trace["postID"] = postID;
         this.createTrace();
     }
 
     public traceDeletedPostClient() {
-        this.trace["clientTimestamp"] = Date.now();
+        this.trace.clientTimestamp = Date.now();
         this.trace["postDeleted"] = 1;
     }
     public async traceDeletedPostServer(postID: string) {
         await this.traceBasic();
-        this.trace["serverTimestamp"] = Date.now();
+        this.trace.serverTimestamp = Date.now();
         this.trace["postID"] = postID;
         this.createTrace();
     }
 
     public async traceReadPostClient(postID: string) {
         await this.traceBasic();
-        this.trace["clientTimestamp"] = Date.now();
+        this.trace.clientTimestamp = Date.now();
         this.trace["postID"] = postID;
         this.trace["postRead"] = 1;
         this.createTrace();

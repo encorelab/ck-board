@@ -1,6 +1,6 @@
 import BucketEvent from "./bucketEvent";
 
-export default class moveToBucketEvent extends BucketEvent{
+export default class moveToBucket extends BucketEvent{
     bucketName:string = "";
     
 }

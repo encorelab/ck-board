@@ -35,6 +35,7 @@ import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
 import { CanvasService } from 'src/app/services/canvas.service';
+import { TracingService } from 'src/app/services/tracing.service';
 
 interface PostIDNamePair {
   postID: string,
@@ -86,7 +87,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     private router: Router,  private activatedRoute: ActivatedRoute,
     public snackbarService: SnackbarService, public dialog: MatDialog,
     public fileUploadService: FileUploadService,
-    private canvasService:CanvasService
+    private canvasService:CanvasService,
+    private tracingService:TracingService
   ) {}
 
   ngOnInit() {
@@ -165,8 +167,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const map = this.activatedRoute.snapshot.paramMap;
 
     if (map.has('boardID') && map.has('projectID')) {
-      this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-      this.projectID = this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      let boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
+      let projectID = this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      this.boardID = boardID;
+      this.projectID = projectID;
+      this.tracingService.setProjectIDBoardID(projectID,boardID)
     } else {
       this.router.navigate(['error']);
     }

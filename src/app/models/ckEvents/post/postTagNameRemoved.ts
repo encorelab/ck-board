@@ -1,5 +1,5 @@
 import PostEvent from "./postEvent";
 
-export default class postTagNameRemovedEvent extends PostEvent{
+export default class postTagNameRemoved extends PostEvent{
     postTagNameRemoved:string = "";
 }

@@ -1,5 +1,5 @@
 import PostEvent from "./postEvent";
 
-export default class PostDeletedEvent extends PostEvent{
+export default class PostDeleted extends PostEvent{
     postDeleted:number = 0;
 }

@@ -83,15 +83,20 @@ export class HtmlPostComponent implements OnInit {
   }
 
   openPostDialog() {
-    this.dialog.open(PostModalComponent, {
-      minWidth: '700px',
-      width: 'auto',
-      data: {
-        user: this.user,
-        post: this.post.post,
-        board: this.post.board,
-      },
-    });
+    this.dialog
+      .open(PostModalComponent, {
+        minWidth: '700px',
+        width: 'auto',
+        data: {
+          user: this.user,
+          post: this.post.post,
+          board: this.post.board,
+        },
+      })
+      .afterClosed()
+      .subscribe(async () => {
+        this.post.post = await this.postService.get(this.post.post.postID);
+      });
   }
 
   handleLike(event) {

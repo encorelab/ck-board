@@ -4,7 +4,6 @@ import {
   AngularFirestore,
   AngularFirestoreCollection,
 } from '@angular/fire/firestore';
-import { HTMLPost } from '../components/html-post/html-post.component';
 import Post from '../models/post';
 import { FabricUtils } from '../utils/FabricUtils';
 import { BoardService } from './board.service';
@@ -75,24 +74,5 @@ export class PostService {
 
   update(postID: string, value: Partial<Post>): Promise<Post> {
     return this.http.post<Post>('posts/' + postID, value).toPromise();
-  }
-
-  async toHTMLPost(post: Post): Promise<HTMLPost> {
-    const board = await this.boardService.get(post.boardID);
-    const author = await this.userService.getOneById(post.userID);
-    const likes = await this.likeService.getLikesByPost(post.postID);
-    const comments = await this.commentService.getCommentsByPost(post.postID);
-
-    return {
-      board: board,
-      post: post,
-      author: author!.username,
-      likes: likes.map((like) => like.likerID),
-      comments: comments.length,
-    };
-  }
-
-  async toHTMLPosts(posts: Post[]): Promise<HTMLPost[]> {
-    return Promise.all(posts.map((post) => this.toHTMLPost(post)));
   }
 }

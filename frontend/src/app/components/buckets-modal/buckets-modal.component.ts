@@ -1,94 +1,157 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
-import { AddPostComponent, AddPostDialog } from 'src/app/components/add-post-modal/add-post.component';
+import {
+  AddPostComponent,
+  AddPostDialog,
+} from 'src/app/components/add-post-modal/add-post.component';
 import Post, { PostType, Tag } from 'src/app/models/post';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { fabric } from 'fabric';
-import { NEEDS_ATTENTION_TAG, POST_COLOR, POST_DEFAULT_BORDER, POST_DEFAULT_BORDER_THICKNESS, POST_TAGGED_BORDER_THICKNESS, SocketEvent } from 'src/app/utils/constants';
+import {
+  NEEDS_ATTENTION_TAG,
+  POST_COLOR,
+  POST_TAGGED_BORDER_THICKNESS,
+  SocketEvent,
+} from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
-
+import { HTMLPost } from '../html-post/html-post.component';
+import Converters from 'src/app/utils/converters';
 
 @Component({
   selector: 'app-buckets-modal',
   templateUrl: './buckets-modal.component.html',
-  styleUrls: ['./buckets-modal.component.scss']
+  styleUrls: ['./buckets-modal.component.scss'],
 })
 export class BucketsModalComponent implements OnInit, OnDestroy {
+  board: Board;
+  user: User;
 
-  board: Board
-  user:User
+  buckets: any;
+  activeBucket: any;
 
-  buckets: any
-  activeBucket: any
+  posts: HTMLPost[];
 
-  posts: any[]
+  loading: boolean = true;
 
-  loading: boolean = true
+  movePostActivated: boolean;
 
-  movePostActivated:boolean
-
-  Yoffset:number
-  Xoffset:number
+  Yoffset: number;
+  Xoffset: number;
 
   constructor(
     public dialogRef: MatDialogRef<BucketsModalComponent>,
     public canvasService: CanvasService,
     public bucketService: BucketService,
-    public postsService:PostService,
+    public postService: PostService,
     public socketService: SocketService,
     public dialog: MatDialog,
     protected fabricUtils: FabricUtils,
-    @Inject(MAT_DIALOG_DATA) public data: any) {
-    this.board = data.board
-    this.user = data.user
-    this.Xoffset = data.centerX
-    this.Yoffset = data.centerY
+    private converters: Converters,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.board = data.board;
+    this.user = data.user;
+    this.Xoffset = data.centerX;
+    this.Yoffset = data.centerY;
   }
 
   ngOnInit(): void {
-    this.fetchBuckets()
+    this.fetchBuckets();
+    this.initGroupEventsListener();
+  }
+
+  initGroupEventsListener() {
+    // TODO: Be able to listen to specific buckets, else this will add new posts
+    // to whichever bucket the client's viewing. Create BUCKET events.
+    // this.socketService.listen(SocketEvent.POST_CREATE, async (post: Post) => {
+    //   this.posts.push(await this.postService.toHTMLPost(post));
+    // });
+    this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
+      let found = this.posts.find((p) => p.post.postID == post.postID);
+      if (found) found.post = post;
+    });
+    this.socketService.listen(SocketEvent.POST_LIKE_ADD, (result: any) => {
+      let found = this.posts.find((p) => p.post.postID == result.like.postID);
+      if (found) found.likes.push(result.like.likerID);
+    });
+    this.socketService.listen(SocketEvent.POST_LIKE_REMOVE, (result: any) => {
+      let found = this.posts.find((p) => p.post.postID == result.like.postID);
+      if (found)
+        found.likes = found.likes.filter((like) => like != result.like.likerID);
+    });
+    this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
+      let found = this.posts.find(
+        (p) => p.post.postID == result.comment.postID
+      );
+      if (found) found.comments += 1;
+    });
+    this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
+      let found = this.posts.find((p) => p.post.postID == id);
+      if (found) {
+        this.posts = this.posts.filter((post) => post.post.postID != id);
+      }
+    });
+    this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
+      let found = this.posts.find((p) => p.post.postID == post.postID);
+      if (found) {
+        found.post = post;
+      }
+    });
+    this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post, _tag }) => {
+      let found = this.posts.find((p) => p.post.postID == post.postID);
+      if (found) {
+        found.post = post;
+      }
+    });
   }
 
   fetchBuckets() {
-    this.bucketService.getAllByBoard(this.board.boardID).then(buckets => {
-      this.buckets = buckets
-      if (buckets.length > 0) {
-        this.activeBucket = this.buckets[0] 
-        this.loadBucketPosts(this.activeBucket)
-      } else {
-        this.loading = false
-      }
-    }).catch(e => console.log(e))
+    this.bucketService
+      .getAllByBoard(this.board.boardID)
+      .then((buckets) => {
+        this.buckets = buckets;
+        if (buckets.length > 0) {
+          this.activeBucket = this.buckets[0];
+          this.loadBucketPosts(this.activeBucket);
+        } else {
+          this.loading = false;
+        }
+      })
+      .catch((e) => console.log(e));
   }
 
   loadBucketPosts(bucket) {
-    this.loading = true
-    this.bucketService.get(bucket.bucketID)
-      .then(bucket => {
+    this.loading = true;
+    this.bucketService
+      .get(bucket.bucketID)
+      .then(async (bucket) => {
         if (bucket) {
-          this.activeBucket = bucket
-          this.posts = bucket.posts
+          this.activeBucket = bucket;
+          this.posts = await this.converters.toHTMLPosts(bucket.posts);
         } else {
-          this.posts = []
+          this.posts = [];
         }
-        this.loading = false
+        this.loading = false;
       })
-      .catch(_err => {
-        this.posts = []
-        this.loading = false
-      })
+      .catch((_err) => {
+        this.posts = [];
+        this.loading = false;
+      });
   }
 
   ngOnDestroy(): void {
-    this.activeBucket = null
-    this.buckets = []
-    this.posts = []
+    this.activeBucket = null;
+    this.buckets = [];
+    this.posts = [];
   }
 
   openAddPostDialog() {
@@ -105,17 +168,22 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       board: this.board,
       bucket: this.activeBucket,
       user: this.user,
-      onComplete: (post: Post) => this.posts.push(post)
-    }
+      onComplete: async (post: Post) => {
+        const htmlPost = await this.converters.toHTMLPost(post);
+        this.posts.push(htmlPost);
+      },
+    };
     this.dialog.open(AddPostComponent, {
       width: '500px',
-      data: dialogData
+      data: dialogData,
     });
   }
 
-  movePostToBoard(postID:string){
-    this.postsService.get(postID).then(post => {
-      const containsAttentionTag = post.tags.find(tag => tag.name == NEEDS_ATTENTION_TAG.name);
+  movePostToBoard(postID: string) {
+    this.postService.get(postID).then((post) => {
+      const containsAttentionTag = post.tags.find(
+        (tag) => tag.name == NEEDS_ATTENTION_TAG.name
+      );
 
       let fabricPost = new FabricPostComponent({
         postID: postID,
@@ -130,13 +198,13 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         top: this.Yoffset,
         color: POST_COLOR,
         stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
-        strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null
+        strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null,
       });
 
       const canvasPost: Post = this.fabricUtils.fromFabricPost(fabricPost);
       this.canvasService.createBoardPostFromBucket(canvasPost);
 
       this.Yoffset += 50;
-    })
+    });
   }
 }

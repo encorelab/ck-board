@@ -232,8 +232,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.fabricUtils.applyTagFeatures(existing, tag);
     });
     this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post, tag }) => {
-      let existing = this.fabricUtils.getObjectFromId(post.postID);
-      this.fabricUtils.resetTagFeatures(existing);
+      if (post.specialAttributes) {
+        let existing = this.fabricUtils.getObjectFromId(post.postID);
+        this.fabricUtils.resetTagFeatures(existing);
+      }
     });
 
     return [];

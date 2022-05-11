@@ -7,6 +7,7 @@ import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { HTMLPost } from '../html-post/html-post.component';
+import Converters from '../../utils/converters';
 
 @Component({
   selector: 'app-list-modal',
@@ -32,6 +33,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
     public bucketService: BucketService,
     public postService: PostService,
     public socketService: SocketService,
+    public converters: Converters,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.board = data.board;
@@ -47,10 +49,11 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   initGroupEventsListener() {
     this.socketService.listen(SocketEvent.POST_CREATE, async (post: Post) => {
-      this.posts.push(await this.postService.toHTMLPost(post));
+      this.posts.push(await this.converters.toHTMLPost(post));
       this.filterPosts();
     });
     this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
+      console.log(post);
       let found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) found.post = post;
     });
@@ -103,7 +106,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
     const opts = { size: 20, page: this.page };
 
     const data = await this.postService.getAllByBoard(this.board.boardID, opts);
-    const htmlPosts = await this.postService.toHTMLPosts(data);
+    const htmlPosts = await this.converters.toHTMLPosts(data);
 
     this.posts = this.posts.concat(htmlPosts);
     this.page += 1;

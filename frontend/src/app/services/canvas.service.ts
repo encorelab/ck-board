@@ -124,7 +124,9 @@ export class CanvasService {
     }
 
     fabricObject = this.fabricUtils.setTags(fabricObject, post.tags);
-    fabricObject = this.fabricUtils.resetTagFeatures(fabricObject);
+    if (tag.specialAttributes) {
+      fabricObject = this.fabricUtils.resetTagFeatures(fabricObject);
+    }
 
     const jsonPost = this.fabricUtils.toJSON(fabricObject);
     const savedPost: Post = await this.postService.update(post.postID, {

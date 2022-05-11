@@ -85,9 +85,6 @@ export class AddBoardModalComponent implements OnInit {
   }
 
   handleDialogSubmit() {
-    console.log(this.fabricUtils.getDefaultTagsForBoard(this.boardID));
-    console.log(this.defaultTags);
-    console.log(this.tags.concat(this.defaultTags));
     this.data.createBoard(
       {
         boardID: this.boardID,

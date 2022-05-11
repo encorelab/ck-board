@@ -1,13 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import 'firebase/firestore';
 import Bucket from '../models/bucket';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class BucketService {
-
   constructor(private http: HttpClient) {}
 
   get(bucketID: string): Promise<any> {
@@ -23,11 +21,15 @@ export class BucketService {
   }
 
   add(bucketID: string, ...posts: string[]): Promise<Bucket> {
-    return this.http.post<Bucket>('buckets/' + bucketID + '/add', {posts}).toPromise();
+    return this.http
+      .post<Bucket>('buckets/' + bucketID + '/add', { posts })
+      .toPromise();
   }
 
   remove(bucketID: string, ...posts: string[]): Promise<Bucket> {
-    return this.http.post<Bucket>('buckets/' + bucketID + '/remove', {posts}).toPromise();
+    return this.http
+      .post<Bucket>('buckets/' + bucketID + '/remove', { posts })
+      .toPromise();
   }
 
   update(bucketID: string, bucket: Partial<Bucket>) {

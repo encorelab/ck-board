@@ -117,8 +117,7 @@ export class PostModalComponent {
     let bucket: any = this.buckets.find(bucket => bucket.bucketID === bucketID)
 
     if (event.checked) {
-      bucket = this.canvasService.movePostToBucketClient(bucket, this.post);
-      this.canvasService.movePostToBucketServer(this.post.postID, bucket);
+      this.canvasService.movePostToBucket(this.post, bucket);
     } else {
       bucket.posts = bucket.posts.filter(post => post.postID !== this.post.postID);
       let ids = bucket.posts.map(post => post.postID)
@@ -167,8 +166,7 @@ export class PostModalComponent {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this post?',
         handleConfirm: () => {
-          this.canvasService.deletePostClient(this.post.postID);
-          this.canvasService.deletePostServer(this.post.postID);
+          this.canvasService.deletePost(this.post.postID);
           this.dialogRef.close(DELETE);
         }
       }
@@ -198,7 +196,11 @@ export class PostModalComponent {
     if(!this.canStudentTag)
       return;
 
-    [this.tags, this.tagOptions] = this.canvasService.removeTagClient(this.tags, this.tagOptions, tag);
+    const index = this.tags.indexOf(tag);
+    if (index >= 0) {
+        this.tags.splice(index, 1);
+    }
+    this.tagOptions.push(tag);
 
     let fabricObject = this.fabricUtils.getObjectFromId(this.post.postID);
 
@@ -208,9 +210,9 @@ export class PostModalComponent {
       }
       
       const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.canvasService.removeTagServer(this.post.postID, { tags: this.tags, fabricObject: jsonPost });
+      this.canvasService.removeTag(this.post.postID, { tags: this.tags, fabricObject: jsonPost },tag);
     } else {
-      this.canvasService.removeTagServer(this.post.postID, { tags: this.tags });
+      this.canvasService.removeTag(this.post.postID, { tags: this.tags },tag);
     }
   }
 

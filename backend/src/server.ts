@@ -1,16 +1,17 @@
-import express from 'express';
-import http from 'http';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import Socket from './socket/socket';
-import posts from './api/posts';
-import likes from './api/likes';
-import comments from './api/comments'; 
-import boards from './api/boards';
-import buckets from './api/buckets';
-import projects from './api/projects';
+import express from "express";
+import http from "http";
+import bodyParser from "body-parser";
+import cors from "cors";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import Socket from "./socket/socket";
+import posts from "./api/posts";
+import likes from "./api/likes";
+import comments from "./api/comments";
+import boards from "./api/boards";
+import buckets from "./api/buckets";
+import projects from "./api/projects";
+import workflows from "./api/workflows";
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -27,12 +28,13 @@ const server = http.createServer(app);
 const socket = new Socket();
 socket.init();
 
-app.use('/api/projects', projects);
-app.use('/api/boards', boards);
-app.use('/api/buckets', buckets);
-app.use('/api/posts', posts);
-app.use('/api/likes', likes);
-app.use('/api/comments', comments);
+app.use("/api/projects", projects);
+app.use("/api/boards", boards);
+app.use("/api/buckets", buckets);
+app.use("/api/workflows", workflows);
+app.use("/api/posts", posts);
+app.use("/api/likes", likes);
+app.use("/api/comments", comments);
 
 mongoose
   .connect(dbURI)

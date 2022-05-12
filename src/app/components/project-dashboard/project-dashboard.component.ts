@@ -14,7 +14,6 @@ import Trace from 'src/app/models/trace';
 import { ExportToCsv } from 'export-to-csv';
 import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
 import { E } from '@angular/cdk/keycodes';
-import { json2csvAsync } from 'json-2-csv';
 
 @Component({
   selector: 'app-project-dashboard',

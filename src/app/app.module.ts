@@ -40,6 +40,7 @@ import { ToolbarComponent } from './components/toolbar/toolbar.component';
 import { SnackBarComponent } from './components/snackbar/snackbar.component';
 import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
+import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
 
 @NgModule({
   declarations: [
@@ -69,7 +70,8 @@ import { NotificationDropdownComponent } from './components/notification-dropdow
     ToolbarComponent,
     SnackBarComponent,
     ConfirmModalComponent,
-    NotificationDropdownComponent
+    NotificationDropdownComponent,
+    CsvDownloadButtonComponent
   ],
   imports: [
     BrowserModule,

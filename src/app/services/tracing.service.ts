@@ -3,7 +3,7 @@ import { AuthService } from "./auth.service";
 import { BoardService } from "./board.service";
 import { ProjectService } from "./project.service";
 
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreCollection, QuerySnapshot } from '@angular/fire/firestore';
 import Trace from '../models/trace';
 import PostAdded from "../models/ckEvents/post/postAdded";
 import CommentAdded from "../models/ckEvents/comment/commentAdded";
@@ -51,6 +51,14 @@ export class TracingService {
     public setProjectIDBoardID(projectID:string,boardID:string){
         this.projectID = projectID;
         this.boardID = boardID;
+    }
+    /**
+     * Get trace objects matching the specifed projectID
+     * @param projectID 
+     * @returns 
+     */
+    public async getTraceByProjectID(projectID:string){
+        return this.traceCollection.ref.where("projectID", "==", projectID).get();
     }
 
     /**
@@ -157,7 +165,7 @@ export class TracingService {
     }
 
     /**
-     * TODO refactor: similar to postID one
+     * UNUSED Might remove this i dont think we can modify comments yet
      * @param commentID 
      * @param eventType 
      * @returns 
@@ -170,7 +178,7 @@ export class TracingService {
         return result.data()
     }
     /**
-     * TODO refactor similar to modifyPost
+     * UNUSED Might remove this i dont think we can modify comments yet
      * @param commentID 
      * @param text 
      */
@@ -207,10 +215,10 @@ export class TracingService {
      * @param postID 
      * @param tagNames 
      */
-    public async tracePostTagNameAdded(postID: string,tagNames: string[]) {
+    public async tracePostTagNameAdded(postID: string,tagName: string) {
         await this.traceBasic();
         this.trace.serverTimestamp = Date.now();
-        this.trace.event = new PostTagNameAdded(postID,tagNames);
+        this.trace.event = new PostTagNameAdded(postID,tagName);
         this.trace.eventType = PostTagNameAdded.name;
         this.createTrace();
     }
@@ -270,6 +278,7 @@ export class TracingService {
     public async tracePostRead(postID: string) {
         await this.traceBasic();
         this.trace.clientTimestamp = Date.now();
+        this.trace.serverTimestamp = Date.now();
         this.trace.event = new PostRead(postID,1);
         this.trace.eventType = PostRead.name;
         this.createTrace();

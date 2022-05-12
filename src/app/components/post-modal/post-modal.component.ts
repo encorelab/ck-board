@@ -210,9 +210,9 @@ export class PostModalComponent {
       }
       
       const jsonPost = this.fabricUtils.toJSON(fabricObject);
-      this.canvasService.removeTag(this.post.postID, { tags: this.tags, fabricObject: jsonPost },tag);
+      this.canvasService.removeTag(this.post.postID, { tags: this.tags, fabricObject: jsonPost },tag.name);
     } else {
-      this.canvasService.removeTag(this.post.postID, { tags: this.tags },tag);
+      this.canvasService.removeTag(this.post.postID, { tags: this.tags },tag.name);
     }
   }
 

@@ -103,7 +103,7 @@ export class CanvasService {
     async addTagsExistingPost(postID: string, tagOption: Tag, tags: object) {
         this.tracingService.traceClientTimestamp();
         await this.postService.update(postID, tags);
-        this.tracingService.tracePostTagNameAdded(postID,[tagOption.name]);
+        this.tracingService.tracePostTagNameAdded(postID,tagOption.name);
 
         // send like notification to user
         let data = await this.postsService.get(postID);

@@ -16,4 +16,5 @@ export class Board {
     permissions: Permissions; 
     members: [];
     tags: Tag[];
+    initialZoom:number = 100;
 }

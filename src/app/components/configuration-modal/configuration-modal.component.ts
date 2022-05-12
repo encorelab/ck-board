@@ -28,6 +28,7 @@ export class ConfigurationModalComponent {
   tags: Tag[]
   newTagText: string = ''
   newTagColor: any = TAG_DEFAULT_COLOR;
+  initialZoom: number = 100
 
   members: string[] = []
 
@@ -43,6 +44,7 @@ export class ConfigurationModalComponent {
       this.taskMessage = data.board.task.message
       this.tags = data.board.tags ?? []
       this.permissions= data.board.permissions
+      this.initialZoom = data.board.initialZoom
       data.board.members.map(id => {
         userService.getOneById(id).then(user => {
           if (user) {
@@ -61,16 +63,16 @@ export class ConfigurationModalComponent {
     this.tags = this.tags.filter(tag => tag != tagRemove)
   }
 
-  compressFile(){
-    this.fileUploadService.compressFile().then((compressedImage) =>{
-      this.data.updateBackground(compressedImage,null);
-    })
+  async compressFile(){
+    let compressedImage = await this.fileUploadService.compressFile();
+    await this.data.updateBackgroundImage(compressedImage);
+    this.dialogRef.close();
   
   }
 
   removeImage() {
     this.currentBgImage = null
-    this.data.updateBackground(null)
+    this.data.removeBackgroundImage()
   }
 
   handleDialogSubmit() {
@@ -78,6 +80,7 @@ export class ConfigurationModalComponent {
     this.data.updateTask(this.taskTitle, this.taskMessage)
     this.data.updatePermissions(this.permissions)
     this.data.updateTags(this.tags)
+    this.data.updateInitialZoom(this.initialZoom)
     this.dialogRef.close();
   }
 

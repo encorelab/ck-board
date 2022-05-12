@@ -31,6 +31,7 @@ export class AddBoardModalComponent implements OnInit {
 
   projects:Project[]
   selectedProject:string=''
+  initialZoom:number =100
 
 
   constructor(
@@ -86,6 +87,7 @@ export class AddBoardModalComponent implements OnInit {
       permissions: this.permissions,
       members: [this.authService.userData.id],
       tags: this.tags.concat(this.defaultTags),
+      initialZoom: this.initialZoom
     }, this.selectedProject)
     this.dialogRef.close();
   }

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { ReactiveFormsModule } from '@angular/forms'
+import { ReactiveFormsModule } from '@angular/forms';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
@@ -10,13 +10,13 @@ import { AppComponent } from './app.component';
 
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireModule } from '@angular/fire';
-import { AngularFireAuthModule } from '@angular/fire/auth'
+import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
 import { ColorPickerModule } from 'ngx-color-picker';
 
-import { AddPostComponent } from './components/add-post-modal/add-post.component'
+import { AddPostComponent } from './components/add-post-modal/add-post.component';
 import { FabricPostComponent } from './components/fabric-post/fabric-post.component';
 import { ConfigurationModalComponent } from './components/configuration-modal/configuration-modal.component';
 import { TaskModalComponent } from './components/task-modal/task-modal.component';
@@ -29,7 +29,6 @@ import { AddBoardModalComponent } from './components/add-board-modal/add-board-m
 import { CreateWorkflowModalComponent } from './components/create-workflow-modal/create-workflow-modal.component';
 import { HtmlPostComponent } from './components/html-post/html-post.component';
 import { PasswordResetComponent } from './components/password-reset/password-reset.component';
-import { JoinBoardModalComponent } from './components/join-board-modal/join-board-modal.component';
 import { ErrorComponent } from './components/error/error.component';
 import { PasswordResetConfirmationModalComponent } from './components/password-reset-confirmation-modal/password-reset-confirmation-modal.component';
 import { JoinProjectModalComponent } from './components/join-project-modal/join-project-modal.component';
@@ -60,7 +59,6 @@ const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
     AddBoardModalComponent,
     CreateWorkflowModalComponent,
     PasswordResetComponent,
-    JoinBoardModalComponent,
     ErrorComponent,
     PasswordResetConfirmationModalComponent,
     JoinProjectModalComponent,
@@ -72,7 +70,7 @@ const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
     HtmlPostComponent,
     ToolbarComponent,
     SnackBarComponent,
-    ConfirmModalComponent
+    ConfirmModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -81,18 +79,20 @@ const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
     AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
     AngularFirestoreModule,
     AngularFireAuthModule,
-    FormsModule, 
+    FormsModule,
     SocketIoModule.forRoot(config),
     BrowserAnimationsModule,
     ReactiveFormsModule,
     ColorPickerModule,
-    MaterialModule
+    MaterialModule,
   ],
-  providers: [{
-    provide: HTTP_INTERCEPTORS,
-    useClass: APIInterceptor,
-    multi: true,
-  }],
-  bootstrap: [AppComponent]
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: APIInterceptor,
+      multi: true,
+    },
+  ],
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

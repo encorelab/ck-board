@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { Board } from 'src/app/models/board';
-import User from 'src/app/models/user';
-import { AuthService } from 'src/app/services/auth.service';
+import User, { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { UserService } from 'src/app/services/user.service';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
@@ -11,7 +10,6 @@ import { ProjectService } from 'src/app/services/project.service';
 import { Project } from 'src/app/models/project';
 import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
 import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
-import { Role } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +19,7 @@ import { Role } from 'src/app/utils/constants';
 export class DashboardComponent implements OnInit {
   isLoading: boolean = true;
 
-  user: User;
+  user: AuthUser;
 
   yourProjects: Project[] = [];
 
@@ -29,7 +27,6 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     public userService: UserService,
-    public authService: AuthService,
     public boardService: BoardService,
     public router: Router,
     public dialog: MatDialog,
@@ -37,11 +34,10 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.user = this.authService.userData;
-    this.authService.getAuthenticatedUser().then((user) => {
-      this.user = user;
-      this.getUsersProjects(this.user.id).then((_) => (this.isLoading = false));
-    });
+    this.user = this.userService.user!;
+    this.getUsersProjects(this.user.userID).then(
+      () => (this.isLoading = false)
+    );
   }
 
   getUsersProjects(id) {

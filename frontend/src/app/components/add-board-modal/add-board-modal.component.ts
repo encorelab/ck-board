@@ -1,11 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Permissions } from 'src/app/models/permissions';
-import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 import { Project } from 'src/app/models/project';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
-import { DEFAULT_TAGS, TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
+import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { Tag } from 'src/app/models/post';
 import Utils from 'src/app/utils/utils';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
@@ -39,7 +38,7 @@ export class AddBoardModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
-    public authService: AuthService,
+    public UserService: UserService,
     public userService: UserService,
     public fileUploadService: FileUploadService,
     public fabricUtils: FabricUtils,
@@ -88,7 +87,7 @@ export class AddBoardModalComponent implements OnInit {
     this.data.createBoard(
       {
         boardID: this.boardID,
-        teacherID: this.data.user.id,
+        teacherID: this.data.user.userID,
         name: this.boardName,
         task: {
           title: this.taskTitle,
@@ -96,7 +95,7 @@ export class AddBoardModalComponent implements OnInit {
         },
         bgImage: this.bgImgURL ? { url: this.bgImgURL } : null,
         permissions: this.permissions,
-        members: [this.authService.userData.id],
+        members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),
       },
       this.selectedProject

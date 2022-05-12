@@ -18,13 +18,11 @@ import {
   POST_DEFAULT_OPACITY,
   POST_MOVING_FILL,
   POST_MOVING_OPACITY,
-  Role,
   SocketEvent,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
-import User from 'src/app/models/user';
-import { AuthService } from 'src/app/services/auth.service';
+import User, { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
@@ -58,7 +56,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   projectID: string;
   canvas: Canvas;
 
-  user: User;
+  user: AuthUser;
   board: Board;
   project: Project;
 
@@ -86,7 +84,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     public postService: PostService,
     public boardService: BoardService,
     public userService: UserService,
-    public authService: AuthService,
     public commentService: CommentService,
     public likesService: LikesService,
     public projectService: ProjectService,
@@ -101,7 +98,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.user = this.authService.userData;
+    this.user = this.userService.user!;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas;
 
@@ -449,18 +446,18 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (likeButton && (studentHasPerm || isTeacher)) {
       const isLiked = await this.likesService.isLikedBy(
         post.postID,
-        this.user.id
+        this.user.userID
       );
       if (!isLiked) {
         const like: Like = {
-          likeID: Date.now() + '-' + this.user.id,
-          likerID: this.user.id,
+          likeID: Date.now() + '-' + this.user.userID,
+          likerID: this.user.userID,
           postID: post.postID,
           boardID: this.board.boardID,
         };
         await this.canvasService.like(like);
       } else {
-        await this.canvasService.unlike(this.user.id, isLiked.postID);
+        await this.canvasService.unlike(this.user.userID, isLiked.postID);
       }
     }
   };

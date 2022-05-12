@@ -1,8 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
-import { AddPostComponent } from '../add-post-modal/add-post.component';
 import Utils from 'src/app/utils/utils';
 
 @Component({
@@ -15,19 +13,18 @@ export class AddProjectModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<AddProjectModalComponent>,
-    public authService: AuthService,
     public userService: UserService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
   ngOnInit(): void {}
   handleDialogSubmit() {
-    const projectID = Date.now() + '-' + this.data.user.id;
+    const projectID = Date.now() + '-' + this.data.user.userID;
     this.data.createProject({
       projectID: projectID,
-      teacherID: this.data.user.id,
+      teacherID: this.data.user.userID,
       name: this.name,
-      members: [this.authService.userData.id],
+      members: [this.data.user.userID],
       boards: [],
       joinCode: Utils.generateCode(5).toString(),
     });

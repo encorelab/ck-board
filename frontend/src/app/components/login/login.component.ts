@@ -1,35 +1,34 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from 'src/app/services/auth.service';
+import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-
-  email: string
-  password: string
+  email: string;
+  password: string;
 
   matcher = new MyErrorStateMatcher();
 
   invalidCredentials: boolean = false;
 
-  constructor(private auth: AuthService, private router: Router) {
-    this.auth.getAuthenticatedUser().then((user) => {
-      if (user) {
-        this.router.navigate(['/dashboard'])
-      }
-    })
+  constructor(private userService: UserService, private router: Router) {
+    if (this.userService.loggedIn) this.router.navigate(['/dashboard']);
   }
 
   onLogin() {
-    this.auth.login(this.email, this.password).then((userCredential) => {
-      this.invalidCredentials = false;
-    }).catch((error) => {
-      this.invalidCredentials = true;
-    });
+    this.userService
+      .login(this.email, this.password)
+      .then(() => {
+        this.invalidCredentials = false;
+        this.router.navigate(['dashboard']);
+      })
+      .catch(() => {
+        this.invalidCredentials = true;
+      });
   }
 }

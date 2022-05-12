@@ -8,7 +8,7 @@ import {
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import Comment from 'src/app/models/comment';
 import { CommentService } from 'src/app/services/comment.service';
-import User from 'src/app/models/user';
+import User, { Role } from 'src/app/models/user';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
@@ -16,7 +16,7 @@ import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post, { Tag } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
-import { Role, SocketEvent } from 'src/app/utils/constants';
+import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { SocketService } from 'src/app/services/socket.service';
@@ -97,7 +97,7 @@ export class PostModalComponent {
         (n) => !this.tags.map((b) => b.name).includes(n.name)
       );
       this.canEditDelete =
-        this.data.post.authorID == this.user.id ||
+        this.data.post.authorID == this.user.userID ||
         this.user.role == Role.TEACHER;
       this.author = await this.userService.getOneById(p.userID);
     });
@@ -108,7 +108,7 @@ export class PostModalComponent {
     });
     this.likesService.getLikesByPost(data.post.postID).then((data) => {
       data.forEach((like) => {
-        if (like.likerID == this.user.id) this.isLiked = like;
+        if (like.likerID == this.user.userID) this.isLiked = like;
         this.likes.push(like);
       });
     });
@@ -234,8 +234,8 @@ export class PostModalComponent {
   addComment() {
     const comment: Comment = {
       comment: this.newComment,
-      commentID: Date.now() + '-' + this.data.user.id,
-      userID: this.data.user.id,
+      commentID: Date.now() + '-' + this.data.user.userID,
+      userID: this.data.user.userID,
       postID: this.post.postID,
       boardID: this.data.board.boardID,
       author: this.data.user.username,
@@ -256,13 +256,15 @@ export class PostModalComponent {
     }
 
     if (this.isLiked) {
-      this.canvasService.unlike(this.user.id, this.post.postID);
+      this.canvasService.unlike(this.user.userID, this.post.postID);
       this.isLiked = null;
-      this.likes = this.likes.filter((like) => like.likerID != this.user.id);
+      this.likes = this.likes.filter(
+        (like) => like.likerID != this.user.userID
+      );
     } else {
       const like: Like = {
-        likeID: Date.now() + '-' + this.user.id,
-        likerID: this.user.id,
+        likeID: Date.now() + '-' + this.user.userID,
+        likerID: this.user.userID,
         postID: this.post.postID,
         boardID: this.data.board.boardID,
       };

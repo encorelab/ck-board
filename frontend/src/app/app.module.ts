@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { JwtModule } from '@auth0/angular-jwt';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -28,9 +29,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AddBoardModalComponent } from './components/add-board-modal/add-board-modal.component';
 import { CreateWorkflowModalComponent } from './components/create-workflow-modal/create-workflow-modal.component';
 import { HtmlPostComponent } from './components/html-post/html-post.component';
-import { PasswordResetComponent } from './components/password-reset/password-reset.component';
 import { ErrorComponent } from './components/error/error.component';
-import { PasswordResetConfirmationModalComponent } from './components/password-reset-confirmation-modal/password-reset-confirmation-modal.component';
 import { JoinProjectModalComponent } from './components/join-project-modal/join-project-modal.component';
 import { AddProjectModalComponent } from './components/add-project-modal/add-project-modal.component';
 import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
@@ -43,6 +42,10 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
 import { APIInterceptor } from './utils/interceptor';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
+
+export function tokenGetter() {
+  return localStorage.getItem('access_token');
+}
 
 @NgModule({
   declarations: [
@@ -58,9 +61,7 @@ const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
     DashboardComponent,
     AddBoardModalComponent,
     CreateWorkflowModalComponent,
-    PasswordResetComponent,
     ErrorComponent,
-    PasswordResetConfirmationModalComponent,
     JoinProjectModalComponent,
     AddProjectModalComponent,
     ProjectDashboardComponent,
@@ -80,6 +81,13 @@ const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
     AngularFirestoreModule,
     AngularFireAuthModule,
     FormsModule,
+    JwtModule.forRoot({
+      config: {
+        tokenGetter: tokenGetter,
+        allowedDomains: ['localhost:8001'],
+        disallowedRoutes: ['localhost:8001/api/auth'],
+      },
+    }),
     SocketIoModule.forRoot(config),
     BrowserAnimationsModule,
     ReactiveFormsModule,

@@ -4,28 +4,29 @@ import { CanvasComponent } from './components/canvas/canvas.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
-import { PasswordResetComponent } from './components/password-reset/password-reset.component';
 import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from './utils/auth.guard';
-import { ProjectBoardGuard } from './utils/project.board.guard';
-import {ProjectGuard} from './utils/project.guard'
+import { ProjectGuard } from './utils/project.guard';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
   { path: 'login', component: LoginComponent },
-  { path: 'reset-password', component: PasswordResetComponent},
   { path: 'register', component: RegisterComponent },
-  { path: 'dashboard', component: DashboardComponent,
-    canActivate: [AuthGuard]  
+  {
+    path: 'dashboard',
+    component: DashboardComponent,
+    canActivate: [AuthGuard],
   },
-  { path:'project/:projectID',
-    component:ProjectDashboardComponent,
-    canActivate:[ProjectGuard]
+  {
+    path: 'project/:projectID',
+    component: ProjectDashboardComponent,
+    canActivate: [AuthGuard, ProjectGuard],
   },
-  { path: 'project/:projectID/board/:boardID',
+  {
+    path: 'project/:projectID/board/:boardID',
     component: CanvasComponent,
-    canActivate:[ProjectBoardGuard]
+    canActivate: [AuthGuard, ProjectGuard],
   },
   { path: 'error', component: ErrorComponent },
   { path: '**', redirectTo: 'error' },
@@ -33,6 +34,6 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

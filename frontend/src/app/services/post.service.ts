@@ -1,15 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  AngularFirestore,
-  AngularFirestoreCollection,
-} from '@angular/fire/firestore';
 import Post from '../models/post';
-import { FabricUtils } from '../utils/FabricUtils';
-import { BoardService } from './board.service';
-import { CommentService } from './comment.service';
-import { LikesService } from './likes.service';
-import { UserService } from './user.service';
 
 interface Options {
   size: number;
@@ -20,20 +11,7 @@ interface Options {
   providedIn: 'root',
 })
 export class PostService {
-  private postsPath: string = '/posts';
-  postsCollection: AngularFirestoreCollection<Post>;
-
-  constructor(
-    private db: AngularFirestore,
-    protected fabricUtils: FabricUtils,
-    private userService: UserService,
-    private boardService: BoardService,
-    private likeService: LikesService,
-    private commentService: CommentService,
-    public http: HttpClient
-  ) {
-    this.postsCollection = db.collection<Post>(this.postsPath);
-  }
+  constructor(public http: HttpClient) {}
 
   get(postID: string): Promise<Post> {
     return this.http.get<Post>('posts/' + postID).toPromise();
@@ -50,22 +28,6 @@ export class PostService {
     return this.http
       .get<Post[]>('posts/boards/' + boardID, { params })
       .toPromise();
-  }
-
-  cloneMany(boardID: string, posts: any[]): Promise<void> {
-    const batch = this.db.firestore.batch();
-    posts.forEach((post) => {
-      const newID = Date.now() + '-' + boardID;
-
-      post.fabricObject = this.fabricUtils.clonePost(post, newID);
-      post.boardID = boardID;
-      post.postID = newID;
-      post.tags = [];
-
-      batch.set(this.db.firestore.doc(`${this.postsPath}/${newID}`), post);
-    });
-
-    return batch.commit();
   }
 
   create(post: Post) {

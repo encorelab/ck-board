@@ -14,9 +14,9 @@
       <div class="error__title">{{ code }}</div>
       <div class="error__subtitle">Hmmm...</div>
       <div class="error__description">{{ message }}</div>
-      <button class="error__button error__button--active" (click)="dashboard()" *ngIf="auth.isLoggedIn">RETURN TO DASHBOARD</button>
-      <button class="error__button error__button--active" (click)="login()" *ngIf="!auth.isLoggedIn">LOGIN</button>
-      <button class="error__button" (click)="register()" *ngIf="!auth.isLoggedIn">REGISTER</button>
+      <button class="error__button error__button--active" (click)="dashboard()" *ngIf="auth.loggedIn">RETURN TO DASHBOARD</button>
+      <button class="error__button error__button--active" (click)="login()" *ngIf="!auth.loggedIn">LOGIN</button>
+      <button class="error__button" (click)="register()" *ngIf="!auth.loggedIn">REGISTER</button>
     </div>
     
     <div class="astronaut">

@@ -115,18 +115,15 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
   }
 
   fetchBuckets() {
-    this.bucketService
-      .getAllByBoard(this.board.boardID)
-      .then((buckets) => {
-        this.buckets = buckets;
-        if (buckets.length > 0) {
-          this.activeBucket = this.buckets[0];
-          this.loadBucketPosts(this.activeBucket);
-        } else {
-          this.loading = false;
-        }
-      })
-      .catch((e) => console.log(e));
+    this.bucketService.getAllByBoard(this.board.boardID).then((buckets) => {
+      this.buckets = buckets;
+      if (buckets.length > 0) {
+        this.activeBucket = this.buckets[0];
+        this.loadBucketPosts(this.activeBucket);
+      } else {
+        this.loading = false;
+      }
+    });
   }
 
   loadBucketPosts(bucket) {
@@ -190,7 +187,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         boardID: this.board.boardID,
         title: post.title,
         author: this.user.username,
-        authorID: this.user.id,
+        authorID: this.user.userID,
         desc: post.desc,
         tags: post.tags ?? [],
         lock: !this.board.permissions.allowStudentMoveAny,

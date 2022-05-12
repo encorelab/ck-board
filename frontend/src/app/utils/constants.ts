@@ -31,11 +31,6 @@ export enum SocketEvent {
   WORKFLOW_RUN = 'WORKFLOW_RUN',
 }
 
-export enum Role {
-  STUDENT = 'student',
-  TEACHER = 'teacher',
-}
-
 export const POST_COLOR: string = '#FFE663';
 
 export const POST_DEFAULT_OPACITY: number = 1;

@@ -12,8 +12,7 @@ import { PostModalComponent } from 'src/app/components/post-modal/post-modal.com
 import { Board } from 'src/app/models/board';
 import Like from 'src/app/models/like';
 import Post, { Tag } from 'src/app/models/post';
-import User from 'src/app/models/user';
-import { AuthService } from 'src/app/services/auth.service';
+import User, { AuthUser } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { CommentService } from 'src/app/services/comment.service';
@@ -21,7 +20,7 @@ import { LikesService } from 'src/app/services/likes.service';
 import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
-import { Role, SocketEvent } from 'src/app/utils/constants';
+import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
 
 export interface HTMLPost {
@@ -58,7 +57,7 @@ export class HtmlPostComponent implements OnInit {
 
   exists: boolean = true;
 
-  user: User;
+  user: AuthUser;
 
   postColor: string = POST_COLOR;
 
@@ -69,8 +68,7 @@ export class HtmlPostComponent implements OnInit {
     public commentService: CommentService,
     public likesService: LikesService,
     public postService: PostService,
-    public authService: AuthService,
-    public userSevice: UserService,
+    public userService: UserService,
     public socketService: SocketService,
     public canvasService: CanvasService,
     public boardService: BoardService,
@@ -78,8 +76,8 @@ export class HtmlPostComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.user = this.authService.userData;
-    this.isLiked = this.post.likes.includes(this.user.id);
+    this.user = this.userService.user!;
+    this.isLiked = this.post.likes.includes(this.user.userID);
   }
 
   openPostDialog() {
@@ -103,19 +101,21 @@ export class HtmlPostComponent implements OnInit {
     event.stopPropagation();
 
     if (this.isLiked) {
-      this.canvasService.unlike(this.user.id, this.post.post.postID);
+      this.canvasService.unlike(this.user.userID, this.post.post.postID);
       this.isLiked = false;
-      this.post.likes = this.post.likes.filter((like) => like !== this.user.id);
+      this.post.likes = this.post.likes.filter(
+        (like) => like !== this.user.userID
+      );
     } else {
       const like: Like = {
-        likeID: Date.now() + '-' + this.user.id,
-        likerID: this.user.id,
+        likeID: Date.now() + '-' + this.user.userID,
+        likerID: this.user.userID,
         postID: this.post.post.postID,
         boardID: this.post.board.boardID,
       };
       this.canvasService.like(like);
       this.isLiked = true;
-      this.post.likes.push(this.user.id);
+      this.post.likes.push(this.user.userID);
     }
   }
 

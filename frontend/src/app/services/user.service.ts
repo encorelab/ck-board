@@ -1,43 +1,69 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
-import User from '../models/user';
+import User, { AuthUser, TokenResponse } from '../models/user';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
+  constructor(private http: HttpClient) {}
 
-  private usersPath : string = '/users';
-  usersRef: AngularFirestoreCollection<User>;
-
-  constructor(private db: AngularFirestore) {
-    this.usersRef = db.collection<User>(this.usersPath)
+  getOneById(id: string): Promise<User> {
+    return this.http.get<User>('auth/' + id).toPromise();
   }
 
-  observable(): Observable<User[]> {
-    return this.usersRef.valueChanges();
+  async register(user: User) {
+    return this.http
+      .post<TokenResponse>('auth/register', user)
+      .toPromise()
+      .then((result) => {
+        localStorage.setItem('user', JSON.stringify(result.user));
+        localStorage.setItem('access_token', result.token);
+        return true;
+      });
   }
 
-  getAll() {
-    // return this.usersRef.query.once("value").then((value) => value.val())
-    return this.usersRef.ref.get().then((snapshot) => snapshot)
+  async login(email: string, password: string): Promise<boolean> {
+    return this.http
+      .post<TokenResponse>('auth/login', {
+        email: email,
+        password: password,
+      })
+      .toPromise()
+      .then((result) => {
+        localStorage.setItem('user', JSON.stringify(result.user));
+        localStorage.setItem('access_token', result.token);
+        return true;
+      });
   }
 
-  getOneById(id: string) {
-    // return this.usersRef.query.orderByChild("id").equalTo(id).once("value", (value) => value.val())
-    return this.usersRef.ref.doc(id).get().then((snapshot) => snapshot.data())
+  logout() {
+    localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
   }
 
-  create(user: User) {
-    return this.usersRef.doc(user.id).set(user) 
-  }
-
-  update(user: User) {
-    return this.usersRef.doc(user.id).update(user)
+  update(id: string, user: Partial<User>) {
+    return this.http.post('auth/' + id, user).toPromise();
   }
 
   delete(id: string) {
-    return this.usersRef.ref.doc(id).delete()
+    return this.http.delete('auth/' + id).toPromise();
+  }
+
+  public get loggedIn(): boolean {
+    return localStorage.getItem('access_token') !== null;
+  }
+
+  public get token(): string | null {
+    return localStorage.getItem('access_token');
+  }
+
+  public get user(): AuthUser | null {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      return JSON.parse(storedUser);
+    }
+
+    return null;
   }
 }

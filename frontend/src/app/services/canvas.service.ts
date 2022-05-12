@@ -5,6 +5,7 @@ import Comment from '../models/comment';
 import Like from '../models/like';
 import { Permissions } from '../models/permissions';
 import Post, { Tag } from '../models/post';
+import Workflow from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
 import { FabricUtils } from '../utils/FabricUtils';
 import { BoardService } from './board.service';
@@ -212,5 +213,9 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.BOARD_TAGS_UPDATE, board);
 
     return board;
+  }
+
+  async runWorkflow(workflow: Workflow) {
+    this.socketService.emit(SocketEvent.WORKFLOW_RUN, workflow);
   }
 }

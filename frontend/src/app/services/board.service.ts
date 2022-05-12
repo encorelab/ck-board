@@ -1,40 +1,19 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  AngularFirestore,
-  AngularFirestoreCollection,
-} from '@angular/fire/firestore';
 import { Board } from '../models/board';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BoardService {
-  boardRef: AngularFirestoreCollection<Board>;
-  boardPath: string = '/boards';
-
-  constructor(private db: AngularFirestore, private http: HttpClient) {
-    this.boardRef = db.collection<Board>(this.boardPath);
-  }
+  constructor(private http: HttpClient) {}
 
   get(boardID: string): Promise<Board> {
     return this.http.get<Board>('boards/' + boardID).toPromise();
   }
 
   getMultiple(ids: string[]) {
-    return this.boardRef.ref
-      .where('boardID', 'in', ids)
-      .get()
-      .then((snapshot) => {
-        return snapshot.docs;
-      });
-  }
-
-  getByJoinCode(code: string) {
-    return this.boardRef.ref
-      .where('joinCode', '==', code)
-      .get()
-      .then((snapshot) => snapshot);
+    return this.http.post<Board[]>('boards/multiple/', ids).toPromise();
   }
 
   getByUserID(id: string): Promise<Board[]> {

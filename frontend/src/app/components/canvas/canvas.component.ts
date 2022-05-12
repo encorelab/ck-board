@@ -11,13 +11,9 @@ import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
-import {
-  AddPostComponent,
-  AddPostDialog,
-} from '../add-post-modal/add-post.component';
+import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import {
-  CanvasPostEvent,
   Mode,
   POST_DEFAULT_OPACITY,
   POST_MOVING_FILL,
@@ -430,7 +426,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   // data will be passed into event i.e. colors, thickness, etc.
   // define interface SpecialTag{borderColor, borderThickness}
   // TODO: also remove creating custom ids wiht data + id, find auto way of it happening
-  // TODO: remove all firebase calls - observables, etc. from all services, remove npm dep also
   // TODO: remove all extra methods not being used anymroe
   // TODO: fix students cant create post permission
   // TODO: add id and boardID to tag model
@@ -781,30 +776,29 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    this.socketService.disconnect();
-
+  private async _stopActivePost() {
     let activeObj: any = this.canvas.getActiveObject();
 
     if (activeObj) {
       activeObj = this.fabricUtils.setFillColor(activeObj, POST_COLOR);
       activeObj = this.fabricUtils.setOpacity(activeObj, POST_DEFAULT_OPACITY);
       activeObj = this.fabricUtils.setPostMovement(activeObj, false);
-      activeObj.set({
-        moverID: this.user.id,
-        canvasEvent: CanvasPostEvent.STOP_MOVE,
-      });
-
       this.canvas.discardActiveObject();
 
-      var id = activeObj.postID;
       activeObj = this.fabricUtils.toJSON(activeObj);
-      this.postService.update(id, { fabricObject: activeObj });
+      await this.postService.update(activeObj.postID, {
+        fabricObject: activeObj,
+      });
+      this.socketService.emit(
+        SocketEvent.POST_STOP_MOVE,
+        this.fabricUtils.fromFabricPost(activeObj)
+      );
     }
+  }
 
+  async ngOnDestroy() {
+    await this._stopActivePost();
+    this.socketService.disconnect();
     this.snackbarService.ngOnDestroy();
-    for (let unsubFunc of this.unsubListeners) {
-      unsubFunc();
-    }
   }
 }

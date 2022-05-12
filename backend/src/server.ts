@@ -25,7 +25,7 @@ app.use(cors());
 app.use(bodyParser.json());
 const server = http.createServer(app);
 
-const socket = new Socket();
+const socket = Socket.Instance;
 socket.init();
 
 app.use("/api/projects", projects);

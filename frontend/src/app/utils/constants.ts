@@ -22,31 +22,13 @@ export enum SocketEvent {
   POST_START_MOVE = 'POST_START_MOVE',
   POST_STOP_MOVE = 'POST_STOP_MOVE',
 
-  POST_NEEDS_ATTENTION_TAG = 'POST_NEEDS_ATTENTION_TAG',
-  POST_NO_TAG = 'POST_NO_TAG',
-
   BOARD_NAME_UPDATE = 'BOARD_NAME_UDPATE',
   BOARD_IMAGE_UPDATE = 'BOARD_IMAGE_UPDATE',
   BOARD_PERMISSIONS_UPDATE = 'BOARD_PERMISSIONS_UPDATE',
   BOARD_TASK_UPDATE = 'BOARD_TASK_UPDATE',
   BOARD_TAGS_UPDATE = 'BOARD_TAGS_UPDATE',
-}
 
-export enum CanvasPostEvent {
-  TITLE_CHANGE, // change post title
-  DESC_CHANGE, // change post description
-
-  LIKE, // like a post
-  COMMENT, // comment on a post
-
-  START_MOVE, // start to move a post
-  STOP_MOVE, // post dropped
-  LOCK, // lock a post
-
-  NEEDS_ATTENTION_TAG, // update to red border,
-  NO_TAG, // no tags (remove all tag-specific modifications)
-
-  NONE, // no event
+  WORKFLOW_RUN = 'WORKFLOW_RUN',
 }
 
 export enum Role {

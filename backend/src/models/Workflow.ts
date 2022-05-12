@@ -1,5 +1,4 @@
 import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
-import { TagModel } from "./Tag";
 
 export enum DestinationType {
   BOARD = "BOARD",
@@ -17,7 +16,7 @@ export class Destination {
   public name!: string;
 }
 
-@modelOptions({ schemaOptions: { collection: "posts", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: "workflows", timestamps: true } })
 export class WorkflowModel {
   @prop({ required: true })
   public workflowID!: string;
@@ -31,11 +30,11 @@ export class WorkflowModel {
   @prop({ required: true })
   public name!: string;
 
-  @prop({ required: true })
-  public source!: string;
+  @prop({ required: true, type: () => Destination })
+  public source!: Destination;
 
-  @prop({ required: true, type: () => [TagModel] })
-  public destinations!: TagModel[];
+  @prop({ required: true, type: () => [Destination] })
+  public destinations!: Destination[];
 
   @prop({ required: true })
   public postsPerDestination!: number;

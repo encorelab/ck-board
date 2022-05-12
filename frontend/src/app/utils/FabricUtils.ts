@@ -2,14 +2,11 @@ import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
 import Post, { Tag } from '../models/post';
 import {
-  CanvasPostEvent,
   DEFAULT_TAGS,
-  NEEDS_ATTENTION_TAG,
   POST_COLOR,
   POST_DEFAULT_BORDER,
   POST_DEFAULT_BORDER_THICKNESS,
   POST_DEFAULT_OPACITY,
-  POST_TAGGED_BORDER_THICKNESS,
 } from './constants';
 
 @Injectable({ providedIn: 'root' })

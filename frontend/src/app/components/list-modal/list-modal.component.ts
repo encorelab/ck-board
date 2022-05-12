@@ -53,7 +53,6 @@ export class ListModalComponent implements OnInit, OnDestroy {
       this.filterPosts();
     });
     this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
-      console.log(post);
       let found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) found.post = post;
     });

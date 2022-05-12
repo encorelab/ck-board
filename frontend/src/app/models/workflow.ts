@@ -1,57 +1,25 @@
-import { Board } from "./board"
-import Bucket from "./bucket"
-
-export enum WorkflowType {
-  DISTRIBUTION,
-  CUSTOM
+export enum DestinationType {
+  BOARD = 'BOARD',
+  BUCKET = 'BUCKET',
 }
 
-export enum ContainerType {
-  BOARD,
-  BUCKET
+export class Destination {
+  type: DestinationType;
+  id: string;
+  name: string;
 }
 
-export default class CustomWorkflow {
-  workflowID: string
-  boardID: string
-  active: boolean
+export class Workflow {
+  workflowID: string;
+  boardID: string;
+  name: string;
 
-  name: string
+  active: boolean;
 
-  source: Container
-  destination: Container
+  source: Destination;
+  destinations: Destination[];
 
-  criteria: WorkflowCriteria
-
-  timestamp: number
+  postsPerDestination: number;
 }
 
-export class DistributionWorkflow {
-  workflowID: string
-  boardID: string
-  active: boolean
-
-  name: string
-
-  source: Container
-  destinations: Container[]
-
-  postsPerBucket: number
-
-  timestamp: number
-}
-
-export class WorkflowCriteria {
-  criteriaID: string
-  workflowID: string
-
-  minimumLikes: number | null
-  minimumComments: number | null
-  includesTags: string[] | null 
-}
-
-export class Container {
-  type: ContainerType
-  id: string
-  name: string
-}
+export default Workflow;

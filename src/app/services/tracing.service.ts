@@ -9,13 +9,13 @@ import PostAdded from "../models/ckEvents/post/postAdded";
 import CommentAdded from "../models/ckEvents/comment/commentAdded";
 import PostModified from "../models/ckEvents/post/postModified";
 import PostUpvote from "../models/ckEvents/post/postUpvote";
-import CommentModified from "../models/ckEvents/comment/commentModified";
 import PostTagNameAdded from "../models/ckEvents/post/postTagNameAdded";
 import PostTagNameRemoved from "../models/ckEvents/post/postTagNameRemoved";
 import PostModifiedLocation from "../models/ckEvents/post/postModifiedLocation";
 import MovePostToBucket from "../models/ckEvents/bucket/movePostToBucket";
 import PostRead from "../models/ckEvents/post/postRead";
 import PostDeleted from "../models/ckEvents/post/postDeleted";
+import Comment from "../models/comment";
 
 @Injectable({
     providedIn: 'root'
@@ -156,49 +156,14 @@ export class TracingService {
      * @param commentID 
      * @param text 
      */
-    public async traceCreateComment(commentID: string, text: string): Promise<void> {
+    public async traceCreateComment(comment:Comment): Promise<void> {
         await this.traceBasic();
-        this.trace.event = new CommentAdded(commentID,text);
+        this.trace.event = new CommentAdded(comment);
         this.trace.eventType = CommentAdded.name;
         this.trace.serverTimestamp = Date.now();
         this.createTrace();
     }
 
-    /**
-     * UNUSED Might remove this i dont think we can modify comments yet
-     * @param commentID 
-     * @param eventType 
-     * @returns 
-     */
-    private async getTraceByCommentID(commentID: string, eventType:string) {
-        const trace = await this.traceCollection.ref.where("event.commentID", "==", commentID).where("eventType","==",eventType).get();
-        if(trace.size === 0) return null;
-        let result
-        trace.forEach(e => result=e)
-        return result.data()
-    }
-    /**
-     * UNUSED Might remove this i dont think we can modify comments yet
-     * @param commentID 
-     * @param text 
-     */
-    public async traceModifyComment(commentID: string, text: string): Promise<void> {
-        let trace = await this.getTraceByCommentID(commentID, CommentModified.name)
-        await this.traceBasic()
-        if (!trace){
-            this.trace.event = new CommentModified(commentID,text,1);
-            this.trace.eventType = CommentModified.name;
-            
-        }
-        else{
-            let counter = (trace.event as PostModified).postTitleOrMessageModifiedCounter;
-            this.trace.event = new CommentModified(commentID,text,counter+1);
-            this.trace.eventType = CommentModified.name;
-        }
-        this.trace.serverTimestamp = Date.now();
-            this.createTrace();
-
-    }
     /**
      * Trace post upvote/downvote. Creates PostUpvote event
      * @param postID 
@@ -207,7 +172,8 @@ export class TracingService {
     public async traceVotedPost(postID: string, vote: number) {
         await this.traceBasic();
         this.trace.serverTimestamp = Date.now();
-        this.trace.event = new PostUpvote(postID, vote)
+        this.trace.event = new PostUpvote(postID, vote);
+        this.trace.eventType = PostUpvote.name;
         this.createTrace();
     }
     /**

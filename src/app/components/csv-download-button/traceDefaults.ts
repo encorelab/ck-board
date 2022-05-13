@@ -28,6 +28,10 @@ export default [
         default:""
     },
     {
+        value:"eventType",
+        default:""
+    },
+    {
         value:"serverTimestamp",
         default:-1
     },

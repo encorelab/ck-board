@@ -62,7 +62,7 @@ export class CanvasService {
     async createComment(comment: Comment): Promise<void> {
         this.tracingService.traceClientTimestamp();
         await this.commentService.add(comment)
-        this.tracingService.traceCreateComment(comment.commentID, comment.comment);
+        this.tracingService.traceCreateComment(comment);
         
 
         // notifiy post author of new comment
@@ -126,7 +126,8 @@ export class CanvasService {
     }
 
     async removeTag(postID: string, value: object, tag:string): Promise<void> {
-        await this.postService.update(postID, value)
+        this.tracingService.traceClientTimestamp();
+        await this.postService.update(postID, value);
         this.tracingService.tracePostTagNameRemoved(postID,tag);
     }
     /**

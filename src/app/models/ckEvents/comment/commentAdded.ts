@@ -1,9 +1,10 @@
+import Comment from "../../comment";
 import CommentEvent from "./commentEvent";
 
 export default class CommentAdded extends CommentEvent{
     commentText:string = "";
-    constructor(commentID:string, commentText:string){
-        super(commentID);
-        this.commentText = commentText
+    constructor(comment:Comment){
+        super(comment.commentID,comment.postID);
+        this.commentText = comment.comment
     }
 }

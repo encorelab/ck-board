@@ -18,6 +18,7 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
+import Utils from 'src/app/utils/utils';
 
 @Component({
   selector: 'app-create-workflow-modal',
@@ -106,11 +107,10 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
 
   createBucket() {
     const bucket: Bucket = {
-      bucketID: Date.now() + '-' + this.data.board.boardID,
+      bucketID: Utils.generateUniqueID(),
       boardID: this.data.board.boardID,
       name: this.bucketName,
       posts: [],
-      timestamp: new Date().getTime(),
     };
 
     this.bucketService.create(bucket).then(() => {
@@ -195,7 +195,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   }
 
   _assembleWorkflow() {
-    let workflowID: string = new Date().getTime() + this.board.boardID;
+    let workflowID: string = Utils.generateUniqueID();
 
     let workflow: Workflow = {
       workflowID: workflowID,

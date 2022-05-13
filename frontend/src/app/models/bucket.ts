@@ -1,11 +1,9 @@
-import Post from "./post";
+import Post from './post';
 
 export default class Bucket {
-    bucketID: string;
-    boardID: string;
+  bucketID: string;
+  boardID: string;
 
-    name: string;
-    posts: string[]
-
-    timestamp: number
+  name: string;
+  posts: string[];
 }

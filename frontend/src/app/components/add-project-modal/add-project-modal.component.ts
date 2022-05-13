@@ -18,8 +18,9 @@ export class AddProjectModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {}
+
   handleDialogSubmit() {
-    const projectID = Date.now() + '-' + this.data.user.userID;
+    const projectID = Utils.generateUniqueID();
     this.data.createProject({
       projectID: projectID,
       teacherID: this.data.user.userID,

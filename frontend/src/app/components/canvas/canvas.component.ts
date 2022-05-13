@@ -22,7 +22,7 @@ import {
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board } from 'src/app/models/board';
-import User, { AuthUser, Role } from 'src/app/models/user';
+import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
@@ -40,11 +40,8 @@ import { ProjectService } from 'src/app/services/project.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { ComponentType } from '@angular/cdk/portal';
-
-interface PostIDNamePair {
-  postID: string;
-  username: string;
-}
+import Utils from 'src/app/utils/utils';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-canvas',
@@ -59,6 +56,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   user: AuthUser;
   board: Board;
   project: Project;
+
+  groupEventToHandler: Map<SocketEvent, Function>;
 
   Math: Math = Math;
   initialClientX: number = 0;
@@ -78,7 +77,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   showAddPost: boolean = true;
   lockArrowKeys: boolean = false;
 
-  unsubListeners: Function[] = [];
+  unsubListeners: Subscription[] = [];
 
   constructor(
     public postService: PostService,
@@ -95,7 +94,25 @@ export class CanvasComponent implements OnInit, OnDestroy {
     public fileUploadService: FileUploadService,
     private socketService: SocketService,
     private canvasService: CanvasService
-  ) {}
+  ) {
+    this.groupEventToHandler = new Map<SocketEvent, Function>([
+      [SocketEvent.POST_CREATE, this.handlePostCreateEvent],
+      [SocketEvent.POST_UPDATE, this.handlePostUpdateEvent],
+      [SocketEvent.POST_DELETE, this.handlePostDeleteEvent],
+      [SocketEvent.POST_START_MOVE, this.handlePostStartMoveEvent],
+      [SocketEvent.POST_STOP_MOVE, this.handlePostStopMoveEvent],
+      [SocketEvent.POST_LIKE_ADD, this.handlePostLikeAddEvent],
+      [SocketEvent.POST_LIKE_REMOVE, this.handlePostLikeRemoveEvent],
+      [SocketEvent.POST_COMMENT_ADD, this.handlePostCommentAddEvent],
+      [SocketEvent.POST_TAG_ADD, this.handlePostTagAddEvent],
+      [SocketEvent.POST_TAG_REMOVE, this.handlePostTagRemoveEvent],
+      [SocketEvent.BOARD_NAME_UPDATE, this.handleBoardNameUpdateEvent],
+      [SocketEvent.BOARD_IMAGE_UPDATE, this.handleBoardImageUpdateEvent],
+      [SocketEvent.BOARD_PERMISSIONS_UPDATE, this.handleBoardPermsUpdateEvent],
+      [SocketEvent.BOARD_TAGS_UPDATE, this.handleBoardTagsUpdateEvent],
+      [SocketEvent.BOARD_TASK_UPDATE, this.handleBoardTaskUpdateEvent],
+    ]);
+  }
 
   ngOnInit() {
     this.user = this.userService.user!;
@@ -106,10 +123,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     this.socketService.connect(this.boardID);
 
-    const unsubCanvasEvents = this.initCanvasEventsListener();
-    const unsubGroupEvents = this.initGroupEventsListener();
+    this.initCanvasEventsListener();
+    this.initGroupEventsListener();
 
-    this.unsubListeners = unsubCanvasEvents.concat(unsubGroupEvents);
     window.onbeforeunload = () => this.ngOnDestroy();
   }
 
@@ -140,99 +156,110 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initGroupEventsListener() {
-    this.socketService.listen(SocketEvent.POST_CREATE, (post: Post) => {
-      const obj = JSON.parse(post.fabricObject ?? '{}');
-      this.fabricUtils.fromJSON(obj);
-    });
-    this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
-      let existing = this.fabricUtils.getObjectFromId(post.postID);
-      existing = this.fabricUtils.updatePostTitleDesc(
-        existing,
-        post.title,
-        post.desc
-      );
-      this.canvas.requestRenderAll();
-    });
-    this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
-      const obj = this.fabricUtils.getObjectFromId(id);
-      this.canvas.remove(obj);
-    });
-    this.socketService.listen(SocketEvent.POST_START_MOVE, (post: Post) => {
-      let obj = this.fabricUtils.getObjectFromId(post.postID);
-      obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
-      obj = this.fabricUtils.setOpacity(obj, POST_MOVING_OPACITY);
-      obj = this.fabricUtils.setPostMovement(obj, true);
-      this.canvas.requestRenderAll();
-    });
-    this.socketService.listen(SocketEvent.POST_STOP_MOVE, (post: Post) => {
-      const next = JSON.parse(post.fabricObject || '{}');
-      let existing = this.fabricUtils.getObjectFromId(post.postID);
-
-      this.fabricUtils.animateToPosition(existing, next.left, next.top, () => {
-        existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
-        existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
-        existing = this.fabricUtils.setPostMovement(existing, false);
-        existing.set(next);
-        existing.setCoords();
-        this.canvas.renderAll();
-      });
-    });
-    this.socketService.listen(SocketEvent.POST_LIKE_ADD, (result: any) => {
-      let existing = this.fabricUtils.getObjectFromId(result.like.postID);
-      existing = this.fabricUtils.setLikeCount(existing, result.amount);
-      this.canvas.requestRenderAll();
-    });
-    this.socketService.listen(SocketEvent.POST_LIKE_REMOVE, (result: any) => {
-      let existing = this.fabricUtils.getObjectFromId(result.like.postID);
-      existing = this.fabricUtils.setLikeCount(existing, result.amount);
-      this.canvas.requestRenderAll();
-    });
-    this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
-      let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
-      existing = this.fabricUtils.setCommentCount(existing, result.amount);
-      this.canvas.requestRenderAll();
-    });
-    this.socketService.listen(
-      SocketEvent.BOARD_IMAGE_UPDATE,
-      (board: Board) => {
-        this.board = board;
-        this.fabricUtils.setBackgroundImage(
-          board.bgImage?.url,
-          board.bgImage?.imgSettings
-        );
-      }
-    );
-    this.socketService.listen(SocketEvent.BOARD_NAME_UPDATE, (board: Board) => {
-      this.board = board;
-    });
-    this.socketService.listen(
-      SocketEvent.BOARD_PERMISSIONS_UPDATE,
-      (board: Board) => {
-        this.board = board;
-        this.updateShowAddPost(board.permissions);
-        this.lockPostsMovement(!board.permissions.allowStudentMoveAny);
-        this.setAuthorVisibilityAll();
-      }
-    );
-    this.socketService.listen(SocketEvent.BOARD_TAGS_UPDATE, (board: Board) => {
-      this.board = board;
-    });
-    this.socketService.listen(SocketEvent.BOARD_TASK_UPDATE, (board: Board) => {
-      this.board = board;
-    });
-    this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
-      let existing = this.fabricUtils.getObjectFromId(post.postID);
-      this.fabricUtils.applyTagFeatures(existing, tag);
-    });
-    this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post, tag }) => {
-      if (post.specialAttributes) {
-        let existing = this.fabricUtils.getObjectFromId(post.postID);
-        this.fabricUtils.resetTagFeatures(existing);
-      }
-    });
-
-    return [];
+    for (const [k, v] of this.groupEventToHandler) {
+      let unsub = this.socketService.listen(k, v);
+      this.unsubListeners.push(unsub);
+    }
   }
+
+  handlePostCreateEvent = (post: Post) => {
+    const obj = JSON.parse(post.fabricObject ?? '{}');
+    this.fabricUtils.fromJSON(obj);
+  };
+
+  handlePostUpdateEvent = (post: Post) => {
+    let existing = this.fabricUtils.getObjectFromId(post.postID);
+    existing = this.fabricUtils.updatePostTitleDesc(
+      existing,
+      post.title,
+      post.desc
+    );
+    this.canvas.requestRenderAll();
+  };
+
+  handlePostDeleteEvent = (id: string) => {
+    const obj = this.fabricUtils.getObjectFromId(id);
+    this.canvas.remove(obj);
+  };
+
+  handlePostStartMoveEvent = (post: Post) => {
+    let obj = this.fabricUtils.getObjectFromId(post.postID);
+    obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
+    obj = this.fabricUtils.setOpacity(obj, POST_MOVING_OPACITY);
+    obj = this.fabricUtils.setPostMovement(obj, true);
+    this.canvas.requestRenderAll();
+  };
+
+  handlePostStopMoveEvent = (post: Post) => {
+    const next = JSON.parse(post.fabricObject || '{}');
+    let existing = this.fabricUtils.getObjectFromId(post.postID);
+
+    this.fabricUtils.animateToPosition(existing, next.left, next.top, () => {
+      existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
+      existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
+      existing = this.fabricUtils.setPostMovement(existing, false);
+      existing.set(next);
+      existing.setCoords();
+      this.canvas.renderAll();
+    });
+  };
+
+  handlePostLikeAddEvent = (result: any) => {
+    let existing = this.fabricUtils.getObjectFromId(result.like.postID);
+    existing = this.fabricUtils.setLikeCount(existing, result.amount);
+    this.canvas.requestRenderAll();
+  };
+
+  handlePostLikeRemoveEvent = (result: any) => {
+    let existing = this.fabricUtils.getObjectFromId(result.like.postID);
+    existing = this.fabricUtils.setLikeCount(existing, result.amount);
+    this.canvas.requestRenderAll();
+  };
+
+  handlePostCommentAddEvent = (result: any) => {
+    let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
+    existing = this.fabricUtils.setCommentCount(existing, result.amount);
+    this.canvas.requestRenderAll();
+  };
+
+  handlePostTagAddEvent = ({ post, tag }) => {
+    let existing = this.fabricUtils.getObjectFromId(post.postID);
+    this.fabricUtils.applyTagFeatures(existing, tag);
+  };
+
+  handlePostTagRemoveEvent = ({ post, tag }) => {
+    if (post.specialAttributes) {
+      let existing = this.fabricUtils.getObjectFromId(post.postID);
+      this.fabricUtils.resetTagFeatures(existing);
+    }
+  };
+
+  handleBoardNameUpdateEvent = (board: Board) => {
+    this.board = board;
+  };
+
+  handleBoardImageUpdateEvent = (board: Board) => {
+    this.board = board;
+    this.fabricUtils.setBackgroundImage(
+      board.bgImage?.url,
+      board.bgImage?.imgSettings
+    );
+  };
+
+  handleBoardPermsUpdateEvent = (board: Board) => {
+    this.board = board;
+    this.updateShowAddPost(board.permissions);
+    this.lockPostsMovement(!board.permissions.allowStudentMoveAny);
+    this.setAuthorVisibilityAll();
+  };
+
+  handleBoardTagsUpdateEvent = (board: Board) => {
+    this.board = board;
+  };
+
+  handleBoardTaskUpdateEvent = (board: Board) => {
+    this.board = board;
+  };
 
   showBucketsModal() {
     this._openDialog(BucketsModalComponent, {
@@ -349,10 +376,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.canvas.renderAll();
   }
 
-  updateAuthorNames(postToUpdate: PostIDNamePair) {
-    let obj = this.fabricUtils.getObjectFromId(postToUpdate.postID);
+  updateAuthorNames(postID: string, username: string) {
+    let obj = this.fabricUtils.getObjectFromId(postID);
     if (obj) {
-      this.fabricUtils.updateAuthor(obj, postToUpdate.username);
+      this.fabricUtils.updateAuthor(obj, username);
       this.canvas.renderAll();
     }
   }
@@ -368,13 +395,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.user.role == Role.TEACHER &&
       this.board.permissions.showAuthorNameTeacher;
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
-      this.updateAuthorNames({ postID: post.postID, username: 'Anonymous' });
+      this.updateAuthorNames(post.postID, 'Anonymous');
     } else {
       this.userService.getOneById(post.userID).then((user: any) => {
-        this.updateAuthorNames({
-          postID: post.postID,
-          username: user.username,
-        });
+        this.updateAuthorNames(post.postID, user.username);
       });
     }
   }
@@ -419,16 +443,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  // one event for all tags - PostSpecialTag
-  // data will be passed into event i.e. colors, thickness, etc.
-  // define interface SpecialTag{borderColor, borderThickness}
-  // TODO: also remove creating custom ids wiht data + id, find auto way of it happening
-  // TODO: remove all extra methods not being used anymroe
-  // TODO: fix students cant create post permission
-  // TODO: add id and boardID to tag model
-  // TODO: add validation/error handling to events/api calls
-  // TODO: add eslint to frontend too
-
   initLikeClickListener() {
     this.canvas.on('mouse:down', this.handleLikeClick);
 
@@ -450,7 +464,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       );
       if (!isLiked) {
         const like: Like = {
-          likeID: Date.now() + '-' + this.user.userID,
+          likeID: Utils.generateUniqueID(),
           likerID: this.user.userID,
           postID: post.postID,
           boardID: this.board.boardID,
@@ -755,6 +769,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       subscription.unsubscribe();
     };
   }
+
   unlockArrowKeysWhenModalClose() {
     const subscription = this.dialog.afterAllClosed.subscribe(() => {
       this.lockArrowKeys = false;
@@ -773,29 +788,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  private async _stopActivePost() {
-    let activeObj: any = this.canvas.getActiveObject();
-
-    if (activeObj) {
-      activeObj = this.fabricUtils.setFillColor(activeObj, POST_COLOR);
-      activeObj = this.fabricUtils.setOpacity(activeObj, POST_DEFAULT_OPACITY);
-      activeObj = this.fabricUtils.setPostMovement(activeObj, false);
-      this.canvas.discardActiveObject();
-
-      activeObj = this.fabricUtils.toJSON(activeObj);
-      await this.postService.update(activeObj.postID, {
-        fabricObject: activeObj,
-      });
-      this.socketService.emit(
-        SocketEvent.POST_STOP_MOVE,
-        this.fabricUtils.fromFabricPost(activeObj)
-      );
-    }
-  }
-
   async ngOnDestroy() {
-    await this._stopActivePost();
-    this.socketService.disconnect();
+    this.socketService.disconnect(this.boardID);
     this.snackbarService.ngOnDestroy();
   }
 }

@@ -13,6 +13,7 @@ import {
 } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
+import Utils from 'src/app/utils/utils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 
 export interface AddPostDialog {
@@ -80,7 +81,7 @@ export class AddPostComponent {
     );
 
     var fabricPost = new FabricPostComponent({
-      postID: Date.now() + '-' + this.user.userID,
+      postID: Utils.generateUniqueID(),
       boardID: this.board.boardID,
       title: this.title,
       author: this.user.username,
@@ -103,7 +104,7 @@ export class AddPostComponent {
   async addBucketPost() {
     const boardID: string = this.data.bucket!.bucketID;
     const post: Post = {
-      postID: Date.now() + '-' + this.user.userID,
+      postID: Utils.generateUniqueID(),
       title: this.title,
       desc: this.message,
       tags: this.tags,

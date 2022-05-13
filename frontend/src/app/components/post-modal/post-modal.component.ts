@@ -22,6 +22,7 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { UserService } from 'src/app/services/user.service';
+import Utils from 'src/app/utils/utils';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -234,7 +235,7 @@ export class PostModalComponent {
   addComment() {
     const comment: Comment = {
       comment: this.newComment,
-      commentID: Date.now() + '-' + this.data.user.userID,
+      commentID: Utils.generateUniqueID(),
       userID: this.data.user.userID,
       postID: this.post.postID,
       boardID: this.data.board.boardID,
@@ -263,7 +264,7 @@ export class PostModalComponent {
       );
     } else {
       const like: Like = {
-        likeID: Date.now() + '-' + this.user.userID,
+        likeID: Utils.generateUniqueID(),
         likerID: this.user.userID,
         postID: this.post.postID,
         boardID: this.data.board.boardID,

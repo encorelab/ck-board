@@ -6,7 +6,7 @@ class Socket {
   private static _instance: Socket;
 
   private _socket: socketIO.Socket | null = null;
-  private _currentRoom = "";
+  private _currentRoom: string | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
@@ -38,6 +38,16 @@ class Socket {
         this._safeJoin(socket, room);
         this._listenForEvents(io, socket);
       });
+
+      socket.on("leave", (room) => {
+        if (this._currentRoom && this._currentRoom == room) {
+          socket.leave(this._currentRoom);
+          console.log(`Socket ${socket.id} left room ${room}`);
+          events.map((e) => socket.removeAllListeners(e.type.toString()));
+          socket.data.room = null;
+          this._currentRoom = null;
+        }
+      });
     });
   }
 
@@ -51,6 +61,8 @@ class Socket {
   emit(event: SocketEvent, eventData: unknown): void {
     if (this._socket == null) {
       throw new Error("Socket not initialized. Please invoke init() first.");
+    } else if (this._currentRoom == null) {
+      throw new Error("Socket not connected to any rooms.");
     }
 
     this._socket.to(this._currentRoom).emit(event, eventData);

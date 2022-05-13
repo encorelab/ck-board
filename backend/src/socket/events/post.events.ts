@@ -71,6 +71,8 @@ class PostStopMove {
 
   static async handleEvent(eventData: PostModel): Promise<PostModel | null> {
     const post = await dalPost.update(eventData.postID, eventData);
+    console.log("Updated Post!");
+    console.log(post != null);
     return post;
   }
 

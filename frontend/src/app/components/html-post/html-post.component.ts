@@ -22,6 +22,7 @@ import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
+import Utils from 'src/app/utils/utils';
 
 export interface HTMLPost {
   /* Board which contains this post */
@@ -108,7 +109,7 @@ export class HtmlPostComponent implements OnInit {
       );
     } else {
       const like: Like = {
-        likeID: Date.now() + '-' + this.user.userID,
+        likeID: Utils.generateUniqueID(),
         likerID: this.user.userID,
         postID: this.post.post.postID,
         boardID: this.post.board.boardID,

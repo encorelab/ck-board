@@ -6,7 +6,6 @@ export default class Post {
   tags: Tag[];
   userID: string;
   fabricObject: string | null;
-  timestamp?: number;
 }
 
 export class TagSpecialAttributes {

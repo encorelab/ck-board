@@ -6,8 +6,8 @@ import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
 import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
-import { AuthGuard } from './utils/auth.guard';
-import { ProjectGuard } from './utils/project.guard';
+import { AuthGuard } from './guards/auth.guard';
+import { ProjectGuard } from './guards/project.guard';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },

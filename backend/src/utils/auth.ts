@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
-import { secret } from "../config/auth.config";
 import { UserModel } from "../models/User";
 
 export interface Token {
@@ -9,6 +8,16 @@ export interface Token {
   userID: string;
   role: string;
 }
+
+export const getJWTSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+
+  if (!secret) {
+    throw new Error("No JWT Secret environtment variable defined!");
+  }
+
+  return secret;
+};
 
 export const userToToken = (user: UserModel): Token => {
   return {
@@ -30,7 +39,7 @@ export const isAuthenticated = async (
     }
 
     const token = req.headers.authorization.replace("Bearer ", "");
-    verify(token, secret) as Token;
+    verify(token, getJWTSecret()) as Token;
 
     next();
   } catch (e) {

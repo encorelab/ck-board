@@ -312,11 +312,19 @@ export class FabricUtils {
   }
 
   setCommentCount(fabricObject: fabric.Group, amount: number): fabric.Group {
+    var comment: any = fabricObject
+      .getObjects()
+      .find((obj) => obj.name == 'comment');
     var commentCount: any = fabricObject
       .getObjects()
       .find((obj) => obj.name == 'commentCount');
 
     commentCount.set({ text: amount.toString(), dirty: true });
+
+    if (amount >= 1) {
+      commentCount.set({ opacity: 1, dirty: true });
+      comment.set({ opacity: 1, dirty: true });
+    }
 
     fabricObject.dirty = true;
     fabricObject.addWithUpdate();

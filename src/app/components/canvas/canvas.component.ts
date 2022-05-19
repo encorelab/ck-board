@@ -427,6 +427,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const title = this.board.task.title ? this.board.task.title : 'No task created!';
     const message = this.board.task.message;
 
+    if (this.snackbarService.snackbarIsOpen()) {
+      this.snackbarService.dequeueSnackbar();
+      return;
+    }
+
     const openDialogCloseSnack = () => {
       this.dialog.open(TaskModalComponent, {
         width: '500px',

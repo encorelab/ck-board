@@ -27,7 +27,7 @@ export class SnackbarService implements OnDestroy {
   private readonly snackBarQueue = new BehaviorSubject<SnackBarQueueItem[]>([]);
   private readonly snackBarQueue$ = this.snackBarQueue.asObservable();
 
-  constructor(public snackBar: MatSnackBar) {
+  constructor(private snackBar: MatSnackBar) {
     let alreadyDismissed = false;
 
     this.snackBarQueue$.subscribe(e => {
@@ -61,6 +61,10 @@ export class SnackbarService implements OnDestroy {
     this.snackBarQueue.next(
       this.snackBarQueue.value,
     );
+  }
+
+  snackbarIsOpen(): boolean {
+    return Boolean(this.snackBar._openedSnackBarRef);
   }
 
   private openSnackbar(item: SnackBarQueueItem) {

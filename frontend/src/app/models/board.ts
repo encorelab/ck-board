@@ -1,20 +1,19 @@
-import { Permissions } from "./permissions";
-import { Tag } from "./post";
+import { Permissions } from './permissions';
+import { Tag } from './post';
 
 export class Board {
-    boardID: string;
-    teacherID: string;
-    public: boolean;
-    name: string;
-    task: {
-        title: string;
-        message?: string;
-    }
-    bgImage?: {
-        url: string;
-        imgSettings: {};
-    };
-    permissions: Permissions; 
-    members: string[];
-    tags: Tag[];
+  boardID: string;
+  teacherID: string;
+  name: string;
+  task: {
+    title: string;
+    message?: string;
+  };
+  bgImage?: {
+    url: string;
+    imgSettings: {};
+  };
+  permissions: Permissions;
+  members: string[];
+  tags: Tag[];
 }

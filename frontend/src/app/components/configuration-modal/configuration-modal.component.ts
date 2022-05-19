@@ -19,7 +19,6 @@ export class ConfigurationModalComponent {
 
   boardID: string;
   boardName: string;
-  isPublic: boolean = false;
 
   currentBgImage: any;
   newCompressedImage: any;
@@ -45,7 +44,6 @@ export class ConfigurationModalComponent {
   ) {
     this.boardID = data.board.boardID;
     this.boardName = data.board.name;
-    this.isPublic = data.board.public;
     this.currentBgImage = data.board.bgImage;
     this.taskTitle = data.board.task.title;
     this.taskMessage = data.board.task.message;

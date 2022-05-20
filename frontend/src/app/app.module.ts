@@ -40,6 +40,7 @@ import { ToolbarComponent } from './components/toolbar/toolbar.component';
 import { SnackBarComponent } from './components/snackbar/snackbar.component';
 import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
 import { APIInterceptor } from './utils/interceptor';
+import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -72,6 +73,7 @@ export function tokenGetter() {
     ToolbarComponent,
     SnackBarComponent,
     ConfirmModalComponent,
+    NotificationDropdownComponent,
   ],
   imports: [
     BrowserModule,

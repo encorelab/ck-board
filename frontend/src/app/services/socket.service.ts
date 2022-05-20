@@ -15,8 +15,8 @@ export class SocketService {
    * @param boardID board's ID
    * @returns void
    */
-  connect(boardID: string): void {
-    this.socket.emit('join', boardID);
+  connect(userID: string, boardID: string): void {
+    this.socket.emit('join', userID, boardID);
   }
 
   /**
@@ -47,7 +47,7 @@ export class SocketService {
    *
    * @returns void
    */
-  disconnect(boardID: string): void {
-    this.socket.emit('leave', boardID);
+  disconnect(userID: string, boardID: string): void {
+    this.socket.emit('leave', userID, boardID);
   }
 }

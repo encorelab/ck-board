@@ -1,15 +1,19 @@
 import * as socketIO from "socket.io";
 import { SocketEvent } from "../constants";
 import events from "./events";
+import SocketManager from "./socketManager";
 
 class Socket {
   private static _instance: Socket;
 
+  private _socketManager: SocketManager;
   private _socket: socketIO.Socket | null = null;
   private _currentRoom: string | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor() {}
+  private constructor() {
+    this._socketManager = SocketManager.Instance;
+  }
 
   public static get Instance() {
     return this._instance || (this._instance = new this());
@@ -33,19 +37,21 @@ class Socket {
     io.on("connection", (socket) => {
       this._socket = socket;
 
-      socket.on("join", (room) => {
+      socket.on("join", (user: string, room: string) => {
         socket.data.room = room;
-        this._safeJoin(socket, room);
+        this._safeJoin(socket, user, room);
         this._listenForEvents(io, socket);
       });
 
-      socket.on("leave", (room) => {
+      socket.on("leave", (user, room) => {
         if (this._currentRoom && this._currentRoom == room) {
           socket.leave(this._currentRoom);
           console.log(`Socket ${socket.id} left room ${room}`);
+
           events.map((e) => socket.removeAllListeners(e.type.toString()));
           socket.data.room = null;
           this._currentRoom = null;
+          this._socketManager.remove(user);
         }
       });
     });
@@ -93,10 +99,12 @@ class Socket {
    * @param nextRoom new room to join
    * @returns void
    */
-  private _safeJoin(socket: socketIO.Socket, nextRoom: string) {
+  private _safeJoin(socket: socketIO.Socket, user: string, nextRoom: string) {
     if (this._currentRoom) socket.leave(this._currentRoom);
 
     socket.join(nextRoom);
+
+    this._socketManager.add(user, socket.id);
     this._currentRoom = nextRoom;
     console.log(`Socket ${socket.id} joined room ${nextRoom}`);
   }

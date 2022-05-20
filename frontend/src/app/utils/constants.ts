@@ -29,6 +29,8 @@ export enum SocketEvent {
   BOARD_TAGS_UPDATE = 'BOARD_TAGS_UPDATE',
 
   WORKFLOW_RUN = 'WORKFLOW_RUN',
+
+  NOTIFICATION_CREATE = 'NOTIFICATION_CREATE',
 }
 
 export const POST_COLOR: string = '#FFE663';

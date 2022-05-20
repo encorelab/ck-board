@@ -5,6 +5,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import Socket from "./socket/socket";
+import notifications from "./api/notifications";
 import posts from "./api/posts";
 import likes from "./api/likes";
 import comments from "./api/comments";
@@ -37,6 +38,7 @@ app.use("/api/workflows", isAuthenticated, workflows);
 app.use("/api/posts", isAuthenticated, posts);
 app.use("/api/likes", isAuthenticated, likes);
 app.use("/api/comments", isAuthenticated, comments);
+app.use("/api/notifications", isAuthenticated, notifications);
 app.use("/api/auth", auth);
 
 mongoose

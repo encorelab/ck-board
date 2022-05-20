@@ -13,6 +13,7 @@ import { BucketService } from './bucket.service';
 import { CommentService } from './comment.service';
 import { FileUploadService } from './fileUpload.service';
 import { LikesService } from './likes.service';
+import { NotificationService } from './notification.service';
 import { PostService } from './post.service';
 import { SocketService } from './socket.service';
 
@@ -28,6 +29,7 @@ export class CanvasService {
     private commentService: CommentService,
     private boardService: BoardService,
     private bucketService: BucketService,
+    private notificationService: NotificationService,
     private fabricUtils: FabricUtils
   ) {}
 
@@ -64,9 +66,15 @@ export class CanvasService {
     this.fabricUtils._canvas.requestRenderAll();
 
     const fabricObject = this.fabricUtils.toJSON(existing);
-    await this.postService.update(result.like.postID, { fabricObject });
+    const post = await this.postService.update(result.like.postID, {
+      fabricObject,
+    });
 
     this.socketService.emit(SocketEvent.POST_LIKE_ADD, like);
+    this.socketService.emit(
+      SocketEvent.NOTIFICATION_CREATE,
+      this.notificationService.buildLikeNotification(post)
+    );
   }
 
   async unlike(userID: string, postID: string) {
@@ -90,8 +98,15 @@ export class CanvasService {
     this.fabricUtils._canvas.requestRenderAll();
 
     const fabricObject = this.fabricUtils.toJSON(existing);
-    await this.postService.update(result.comment.postID, { fabricObject });
+    const post = await this.postService.update(result.comment.postID, {
+      fabricObject,
+    });
+
     this.socketService.emit(SocketEvent.POST_COMMENT_ADD, comment);
+    this.socketService.emit(
+      SocketEvent.NOTIFICATION_CREATE,
+      this.notificationService.buildCommentNotification(post)
+    );
   }
 
   async tag(post: Post, tag: Tag): Promise<Post> {
@@ -112,6 +127,10 @@ export class CanvasService {
     });
 
     this.socketService.emit(SocketEvent.POST_TAG_ADD, { tag, post: savedPost });
+    this.socketService.emit(
+      SocketEvent.NOTIFICATION_CREATE,
+      this.notificationService.buildTagNotification(post)
+    );
 
     return savedPost;
   }

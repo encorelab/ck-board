@@ -121,7 +121,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     this.configureBoard();
 
-    this.socketService.connect(this.boardID);
+    this.socketService.connect(this.user.userID, this.boardID);
 
     this.initCanvasEventsListener();
     this.initGroupEventsListener();
@@ -789,7 +789,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   async ngOnDestroy() {
-    this.socketService.disconnect(this.boardID);
+    this.socketService.disconnect(this.user.userID, this.boardID);
     this.snackbarService.ngOnDestroy();
   }
 }

@@ -92,7 +92,7 @@
   </div>
   <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments && canStudentComment">
     <mat-label>Add Comment</mat-label>
-    <input matInput [(ngModel)]='newComment'>
+    <input matInput [(ngModel)]='newComment' (keyup.enter)="addComment()">
     <button color="primary" matSuffix mat-button (click)="addComment()">Comment!</button>
   </mat-form-field>
 </div>

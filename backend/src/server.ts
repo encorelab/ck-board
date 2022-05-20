@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import bodyParser from "body-parser";
+import path from "path";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -26,6 +27,8 @@ const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@ck-board-cluster.f2vut.
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "../../frontend/dist/ck-board")));
+
 const server = http.createServer(app);
 
 const socket = Socket.Instance;
@@ -40,6 +43,12 @@ app.use("/api/likes", isAuthenticated, likes);
 app.use("/api/comments", isAuthenticated, comments);
 app.use("/api/notifications", isAuthenticated, notifications);
 app.use("/api/auth", auth);
+
+app.get("*", (req, res) => {
+  res.sendFile(
+    path.join(__dirname + "/../../frontend/dist/ck-board/index.html")
+  );
+});
 
 mongoose
   .connect(dbURI)

@@ -5,9 +5,11 @@
     "ng": "ng",
     "start": "node server.js",
     "build": "ng build --prod",
+    "heroku-postbuild": "ng build --prod",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
+  "proxy": "http://localhost:8001",
   "private": true,
   "dependencies": {
     "@angular/animations": "~12.0.1",

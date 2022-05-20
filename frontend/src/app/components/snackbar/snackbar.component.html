@@ -1,0 +1,27 @@
+<div *ngIf="!description" class="actions">
+  <div class="title" [innerHTML]="title">
+    {{ title }}
+  </div>
+  <button mat-button (click)="close()">
+    Close!
+  </button>
+  <button mat-button *ngIf="action" (click)="doAction()">
+    {{ this.action.name }}
+  </button>
+</div>
+<div *ngIf="description">
+  <div class="title" [innerHTML]="title">
+    {{ title }}
+  </div>
+  <div class="description" [innerHTML]="description">
+    {{ description }}
+  </div>
+  <div class="actions complex-actions">
+    <button mat-button (click)="close()">
+      Close!
+    </button>
+    <button mat-button *ngIf="action" (click)="doAction()">
+      {{ this.action.name }}
+    </button>
+  </div>
+</div>

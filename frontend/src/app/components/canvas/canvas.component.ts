@@ -276,7 +276,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  // configure board
   configureBoard() {
     const map = this.activatedRoute.snapshot.paramMap;
 
@@ -298,6 +297,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.boardService.get(this.boardID).then((board) => {
         if (board) {
           this.board = board;
+          this.configureZoom();
           this.fabricUtils.setBackgroundImage(
             board.bgImage?.url,
             board.bgImage?.imgSettings
@@ -311,6 +311,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.projectService
       .get(this.projectID)
       .then((project) => (this.project = project));
+  }
+
+  configureZoom() {
+    if (this.board.initialZoom) {
+      let zoom = this.board.initialZoom / 100;
+      this.zoom = parseFloat(zoom.toPrecision(2));
+      this.handleZoom('setZoom');
+    } else {
+      this.zoom = 1;
+    }
   }
 
   openWorkflowDialog() {
@@ -739,6 +749,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.zoom -= 0.05;
     } else if (event === 'reset') {
       this.zoom = 1;
+    } else if (event === 'setZoom') {
+      this.zoom = this.zoom;
+      centerX = center.left;
+      centerY = center.top;
     }
 
     if (this.zoom > 20) {

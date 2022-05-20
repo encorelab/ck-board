@@ -33,6 +33,8 @@ export class AddBoardModalComponent implements OnInit {
   newTagText: string = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
 
+  initialZoom: number = 100;
+
   projects: Project[];
   selectedProject: string = '';
 
@@ -97,6 +99,7 @@ export class AddBoardModalComponent implements OnInit {
         permissions: this.permissions,
         members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),
+        initialZoom: this.initialZoom,
       },
       this.selectedProject
     );

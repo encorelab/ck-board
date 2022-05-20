@@ -4,8 +4,13 @@
     <mat-tab label="Board"> 
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Board Name</mat-label>
-        <input matInput [(ngModel)]="boardName">
+        <input matInput [(ngModel)]="boardName" #boardNameInput="ngModel" required>
+        <mat-error *ngIf="boardNameInput.invalid">
+          Board Name is required.
+        </mat-error>
       </mat-form-field>
+      <mat-label>Initial zoom: {{initialZoom}}%</mat-label>
+      <mat-slider class="slider"  min="0" max="200" step="5" [(ngModel)]="initialZoom" thumbLabel ></mat-slider>
       <div class="image-form">
         <mat-chip (click)="compressFile()" color="primary" selected>
           <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
@@ -75,5 +80,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button (click)="handleDialogSubmit()" cdkFocusInitial>Update Configuration!</button>
+  <button mat-button (click)="handleDialogSubmit()" [disabled]="boardNameInput.invalid" cdkFocusInitial>Update Configuration!</button>
 </div>

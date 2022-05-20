@@ -22,6 +22,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatSliderModule } from '@angular/material/slider';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 
 @NgModule({
@@ -47,6 +49,8 @@ import { NgModule } from '@angular/core';
     MatRadioModule,
     MatSnackBarModule,
     MatBadgeModule,
+    MatSliderModule,
+    BrowserAnimationsModule,
   ],
   exports: [
     MatButtonModule,
@@ -73,6 +77,8 @@ import { NgModule } from '@angular/core';
     MatRadioModule,
     MatSnackBarModule,
     MatBadgeModule,
+    MatSliderModule,
+    BrowserAnimationsModule,
   ],
 })
 export class MaterialModule {}

@@ -9,6 +9,11 @@ export interface Token {
   role: string;
 }
 
+export const addHours = (numOfHours: number, date = new Date()) => {
+  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
+  return date;
+};
+
 export const getJWTSecret = (): string => {
   const secret = process.env.JWT_SECRET;
 

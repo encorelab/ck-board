@@ -7,6 +7,7 @@ export interface AuthUser {
 
 export interface TokenResponse {
   token: string;
+  expiresAt: string;
   user: AuthUser;
 }
 

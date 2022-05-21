@@ -18,7 +18,7 @@ import auth from "./api/auth";
 import { isAuthenticated } from "./utils/auth";
 dotenv.config();
 
-const port = process.env.PORT || 8001;
+const port = 8001;
 const dbUsername = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbName = process.env.DB_NAME;

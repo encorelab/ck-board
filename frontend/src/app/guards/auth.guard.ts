@@ -5,15 +5,20 @@ import {
   RouterStateSnapshot,
   Router,
 } from '@angular/router';
+import { UserService } from '../services/user.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(public router: Router, public ngZone: NgZone) {}
+  constructor(
+    public router: Router,
+    public userService: UserService,
+    public ngZone: NgZone
+  ) {}
 
   canActivate(_next: ActivatedRouteSnapshot, _state: RouterStateSnapshot) {
-    if (localStorage.getItem('access_token')) {
+    if (this.userService.loggedIn) {
       return true;
     }
 

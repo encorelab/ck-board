@@ -9,6 +9,15 @@ import {
   POST_DEFAULT_OPACITY,
 } from './constants';
 
+export class ImageSettings {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+  scaleX: number;
+  scaleY: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FabricUtils {
   _canvas: fabric.Canvas;
@@ -335,7 +344,7 @@ export class FabricUtils {
     return this.setField(fabricObject, 'tags', tags);
   }
 
-  createImageSettings(img) {
+  createImageSettings(img): ImageSettings {
     let vptCoords = this._canvas.vptCoords!;
     let width = this._canvas.getWidth();
     let height = this._canvas.getHeight();

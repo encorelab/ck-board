@@ -19,6 +19,7 @@ export class UserService {
       .then((result) => {
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('access_token', result.token);
+        localStorage.setItem('expires_at', result.expiresAt);
         return true;
       });
   }
@@ -33,6 +34,7 @@ export class UserService {
       .then((result) => {
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('access_token', result.token);
+        localStorage.setItem('expires_at', result.expiresAt);
         return true;
       });
   }
@@ -40,6 +42,7 @@ export class UserService {
   logout() {
     localStorage.removeItem('user');
     localStorage.removeItem('access_token');
+    localStorage.removeItem('expires_at');
   }
 
   update(id: string, user: Partial<User>) {
@@ -51,7 +54,14 @@ export class UserService {
   }
 
   public get loggedIn(): boolean {
-    return localStorage.getItem('access_token') !== null;
+    const token = localStorage.getItem('access_token');
+    const expiry = localStorage.getItem('expires_at');
+
+    if (!expiry || !token) return false;
+
+    const expiryAsNumber = new Date(expiry).getTime();
+
+    return Date.now() < expiryAsNumber;
   }
 
   public get token(): string | null {

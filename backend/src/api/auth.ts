@@ -2,7 +2,12 @@ import { Router } from "express";
 import { sign } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import dalUser from "../repository/dalUser";
-import { getJWTSecret, isAuthenticated, userToToken } from "../utils/auth";
+import {
+  addHours,
+  getJWTSecret,
+  isAuthenticated,
+  userToToken,
+} from "../utils/auth";
 import { UserModel } from "../models/User";
 
 const router = Router();
@@ -22,7 +27,9 @@ router.post("/login", async (req, res) => {
 
   const user = userToToken(foundUser);
   const token = sign(user, getJWTSecret(), { expiresIn: "2h" });
-  res.status(200).send({ token, user });
+  const expiresAt = addHours(2);
+
+  res.status(200).send({ token, user, expiresAt });
 });
 
 router.post("/register", async (req, res) => {
@@ -35,8 +42,9 @@ router.post("/register", async (req, res) => {
 
   const user = userToToken(savedUser);
   const token = sign(user, getJWTSecret(), { expiresIn: "2h" });
+  const expiresAt = addHours(2);
 
-  res.status(200).send({ token, user });
+  res.status(200).send({ token, user, expiresAt });
 });
 
 router.post("/:id", isAuthenticated, async (req, res) => {

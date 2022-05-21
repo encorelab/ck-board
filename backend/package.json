@@ -15,9 +15,9 @@
   },
   "scripts": {
     "tsc": "./node_modules/typescript/bin/tsc",
-    "build": "tsc",
     "dev": "ts-node-dev --respawn ./src/server.ts",
     "start": "node ./dist/server.js",
+    "postinstall": "npm run tsc",
     "lint": "eslint . --ext .ts"
   },
   "name": "backend",

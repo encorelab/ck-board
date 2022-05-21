@@ -79,7 +79,10 @@ export function tokenGetter() {
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board-staging'),
+    AngularFireModule.initializeApp(
+      environment.firebaseConfig,
+      'ck-board-staging'
+    ),
     AngularFirestoreModule,
     AngularFireAuthModule,
     FormsModule,
@@ -87,7 +90,7 @@ export function tokenGetter() {
       config: {
         tokenGetter: tokenGetter,
         allowedDomains: ['localhost:8001'],
-        disallowedRoutes: ['localhost:8001/api/auth'],
+        // disallowedRoutes: ['localhost:8001/api/auth'],
       },
     }),
     SocketIoModule.forRoot(config),

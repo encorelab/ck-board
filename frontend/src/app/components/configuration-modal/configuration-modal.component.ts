@@ -86,8 +86,10 @@ export class ConfigurationModalComponent {
     });
   }
 
-  removeImage() {
+  async removeImage() {
     this.currentBgImage = null;
+    const board = await this.canvasService.updateBoardImage(this.boardID, null);
+    this.data.update(board);
   }
 
   async handleDialogSubmit() {

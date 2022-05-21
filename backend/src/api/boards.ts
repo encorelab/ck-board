@@ -25,13 +25,13 @@ router.post("/:id", async (req, res) => {
 
   const board: Partial<BoardModel> = Object.assign(
     {},
-    name === null ? null : { name },
-    members === null ? null : { members },
-    task === null ? null : { task },
-    permissions === null ? null : { permissions },
-    bgImage === null ? null : { bgImage },
-    tags === null ? null : { tags },
-    initialZoom === null ? null : { initialZoom }
+    name === undefined ? null : { name },
+    members === undefined ? null : { members },
+    task === undefined ? null : { task },
+    permissions === undefined ? null : { permissions },
+    bgImage === undefined ? null : { bgImage },
+    tags === undefined ? null : { tags },
+    initialZoom === undefined ? null : { initialZoom }
   );
 
   const updatedBoard = await dalBoard.update(id, board);

@@ -11,6 +11,9 @@ export class NotificationModel {
   public userID!: string;
 
   @prop({ required: true })
+  public boardID!: string;
+
+  @prop({ required: true })
   public postID!: string;
 
   @prop({ required: true })

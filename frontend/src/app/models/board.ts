@@ -9,10 +9,10 @@ export class Board {
     title: string;
     message?: string;
   };
-  bgImage?: {
+  bgImage: {
     url: string;
     imgSettings: {};
-  };
+  } | null;
   permissions: Permissions;
   members: string[];
   tags: Tag[];

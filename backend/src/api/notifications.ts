@@ -4,10 +4,14 @@ import dalNotification from "../repository/dalNotification";
 
 const router = Router();
 
-router.get("/user/:id", async (req, res) => {
-  const id: string = req.params.id;
+router.get("/user/:userID/board/:boardID", async (req, res) => {
+  const userID: string = req.params.userID;
+  const boardID: string = req.params.boardID;
 
-  const notifications = await dalNotification.getByUser(id);
+  const notifications = await dalNotification.getByUserAndBoard(
+    userID,
+    boardID
+  );
   res.status(200).json(notifications);
 });
 

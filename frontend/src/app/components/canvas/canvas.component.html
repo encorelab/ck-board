@@ -19,7 +19,9 @@
         matTooltip="Adjust Settings">
         <mat-icon>settings</mat-icon>
       </button>
-      <app-notification-dropdown [user]="user" [board]="board"></app-notification-dropdown>
+      <div *ngIf="board">
+        <app-notification-dropdown [user]="user" [board]="board"></app-notification-dropdown>
+      </div>
     </app-toolbar>
     <div class="canvas-area">
       <canvas id="canvas"></canvas>

@@ -22,7 +22,7 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { UserService } from 'src/app/services/user.service';
-import Utils from 'src/app/utils/utils';
+import Utils from 'src/app/utils/Utils';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 

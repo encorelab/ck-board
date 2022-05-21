@@ -22,7 +22,7 @@ import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
-import Utils from 'src/app/utils/utils';
+import Utils from 'src/app/utils/Utils';
 
 export interface HTMLPost {
   /* Board which contains this post */

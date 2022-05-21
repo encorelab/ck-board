@@ -13,7 +13,7 @@ import {
 } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Utils from 'src/app/utils/utils';
+import Utils from 'src/app/utils/Utils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 
 export interface AddPostDialog {

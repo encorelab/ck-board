@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import Notification from '../models/notification';
 import Post from '../models/post';
-import Utils from '../utils/utils';
+import Utils from '../utils/Utils';
 import { UserService } from './user.service';
 
 @Injectable({

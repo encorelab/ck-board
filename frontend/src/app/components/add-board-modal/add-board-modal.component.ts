@@ -6,7 +6,7 @@ import { Project } from 'src/app/models/project';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { Tag } from 'src/app/models/post';
-import Utils from 'src/app/utils/utils';
+import Utils from 'src/app/utils/Utils';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 
 @Component({

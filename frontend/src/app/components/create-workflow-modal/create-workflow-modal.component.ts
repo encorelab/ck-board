@@ -18,7 +18,7 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import Utils from 'src/app/utils/utils';
+import Utils from 'src/app/utils/Utils';
 
 @Component({
   selector: 'app-create-workflow-modal',

@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UserService } from 'src/app/services/user.service';
-import Utils from 'src/app/utils/utils';
+import Utils from 'src/app/utils/Utils';
 
 @Component({
   selector: 'app-add-project-modal',

@@ -40,7 +40,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { ComponentType } from '@angular/cdk/portal';
-import Utils from 'src/app/utils/utils';
+import Utils from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 
 @Component({

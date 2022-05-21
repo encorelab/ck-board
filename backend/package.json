@@ -16,6 +16,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --respawn ./src/server.ts",
+    "start": "ts-node-dev ./src/server.ts",
     "lint": "eslint . --ext .ts"
   },
   "name": "backend",

@@ -14,7 +14,7 @@ export class BgImageModel {
   public url!: string;
 
   @prop({ required: false })
-  public settings?: unknown;
+  public imgSettings?: unknown;
 }
 
 export class PermissionsModel {

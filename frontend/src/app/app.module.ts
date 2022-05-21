@@ -89,8 +89,8 @@ export function tokenGetter() {
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
-        allowedDomains: ['localhost:8001'],
-        // disallowedRoutes: ['localhost:8001/api/auth'],
+        allowedDomains: ['https://ck-board-staging.herokuapp.com'],
+        disallowedRoutes: ['https://ck-board-staging.herokuapp.com/api/auth'],
       },
     }),
     SocketIoModule.forRoot(config),

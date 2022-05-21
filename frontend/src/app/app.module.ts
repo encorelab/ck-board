@@ -42,7 +42,10 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
 import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 
-const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
+const config: SocketIoConfig = {
+  url: 'https://ck-board-staging.herokuapp.com',
+  options: {},
+};
 
 export function tokenGetter() {
   return localStorage.getItem('access_token');

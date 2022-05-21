@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "typescript": "^4.6.4",
     "@typegoose/typegoose": "^9.8.1",
     "@types/bcrypt": "^5.0.0",
     "bcrypt": "^5.0.1",
@@ -14,10 +15,9 @@
     "socket.io": "^4.4.1"
   },
   "scripts": {
-    "tsc": "./node_modules/typescript/bin/tsc",
+    "build": "tsc",
     "dev": "ts-node-dev --respawn ./src/server.ts",
     "start": "node ./dist/server.js",
-    "postinstall": "npm run tsc",
     "lint": "eslint . --ext .ts"
   },
   "name": "backend",
@@ -31,8 +31,7 @@
     "@typescript-eslint/parser": "^5.22.0",
     "eslint": "^8.14.0",
     "ts-node": "^10.7.0",
-    "ts-node-dev": "^1.1.8",
-    "typescript": "^4.6.4"
+    "ts-node-dev": "^1.1.8"
   },
   "author": "",
   "license": "ISC",

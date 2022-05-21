@@ -193,7 +193,7 @@ export class CanvasService {
   ): Promise<Board> {
     if (file === null) {
       const board: Board = await this.boardService.update(boardID, {
-        bgImage: undefined,
+        bgImage: null,
       });
       this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
       return board;

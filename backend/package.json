@@ -14,6 +14,7 @@
     "socket.io": "^4.4.1"
   },
   "scripts": {
+    "tsc": "./node_modules/typescript/bin/tsc",
     "build": "tsc",
     "dev": "ts-node-dev --respawn ./src/server.ts",
     "start": "node ./dist/server.js",

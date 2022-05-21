@@ -11,9 +11,9 @@ import { UserService } from './user.service';
 export class NotificationService {
   constructor(public http: HttpClient, public userService: UserService) {}
 
-  getNotificationsByUser(userID: string): Promise<Notification[]> {
+  getByUserAndBoard(userID: string, boardID: string): Promise<Notification[]> {
     return this.http
-      .get<Notification[]>('notifications/user/' + userID)
+      .get<Notification[]>('notifications/user/' + userID + '/board/' + boardID)
       .toPromise();
   }
 
@@ -35,17 +35,18 @@ export class NotificationService {
       .toPromise();
   }
 
-  buildLikeNotification(post: Post) {
+  buildLikeNotification(post: Post): Notification {
     return {
       notificationID: Utils.generateUniqueID(),
       text: this.userService.user?.username + ' liked "' + post.title + '"',
       viewed: false,
       userID: post.userID,
       postID: post.postID,
+      boardID: post.boardID,
     };
   }
 
-  buildCommentNotification(post: Post) {
+  buildCommentNotification(post: Post): Notification {
     return {
       notificationID: Utils.generateUniqueID(),
       text:
@@ -53,16 +54,18 @@ export class NotificationService {
       viewed: false,
       userID: post.userID,
       postID: post.postID,
+      boardID: post.boardID,
     };
   }
 
-  buildTagNotification(post: Post) {
+  buildTagNotification(post: Post): Notification {
     return {
       notificationID: Utils.generateUniqueID(),
       text: this.userService.user?.username + ' tagged "' + post.title + '"',
       viewed: false,
       userID: post.userID,
       postID: post.postID,
+      boardID: post.boardID,
     };
   }
 }

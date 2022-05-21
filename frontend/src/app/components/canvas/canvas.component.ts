@@ -808,6 +808,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   async ngOnDestroy() {
+    this.unsubListeners.forEach((s) => s.unsubscribe());
     this.socketService.disconnect(this.user.userID, this.boardID);
     this.snackbarService.ngOnDestroy();
   }

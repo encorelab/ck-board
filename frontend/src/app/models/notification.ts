@@ -3,5 +3,6 @@ export default class Notification {
   text: string;
   viewed: boolean;
   userID: string;
+  boardID: string;
   postID: string;
 }

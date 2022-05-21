@@ -31,7 +31,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.notificationService
-      .getNotificationsByUser(this.user.userID)
+      .getByUserAndBoard(this.user.userID, this.board.boardID)
       .then((notifications) => {
         this.notifications = notifications;
         this.initGroupEventsListener();

@@ -35,6 +35,7 @@
       </mat-form-field>
     </mat-tab>
     <mat-tab label="Permissions">
+      <h2 style="margin-top: 20px;">Post Features</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny">Allow students to move any post</mat-checkbox>
       </p>
@@ -50,12 +51,14 @@
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentTagging" >Allow students to tag posts</mat-checkbox>
       </p>
+      <h2>Anonymization</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.showAuthorNameStudent" >Show author names to students</mat-checkbox>
       </p>
       <p>
         <mat-checkbox [(ngModel)]="permissions.showAuthorNameTeacher" >Show author names to teachers</mat-checkbox>
       </p>
+      <h2>UI Elements</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.showBucketStudent" >Show buckets to students</mat-checkbox>
       </p>

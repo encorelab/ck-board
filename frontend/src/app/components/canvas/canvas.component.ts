@@ -368,7 +368,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
   openSettingsDialog() {
     this._openDialog(ConfigurationModalComponent, {
       board: this.board,
-      update: (board: Board) => (this.board = board),
+      update: (board: Board) => {
+        let previousBoard = this.board;
+        this.board = board;
+
+        if (previousBoard.initialZoom !== board.initialZoom) {
+          this.configureZoom();
+        }
+      },
     });
   }
 

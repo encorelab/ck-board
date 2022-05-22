@@ -1,9 +1,11 @@
 import { Server, Socket } from "socket.io";
 import { SocketEvent } from "../../constants";
+import { BucketModel } from "../../models/Bucket";
 import { CommentModel } from "../../models/Comment";
 import { LikeModel } from "../../models/Like";
 import { PostModel } from "../../models/Post";
 import { TagModel } from "../../models/Tag";
+import dalBucket from "../../repository/dalBucket";
 import dalComment from "../../repository/dalComment";
 import dalLike from "../../repository/dalLike";
 import dalPost from "../../repository/dalPost";
@@ -44,7 +46,15 @@ class PostDelete {
   static type: SocketEvent = SocketEvent.POST_DELETE;
 
   static async handleEvent(eventData: PostModel): Promise<string> {
-    await dalPost.remove(eventData.postID);
+    const postID = eventData.postID;
+
+    await dalPost.remove(postID);
+
+    const buckets: BucketModel[] = await dalBucket.getByPostId(postID);
+    for (let i = 0; i < buckets.length; i++) {
+      await dalBucket.removePost(buckets[i].bucketID, [postID]);
+    }
+
     return eventData.postID;
   }
 

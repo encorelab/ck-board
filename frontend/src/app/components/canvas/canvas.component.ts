@@ -21,13 +21,12 @@ import {
   SocketEvent,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
-import { Board } from 'src/app/models/board';
+import { Board, BoardPermissions } from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
-import { Permissions } from 'src/app/models/permissions';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
@@ -197,7 +196,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.fabricUtils.animateToPosition(existing, next.left, next.top, () => {
       existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
       existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
-      existing = this.fabricUtils.setPostMovement(existing, false);
+      existing = this.fabricUtils.setPostMovement(
+        existing,
+        !this._postsMovementAllowed()
+      );
       existing.set(next);
       existing.setCoords();
       this.canvas.renderAll();
@@ -249,7 +251,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
   handleBoardPermsUpdateEvent = (board: Board) => {
     this.board = board;
     this.updateShowAddPost(board.permissions);
-    this.lockPostsMovement(!board.permissions.allowStudentMoveAny);
+    this.lockPostsMovement(
+      !board.permissions.allowStudentMoveAny && this.user.role == Role.STUDENT
+    );
     this.setAuthorVisibilityAll();
   };
 
@@ -302,7 +306,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
             board.bgImage?.url,
             board.bgImage?.imgSettings
           );
-          this.lockPostsMovement(!board.permissions.allowStudentMoveAny);
+          this.lockPostsMovement(
+            !board.permissions.allowStudentMoveAny &&
+              this.user.role == Role.STUDENT
+          );
           this.updateShowAddPost(this.board.permissions);
           this.setAuthorVisibilityAll();
         }
@@ -368,7 +375,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
   openSettingsDialog() {
     this._openDialog(ConfigurationModalComponent, {
       board: this.board,
-      update: (board: Board) => (this.board = board),
+      update: (board: Board) => {
+        let previousBoard = this.board;
+        this.board = board;
+
+        if (previousBoard.initialZoom !== board.initialZoom) {
+          this.configureZoom();
+        }
+      },
     });
   }
 
@@ -422,7 +436,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateShowAddPost(permissions: Permissions) {
+  updateShowAddPost(permissions: BoardPermissions) {
     let isStudent = this.user.role == Role.STUDENT;
     let isTeacher = this.user.role == Role.TEACHER;
     this.showAddPost =
@@ -805,6 +819,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: data,
     });
+  }
+
+  private _postsMovementAllowed() {
+    if (!this.user || !this.board) return false;
+
+    const isTeacher = this.user.role == Role.TEACHER;
+    const isStudent = this.user.role == Role.STUDENT;
+    const allowStudentMovement = this.board.permissions.allowStudentMoveAny;
+
+    return isTeacher || (isStudent && allowStudentMovement);
   }
 
   async ngOnDestroy() {

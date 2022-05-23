@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
-import { Board } from '../models/board';
+import { Board, BoardPermissions } from '../models/board';
 import Comment from '../models/comment';
 import Like from '../models/like';
-import { Permissions } from '../models/permissions';
 import Post, { Tag } from '../models/post';
 import Workflow from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
@@ -71,10 +70,13 @@ export class CanvasService {
     });
 
     this.socketService.emit(SocketEvent.POST_LIKE_ADD, like);
-    this.socketService.emit(
-      SocketEvent.NOTIFICATION_CREATE,
-      this.notificationService.buildLikeNotification(post)
-    );
+
+    if (post.userID !== like.likerID) {
+      this.socketService.emit(
+        SocketEvent.NOTIFICATION_CREATE,
+        this.notificationService.buildLikeNotification(post)
+      );
+    }
   }
 
   async unlike(userID: string, postID: string) {
@@ -103,10 +105,13 @@ export class CanvasService {
     });
 
     this.socketService.emit(SocketEvent.POST_COMMENT_ADD, comment);
-    this.socketService.emit(
-      SocketEvent.NOTIFICATION_CREATE,
-      this.notificationService.buildCommentNotification(post)
-    );
+
+    if (post.userID !== comment.userID) {
+      this.socketService.emit(
+        SocketEvent.NOTIFICATION_CREATE,
+        this.notificationService.buildCommentNotification(post)
+      );
+    }
   }
 
   async tag(post: Post, tag: Tag): Promise<Post> {
@@ -127,10 +132,13 @@ export class CanvasService {
     });
 
     this.socketService.emit(SocketEvent.POST_TAG_ADD, { tag, post: savedPost });
-    this.socketService.emit(
-      SocketEvent.NOTIFICATION_CREATE,
-      this.notificationService.buildTagNotification(post)
-    );
+
+    if (savedPost.userID !== post.userID) {
+      this.socketService.emit(
+        SocketEvent.NOTIFICATION_CREATE,
+        this.notificationService.buildTagNotification(post)
+      );
+    }
 
     return savedPost;
   }
@@ -217,7 +225,7 @@ export class CanvasService {
 
   async updateBoardPermissions(
     boardID: string,
-    permissions: Permissions
+    permissions: BoardPermissions
   ): Promise<Board> {
     const board: Board = await this.boardService.update(boardID, {
       permissions,

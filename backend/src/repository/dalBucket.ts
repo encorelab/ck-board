@@ -18,6 +18,15 @@ export const getByBoardId = async (id: string) => {
   }
 };
 
+export const getByPostId = async (id: string) => {
+  try {
+    const buckets = await Bucket.find({ posts: id });
+    return buckets;
+  } catch (err) {
+    throw new Error("500");
+  }
+};
+
 export const create = async (bucket: BucketModel) => {
   try {
     const savedBucket = await Bucket.create(bucket);
@@ -78,6 +87,7 @@ export const removePost = async (id: string, posts: string[]) => {
 const dalBucket = {
   getById,
   getByBoardId,
+  getByPostId,
   create,
   remove,
   update,

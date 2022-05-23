@@ -30,7 +30,7 @@
       </div>
       <div class="toolSection">
           <div class="toolField">
-            <button *ngIf="mode != modeType.CHOOSING_LOCATION" mat-fab color="accent" matTooltip="Add Post" matTooltipPosition="before" (click)="handleCreatePost()">
+            <button *ngIf="mode != modeType.CHOOSING_LOCATION" [disabled]="board && user && !board.permissions.allowStudentEditAddDeletePost && user.role == Role.STUDENT" mat-fab color="accent" matTooltip="Add Post" matTooltipPosition="before" (click)="handleCreatePost()">
                 <mat-icon>add</mat-icon>
             </button>
             <button *ngIf="mode == modeType.CHOOSING_LOCATION" mat-fab color="accent" matTooltip="Cancel Post" matTooltipPosition="before" (click)="disableChooseLocation()">

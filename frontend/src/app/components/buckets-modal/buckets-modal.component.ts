@@ -73,11 +73,17 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     // TODO: Be able to listen to specific buckets, else this will add new posts
     // to whichever bucket the client's viewing. Create BUCKET events.
     // this.socketService.listen(SocketEvent.POST_CREATE, async (post: Post) => {
-    //   this.posts.push(await this.postService.toHTMLPost(post));
+    //   this.posts.push(await this.converters.toHTMLPost(post));
     // });
     this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
       let found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) found.post = post;
+    });
+    this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
+      let found = this.posts.find((p) => p.post.postID == id);
+      if (found) {
+        this.posts = this.posts.filter((post) => post.post.postID != id);
+      }
     });
     this.socketService.listen(SocketEvent.POST_LIKE_ADD, (result: any) => {
       let found = this.posts.find((p) => p.post.postID == result.like.postID);
@@ -93,12 +99,6 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         (p) => p.post.postID == result.comment.postID
       );
       if (found) found.comments += 1;
-    });
-    this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
-      let found = this.posts.find((p) => p.post.postID == id);
-      if (found) {
-        this.posts = this.posts.filter((post) => post.post.postID != id);
-      }
     });
     this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
       let found = this.posts.find((p) => p.post.postID == post.postID);
@@ -176,32 +176,35 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  movePostToBoard(postID: string) {
-    this.postService.get(postID).then((post) => {
-      const containsAttentionTag = post.tags.find(
-        (tag) => tag.name == NEEDS_ATTENTION_TAG.name
-      );
+  async movePostToBoard(postID: string) {
+    const htmlPost = this.posts.find((p) => p.post.postID == postID);
 
-      let fabricPost = new FabricPostComponent({
-        postID: postID,
-        boardID: this.board.boardID,
-        title: post.title,
-        author: this.user.username,
-        authorID: this.user.userID,
-        desc: post.desc,
-        tags: post.tags ?? [],
-        lock: !this.board.permissions.allowStudentMoveAny,
-        left: this.Xoffset,
-        top: this.Yoffset,
-        color: POST_COLOR,
-        stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
-        strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null,
-      });
+    if (!htmlPost) return;
 
-      const canvasPost: Post = this.fabricUtils.fromFabricPost(fabricPost);
-      this.canvasService.createBoardPostFromBucket(canvasPost);
+    const containsAttentionTag = htmlPost.post.tags.find(
+      (tag) => tag.name == NEEDS_ATTENTION_TAG.name
+    );
 
-      this.Yoffset += 50;
+    let fabricPost = new FabricPostComponent({
+      postID: postID,
+      boardID: this.board.boardID,
+      title: htmlPost.post.title,
+      author: this.user.username,
+      authorID: this.user.userID,
+      desc: htmlPost.post.desc,
+      tags: htmlPost.post.tags ?? [],
+      lock: !this.board.permissions.allowStudentMoveAny,
+      left: this.Xoffset,
+      top: this.Yoffset,
+      color: POST_COLOR,
+      stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
+      strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null,
     });
+
+    const canvasPost: Post = this.fabricUtils.fromFabricPost(fabricPost);
+    await this.canvasService.createBoardPostFromBucket(canvasPost);
+    htmlPost.bucketOnly = false;
+
+    this.Yoffset += 50;
   }
 }

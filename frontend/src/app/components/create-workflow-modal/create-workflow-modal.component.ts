@@ -53,7 +53,6 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   sourceFormControl = new FormControl('valid', [Validators.required]);
   destinationFormControl = new FormControl('valid', [Validators.required]);
   tagsFormControl = new FormControl();
-  tagsFormSubscription: Subscription;
 
   matcher = new MyErrorStateMatcher();
   snackbarConfig: MatSnackBarConfig;
@@ -69,6 +68,9 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   ) {
     this.snackbarConfig = new MatSnackBarConfig();
     this.snackbarConfig.duration = 5000;
+  }
+  ngOnDestroy(): void {
+    throw new Error('Method not implemented.');
   }
 
   ngOnInit(): void {
@@ -167,10 +169,6 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
 
   openSnackBar(message: string) {
     this.snackbarService.queueSnackbar(message);
-  }
-
-  ngOnDestroy(): void {
-    this.tagsFormSubscription.unsubscribe();
   }
 
   _isBoard(object: Board | Bucket): object is Board {

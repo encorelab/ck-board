@@ -93,8 +93,12 @@ export class HtmlPostComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe(async () => {
-        this.post.post = await this.postService.get(this.post.post.postID);
+      .subscribe(async (value) => {
+        if (value == DELETE) {
+          this.exists = false;
+        } else {
+          this.post.post = await this.postService.get(this.post.post.postID);
+        }
       });
   }
 
@@ -119,10 +123,6 @@ export class HtmlPostComponent implements OnInit {
       this.post.likes.push(this.user.userID);
     }
   }
-
-  handleDelete = (_post) => {
-    this.exists = false;
-  };
 
   movePostToBoard(postID: string) {
     this.movePostToBoardEvent.next(postID);

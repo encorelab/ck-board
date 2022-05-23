@@ -1,13 +1,12 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BoardService } from 'src/app/services/board.service';
-import { Permissions } from 'src/app/models/permissions';
 import { UserService } from 'src/app/services/user.service';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { Tag } from 'src/app/models/post';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
-import { Board } from 'src/app/models/board';
+import { Board, BoardPermissions } from 'src/app/models/board';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -26,7 +25,7 @@ export class ConfigurationModalComponent {
   taskTitle: string;
   taskMessage: string;
 
-  permissions: Permissions;
+  permissions: BoardPermissions;
 
   tags: Tag[];
   newTagText: string = '';

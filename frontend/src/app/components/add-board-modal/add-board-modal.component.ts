@@ -7,7 +7,8 @@ import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { Tag } from 'src/app/models/post';
 import Utils from 'src/app/utils/Utils';
-import { FabricUtils } from 'src/app/utils/FabricUtils';
+import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
+import { fabric } from 'fabric';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -22,7 +23,9 @@ export class AddBoardModalComponent implements OnInit {
   permissions: Permissions;
 
   boardName: string = '';
+
   bgImgURL: any = null;
+  bgImgSettings: ImageSettings;
 
   taskTitle: string = '';
   taskMessage: string = '';
@@ -77,11 +80,11 @@ export class AddBoardModalComponent implements OnInit {
     this.tags = this.tags.filter((tag) => tag != tagRemove);
   }
 
-  compressFile() {
-    this.fileUploadService.compressFile().then((compressedImage) => {
-      this.fileUploadService.upload(compressedImage).then((firebaseUrl) => {
-        this.bgImgURL = firebaseUrl;
-      });
+  async compressFile() {
+    const image = await this.fileUploadService.compressFile();
+    this.bgImgURL = await this.fileUploadService.upload(image);
+    fabric.Image.fromURL(this.bgImgURL, async (image) => {
+      this.bgImgSettings = this.fabricUtils.createImageSettings(image);
     });
   }
 
@@ -95,7 +98,9 @@ export class AddBoardModalComponent implements OnInit {
           title: this.taskTitle,
           message: this.taskMessage,
         },
-        bgImage: this.bgImgURL ? { url: this.bgImgURL } : null,
+        bgImage: this.bgImgURL
+          ? { url: this.bgImgURL, imgSettings: this.bgImgSettings }
+          : null,
         permissions: this.permissions,
         members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),

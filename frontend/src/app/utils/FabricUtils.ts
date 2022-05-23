@@ -18,6 +18,21 @@ export class ImageSettings {
   scaleY: number;
 }
 
+export class CanvasDimensions {
+  width: number;
+  height: number;
+}
+
+export class ImageScale {
+  scaleX: number;
+  scaleY: number;
+}
+
+export class ImageOffset {
+  offsetX: number;
+  offsetY: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FabricUtils {
   _canvas: fabric.Canvas;
@@ -344,48 +359,18 @@ export class FabricUtils {
     return this.setField(fabricObject, 'tags', tags);
   }
 
-  createImageSettings(img): ImageSettings {
-    let vptCoords = this._canvas.vptCoords!;
-    let width = this._canvas.getWidth();
-    let height = this._canvas.getHeight();
-
-    if (vptCoords) {
-      width = Math.abs(vptCoords.tr.x - vptCoords.tl.x);
-      height = Math.abs(vptCoords.br.y - vptCoords.tr.y);
-    }
-    let scaleX = 0;
-    let scaleY = 0;
-
-    /* 
-            we scale both width and height by the smaller of the two scales
-            ex viewport is 2 by 2. Image is w:16 h:9
-            scaleX = 2/16, scaleY = 2/9
-            2/16 is smaller so we scale by that
-            scaleY = scaleX so that we have even scaling
-            final scaled image will be W: 16/8 = 2 H: 9/8 = 1.125
-            this fits in our 2 by 2 viewport
-
-        */
-    scaleX = width / (img.width ?? 1);
-    scaleY = height / (img.height ?? 1);
-    if (scaleX <= scaleY) {
-      scaleY = scaleX;
-    } else {
-      scaleX = scaleY;
-    }
-    // center image horizontally
-    let leftOffset = Math.floor((width - scaleX * img.width) / 2);
-
-    // center image vertically
-    let topOffset = Math.floor((height - scaleY * img.height) / 2);
+  createImageSettings(image: fabric.Image): ImageSettings {
+    let dimensions = this._calcCanvasDimensions();
+    let scale = this._scaleImage(image, dimensions);
+    let offset = this._calcImageOffsets(image, scale, dimensions);
 
     return {
-      top: vptCoords?.tl.y + topOffset,
-      left: vptCoords?.tl.x + leftOffset,
-      width: img.width,
-      height: img.height,
-      scaleX: scaleX,
-      scaleY: scaleY,
+      top: offset.offsetY,
+      left: offset.offsetX,
+      width: image.width!,
+      height: image.height!,
+      scaleX: scale.scaleX,
+      scaleY: scale.scaleY,
     };
   }
 
@@ -419,5 +404,89 @@ export class FabricUtils {
       this._canvas.renderAll.bind(this._canvas),
       settings
     );
+  }
+
+  /**
+   * Calculates the height and width of canvas.
+   *
+   * @returns dimensions of canvas
+   */
+  private _calcCanvasDimensions(): CanvasDimensions {
+    if (!this._canvas) {
+      return { width: window.innerWidth, height: window.innerHeight - 64 };
+    }
+
+    let vptCoords = this._canvas.vptCoords!;
+    let width = this._canvas.getWidth();
+    let height = this._canvas.getHeight();
+
+    if (vptCoords) {
+      width = Math.abs(vptCoords.tr.x - vptCoords.tl.x);
+      height = Math.abs(vptCoords.br.y - vptCoords.tr.y);
+    }
+
+    return { width, height };
+  }
+
+  /**
+   * Scales an image to appropriately fit canvas dimensions.
+   * Scales both width and height by smaller of two scales.
+   *
+   * Ex:
+   * image.width = 16
+   * image.height = 9
+   * scaleX = 2/16 = 1/8, scaleY = 2/9
+   * scaleX = 16/8 = 2, scaleY = 9/8 = 1.125
+   *
+   * @param image image to be scaled
+   * @param dimensions dimensions of canvas
+   * @returns x and y scaling amounts
+   */
+  private _scaleImage(
+    image: fabric.Image,
+    dimensions: CanvasDimensions
+  ): ImageScale {
+    let scaleX = dimensions.width / (image.width ?? 1);
+    let scaleY = dimensions.height / (image.height ?? 1);
+
+    if (scaleX <= scaleY) {
+      scaleY = scaleX;
+    } else {
+      scaleX = scaleY;
+    }
+
+    return { scaleX, scaleY };
+  }
+
+  /**
+   * Calculates vertical and horizontal offsets for image to be centered
+   * across canvas.
+   *
+   * @param image image to be centered
+   * @param scale vertical and horizontal scaling of image
+   * @param dimensions dimensions of canvas
+   * @returns horizontal and vertical offsets
+   */
+  private _calcImageOffsets(
+    image: fabric.Image,
+    scale: ImageScale,
+    dimensions: CanvasDimensions
+  ): ImageOffset {
+    let offsetX = Math.floor(
+      (dimensions.width - scale.scaleX * image.width!) / 2
+    );
+    let offsetY = Math.floor(
+      (dimensions.height - scale.scaleY * image.height!) / 2
+    );
+    let vptCoords = this._canvas.vptCoords;
+
+    if (vptCoords) {
+      return {
+        offsetX: offsetX + vptCoords.tl.x,
+        offsetY: offsetY + vptCoords?.tl.y,
+      };
+    }
+
+    return { offsetX, offsetY };
   }
 }

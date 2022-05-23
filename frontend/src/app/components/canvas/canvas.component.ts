@@ -196,7 +196,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.fabricUtils.animateToPosition(existing, next.left, next.top, () => {
       existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
       existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
-      existing = this.fabricUtils.setPostMovement(existing, false);
+      existing = this.fabricUtils.setPostMovement(
+        existing,
+        !this._postsMovementAllowed()
+      );
       existing.set(next);
       existing.setCoords();
       this.canvas.renderAll();
@@ -816,6 +819,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: data,
     });
+  }
+
+  private _postsMovementAllowed() {
+    if (!this.user || !this.board) return false;
+
+    const isTeacher = this.user.role == Role.TEACHER;
+    const isStudent = this.user.role == Role.STUDENT;
+    const allowStudentMovement = this.board.permissions.allowStudentMoveAny;
+
+    return isTeacher || (isStudent && allowStudentMovement);
   }
 
   async ngOnDestroy() {

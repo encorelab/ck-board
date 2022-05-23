@@ -15,6 +15,10 @@ const router = Router();
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).end("Email and password are required.");
+  }
+
   const foundUser = await dalUser.findByEmail(email);
   if (!foundUser) {
     return res.status(404).end("Invalid email. Please try again.");

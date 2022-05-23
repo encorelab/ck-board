@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
-import { Board } from '../models/board';
+import { Board, BoardPermissions } from '../models/board';
 import Comment from '../models/comment';
 import Like from '../models/like';
-import { Permissions } from '../models/permissions';
 import Post, { Tag } from '../models/post';
 import Workflow from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
@@ -217,7 +216,7 @@ export class CanvasService {
 
   async updateBoardPermissions(
     boardID: string,
-    permissions: Permissions
+    permissions: BoardPermissions
   ): Promise<Board> {
     const board: Board = await this.boardService.update(boardID, {
       permissions,

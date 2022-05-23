@@ -21,13 +21,12 @@ import {
   SocketEvent,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
-import { Board } from 'src/app/models/board';
+import { Board, BoardPermissions } from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
 import { LikesService } from 'src/app/services/likes.service';
 import Like from 'src/app/models/like';
-import { Permissions } from 'src/app/models/permissions';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
@@ -249,7 +248,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
   handleBoardPermsUpdateEvent = (board: Board) => {
     this.board = board;
     this.updateShowAddPost(board.permissions);
-    this.lockPostsMovement(!board.permissions.allowStudentMoveAny);
+    this.lockPostsMovement(
+      !board.permissions.allowStudentMoveAny && this.user.role == Role.STUDENT
+    );
     this.setAuthorVisibilityAll();
   };
 
@@ -302,7 +303,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
             board.bgImage?.url,
             board.bgImage?.imgSettings
           );
-          this.lockPostsMovement(!board.permissions.allowStudentMoveAny);
+          this.lockPostsMovement(
+            !board.permissions.allowStudentMoveAny &&
+              this.user.role == Role.STUDENT
+          );
           this.updateShowAddPost(this.board.permissions);
           this.setAuthorVisibilityAll();
         }
@@ -429,7 +433,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateShowAddPost(permissions: Permissions) {
+  updateShowAddPost(permissions: BoardPermissions) {
     let isStudent = this.user.role == Role.STUDENT;
     let isTeacher = this.user.role == Role.TEACHER;
     this.showAddPost =

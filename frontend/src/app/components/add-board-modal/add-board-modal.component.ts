@@ -1,6 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Permissions } from 'src/app/models/permissions';
 import { UserService } from 'src/app/services/user.service';
 import { Project } from 'src/app/models/project';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
@@ -9,6 +8,7 @@ import { Tag } from 'src/app/models/post';
 import Utils from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
+import { BoardPermissions } from 'src/app/models/board';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -20,7 +20,7 @@ export class AddBoardModalComponent implements OnInit {
 
   boardID: string;
 
-  permissions: Permissions;
+  permissions: BoardPermissions;
 
   boardName: string = '';
 

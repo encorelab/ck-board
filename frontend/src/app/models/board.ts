@@ -1,5 +1,4 @@
 import { ImageSettings } from '../utils/FabricUtils';
-import { Permissions } from './permissions';
 import { Tag } from './post';
 
 export class BoardBackgroundImage {
@@ -12,13 +11,23 @@ export class BoardTask {
   message?: string;
 }
 
+export class BoardPermissions {
+  allowStudentMoveAny: boolean;
+  allowStudentLiking: boolean;
+  allowStudentEditAddDeletePost: boolean;
+  allowStudentCommenting: boolean;
+  allowStudentTagging: boolean;
+  showAuthorNameStudent: boolean;
+  showAuthorNameTeacher: boolean;
+}
+
 export class Board {
   boardID: string;
   teacherID: string;
   name: string;
   task: BoardTask;
   bgImage: BoardBackgroundImage | null;
-  permissions: Permissions;
+  permissions: BoardPermissions;
   members: string[];
   tags: Tag[];
   initialZoom: number = 100;

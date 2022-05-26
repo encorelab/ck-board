@@ -4,6 +4,7 @@ import {
   POST_DEFAULT_BORDER,
   POST_DEFAULT_BORDER_THICKNESS,
 } from 'src/app/utils/constants';
+import { FabricUtils } from 'src/app/utils/FabricUtils';
 
 const AUTHOR_OFFSET = 65;
 const DESC_OFFSET = 80;
@@ -15,66 +16,12 @@ const CONTENT_EXTRA_HEIGHT = 55;
   styleUrls: ['./fabric-post.component.scss'],
 })
 export class FabricPostComponent extends fabric.Group {
-  constructor(@Inject(Object) options: any) {
-    var canvas = new fabric.Canvas('c');
-    // FROM : http://jsfiddle.net/illumine/Avvxn/
-
-    function wrapCanvasText(t, canvas, maxW, maxH) {
-      if (typeof maxH === 'undefined') {
-        maxH = 0;
-      }
-      var words = t.split(' ');
-      var formatted = '';
-      var context = canvas.getContext('2d');
-      context.font = t.fontSize + 'px ' + t.fontFamily;
-      var currentLine = '';
-
-      for (var n = 0; n < words.length; n++) {
-        var isNewLine = currentLine == '';
-        var testOverlap = currentLine + ' ' + words[n];
-
-        // are we over width?
-        var w = context.measureText(testOverlap).width;
-
-        if (w < maxW) {
-          // if not, keep adding words
-          currentLine += words[n] + ' ';
-          formatted += words[n] += ' ';
-        } else {
-          // if this hits, we got a word that need to be hypenated
-          if (isNewLine) {
-            var wordOverlap = '';
-
-            // test word length until its over maxW
-            for (var i = 0; i < words[n].length; ++i) {
-              wordOverlap += words[n].charAt(i);
-              var withHypeh = wordOverlap + '-';
-
-              if (context.measureText(withHypeh).width >= maxW) {
-                // add hyphen when splitting a word
-                withHypeh = wordOverlap.substr(0, wordOverlap.length - 2) + '-';
-                // update current word with remainder
-                words[n] = words[n].substr(
-                  wordOverlap.length - 1,
-                  words[n].length
-                );
-                formatted += withHypeh; // add hypenated word
-                break;
-              }
-            }
-          }
-          n--; // restart cycle
-          formatted += '\n';
-          currentLine = '';
-        }
-      }
-
-      formatted = formatted.substr(0, formatted.length - 1);
-      return formatted;
-    }
-
+  constructor(
+    @Inject(Object) options: any,
+    ) {
+    var fabricUtils: FabricUtils = new FabricUtils();
     var title = new fabric.Textbox(
-      wrapCanvasText(options.title, canvas, 140, 0),
+      fabricUtils.wrapCanvasText(options.title, 140, 0),
       {
         name: 'title',
         width: 280,
@@ -89,7 +36,7 @@ export class FabricPostComponent extends fabric.Group {
     );
 
     var author = new fabric.Textbox(
-      wrapCanvasText(options.author, canvas, 200, 0),
+      fabricUtils.wrapCanvasText(options.author, 200, 0),
       {
         name: 'author',
         width: 300,
@@ -103,11 +50,10 @@ export class FabricPostComponent extends fabric.Group {
     );
 
     var desc = new fabric.Textbox(
-      wrapCanvasText(
+      fabricUtils.wrapCanvasText(
         options.desc.length > 200
           ? options.desc.substr(0, 200) + '...'
           : options.desc,
-        canvas,
         200,
         0
       ),

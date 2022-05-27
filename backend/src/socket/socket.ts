@@ -1,3 +1,4 @@
+import { Server } from "http";
 import * as socketIO from "socket.io";
 import { SocketEvent } from "../constants";
 import events from "./events";
@@ -25,8 +26,8 @@ class Socket {
    *
    * @returns void
    */
-  init() {
-    const io = new socketIO.Server(8000, {
+  init(server: Server) {
+    const io = new socketIO.Server(server, {
       cors: {
         origin: ["https://ck-board-staging.herokuapp.com"],
       },

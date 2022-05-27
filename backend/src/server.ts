@@ -36,7 +36,7 @@ app.use(express.static(path.join(__dirname, "../../frontend/dist/ck-board")));
 const server = http.createServer(app);
 
 const socket = Socket.Instance;
-socket.init();
+socket.init(server);
 
 app.use("/api/projects", isAuthenticated, projects);
 app.use("/api/boards", isAuthenticated, boards);

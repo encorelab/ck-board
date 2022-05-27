@@ -47,7 +47,8 @@ export class AddBoardModalComponent implements OnInit {
       allowStudentCommenting: true,
       allowStudentTagging: true,
       showAuthorNameStudent: true,
-      showAuthorNameTeacher: true
+      showAuthorNameTeacher: true,
+      showBucketStudent: true,
     }
     this.projects = data.projects
     this.selectedProject = data.defaultProject || ''

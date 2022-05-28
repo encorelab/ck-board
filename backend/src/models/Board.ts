@@ -38,6 +38,9 @@ export class PermissionsModel {
 
   @prop({ required: true })
   public showAuthorNameTeacher!: boolean;
+
+  @prop({ required: true })
+  public showBucketStudent!: boolean;
 }
 
 @modelOptions({ schemaOptions: { collection: "boards", timestamps: true } })

@@ -19,6 +19,7 @@ export class BoardPermissions {
   allowStudentTagging: boolean;
   showAuthorNameStudent: boolean;
   showAuthorNameTeacher: boolean;
+  showBucketStudent: boolean;
 }
 
 export class Board {

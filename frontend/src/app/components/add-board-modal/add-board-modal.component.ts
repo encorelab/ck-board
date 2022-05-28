@@ -57,6 +57,7 @@ export class AddBoardModalComponent implements OnInit {
       allowStudentTagging: true,
       showAuthorNameStudent: true,
       showAuthorNameTeacher: true,
+      showBucketStudent: true,
     };
     this.projects = data.projects;
     this.selectedProject = data.defaultProject || '';

@@ -43,7 +43,7 @@ class Socket {
         this._listenForEvents(io, socket);
       });
 
-      socket.on("leave", (user, room) => {
+      socket.on("leave", (user: string, room: string) => {
         if (this._currentRoom && this._currentRoom == room) {
           socket.leave(this._currentRoom);
           console.log(`Socket ${socket.id} left room ${room}`);
@@ -51,7 +51,14 @@ class Socket {
           events.map((e) => socket.removeAllListeners(e.type.toString()));
           socket.data.room = null;
           this._currentRoom = null;
-          this._socketManager.remove(user);
+          this._socketManager.removeByUserId(user);
+        }
+      });
+
+      socket.on("disconnect", () => {
+        if (this._socket) {
+          this._currentRoom = null;
+          this._socketManager.removeBySocketId(this._socket.id);
         }
       });
     });

@@ -11,12 +11,21 @@ class SocketManager {
     return this._instance || (this._instance = new this());
   }
 
-  add(userID: string, socketID: string) {
-    this._userToSocket.set(userID, socketID);
+  add(userID: string, socketID: string): Map<string, string> {
+    return this._userToSocket.set(userID, socketID);
   }
 
-  remove(userID: string) {
-    this._userToSocket.delete(userID);
+  removeByUserId(userID: string): boolean {
+    return this._userToSocket.delete(userID);
+  }
+
+  removeBySocketId(socketID: string): boolean {
+    for (const [user, socket] of this._userToSocket.entries()) {
+      if (socket == socketID) {
+        return this._userToSocket.delete(user);
+      }
+    }
+    return false;
   }
 
   get(userID: string) {

@@ -1,0 +1,96 @@
+<h1 mat-dialog-title>CK Workflows</h1>
+<div mat-dialog-content>
+  <mat-tab-group dynamicHeight animationDuration="0ms"
+    [selectedIndex]="selected.value"
+    (selectedIndexChange)="selected.setValue($event)">
+    <mat-tab label="Create Bucket"> 
+      <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
+        <mat-label>Bucket Name</mat-label>
+        <input matInput [formControl]="bucketNameFormControl" [errorStateMatcher]="matcher" [(ngModel)]="bucketName">
+        <mat-error *ngIf="bucketNameFormControl.hasError('required')">Bucket name required!</mat-error>
+        <mat-error *ngIf="bucketNameFormControl.hasError('forbidden')">Bucket name cannot be the same as board name!</mat-error>
+      </mat-form-field>
+    </mat-tab>
+    <mat-tab label="Create Workflow">
+      <div>
+        <mat-form-field appearance="outline" style="width:100%; margin-top: 10px;">
+          <mat-label>Workflow Name</mat-label>
+          <input [formControl]="workflowNameFormControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="workflowName">
+          <mat-error *ngIf="workflowNameFormControl.hasError('required')">Workflow name required!</mat-error>
+        </mat-form-field>
+        <h4>Pick a source and destination board/bucket(s):</h4>
+        <div class="source-destination">
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Source</mat-label>
+            <mat-select [(ngModel)]="source" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
+              <mat-option *ngFor="let option of sourceOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="sourceFormControl.hasError('required')">Source required!</mat-error>
+          </mat-form-field>
+          <mat-icon class="arrow-icon-lg">arrow_right_alt</mat-icon>
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Destination</mat-label>
+            <mat-select [(ngModel)]="distributionDestinations" [formControl]="destinationFormControl" [errorStateMatcher]="matcher" multiple>
+              <mat-option *ngFor="let option of destOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="destinationFormControl.hasError('required')">Destination required!</mat-error>
+          </mat-form-field>
+        </div>
+        <section>
+          <h4>Posts Per Bucket/Board: <input type="number" [(ngModel)]="postsPerBucket"/></h4>
+        </section>
+        <section>
+          <h4>Choose Distribution:</h4>
+          <p>
+            <mat-checkbox [checked]="true" disabled="true">
+              Random
+            </mat-checkbox>
+          </p>
+        </section>
+      </div>
+    </mat-tab>
+    <mat-tab label="Manage Workflows"> 
+      <h3 *ngIf="!workflows || workflows.length == 0" style="color: grey; text-align: center;">No workflows created!</h3>
+      <mat-accordion class="list-accordion" multi *ngFor="let workflow of workflows">
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon [ngStyle]="{'color': workflow.active ? 'green' : 'grey'}" style="padding-right: 30px">circle</mat-icon>
+              {{ workflow.name }}
+            </mat-panel-title>
+            <mat-panel-description>
+              <mat-chip-list>
+                <mat-chip color="primary" selected *ngIf="workflow.postsPerDestination">Distribution</mat-chip>
+              </mat-chip-list> 
+              <div>
+                <button mat-icon-button [disabled]="workflow.active" (click)="runWorkflow($event, workflow)">
+                  <mat-icon id="workflow-action-run">play_circle_filled</mat-icon>
+                </button>
+                <button mat-icon-button (click)="deleteWorkflow($event, workflow)">
+                  <mat-icon id="workflow-action-delete">delete</mat-icon>
+                </button>
+              </div>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+          <div class="source-dest-info">
+            <mat-chip-list>
+              <mat-chip color="primary" selected>{{ workflow.source.name }}</mat-chip>
+            </mat-chip-list> 
+            <mat-icon class="arrow-icon-md">arrow_right_alt</mat-icon>
+            <mat-chip-list>
+              <mat-chip *ngFor="let destination of workflow.destinations">{{ destination.name }}</mat-chip>
+            </mat-chip-list>
+          </div>
+          <div *ngIf="workflow.postsPerDestination">
+            <h4>Posts Per Bucket/Board: {{ workflow.postsPerDestination }}</h4>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Close</button>
+  <button mat-button *ngIf="selected.value == 0" [disabled]="!_validBucketForm()" (click)="createBucket()">Create Bucket!</button>
+  <button mat-button *ngIf="selected.value == 1" [disabled]="!_validForm()" (click)="createWorkflow()">Create Workflow!</button>
+</div>

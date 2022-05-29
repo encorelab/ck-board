@@ -1,36 +1,36 @@
 import { Server, Socket } from "socket.io";
-import { run } from "../../agents/workflow.agent";
+import { run, runDistributionWorkflow } from "../../agents/workflow.agent";
 import { SocketEvent } from "../../constants";
-import { WorkflowModel } from "../../models/Workflow";
+import { DistributionWorkflowModel, WorkflowType } from "../../models/Workflow";
 import dalWorkflow from "../../repository/dalWorkflow";
 
-class WorkflowRun {
-  static type: SocketEvent = SocketEvent.WORKFLOW_RUN;
+class WorkflowRunDistribution {
+  static type: SocketEvent = SocketEvent.WORKFLOW_RUN_DISTRIBUTION;
 
   static async handleEvent(
-    eventData: WorkflowModel
-  ): Promise<WorkflowModel | null> {
+    eventData: DistributionWorkflowModel
+  ): Promise<DistributionWorkflowModel | null> {
     const id = eventData.workflowID;
 
-    const workflow = await dalWorkflow.update(id, {
+    const workflow = await dalWorkflow.update(WorkflowType.DISTRIBUTION, id, {
       active: true,
     });
 
     if (!workflow) return null;
 
-    await run(workflow);
+    await runDistributionWorkflow(workflow);
     return workflow;
   }
 
   static async handleResult(
     io: Server,
     socket: Socket,
-    result: WorkflowModel | null
+    result: DistributionWorkflowModel | null
   ) {
     socket.to(socket.data.room).emit(this.type, result);
   }
 }
 
-const workflowEvents = [WorkflowRun];
+const workflowEvents = [WorkflowRunDistribution];
 
 export default workflowEvents;

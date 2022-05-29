@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -8,10 +8,9 @@ import {
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
-import { Subscription } from 'rxjs';
 import { Board } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
-import Workflow, { DestinationType } from 'src/app/models/workflow';
+import { ContainerType, DistributionWorkflow } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -25,7 +24,7 @@ import Utils from 'src/app/utils/Utils';
   templateUrl: './create-workflow-modal.component.html',
   styleUrls: ['./create-workflow-modal.component.scss'],
 })
-export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
+export class CreateWorkflowModalComponent implements OnInit {
   selected = new FormControl(0);
 
   board: Board;
@@ -69,9 +68,6 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
     this.snackbarConfig = new MatSnackBarConfig();
     this.snackbarConfig.duration = 5000;
   }
-  ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
-  }
 
   ngOnInit(): void {
     this.board = this.data.board;
@@ -99,7 +95,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   }
 
   async loadWorkflows() {
-    return this.workflowService.get(this.board.boardID).then((workflows) => {
+    return this.workflowService.getAll(this.board.boardID).then((workflows) => {
       this.workflows = [];
       workflows.forEach((workflow) => {
         this.workflows.push(workflow);
@@ -123,7 +119,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   }
 
   createWorkflow() {
-    let workflow: any;
+    let workflow: DistributionWorkflow;
 
     if (this._ppbSelected()) {
       workflow = this._assembleWorkflow();
@@ -131,7 +127,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.workflowService.create(workflow).then(async () => {
+    this.workflowService.createDistribution(workflow).then(async () => {
       await this.loadWorkflows();
       this.selected.setValue(2);
     });
@@ -140,23 +136,25 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   runWorkflow(e, workflow: any) {
     e.stopPropagation();
 
-    this.workflowService
-      .update(workflow.workflowID, { active: true })
-      .then(() => {
-        workflow.active = true;
-        this.canvasService.runWorkflow(workflow).then(async () => {
-          workflow.active = false;
-          this.openSnackBar(
-            'Workflow: ' + workflow.name + ' completed successfully!'
-          );
-        });
+    workflow.active = true;
+    this.canvasService
+      .runDistributionWorkflow(workflow)
+      .then(async () => {
+        workflow.active = false;
+        this.openSnackBar(
+          'Workflow: ' + workflow.name + ' completed successfully!'
+        );
+      })
+      .catch((_err) => {
+        workflow.active = false;
+        this.openSnackBar('Cancelled workflow! Something went wrong.');
       });
   }
 
   deleteWorkflow(e, workflow) {
     e.stopPropagation();
 
-    this.workflowService.remove(workflow.workflowID).then(() => {
+    this.workflowService.removeDistribution(workflow.workflowID).then(() => {
       this.workflows = this.workflows.filter(
         (w) => w.workflowID !== workflow.workflowID
       );
@@ -195,7 +193,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   _assembleWorkflow() {
     let workflowID: string = Utils.generateUniqueID();
 
-    let workflow: Workflow = {
+    let workflow: DistributionWorkflow = {
       workflowID: workflowID,
       boardID: this.board.boardID,
       active: false,
@@ -226,13 +224,13 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   _mapToContainer(bucketBoard: Bucket | Board) {
     if (this._isBoard(bucketBoard)) {
       return {
-        type: DestinationType.BOARD,
+        type: ContainerType.BOARD,
         id: bucketBoard.boardID,
         name: bucketBoard.name,
       };
     } else {
       return {
-        type: DestinationType.BUCKET,
+        type: ContainerType.BUCKET,
         id: bucketBoard.bucketID,
         name: bucketBoard.name,
       };

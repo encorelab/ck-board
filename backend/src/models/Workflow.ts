@@ -1,13 +1,22 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
+import {
+  prop,
+  getModelForClass,
+  modelOptions,
+  getDiscriminatorModelForClass,
+} from "@typegoose/typegoose";
 
-export enum DestinationType {
+export enum WorkflowType {
+  DISTRIBUTION = "DISTRIBUTION",
+}
+
+export enum ContainerType {
   BOARD = "BOARD",
   BUCKET = "BUCKET",
 }
 
-export class Destination {
-  @prop({ enum: DestinationType, type: String, required: true })
-  public type!: DestinationType;
+export class Container {
+  @prop({ enum: ContainerType, type: String, required: true })
+  public type!: ContainerType;
 
   @prop({ required: true })
   public id!: string;
@@ -30,14 +39,21 @@ export class WorkflowModel {
   @prop({ required: true })
   public name!: string;
 
-  @prop({ required: true, type: () => Destination })
-  public source!: Destination;
+  @prop({ required: true, type: () => Container })
+  public source!: Container;
 
-  @prop({ required: true, type: () => [Destination] })
-  public destinations!: Destination[];
+  @prop({ required: true, type: () => [Container] })
+  public destinations!: Container[];
+}
 
+export class DistributionWorkflowModel extends WorkflowModel {
   @prop({ required: true })
   public postsPerDestination!: number;
 }
 
-export default getModelForClass(WorkflowModel);
+export const Workflow = getModelForClass(WorkflowModel);
+export const DistributionWorkflow = getDiscriminatorModelForClass(
+  Workflow,
+  DistributionWorkflowModel,
+  WorkflowType.DISTRIBUTION
+);

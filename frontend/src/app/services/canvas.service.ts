@@ -4,7 +4,7 @@ import { Board, BoardPermissions } from '../models/board';
 import Comment from '../models/comment';
 import Like from '../models/like';
 import Post, { Tag } from '../models/post';
-import Workflow from '../models/workflow';
+import Workflow, { DistributionWorkflow } from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
 import { FabricUtils } from '../utils/FabricUtils';
 import { BoardService } from './board.service';
@@ -242,7 +242,7 @@ export class CanvasService {
     return board;
   }
 
-  async runWorkflow(workflow: Workflow) {
-    this.socketService.emit(SocketEvent.WORKFLOW_RUN, workflow);
+  async runDistributionWorkflow(workflow: DistributionWorkflow) {
+    this.socketService.emit(SocketEvent.WORKFLOW_RUN_DISTRIBUTION, workflow);
   }
 }

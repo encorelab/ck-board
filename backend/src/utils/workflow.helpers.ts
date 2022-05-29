@@ -1,6 +1,15 @@
-import { isDocument, post } from "@typegoose/typegoose";
-import { mongo } from "mongoose";
-import Post, { PostModel } from "../models/Post";
+import { isDocument } from "@typegoose/typegoose";
+import { DocumentType } from "@typegoose/typegoose";
+import { KeyStringAny } from "@typegoose/typegoose/lib/types";
+import { Document, mongo } from "mongoose";
+import { PostModel } from "../models/Post";
+import { WorkflowModel, WorkflowType } from "../models/Workflow";
+
+export const isDistribution = <T extends WorkflowModel>(
+  doc: Document & KeyStringAny
+): doc is DocumentType<T> => {
+  return doc?.__t === WorkflowType.DISTRIBUTION;
+};
 
 export const shuffle = <T>(array: T[]) => {
   for (let i = array.length - 1; i > 0; i--) {
@@ -52,6 +61,6 @@ export const cloneManyToBoard = (
   return posts.map((post) => cloneToBoard(board, post));
 };
 
-const helpers = [shuffle, distribute];
+const helpers = [isDistribution, shuffle, distribute];
 
 export default helpers;

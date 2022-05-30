@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { TracingService } from './services/tracing.service';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +6,5 @@ import { TracingService } from './services/tracing.service';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  constructor(public tracingService: TracingService) {}
+  constructor() {}
 }

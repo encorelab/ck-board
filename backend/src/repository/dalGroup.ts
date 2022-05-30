@@ -36,6 +36,43 @@ export const create = async (group: GroupModel) => {
     }
 }
 
+// Add one or multiple users to a group
+export const addUser = async (id: string, users: string[]) => {
+    try {
+        const updatedGroup = await Group.findOneAndUpdate(
+            { groupID: id },
+            { $addToSet: { members: { $each: users } } },
+            { new: true }
+        );
+        return updatedGroup;
+    } catch (err) {
+        throw new Error("500");
+    }
+}
+
+// Delete a group
+export const remove = async (id: string) => {
+    try {
+        await Group.findOneAndDelete({groupID: id})
+    } catch (err) {
+        throw new Error("500");
+    }
+}
+
+// Removing one or more users from a group 
+export const removeUser = async (id: string, users: string[]) => {
+    try {
+        const updatedGroup = await Group.findOneAndUpdate(
+            { groupID: id },
+            { $pull: { members: { $in: users } } },
+            { new: true }
+        )
+        return updatedGroup;
+    } catch (err) {
+        throw new Error("500");
+    }
+}
+
 export const update = async (id: string, group: Partial<GroupModel>) => {
     try {
         const updatedGroup = await Group.findOneAndUpdate(
@@ -49,50 +86,14 @@ export const update = async (id: string, group: Partial<GroupModel>) => {
     }
 }
 
-export const remove = async (id: string) => {
-    try {
-        await Group.findOneAndDelete({groupID: id})
-    } catch (err) {
-        throw new Error("500");
-    }
-}
-
-// Clearing group from all members
-export const removeUsers = async (id: string) => {
-    try {
-        const updatedGroup = await Group.findOneAndUpdate(
-            { groupID: id },
-            { members: [] },
-            { new: true }
-        );
-        return updatedGroup;
-    } catch (err) {
-        console.log(err)
-    }
-}
-
-// Removing a single user from a group (possibly use where a user voluntarily leaves group)
-export const removeUser = async (id: string, userID: string) => {
-    try {
-        const updatedGroup = await Group.findOneAndUpdate(
-            { groupID: id },
-            { $pull: {members: userID} },
-            { new: true }
-        )
-        return updatedGroup;
-    } catch (err) {
-        console.log(err)
-    }
-}
-
 
 const dalGroup = {
     getById,
     getByUserId,
     getByProjectId,
     create,
+    addUser,
     remove,
-    removeUsers,
     removeUser,
     update,
 };

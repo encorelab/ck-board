@@ -53,18 +53,19 @@ router.post('/:id', async (req, res) => {
     res.status(200).json(updatedGroup);
 })
 
-router.delete("/:id/users", async (req, res) => {
+router.post("/:id/users/add", async (req, res) => {
     const { id } = req.params;
+    const { users } = req.body;
 
-    const updatedGroup = await dalGroup.removeUsers(id);
+    const updatedGroup = await dalGroup.addUser(id, users);
     res.status(200).json(updatedGroup);
-})
+});
 
-router.delete("/:id/user", async (req, res) => {
+router.post("/:id/users/remove", async (req, res) => {
     const { id } = req.params;
-    const { userID } = req.body;
+    const { users } = req.body;
 
-    const updatedGroup = await dalGroup.removeUser(id, userID);
+    const updatedGroup = await dalGroup.removeUser(id, users);
     res.status(200).json(updatedGroup);
 })
 

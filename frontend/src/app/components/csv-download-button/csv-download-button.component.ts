@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import Trace from 'src/app/models/trace';
+// import Trace from 'src/app/models/trace';
 import { parseAsync } from 'json2csv';
 import traceDefaults from './traceDefaults';
 

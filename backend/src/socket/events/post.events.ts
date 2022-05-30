@@ -21,6 +21,7 @@ class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
 
   static async handleEvent(eventData: PostModel): Promise<PostModel> {
+    // maybe just pass eventData direcly
     let trace = new PostCreatedTrace(
       eventData.postID,
       eventData.title,

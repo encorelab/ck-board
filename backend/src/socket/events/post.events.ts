@@ -11,23 +11,17 @@ import dalLike from "../../repository/dalLike";
 import dalPost from "../../repository/dalPost";
 import dalTrace from "../../repository/dalTrace";
 import { PostCreatedTrace } from "../trace/post.trace";
-
-type PostTagEventInput = {
-  post: PostModel;
-  tag: TagModel;
-};
+import {
+  PostEventInput,
+  PostTagEventInput,
+  PostUpdateEventInput,
+} from "./event.types";
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
 
-  static async handleEvent(eventData: PostModel): Promise<PostModel> {
-    // maybe just pass eventData direcly
-    let trace = new PostCreatedTrace(
-      eventData.postID,
-      eventData.title,
-      eventData.desc
-    );
-    return eventData;
+  static async handleEvent(input: PostEventInput): Promise<PostModel> {
+    return input.eventData;
   }
 
   static async handleResult(io: Server, socket: Socket, result: PostModel) {
@@ -39,9 +33,9 @@ class PostUpdate {
   static type: SocketEvent = SocketEvent.POST_UPDATE;
 
   static async handleEvent(
-    eventData: Partial<PostModel> & Pick<PostModel, "postID">
+    input: PostUpdateEventInput
   ): Promise<PostModel | null> {
-    const post = await dalPost.update(eventData.postID, eventData);
+    const post = await dalPost.update(input.eventData.postID, input.eventData);
     return post;
   }
 
@@ -53,8 +47,8 @@ class PostUpdate {
 class PostDelete {
   static type: SocketEvent = SocketEvent.POST_DELETE;
 
-  static async handleEvent(eventData: PostModel): Promise<string> {
-    const postID = eventData.postID;
+  static async handleEvent(input: PostEventInput): Promise<string> {
+    const postID = input.eventData.postID;
 
     await dalPost.remove(postID);
 
@@ -63,7 +57,7 @@ class PostDelete {
       await dalBucket.removePost(buckets[i].bucketID, [postID]);
     }
 
-    return eventData.postID;
+    return input.eventData.postID;
   }
 
   static async handleResult(io: Server, socket: Socket, result: string) {
@@ -74,8 +68,8 @@ class PostDelete {
 class PostStartMove {
   static type: SocketEvent = SocketEvent.POST_START_MOVE;
 
-  static async handleEvent(eventData: PostModel): Promise<PostModel | null> {
-    const post = await dalPost.update(eventData.postID, eventData);
+  static async handleEvent(input: PostEventInput): Promise<PostModel | null> {
+    const post = await dalPost.update(input.eventData.postID, input.eventData);
     return post;
   }
 
@@ -87,8 +81,8 @@ class PostStartMove {
 class PostStopMove {
   static type: SocketEvent = SocketEvent.POST_STOP_MOVE;
 
-  static async handleEvent(eventData: PostModel): Promise<PostModel | null> {
-    const post = await dalPost.update(eventData.postID, eventData);
+  static async handleEvent(input: PostEventInput): Promise<PostModel | null> {
+    const post = await dalPost.update(input.eventData.postID, input.eventData);
     return post;
   }
 
@@ -143,9 +137,9 @@ class PostTagAdd {
   static type: SocketEvent = SocketEvent.POST_TAG_ADD;
 
   static async handleEvent(
-    eventData: PostTagEventInput
-  ): Promise<PostTagEventInput> {
-    return eventData;
+    input: PostTagEventInput
+  ): Promise<PostTagEventInput["eventData"]> {
+    return input.eventData;
   }
 
   static async handleResult(

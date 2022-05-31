@@ -41,6 +41,7 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { ComponentType } from '@angular/cdk/portal';
 import Utils from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
+import { TraceService } from 'src/app/services/trace.service';
 
 @Component({
   selector: 'app-canvas',
@@ -92,7 +93,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     public fileUploadService: FileUploadService,
     private socketService: SocketService,
-    private canvasService: CanvasService
+    private canvasService: CanvasService,
+    private traceService: TraceService
   ) {
     this.groupEventToHandler = new Map<SocketEvent, Function>([
       [SocketEvent.POST_CREATE, this.handlePostCreateEvent],
@@ -287,6 +289,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      this.traceService.setTrace(this.projectID, this.boardID);
     } else {
       this.router.navigate(['error']);
     }

@@ -1,11 +1,9 @@
-import { SocketEvent } from "../../constants";
 import { CommentModel } from "../../models/Comment";
 import { LikeModel } from "../../models/Like";
 import { PostModel } from "../../models/Post";
 import dalTrace from "../../repository/dalTrace";
 import { PostTagEventInput, SocketPayload } from "../events/types/event.types";
 import { createTrace } from "./base.trace";
-import { TraceInput } from "./types/trace.types";
 
 const create = async (input: SocketPayload<PostModel>, eventType: string) => {
   const trace = await createTrace(input.trace);
@@ -115,6 +113,31 @@ const tagRemove = async (
   dalTrace.create(trace);
 };
 
+// Placeholder not done yet
+const move = async (input: SocketPayload<PostModel>, eventType: string) => {
+  const trace = await createTrace(input.trace);
+  const post = input.eventData;
+  trace.event = {
+    postID: post.postID,
+    postModifiedLocationX: 0,
+    postModifiedLocationY: 0,
+  };
+  trace.eventType = eventType;
+  dalTrace.create(trace);
+};
+
+// Placeholder not done yet
+const read = async (input: SocketPayload<PostModel>, eventType: string) => {
+  const trace = await createTrace(input.trace);
+  const post = input.eventData;
+  trace.event = {
+    postID: post.postID,
+    postRead: 1,
+  };
+  trace.eventType = eventType;
+  dalTrace.create(trace);
+};
+
 const postTrace = {
   create,
   update,
@@ -124,6 +147,8 @@ const postTrace = {
   commentAdd,
   tagAdd,
   tagRemove,
+  move,
+  read,
 };
 
 export default postTrace;

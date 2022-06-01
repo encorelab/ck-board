@@ -1,4 +1,3 @@
-import { trace } from "console";
 import { Server, Socket } from "socket.io";
 import { SocketEvent } from "../../constants";
 import { BucketModel } from "../../models/Bucket";

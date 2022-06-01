@@ -1,6 +1,6 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 
-@modelOptions({ schemaOptions: { collection: 'projects', timestamps: true } })
+@modelOptions({ schemaOptions: { collection: "projects", timestamps: true } })
 export class ProjectModel {
   @prop({ required: true })
   public projectID!: string;
@@ -13,6 +13,9 @@ export class ProjectModel {
 
   @prop({ required: true })
   public members!: string[];
+
+  @prop({ required: true })
+  public groups!: string[];
 
   @prop({ required: true })
   public boards!: string[];

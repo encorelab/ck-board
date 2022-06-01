@@ -1,20 +1,24 @@
-class PostTrace {
-  postID: string;
-  constructor(postID: string = "") {
-    this.postID = postID;
-  }
-}
+import { SocketEvent } from "../../constants";
+import { PostModel } from "../../models/Post";
+import dalTrace from "../../repository/dalTrace";
+import { SocketPayload } from "../events/types/event.types";
+import { createTrace } from "./base.trace";
 
-export class PostCreatedTrace extends PostTrace {
-  postTitle: string;
-  postMessage: string;
-  constructor(
-    postID: string = "",
-    postTitle: string = "",
-    postMessage: string
-  ) {
-    super(postID);
-    this.postTitle = postTitle;
-    this.postMessage = postMessage;
-  }
-}
+export const create = async (input: SocketPayload<PostModel>) => {
+  const trace = await createTrace(input.trace);
+  const post = input.eventData;
+  const event = {
+    postID: post.postID,
+    postTitle: post.title,
+    postMessage: post.desc,
+  };
+  trace.event = event;
+  trace.eventType = SocketEvent.POST_CREATE;
+  dalTrace.create(trace);
+};
+
+const postTrace = {
+  create,
+};
+
+export default postTrace;

@@ -12,12 +12,14 @@ export class TraceService {
       userID: '',
       projectID: '',
       boardID: '',
+      clientTimestamp: -1,
     };
   }
   public setTrace(projectID: string, boardID: string) {
     this.trace.boardID = boardID;
     this.trace.projectID = projectID;
     this.trace.userID = this.userService.user?.userID || '';
+    this.trace.clientTimestamp = Date.now();
   }
   public getTrace(): Trace {
     return this.trace;

@@ -9,8 +9,7 @@ import dalBucket from "../../repository/dalBucket";
 import dalComment from "../../repository/dalComment";
 import dalLike from "../../repository/dalLike";
 import dalPost from "../../repository/dalPost";
-import dalTrace from "../../repository/dalTrace";
-import { PostCreatedTrace } from "../trace/post.trace";
+import postTrace from "../trace/post.trace";
 import { SocketPayload } from "./types/event.types";
 
 type PostTagEventInput = {
@@ -24,6 +23,7 @@ class PostCreate {
   static async handleEvent(
     input: SocketPayload<PostModel>
   ): Promise<PostModel> {
+    postTrace.create(input);
     return input.eventData;
   }
 

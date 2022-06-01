@@ -41,8 +41,10 @@ export class SocketService {
    * @returns void
    */
   emit(event: SocketEvent, value: any): void {
+    let trace = this.traceService.getTrace();
+    console.log(trace);
     let socketPayload: SocketPayload = {
-      trace: this.traceService.getTrace(),
+      trace,
       eventData: value,
     };
     this.socket.emit(event, socketPayload);

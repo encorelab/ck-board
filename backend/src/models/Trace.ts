@@ -20,8 +20,8 @@ export class TraceModel {
   @prop({ required: true })
   agentUserName!: string;
 
-  @prop({ required: false, default: -1 })
-  clientTimestamp: number = -1;
+  @prop({ required: true })
+  clientTimestamp!: number;
 
   @prop({ required: true })
   eventType!: string;

@@ -23,7 +23,7 @@ class PostCreate {
   static async handleEvent(
     input: SocketPayload<PostModel>
   ): Promise<PostModel> {
-    postTrace.create(input);
+    postTrace.create(input, this.type);
     return input.eventData;
   }
 
@@ -39,6 +39,7 @@ class PostUpdate {
     input: SocketPayload<Partial<PostModel> & Pick<PostModel, "postID">>
   ): Promise<PostModel | null> {
     const post = await dalPost.update(input.eventData.postID, input.eventData);
+    postTrace.update(input, this.type);
     return post;
   }
 
@@ -59,6 +60,7 @@ class PostDelete {
     for (let i = 0; i < buckets.length; i++) {
       await dalBucket.removePost(buckets[i].bucketID, [postID]);
     }
+    postTrace.remove(input, this.type);
 
     return input.eventData.postID;
   }
@@ -103,6 +105,7 @@ class PostLikeAdd {
 
   static async handleEvent(input: SocketPayload<LikeModel>): Promise<object> {
     const likeAmount = await dalLike.getAmountByPost(input.eventData.postID);
+    postTrace.likeAdd(input, this.type);
 
     return { like: input.eventData, amount: likeAmount };
   }
@@ -117,7 +120,7 @@ class PostLikeRemove {
 
   static async handleEvent(input: SocketPayload<LikeModel>): Promise<object> {
     const likeAmount = await dalLike.getAmountByPost(input.eventData.postID);
-
+    postTrace.likeRemove(input, this.type);
     return { like: input.eventData, amount: likeAmount };
   }
 
@@ -135,6 +138,7 @@ class PostCommentAdd {
     const commentAmount = await dalComment.getAmountByPost(
       input.eventData.postID
     );
+    postTrace.commentAdd(input, this.type);
 
     return { comment: input.eventData, amount: commentAmount };
   }

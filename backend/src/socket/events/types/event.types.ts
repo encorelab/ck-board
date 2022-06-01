@@ -1,3 +1,6 @@
+import { PostModel } from "../../../models/Post";
+import { TagModel } from "../../../models/Tag";
+
 export interface TraceContext {
   projectID: string;
   boardID: string;
@@ -8,3 +11,8 @@ export interface SocketPayload<T> {
   trace: TraceContext;
   eventData: T;
 }
+
+export type PostTagEventInput = {
+  post: PostModel;
+  tag: TagModel;
+};

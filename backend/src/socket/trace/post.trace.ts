@@ -3,7 +3,7 @@ import { CommentModel } from "../../models/Comment";
 import { LikeModel } from "../../models/Like";
 import { PostModel } from "../../models/Post";
 import dalTrace from "../../repository/dalTrace";
-import { SocketPayload } from "../events/types/event.types";
+import { PostTagEventInput, SocketPayload } from "../events/types/event.types";
 import { createTrace } from "./base.trace";
 import { TraceInput } from "./types/trace.types";
 
@@ -78,8 +78,38 @@ const commentAdd = async (
   const comment = input.eventData;
   trace.event = {
     postID: comment.postID,
-    commnetID: comment.commentID,
+    commentID: comment.commentID,
     commentText: comment.comment,
+  };
+  trace.eventType = eventType;
+  dalTrace.create(trace);
+};
+
+const tagAdd = async (
+  input: SocketPayload<PostTagEventInput>,
+  eventType: string
+) => {
+  const trace = await createTrace(input.trace);
+  const post = input.eventData.post;
+  const tag = input.eventData.tag;
+  trace.event = {
+    postID: post.postID,
+    postTagNameAdded: tag.name,
+  };
+  trace.eventType = eventType;
+  dalTrace.create(trace);
+};
+
+const tagRemove = async (
+  input: SocketPayload<PostTagEventInput>,
+  eventType: string
+) => {
+  const trace = await createTrace(input.trace);
+  const post = input.eventData.post;
+  const tag = input.eventData.tag;
+  trace.event = {
+    postID: post.postID,
+    postTagNameRemoved: tag.name,
   };
   trace.eventType = eventType;
   dalTrace.create(trace);
@@ -92,6 +122,8 @@ const postTrace = {
   likeAdd,
   likeRemove,
   commentAdd,
+  tagAdd,
+  tagRemove,
 };
 
 export default postTrace;

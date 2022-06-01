@@ -1,21 +1,16 @@
+import { trace } from "console";
 import { Server, Socket } from "socket.io";
 import { SocketEvent } from "../../constants";
 import { BucketModel } from "../../models/Bucket";
 import { CommentModel } from "../../models/Comment";
 import { LikeModel } from "../../models/Like";
 import { PostModel } from "../../models/Post";
-import { TagModel } from "../../models/Tag";
 import dalBucket from "../../repository/dalBucket";
 import dalComment from "../../repository/dalComment";
 import dalLike from "../../repository/dalLike";
 import dalPost from "../../repository/dalPost";
 import postTrace from "../trace/post.trace";
-import { SocketPayload } from "./types/event.types";
-
-type PostTagEventInput = {
-  post: PostModel;
-  tag: TagModel;
-};
+import { PostTagEventInput, SocketPayload } from "./types/event.types";
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
@@ -154,6 +149,7 @@ class PostTagAdd {
   static async handleEvent(
     input: SocketPayload<PostTagEventInput>
   ): Promise<PostTagEventInput> {
+    postTrace.tagAdd(input, this.type);
     return input.eventData;
   }
 
@@ -172,6 +168,7 @@ class PostTagRemove {
   static async handleEvent(
     input: SocketPayload<PostTagEventInput>
   ): Promise<PostTagEventInput> {
+    postTrace.tagRemove(input, this.type);
     return input.eventData;
   }
 

@@ -23,10 +23,19 @@ const update = async (
 ) => {
   const trace = await createTrace(input.trace);
   const post = input.eventData;
+  const lastModifiedPost = await dalTrace.getLastModifiedPost(
+    post.postID,
+    eventType
+  );
+  let counter = 1;
+  if (lastModifiedPost) {
+    counter = lastModifiedPost.event?.commentModifiedTextCounter + 1;
+  }
   trace.event = {
     postID: post.postID,
     postModifiedTitle: post.title,
     postModifiedMessage: post.desc,
+    commentModifiedTextCounter: counter,
   };
   trace.eventType = eventType;
   dalTrace.create(trace);

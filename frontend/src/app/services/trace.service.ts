@@ -26,9 +26,7 @@ export class TraceService {
   getTraceContext(): TraceContext {
     return this.traceContext;
   }
-  getTraceRecords() {
-    return this.http
-      .get<Trace[]>('trace/' + this.traceContext.projectID)
-      .toPromise();
+  getTraceRecords(projectID: string) {
+    return this.http.get<Trace[]>('trace/' + projectID).toPromise();
   }
 }

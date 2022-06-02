@@ -33,7 +33,9 @@ export class CsvDownloadButtonComponent implements OnInit {
   }
 
   async exportToCSV(): Promise<void> {
-    let traceCollection = await this.traceService.getTraceRecords();
+    let traceCollection = await this.traceService.getTraceRecords(
+      this.projectID
+    );
     let traceData: any[] = [];
     traceCollection.forEach((data) => {
       // extract nested event object and flatten it before converting to csv

@@ -60,7 +60,7 @@ export const runDistributionWorkflow = async (
     }
   }
 
-  await dalWorkflow.update(WorkflowType.DISTRIBUTION, workflow.workflowID, {
+  await dalWorkflow.updateDistribution(workflow.workflowID, {
     active: false,
   });
 };

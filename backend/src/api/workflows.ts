@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { DistributionWorkflowModel, WorkflowType } from "../models/Workflow";
+import { DistributionWorkflowModel, TaskWorkflowModel, WorkflowType } from "../models/Workflow";
 import dalWorkflow from "../repository/dalWorkflow";
 
 const router = Router();
@@ -33,8 +33,7 @@ router.post("/distribution/:id", async (req, res) => {
     postsPerDestination === null ? null : { postsPerDestination }
   );
 
-  const updatedWorkflow = await dalWorkflow.update(
-    WorkflowType.DISTRIBUTION,
+  const updatedWorkflow = await dalWorkflow.updateDistribution(
     id,
     workflow
   );
@@ -74,5 +73,72 @@ router.delete("/distribution/:id", async (req, res) => {
 
   res.status(200).end();
 });
+
+/**
+ * Create a new task workflow.
+ */
+ router.post("/task", async (req, res) => {
+  const workflow: TaskWorkflowModel = req.body;
+
+  const savedWorkflow = await dalWorkflow.create(
+    WorkflowType.TASK,
+    workflow
+  );
+  res.status(200).json(savedWorkflow);
+});
+
+/**
+ * Update an existing task workflow.
+ */
+router.post("/task/:id", async (req, res) => {
+  const id = req.params.id;
+  const { name, active, source, destinations, prompt, 
+    requiredActions, optionalActions, assignedGroups } = req.body;
+
+  const workflow: Partial<TaskWorkflowModel> = Object.assign(
+    {},
+    name === null ? null : { name },
+    active === null ? null : { active },
+    source === null ? null : { source },
+    destinations === null ? null : { destinations },
+    prompt === null ? null : { prompt },
+    requiredActions === null ? null : { requiredActions },
+    optionalActions === null ? null : { optionalActions },
+    assignedGroups === null ? null : { assignedGroups },
+
+  );
+
+  const updatedWorkflow = await dalWorkflow.updateTask(
+    id,
+    workflow
+  );
+  res.status(200).json(updatedWorkflow);
+});
+
+
+/**
+ * Get all task workflows for a board.
+ */
+router.get("/task/boards/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const workflows = await dalWorkflow.getByBoardId(
+    WorkflowType.TASK,
+    id
+  );
+  res.status(200).json(workflows);
+});
+
+/**
+ * Delete an existing task workflow.
+ */
+router.delete("/task/:id", async (req, res) => {
+  const id = req.params.id;
+
+  await dalWorkflow.remove(WorkflowType.TASK, id);
+
+  res.status(200).end();
+});
+
 
 export default router;

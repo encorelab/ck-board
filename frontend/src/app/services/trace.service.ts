@@ -1,27 +1,34 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Trace } from '../models/trace';
+import { TraceContext } from '../models/traceContext';
 import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TraceService {
-  trace: Trace;
-  constructor(private userService: UserService) {
-    this.trace = {
+  traceContext: TraceContext;
+  constructor(private userService: UserService, private http: HttpClient) {
+    this.traceContext = {
       userID: '',
       projectID: '',
       boardID: '',
       clientTimestamp: -1,
     };
   }
-  public setTrace(projectID: string, boardID: string) {
-    this.trace.boardID = boardID;
-    this.trace.projectID = projectID;
-    this.trace.userID = this.userService.user?.userID || '';
-    this.trace.clientTimestamp = Date.now();
+  setTraceContext(projectID: string, boardID: string) {
+    this.traceContext.boardID = boardID;
+    this.traceContext.projectID = projectID;
+    this.traceContext.userID = this.userService.user?.userID || '';
+    this.traceContext.clientTimestamp = Date.now();
   }
-  public getTrace(): Trace {
-    return this.trace;
+  getTraceContext(): TraceContext {
+    return this.traceContext;
+  }
+  getTraceRecords() {
+    return this.http
+      .get<Trace[]>('trace/' + this.traceContext.projectID)
+      .toPromise();
   }
 }

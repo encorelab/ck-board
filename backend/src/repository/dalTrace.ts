@@ -18,9 +18,14 @@ const getLastModifiedPost = async (postID: string, eventType: string) => {
   return lastModifiedPost[0];
 };
 
+const getAllTrace = async (projectID: string) => {
+  return Trace.find({}).sort({ updatedAt: -1 }).limit(50);
+};
+
 const dalTrace = {
   create,
   getLastModifiedPost,
+  getAllTrace,
 };
 
 export default dalTrace;

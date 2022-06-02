@@ -289,7 +289,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-      this.traceService.setTrace(this.projectID, this.boardID);
+      this.traceService.setTraceContext(this.projectID, this.boardID);
     } else {
       this.router.navigate(['error']);
     }

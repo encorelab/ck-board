@@ -1,6 +1,6 @@
-import { Trace } from './trace';
+import { TraceContext } from './traceContext';
 
 export class SocketPayload {
-  trace: Trace;
+  trace: TraceContext;
   eventData: any;
 }

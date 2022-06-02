@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-// import Trace from 'src/app/models/trace';
 import { parseAsync } from 'json2csv';
+import { Trace } from 'src/app/models/trace';
+import { TraceService } from 'src/app/services/trace.service';
 import traceDefaults from './traceDefaults';
 
 @Component({
@@ -11,10 +12,9 @@ import traceDefaults from './traceDefaults';
 export class CsvDownloadButtonComponent implements OnInit {
   @Input() projectID: string;
 
-  private tracePath: string = 'trace';
   private static readonly CSV_FILENAME: string = 'CK_Trace.csv';
 
-  constructor() {}
+  constructor(private traceService: TraceService) {}
 
   ngOnInit(): void {}
   /**
@@ -32,25 +32,21 @@ export class CsvDownloadButtonComponent implements OnInit {
     link.click();
   }
 
-  // async exportToCSV(): Promise<void>{
-  //   let traceCollection = await this.tracingService.getTraceByProjectID(this.projectID);
-  //   let traceData:any[] = [];
-  //   traceCollection.forEach(data=>{
-  //     let temp:Trace = data.data();
-  //     // extract nested event object and flatten it before converting to csv
-  //     // json2csv also has a builtin function for flattening
-  //     let {event, ...otherfields} = temp;
-  //     traceData.push(
-  //       {
-  //         ...otherfields,
-  //         ...event
-  //       }
-  //     )
-  //   })
-  //   console.log(traceData);
-  //   let csvContent = await parseAsync(traceData,{fields:traceDefaults});
-  //   console.log(csvContent)
-  //   this.downloadCSV(csvContent)
-
-  // }
+  async exportToCSV(): Promise<void> {
+    let traceCollection = await this.traceService.getTraceRecords();
+    let traceData: any[] = [];
+    traceCollection.forEach((data) => {
+      // extract nested event object and flatten it before converting to csv
+      // json2csv also has a builtin function for flattening
+      let { event, ...otherfields } = data;
+      traceData.push({
+        ...otherfields,
+        ...event,
+      });
+    });
+    console.log(traceData);
+    let csvContent = await parseAsync(traceData, { fields: traceDefaults });
+    console.log(csvContent);
+    this.downloadCSV(csvContent);
+  }
 }

@@ -9,7 +9,7 @@ import dalComment from "../../repository/dalComment";
 import dalLike from "../../repository/dalLike";
 import dalPost from "../../repository/dalPost";
 import postTrace from "../trace/post.trace";
-import { PostTagEventInput, SocketPayload } from "./types/event.types";
+import { PostTagEventInput, SocketPayload } from "../types/event.types";
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;

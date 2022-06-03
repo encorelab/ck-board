@@ -1,12 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import Bucket from '../models/bucket';
+import { SocketEvent } from '../utils/constants';
+import { SocketService } from './socket.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BucketService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private socketService: SocketService) {}
 
   get(bucketID: string): Promise<any> {
     return this.http.get<any>('buckets/' + bucketID).toPromise();
@@ -21,6 +23,7 @@ export class BucketService {
   }
 
   add(bucketID: string, ...posts: string[]): Promise<Bucket> {
+    this.socketService.emit(SocketEvent.BUCKET_ADD_POST, { bucketID, posts });
     return this.http
       .post<Bucket>('buckets/' + bucketID + '/add', { posts })
       .toPromise();

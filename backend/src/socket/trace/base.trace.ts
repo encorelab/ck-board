@@ -2,12 +2,11 @@ import { TraceModel } from "../../models/trace";
 import dalBoard from "../../repository/dalBoard";
 import dalProject from "../../repository/dalProject";
 import dalUser from "../../repository/dalUser";
-import { TraceContext } from "../events/types/event.types";
+import { TraceContext } from "../types/event.types";
 
 export const createTrace = async (
   traceContext: TraceContext
 ): Promise<TraceModel> => {
-  console.log(traceContext);
   const board = await dalBoard.getById(traceContext.boardID);
   const project = await dalProject.getById(traceContext.projectID);
   const user = await dalUser.findByUserID(traceContext.userID);

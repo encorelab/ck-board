@@ -1,23 +1,36 @@
 import { BucketModel } from "../../models/Bucket";
+import dalBucket from "../../repository/dalBucket";
 import dalTrace from "../../repository/dalTrace";
-import { SocketPayload } from "../events/types/event.types";
+import { BucketEventInput, SocketPayload } from "../types/event.types";
 import { createTrace } from "./base.trace";
 
-// Placeholder not done yet
+/**
+ * Creates a trace for each post moved to bucket
+ * input.eventData.posts is string[] of postIDs
+ * input.eventData.bucketID is the destination bucketID
+ * @param input
+ * @param eventType
+ * @returns
+ */
 const movePostToBucket = async (
-  input: SocketPayload<BucketModel>,
+  input: SocketPayload<BucketEventInput>,
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
-  const bucket = input.eventData;
-  trace.event = {
-    bucketID: bucket.boardID,
-    bucketName: bucket.name,
-    // will prob need bucket and post in payload
-    postID: "",
-  };
-  trace.eventType = eventType;
-  dalTrace.create(trace);
+  const bucketEvent = input.eventData;
+  const bucket = await dalBucket.getById(bucketEvent.bucketID);
+  if (!bucket) return;
+  // create a trace for each postID in posts
+  let tracePromises = bucketEvent.posts.map(async (postID) => {
+    trace.event = {
+      bucketID: bucket.bucketID,
+      bucketName: bucket.name,
+      postID: postID,
+    };
+    trace.eventType = eventType;
+    return dalTrace.create(trace);
+  });
+  await Promise.all(tracePromises);
 };
 
 const bucketTrace = {

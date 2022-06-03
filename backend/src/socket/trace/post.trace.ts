@@ -2,7 +2,7 @@ import { CommentModel } from "../../models/Comment";
 import { LikeModel } from "../../models/Like";
 import { PostModel } from "../../models/Post";
 import dalTrace from "../../repository/dalTrace";
-import { PostTagEventInput, SocketPayload } from "../events/types/event.types";
+import { PostTagEventInput, SocketPayload } from "../types/event.types";
 import { createTrace } from "./base.trace";
 
 const create = async (input: SocketPayload<PostModel>, eventType: string) => {

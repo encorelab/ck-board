@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { SocketEvent } from "../../constants";
 import { BoardModel } from "../../models/Board";
-import { SocketPayload } from "./types/event.types";
+import { SocketPayload } from "../types/event.types";
 
 class BoardNameUpdate {
   static type: SocketEvent = SocketEvent.BOARD_NAME_UDPATE;

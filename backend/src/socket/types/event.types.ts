@@ -1,5 +1,5 @@
-import { PostModel } from "../../../models/Post";
-import { TagModel } from "../../../models/Tag";
+import { PostModel } from "../../models/Post";
+import { TagModel } from "../../models/Tag";
 
 export interface TraceContext {
   projectID: string;
@@ -15,4 +15,9 @@ export interface SocketPayload<T> {
 export type PostTagEventInput = {
   post: PostModel;
   tag: TagModel;
+};
+
+export type BucketEventInput = {
+  bucketID: string;
+  posts: string[];
 };

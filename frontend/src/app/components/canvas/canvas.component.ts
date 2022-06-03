@@ -535,6 +535,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
           post: obj,
           board: this.board,
         });
+        this.canvasService.readPost(obj.postID);
       }
     };
 

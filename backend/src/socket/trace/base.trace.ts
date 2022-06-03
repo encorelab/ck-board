@@ -25,7 +25,7 @@ export const createTrace = async (
       boardName: board.name,
       agentUserID: user.userID,
       agentUserName: user.username,
-      clientTimestamp: traceContext.clientTimestamp,
+      clientTimestamp: new Date(traceContext.clientTimestamp),
       eventType: "",
       event: {},
     };

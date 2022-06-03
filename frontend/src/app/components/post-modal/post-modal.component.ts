@@ -79,6 +79,7 @@ export class PostModalComponent {
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
+    //console.log(data);
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
     this.postService.get(data.post.postID).then(async (p: Post) => {

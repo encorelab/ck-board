@@ -14,7 +14,7 @@ const create = async (input: SocketPayload<PostModel>, eventType: string) => {
     postMessage: post.desc,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
 const update = async (
@@ -38,7 +38,7 @@ const update = async (
     commentModifiedTextCounter: counter,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 // can't name function delete
 const remove = async (input: SocketPayload<PostModel>, eventType: string) => {
@@ -49,7 +49,7 @@ const remove = async (input: SocketPayload<PostModel>, eventType: string) => {
     deleted: 1,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
 const likeAdd = async (input: SocketPayload<LikeModel>, eventType: string) => {
@@ -60,7 +60,7 @@ const likeAdd = async (input: SocketPayload<LikeModel>, eventType: string) => {
     postModifiedUpvote: 1,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
 const likeRemove = async (
@@ -74,7 +74,7 @@ const likeRemove = async (
     postModifiedUpvote: -1,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
 const commentAdd = async (
@@ -89,7 +89,7 @@ const commentAdd = async (
     commentText: comment.comment,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
 const tagAdd = async (
@@ -104,7 +104,7 @@ const tagAdd = async (
     postTagNameAdded: tag.name,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
 const tagRemove = async (
@@ -119,32 +119,36 @@ const tagRemove = async (
     postTagNameRemoved: tag.name,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
-// Placeholder not done yet
 const move = async (input: SocketPayload<PostModel>, eventType: string) => {
-  const trace = await createTrace(input.trace);
   const post = input.eventData;
+  if (!post.fabricObject) {
+    return;
+  }
+  const trace = await createTrace(input.trace);
+
+  let parsed = JSON.parse(post.fabricObject);
+
   trace.event = {
     postID: post.postID,
-    postModifiedLocationX: 0,
-    postModifiedLocationY: 0,
+    postModifiedLocationX: parsed.left,
+    postModifiedLocationY: parsed.top,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
-// Placeholder not done yet
-const read = async (input: SocketPayload<PostModel>, eventType: string) => {
+const read = async (input: SocketPayload<string>, eventType: string) => {
   const trace = await createTrace(input.trace);
-  const post = input.eventData;
+  const postID = input.eventData;
   trace.event = {
-    postID: post.postID,
+    postID: postID,
     postRead: 1,
   };
   trace.eventType = eventType;
-  dalTrace.create(trace);
+  return dalTrace.create(trace);
 };
 
 const postTrace = {

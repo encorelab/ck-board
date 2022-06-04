@@ -10,7 +10,14 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
 import { Board } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
-import { ContainerType, DistributionWorkflow } from 'src/app/models/workflow';
+import { Group } from 'src/app/models/group';
+import {
+  ContainerType,
+  DistributionWorkflow,
+  TaskAction,
+  TaskWorkflow,
+  WorkflowType,
+} from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -33,16 +40,35 @@ export class CreateWorkflowModalComponent implements OnInit {
   tags: string[];
 
   bucketName: string = '';
-  workflowName: string = '';
 
+  // Common fields between all workflows
+  WorkflowType: typeof WorkflowType = WorkflowType;
+  workflowType: WorkflowType = WorkflowType.DISTRIBUTION;
   sourceOptions: any[] = [];
   destOptions: any[] = [];
+  workflowName: string = '';
 
-  source: Board | Bucket;
+  // Fields for distribution workflow creation
+  distributionSource: Board | Bucket;
   distributionDestinations: any[];
-  customDestination: Board | Bucket;
-
   postsPerBucket: number;
+
+  // Fields for task workflow creation
+  groupOptions: Group[] = [
+    {
+      groupID: '1',
+      projectID: '2',
+      name: 'Group 1',
+      members: [],
+    },
+  ];
+  taskSource: Board | Bucket;
+  taskDestination: Board | Bucket;
+  prompt: string;
+  assignedGroups: Group[];
+  likeAction: boolean = false;
+  commentAction: boolean = false;
+  tagAction: boolean = false;
 
   bucketNameFormControl = new FormControl('valid', [
     Validators.required,
@@ -51,6 +77,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   workflowNameFormControl = new FormControl('valid', [Validators.required]);
   sourceFormControl = new FormControl('valid', [Validators.required]);
   destinationFormControl = new FormControl('valid', [Validators.required]);
+  groupsFormControl = new FormControl('valid', [Validators.required]);
+  promptFormControl = new FormControl('valid', [Validators.required]);
   tagsFormControl = new FormControl();
 
   matcher = new MyErrorStateMatcher();
@@ -118,16 +146,21 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
-  createWorkflow() {
-    let workflow: DistributionWorkflow;
+  createDistributionWorkflow() {
+    if (!this._ppbSelected()) return;
 
-    if (this._ppbSelected()) {
-      workflow = this._assembleWorkflow();
-    } else {
-      return;
-    }
-
+    let workflow: DistributionWorkflow = this._assembleDistributionWorkflow();
     this.workflowService.createDistribution(workflow).then(async () => {
+      await this.loadWorkflows();
+      this.selected.setValue(2);
+    });
+  }
+
+  createTaskWorkflow() {
+    if (!this._actionSelected()) return;
+
+    let workflow: TaskWorkflow = this._assembleTaskWorkflow();
+    this.workflowService.createTask(workflow).then(async () => {
       await this.loadWorkflows();
       this.selected.setValue(2);
     });
@@ -173,11 +206,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     return (object as Board).tags !== undefined;
   }
 
-  _validForm() {
-    return this._validWorkflow();
-  }
-
-  _validWorkflow() {
+  _validDistributionWorkflow() {
     return (
       this.workflowNameFormControl.valid &&
       this.sourceFormControl.valid &&
@@ -190,7 +219,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     return this.postsPerBucket && this.postsPerBucket > 0;
   }
 
-  _assembleWorkflow() {
+  _assembleDistributionWorkflow() {
     let workflowID: string = Utils.generateUniqueID();
 
     let workflow: DistributionWorkflow = {
@@ -198,9 +227,47 @@ export class CreateWorkflowModalComponent implements OnInit {
       boardID: this.board.boardID,
       active: false,
       name: this.workflowName,
-      source: this._mapToContainer(this.source),
+      source: this._mapToContainer(this.distributionSource),
       destinations: this._mapToContainers(this.distributionDestinations),
       postsPerDestination: this.postsPerBucket,
+    };
+
+    return workflow;
+  }
+
+  _validTaskWorkflow() {
+    return (
+      this.workflowNameFormControl.valid &&
+      this.sourceFormControl.valid &&
+      this.destinationFormControl.valid &&
+      this.groupsFormControl.valid &&
+      this.promptFormControl.valid &&
+      this._actionSelected()
+    );
+  }
+
+  _actionSelected() {
+    return this.likeAction || this.commentAction || this.tagAction;
+  }
+
+  _assembleTaskWorkflow() {
+    let workflowID: string = Utils.generateUniqueID();
+
+    let actions: TaskAction[] = [];
+    if (this.likeAction) actions.push(TaskAction.LIKE);
+    if (this.commentAction) actions.push(TaskAction.COMMENT);
+    if (this.tagAction) actions.push(TaskAction.TAG);
+
+    let workflow: TaskWorkflow = {
+      workflowID: workflowID,
+      boardID: this.board.boardID,
+      active: false,
+      name: this.workflowName,
+      source: this._mapToContainer(this.distributionSource),
+      destinations: this._mapToContainers(this.distributionDestinations),
+      prompt: this.prompt,
+      actions: actions,
+      assignedGroups: this.assignedGroups.map((g) => g.groupID),
     };
 
     return workflow;

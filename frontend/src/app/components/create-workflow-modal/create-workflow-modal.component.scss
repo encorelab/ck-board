@@ -16,7 +16,6 @@
 .source-destination {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
 }
 
 .arrow-icon-md {
@@ -50,10 +49,6 @@
 
 .mat-radio-button ~ .mat-radio-button {
   margin-left: 16px;
-}
-
-.mat-form-field {
-  margin-bottom: -10px;
 }
 
 mat-chip {

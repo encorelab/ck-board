@@ -12,17 +12,20 @@
       </mat-form-field>
     </mat-tab>
     <mat-tab label="Create Workflow">
-      <div>
-        <mat-form-field appearance="outline" style="width:100%; margin-top: 10px;">
+      <mat-radio-group [(ngModel)]="workflowType">
+        <mat-radio-button style="margin-top: 20px;" [checked]="true" [value]="WorkflowType.DISTRIBUTION">Distribution Workflow</mat-radio-button>
+        <mat-radio-button style="margin-top: 20px;" [checked]="false" [value]="WorkflowType.TASK">Task Workflow</mat-radio-button>
+      </mat-radio-group>
+      <div *ngIf="workflowType == WorkflowType.DISTRIBUTION">
+        <mat-form-field appearance="fill" style="margin-top: 10px;">
           <mat-label>Workflow Name</mat-label>
           <input [formControl]="workflowNameFormControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="workflowName">
           <mat-error *ngIf="workflowNameFormControl.hasError('required')">Workflow name required!</mat-error>
         </mat-form-field>
-        <h4>Pick a source and destination board/bucket(s):</h4>
         <div class="source-destination">
           <mat-form-field appearance="fill" style="font-size: 14px !important">
             <mat-label>Source</mat-label>
-            <mat-select [(ngModel)]="source" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
+            <mat-select [(ngModel)]="distributionSource" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
               <mat-option *ngFor="let option of sourceOptions" [value]="option">{{ option.name }}</mat-option>
             </mat-select>
             <mat-error *ngIf="sourceFormControl.hasError('required')">Source required!</mat-error>
@@ -36,16 +39,71 @@
             <mat-error *ngIf="destinationFormControl.hasError('required')">Destination required!</mat-error>
           </mat-form-field>
         </div>
+        <mat-form-field appearance="fill">
+          <mat-label>Posts Per Destination</mat-label>
+          <input matInput type="number" placeholder="5" [(ngModel)]="postsPerBucket">
+        </mat-form-field>
         <section>
-          <h4>Posts Per Bucket/Board: <input type="number" [(ngModel)]="postsPerBucket"/></h4>
-        </section>
-        <section>
-          <h4>Choose Distribution:</h4>
+          <h4 style="font-weight: bold">Choose Distribution:</h4>
           <p>
             <mat-checkbox [checked]="true" disabled="true">
               Random
             </mat-checkbox>
           </p>
+        </section>
+      </div>
+      <div *ngIf="workflowType == WorkflowType.TASK">
+        <mat-form-field appearance="fill" style="margin-top: 10px;">
+          <mat-label>Workflow Name</mat-label>
+          <input [formControl]="workflowNameFormControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="workflowName">
+          <mat-error *ngIf="workflowNameFormControl.hasError('required')">Workflow name required!</mat-error>
+        </mat-form-field>
+        <div class="source-destination">
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Source</mat-label>
+            <mat-select [(ngModel)]="taskSource" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
+              <mat-option *ngFor="let option of sourceOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="sourceFormControl.hasError('required')">Source required!</mat-error>
+          </mat-form-field>
+          <mat-icon class="arrow-icon-lg">arrow_right_alt</mat-icon>
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Destination</mat-label>
+            <mat-select [(ngModel)]="taskDestination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
+              <mat-option *ngFor="let option of destOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="destinationFormControl.hasError('required')">Destination required!</mat-error>
+          </mat-form-field>
+        </div>
+        <section>
+          <mat-form-field appearance="fill" style="font-size: 14px !important">
+            <mat-label>Assigned Groups</mat-label>
+            <mat-select [(ngModel)]="assignedGroups" [formControl]="groupsFormControl" [errorStateMatcher]="matcher">
+              <mat-option *ngFor="let option of groupOptions" [value]="option">{{ option.name }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="groupsFormControl.hasError('required')">Atleast one group required!</mat-error>
+          </mat-form-field>
+        </section>
+        <section>
+          <mat-form-field appearance="fill" style="width: 40%;">
+            <mat-label>Student Prompt</mat-label>
+            <textarea matInput [formControl]="promptFormControl" [errorStateMatcher]="matcher" [(ngModel)]="prompt" placeholder="Please use tags to categorize each idea (e.g., financial, transportation, technology)"></textarea>
+            <mat-error *ngIf="promptFormControl.hasError('required')">Prompt is required!</mat-error>
+          </mat-form-field>
+        </section>
+        <section>
+          <h4 style="font-weight: bold">Student Action Required:</h4>
+          <div style="display: flex; flex-direction: row; gap: 10px;">
+            <mat-checkbox [(ngModel)]="likeAction">
+              Like
+            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="commentAction">
+              Comment
+            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="tagAction">
+              Tag
+            </mat-checkbox>
+          </div>
         </section>
       </div>
     </mat-tab>
@@ -92,5 +150,7 @@
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
   <button mat-button *ngIf="selected.value == 0" [disabled]="!_validBucketForm()" (click)="createBucket()">Create Bucket!</button>
-  <button mat-button *ngIf="selected.value == 1" [disabled]="!_validForm()" (click)="createWorkflow()">Create Workflow!</button>
+  <button mat-button *ngIf="selected.value == 1 && workflowType == WorkflowType.DISTRIBUTION" [disabled]="!_validDistributionWorkflow()" (click)="createDistributionWorkflow()">Create Distribution Workflow!</button>
+  <button mat-button *ngIf="selected.value == 1 && workflowType == WorkflowType.TASK" [disabled]="!_validTaskWorkflow()" (click)="createTaskWorkflow()">Create Task Workflow!</button>
+
 </div>

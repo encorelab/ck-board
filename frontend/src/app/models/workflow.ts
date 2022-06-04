@@ -9,6 +9,17 @@ export class Container {
   name: string;
 }
 
+export enum WorkflowType {
+  DISTRIBUTION = 'DISTRIBUTION',
+  TASK = 'TASK',
+}
+
+export enum TaskAction {
+  LIKE = 'LIKE',
+  COMMENT = 'COMMENT',
+  TAG = 'TAG',
+}
+
 export class Workflow {
   workflowID: string;
   boardID: string;
@@ -22,6 +33,13 @@ export class Workflow {
 
 export class DistributionWorkflow extends Workflow {
   postsPerDestination: number;
+}
+
+export class TaskWorkflow extends Workflow {
+  prompt: string;
+
+  actions: TaskAction[];
+  assignedGroups: string[];
 }
 
 const workflows = {

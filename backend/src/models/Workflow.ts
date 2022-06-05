@@ -78,7 +78,7 @@ export class TaskWorkflowModel extends WorkflowModel {
   public requiredActions!: TaskAction[]; 
   public optionalActions!: TaskAction[]; // Can be empty
   public assignedGroups!: Group[]; 
-
+  public postsPerGroup!: number;
 }
 
 export const Workflow = getModelForClass(WorkflowModel);

@@ -26,6 +26,14 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from 'src/app/utils/converters';
 
+export interface BucketDialog {
+  user: User;
+  board: Board;
+
+  /* Can only be true if modal accessed from canvas */
+  allowMovePostToBoard: boolean;
+}
+
 @Component({
   selector: 'app-buckets-modal',
   templateUrl: './buckets-modal.component.html',
@@ -42,7 +50,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
 
   loading: boolean = true;
 
-  movePostActivated: boolean;
+  allowMovePostToBoard: boolean;
 
   Yoffset: number;
   Xoffset: number;
@@ -56,12 +64,19 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     protected fabricUtils: FabricUtils,
     private converters: Converters,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: BucketDialog
   ) {
+    const canvas = this.fabricUtils._canvas;
+
     this.board = data.board;
     this.user = data.user;
-    this.Xoffset = data.centerX;
-    this.Yoffset = data.centerY;
+    this.allowMovePostToBoard = data.allowMovePostToBoard ?? false;
+
+    if (this.allowMovePostToBoard && canvas) {
+      const { top, left } = canvas.getCenter();
+      this.Xoffset = left;
+      this.Yoffset = top;
+    }
   }
 
   ngOnInit(): void {
@@ -133,7 +148,10 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       .then(async (bucket) => {
         if (bucket) {
           this.activeBucket = bucket;
-          this.posts = await this.converters.toHTMLPosts(bucket.posts);
+          this.posts = await this.converters.toHTMLPosts(
+            bucket.posts,
+            this.allowMovePostToBoard
+          );
         } else {
           this.posts = [];
         }
@@ -166,7 +184,10 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       bucket: this.activeBucket,
       user: this.user,
       onComplete: async (post: Post) => {
-        const htmlPost = await this.converters.toHTMLPost(post);
+        const htmlPost = await this.converters.toHTMLPost(
+          post,
+          this.allowMovePostToBoard
+        );
         this.posts.push(htmlPost);
       },
     };

@@ -45,6 +45,9 @@ export interface HTMLPost {
 
   /* Display author's name as 'Anonymous' */
   hideAuthorName?: boolean;
+
+  /* If post can be moved to board from bucket (download icon) */
+  allowMoveToBoard?: boolean;
 }
 
 @Component({

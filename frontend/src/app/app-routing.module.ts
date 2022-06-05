@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CanvasComponent } from './components/canvas/canvas.component';
+import { CkWorkspaceComponent } from './components/ck-workspace/ck-workspace.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
@@ -26,6 +27,11 @@ const routes: Routes = [
   {
     path: 'project/:projectID/board/:boardID',
     component: CanvasComponent,
+    canActivate: [AuthGuard, ProjectGuard],
+  },
+  {
+    path: 'project/:projectID/board/:boardID/workspace',
+    component: CkWorkspaceComponent,
     canActivate: [AuthGuard, ProjectGuard],
   },
   { path: 'error', component: ErrorComponent },

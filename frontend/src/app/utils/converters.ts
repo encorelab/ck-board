@@ -19,7 +19,10 @@ export default class Converters {
     private boardService: BoardService
   ) {}
 
-  async toHTMLPost(post: Post): Promise<HTMLPost> {
+  async toHTMLPost(
+    post: Post,
+    allowMoveToBoard: boolean = false
+  ): Promise<HTMLPost> {
     const board = await this.boardService.get(post.boardID);
     const author = await this.userService.getOneById(post.userID);
     const likes = await this.likeService.getLikesByPost(post.postID);
@@ -32,10 +35,16 @@ export default class Converters {
       likes: likes.map((like) => like.likerID),
       comments: comments.length,
       bucketOnly: post.fabricObject == null,
+      allowMoveToBoard: allowMoveToBoard,
     };
   }
 
-  async toHTMLPosts(posts: Post[]): Promise<HTMLPost[]> {
-    return Promise.all(posts.map((post) => this.toHTMLPost(post)));
+  async toHTMLPosts(
+    posts: Post[],
+    allowMoveToBoard: boolean = false
+  ): Promise<HTMLPost[]> {
+    return Promise.all(
+      posts.map((post) => this.toHTMLPost(post, allowMoveToBoard))
+    );
   }
 }

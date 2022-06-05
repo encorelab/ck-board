@@ -1,0 +1,44 @@
+<div>
+  <app-toolbar [user]="user" style="width: 100%;">
+    <span *ngIf="board">CK Workspace - {{ this.board.name }}</span>
+    <span style="flex: 1 1 auto"></span>
+    <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
+      <mat-icon>keyboard_return</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="View Groups">
+      <mat-icon>group</mat-icon>
+    </button>
+    <button mat-icon-button *ngIf="!(user && user.role == Role.STUDENT && !board.permissions.showBucketStudent)" (click)="showBucketsModal()" matTooltip="View Buckets">
+      <mat-icon>shopping_basket</mat-icon>
+    </button>
+    <button mat-icon-button (click)="showListModal()" matTooltip="List Posts">
+      <mat-icon>list_alt</mat-icon>
+    </button>
+  </app-toolbar>
+  <div *ngIf="!taskMode && activeTasks && inactiveTasks">
+    <mat-list>
+      <div mat-subheader>Active Task Workflows ({{ activeTasks.length }})</div>
+      <mat-list-item *ngFor="let task of activeTasks">
+        <mat-icon matListIcon>timeline</mat-icon>
+        <h3 matLine> {{task.name}} </h3>
+        <p matLine class="list-task-prompt"> {{task.prompt}} </p>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-raised-button color="basic">View Details</button>
+        <button mat-raised-button color="primary" style="margin-left: 10px;">Begin Task</button>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+      <div mat-subheader>Inactive Task Workflows ({{ inactiveTasks.length }})</div>
+      <mat-list-item *ngFor="let task of inactiveTasks">
+        <mat-icon matListIcon>timeline</mat-icon>
+        <h3 matLine> {{task.name}} </h3>
+        <p matLine class="list-task-prompt"> {{task.prompt}} </p>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-raised-button color="basic">View Details</button>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+    </mat-list>
+  </div>
+  <div *ngIf="taskMode">
+    hies
+  </div>
+</div>

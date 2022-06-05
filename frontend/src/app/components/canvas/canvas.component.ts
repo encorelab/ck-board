@@ -269,8 +269,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._openDialog(BucketsModalComponent, {
       board: this.board,
       user: this.user,
-      centerX: this.canvas.getCenter().left,
-      centerY: this.canvas.getCenter().top,
+      allowMovePostToBoard: true,
     });
   }
 
@@ -441,6 +440,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     let isTeacher = this.user.role == Role.TEACHER;
     this.showAddPost =
       (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher;
+  }
+
+  openWorkspace() {
+    this.router.navigate([
+      `/project/${this.projectID}/board/${this.boardID}/workspace`,
+    ]);
   }
 
   openTaskDialog() {

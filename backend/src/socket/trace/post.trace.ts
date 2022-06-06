@@ -10,8 +10,8 @@ const create = async (input: SocketPayload<PostModel>, eventType: string) => {
   const post = input.eventData;
   trace.event = {
     postID: post.postID,
-    postTitle: post.title,
-    postMessage: post.desc,
+    postModifiedTitle: post.title,
+    postModifiedMessage: post.desc,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);
@@ -29,13 +29,13 @@ const update = async (
   );
   let counter = 1;
   if (lastModifiedPost) {
-    counter = lastModifiedPost.event?.commentModifiedTextCounter + 1;
+    counter = lastModifiedPost.event?.postTitleOrMessageModifiedCounter + 1;
   }
   trace.event = {
     postID: post.postID,
     postModifiedTitle: post.title,
     postModifiedMessage: post.desc,
-    commentModifiedTextCounter: counter,
+    postTitleOrMessageModifiedCounter: counter,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);
@@ -46,7 +46,7 @@ const remove = async (input: SocketPayload<PostModel>, eventType: string) => {
   const post = input.eventData;
   trace.event = {
     postID: post.postID,
-    deleted: 1,
+    postDeleted: 1,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);
@@ -86,7 +86,7 @@ const commentAdd = async (
   trace.event = {
     postID: comment.postID,
     commentID: comment.commentID,
-    commentText: comment.comment,
+    commentModifiedText: comment.comment,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);

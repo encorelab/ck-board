@@ -1,7 +1,7 @@
 export default [
   {
     value: '_id',
-    label: 'traceID',
+    label: 'eventLogID',
     default: '',
   },
   {
@@ -57,7 +57,6 @@ export default [
     value: 'postTitleOrMessageModifiedCounter',
     default: 0,
   },
-
   {
     value: 'commentID',
     default: '',
@@ -65,10 +64,6 @@ export default [
   {
     value: 'commentModifiedText',
     default: '',
-  },
-  {
-    value: 'commentModifiedTextCounter',
-    default: 0,
   },
   {
     value: 'postModifiedUpvote',
@@ -95,11 +90,11 @@ export default [
     default: 0,
   },
   {
-    value: 'bucketID',
+    value: 'postMovedToBucketID',
     default: '',
   },
   {
-    value: 'bucketName',
+    value: 'postMovedToBucketName',
     default: '',
   },
   {

@@ -23,8 +23,8 @@ const movePostToBucket = async (
   // create a trace for each postID in posts
   let tracePromises = bucketEvent.posts.map(async (postID) => {
     trace.event = {
-      bucketID: bucket.bucketID,
-      bucketName: bucket.name,
+      postMovedToBucketID: bucket.bucketID,
+      postMovedToBucketName: bucket.name,
       postID: postID,
     };
     trace.eventType = eventType;

@@ -1,3 +1,8 @@
+/**
+ * value: field name
+ * label: field name that appears in csv file (omit if same as value)
+ * default: default value for field if not defined
+ */
 export default [
   {
     value: '_id',

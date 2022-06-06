@@ -4,7 +4,12 @@ import { PostModel } from "../../models/Post";
 import dalTrace from "../../repository/dalTrace";
 import { PostTagEventInput, SocketPayload } from "../types/event.types";
 import { createTrace } from "./base.trace";
-
+/**
+ * Creates a trace for post creation
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const create = async (input: SocketPayload<PostModel>, eventType: string) => {
   const trace = await createTrace(input.trace);
   const post = input.eventData;
@@ -16,17 +21,25 @@ const create = async (input: SocketPayload<PostModel>, eventType: string) => {
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-
+/**
+ * Creates a trace for post update
+ * @param input partial PostModel where all properties except postID are optional
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const update = async (
   input: SocketPayload<Partial<PostModel> & Pick<PostModel, "postID">>,
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
   const post = input.eventData;
+  // find the last modified post trace
   const lastModifiedPost = await dalTrace.getLastModifiedPost(
     post.postID,
     eventType
   );
+  // if found increment the existing counter. if not set counter as 1
+  // the counter indicates the number of times the post has been modified
   let counter = 1;
   if (lastModifiedPost) {
     counter = lastModifiedPost.event?.postTitleOrMessageModifiedCounter + 1;
@@ -40,7 +53,12 @@ const update = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-// can't name function delete
+/**
+ * Creates a trace for post deletion
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const remove = async (input: SocketPayload<PostModel>, eventType: string) => {
   const trace = await createTrace(input.trace);
   const post = input.eventData;
@@ -51,7 +69,12 @@ const remove = async (input: SocketPayload<PostModel>, eventType: string) => {
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-
+/**
+ * Creates trace for liking a post
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const likeAdd = async (input: SocketPayload<LikeModel>, eventType: string) => {
   const trace = await createTrace(input.trace);
   const like = input.eventData;
@@ -62,7 +85,12 @@ const likeAdd = async (input: SocketPayload<LikeModel>, eventType: string) => {
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-
+/**
+ * Creates trace for unliking a post
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const likeRemove = async (
   input: SocketPayload<LikeModel>,
   eventType: string
@@ -76,7 +104,12 @@ const likeRemove = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-
+/**
+ * Creates trace for adding a comment to a post
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const commentAdd = async (
   input: SocketPayload<CommentModel>,
   eventType: string
@@ -91,7 +124,12 @@ const commentAdd = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-
+/**
+ * Creates trace for adding a tag to a post
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const tagAdd = async (
   input: SocketPayload<PostTagEventInput>,
   eventType: string
@@ -106,7 +144,12 @@ const tagAdd = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-
+/**
+ * Creates trace for removing a tag from a post
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const tagRemove = async (
   input: SocketPayload<PostTagEventInput>,
   eventType: string
@@ -121,14 +164,19 @@ const tagRemove = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-
+/**
+ * Creates trace for moving a post on the canvas
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const move = async (input: SocketPayload<PostModel>, eventType: string) => {
   const post = input.eventData;
   if (!post.fabricObject) {
     return;
   }
   const trace = await createTrace(input.trace);
-
+  // parse fabric object to get location information
   let parsed = JSON.parse(post.fabricObject);
 
   trace.event = {
@@ -139,7 +187,13 @@ const move = async (input: SocketPayload<PostModel>, eventType: string) => {
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
-
+/**
+ * Creates trace for when a user reads a post.
+ * Occurs when they open the post modal
+ * @param input
+ * @param eventType the associated SocketEvent
+ * @returns
+ */
 const read = async (input: SocketPayload<string>, eventType: string) => {
   const trace = await createTrace(input.trace);
   const postID = input.eventData;

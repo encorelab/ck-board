@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { parseAsync } from 'json2csv';
-import { Trace } from 'src/app/models/trace';
 import { TraceService } from 'src/app/services/trace.service';
 import traceDefaults from './traceDefaults';
 
@@ -31,24 +30,25 @@ export class CsvDownloadButtonComponent implements OnInit {
     // click created link to dowload csv
     link.click();
   }
-
+  /**
+   * Fetches traces from backend and exports the data to a csv file
+   */
   async exportToCSV(): Promise<void> {
     let traceCollection = await this.traceService.getTraceRecords(
       this.projectID
     );
     let traceData: any[] = [];
     traceCollection.forEach((data) => {
-      // extract nested event object and flatten it before converting to csv
-      // json2csv also has a builtin function for flattening
+      // for each trace, extract nested event object and flatten it
+      // before passing it to json2csv
       let { event, ...otherfields } = data;
       traceData.push({
         ...otherfields,
         ...event,
       });
     });
-    console.log(traceData);
+    // set defaults for fields and rename fields using traceDefaults
     let csvContent = await parseAsync(traceData, { fields: traceDefaults });
-    console.log(csvContent);
     this.downloadCSV(csvContent);
   }
 }

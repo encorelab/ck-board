@@ -6,6 +6,7 @@ import {
 } from "@typegoose/typegoose";
 
 import { UserModel } from "./User"
+import { GroupModel } from "./Group";
 
 
 export enum WorkflowType {
@@ -25,14 +26,6 @@ export enum TaskAction {
   TAG = 'TAG',
 }
 
-export class Group {
-
-  @prop({ required: true })
-  public id!: string;
-
-  @prop({ required: true })
-  public users!: UserModel[];
-}
 
 export class Container {
   @prop({ enum: ContainerType, type: String, required: true })
@@ -77,7 +70,7 @@ export class TaskWorkflowModel extends WorkflowModel {
   public prompt!: string;  
   public requiredActions!: TaskAction[]; 
   public optionalActions!: TaskAction[]; // Can be empty
-  public assignedGroups!: Group[]; 
+  public assignedGroups!: GroupModel[]; 
   public postsPerGroup!: number;
 }
 

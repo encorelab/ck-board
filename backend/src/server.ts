@@ -15,6 +15,7 @@ import projects from "./api/projects";
 import workflows from "./api/workflows";
 import auth from "./api/auth";
 import trace from "./api/trace";
+import groups from "./api/groups";
 import { isAuthenticated } from "./utils/auth";
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use("/api/posts", isAuthenticated, posts);
 app.use("/api/likes", isAuthenticated, likes);
 app.use("/api/comments", isAuthenticated, comments);
 app.use("/api/notifications", isAuthenticated, notifications);
+app.use("/api/groups", isAuthenticated, groups);
 app.use("/api/auth", auth);
 app.use("/api/trace", trace);
 

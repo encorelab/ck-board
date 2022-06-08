@@ -19,7 +19,7 @@ const getLastModifiedPost = async (postID: string, eventType: string) => {
 };
 
 const getAllTrace = async (projectID: string) => {
-  return Trace.find({}).sort({ updatedAt: -1 }).limit(50);
+  return Trace.find({ projectID: projectID }).sort({ updatedAt: -1 }).limit(50);
 };
 
 const dalTrace = {

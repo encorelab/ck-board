@@ -2,8 +2,8 @@ import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
 import { TagModel } from "./Tag";
 
 export class TaskModel {
-  @prop({ required: true })
-  public title!: string;
+  @prop({ required: false })
+  public title?: string;
 
   @prop({ required: false })
   public message?: string;
@@ -57,8 +57,8 @@ export class BoardModel {
   @prop({ required: true })
   public members!: string[];
 
-  @prop({ required: true, type: () => TaskModel })
-  public task!: TaskModel;
+  @prop({ required: false, type: () => TaskModel })
+  public task?: TaskModel;
 
   @prop({ required: true, type: () => PermissionsModel })
   public permissions!: PermissionsModel;

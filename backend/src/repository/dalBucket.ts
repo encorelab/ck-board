@@ -5,7 +5,7 @@ export const getById = async (id: string) => {
     const bucket = await Bucket.findOne({ bucketID: id });
     return bucket;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -14,7 +14,7 @@ export const getByBoardId = async (id: string) => {
     const buckets = await Bucket.find({ boardID: id });
     return buckets;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -23,7 +23,7 @@ export const getByPostId = async (id: string) => {
     const buckets = await Bucket.find({ posts: id });
     return buckets;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -32,7 +32,7 @@ export const create = async (bucket: BucketModel) => {
     const savedBucket = await Bucket.create(bucket);
     return savedBucket;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -45,7 +45,7 @@ export const update = async (id: string, bucket: Partial<BucketModel>) => {
     );
     return updatedBucket;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -54,7 +54,7 @@ export const remove = async (id: string) => {
     const deletedBucket = await Bucket.findOneAndDelete({ bucketID: id });
     return deletedBucket;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -67,7 +67,7 @@ export const addPost = async (id: string, posts: string[]) => {
     );
     return updatedBucket;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -80,7 +80,7 @@ export const removePost = async (id: string, posts: string[]) => {
     );
     return updatedBucket;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 

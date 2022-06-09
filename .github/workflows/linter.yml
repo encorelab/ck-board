@@ -1,0 +1,36 @@
+name: Linter
+on: [pull_request]
+
+jobs: 
+  Linter:
+    name: Linting and Code Formating Check
+    runs-on: ububtu-latest
+    strategy:
+      matrix: { directory : [frontend, backend] }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        with: actions/setup-node@v3
+          node-version: 14
+
+      - name: Download dependencies
+        working-directory: ${{ matrix.dir }}
+        run: npm ci
+
+      - name: Install Angular CLI
+        working-directory: frontend
+        run: npm install -g @angular/cli > /dev/null 
+
+      - name: Run Linter
+        working-directory: ${{ matrix.dir }}
+        run: npm run style:linter
+        env: 
+          CI: false
+
+      - name: Run Code Formatter
+        working-directory: ${{ matrix.dir }}
+        run: npm run style:formatter
+        env: 
+          CI: false

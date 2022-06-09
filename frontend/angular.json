@@ -34,7 +34,9 @@
               "src/styles.scss"
             ],
             "scripts": [],
-            "allowedCommonJsDependencies": ["fabric"]
+            "allowedCommonJsDependencies": [
+              "fabric"
+            ]
           },
           "configurations": {
             "production": {
@@ -104,9 +106,21 @@
             ],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
   },
-  "defaultProject": "ck-board"
+  "defaultProject": "ck-board",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
+  }
 }

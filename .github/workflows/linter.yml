@@ -17,13 +17,13 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Download dependencies
-        working-directory: ${{ matrix.directory }}
-        run: npm ci
-
       - name: Install Angular CLI
         working-directory: frontend
         run: npm install -g @angular/cli > /dev/null 
+
+      - name: Download dependencies
+        working-directory: ${{ matrix.directory }}
+        run: npm ci
 
       - name: Run Linter
         working-directory: ${{ matrix.directory }}

@@ -13,7 +13,7 @@ jobs:
 
       - name: Setup Node
         with: actions/setup-node@v3
-          node-version: 14
+          node-version: '14'
 
       - name: Download dependencies
         working-directory: ${{ matrix.dir }}

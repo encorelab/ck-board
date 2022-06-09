@@ -19,7 +19,7 @@ jobs:
 
       - name: Download dependencies
         working-directory: ${{ matrix.directory }}
-        run: npm ci
+        run: npm install
 
       - name: Install Angular CLI
         working-directory: frontend

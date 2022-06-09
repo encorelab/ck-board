@@ -5,7 +5,7 @@ on: [pull_request]
 jobs: 
   Linter:
     name: Linting and Code Formating Check CI
-    runs-on: ububtu-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix: { directory : [frontend, backend] }
     steps:

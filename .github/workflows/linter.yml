@@ -18,7 +18,7 @@ jobs:
           node-version: '14'
 
       - name: Download dependencies
-        working-directory: ${{ matrix.dir }}
+        working-directory: ${{ matrix.directory }}
         run: npm ci
 
       - name: Install Angular CLI
@@ -26,13 +26,13 @@ jobs:
         run: npm install -g @angular/cli > /dev/null 
 
       - name: Run Linter
-        working-directory: ${{ matrix.dir }}
+        working-directory: ${{ matrix.directory }}
         run: npm run style:linter
         env: 
           CI: false
 
       - name: Run Code Formatter
-        working-directory: ${{ matrix.dir }}
+        working-directory: ${{ matrix.directory }}
         run: npm run style:formatter
         env: 
           CI: false

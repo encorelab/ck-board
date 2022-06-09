@@ -16,14 +16,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '14'
+          
+      - name: Install Angular CLI
+        working-directory: frontend
+        run: npm install -g @angular/cli > /dev/null
 
       - name: Download dependencies
         working-directory: ${{ matrix.directory }}
-        run: npm install
-
-      - name: Install Angular CLI
-        working-directory: frontend
-        run: npm install -g @angular/cli > /dev/null 
+        run: npm install 
 
       - name: Run Linter
         working-directory: ${{ matrix.directory }}

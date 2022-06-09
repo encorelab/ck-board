@@ -1,6 +1,7 @@
 name: Linter
 on: [pull_request]
 
+
 jobs: 
   Linter:
     name: Linting and Code Formating Check

@@ -1,4 +1,4 @@
-import { Tag } from '../models/post';
+import { Tag } from '../models/tag';
 
 export enum Mode {
   PAN,

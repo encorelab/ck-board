@@ -1,5 +1,11 @@
 import { Server, Socket } from "socket.io";
-import { SocketEvent } from "../../constants";
+import {
+  POST_COLOR,
+  POST_DEFAULT_OPACITY,
+  POST_MOVING_FILL,
+  POST_MOVING_OPACITY,
+  SocketEvent,
+} from "../../constants";
 import { BucketModel } from "../../models/Bucket";
 import { CommentModel } from "../../models/Comment";
 import { LikeModel } from "../../models/Like";
@@ -66,12 +72,19 @@ class PostDelete {
 class PostStartMove {
   static type: SocketEvent = SocketEvent.POST_START_MOVE;
 
-  static async handleEvent(eventData: PostModel): Promise<PostModel | null> {
-    const post = await dalPost.update(eventData.postID, eventData);
+  static async handleEvent(eventData: {
+    postID: string;
+  }): Promise<PostModel | null> {
+    const post = await dalPost.update(eventData.postID, {
+      displayAttributes: {
+        fillColor: POST_MOVING_FILL,
+        opacity: POST_MOVING_OPACITY,
+      },
+    });
     return post;
   }
 
-  static async handleResult(io: Server, socket: Socket, result: PostModel) {
+  static async handleResult(io: Server, socket: Socket, result: string) {
     socket.to(socket.data.room).emit(this.type, result);
   }
 }
@@ -79,8 +92,18 @@ class PostStartMove {
 class PostStopMove {
   static type: SocketEvent = SocketEvent.POST_STOP_MOVE;
 
-  static async handleEvent(eventData: PostModel): Promise<PostModel | null> {
-    const post = await dalPost.update(eventData.postID, eventData);
+  static async handleEvent(eventData: {
+    postID: string;
+    left: number;
+    top: number;
+  }): Promise<PostModel | null> {
+    const post = await dalPost.update(eventData.postID, {
+      displayAttributes: {
+        position: { left: eventData.left, top: eventData.top },
+        fillColor: POST_COLOR,
+        opacity: POST_DEFAULT_OPACITY,
+      },
+    });
     return post;
   }
 

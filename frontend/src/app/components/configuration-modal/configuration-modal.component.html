@@ -25,7 +25,10 @@
     <mat-tab label="Task">
       <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
         <mat-label>Task Title</mat-label>
-        <input matInput [(ngModel)]="taskTitle">
+        <input matInput [(ngModel)]="taskTitle" #taskTitleInput="ngModel">
+        <mat-hint class="mat-error" *ngIf="(taskMessage && !taskTitle.trim()) || (taskTitle && !taskTitle.trim())">
+          Task Title is required.
+        </mat-hint>
       </mat-form-field>
       <mat-form-field appearance="outline" style="width:100%">
         <mat-label>Task Message</mat-label>
@@ -86,5 +89,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button (click)="handleDialogSubmit()" [disabled]="boardNameInput.invalid" cdkFocusInitial>Update Configuration!</button>
+  <button mat-button (click)="handleDialogSubmit()" [disabled]="(taskMessage && !taskTitle.trim()) || (taskTitle && !taskTitle.trim()) || boardNameInput.invalid" cdkFocusInitial>Update Configuration!</button>
 </div>

@@ -1,10 +1,10 @@
 import { ComponentType } from '@angular/cdk/overlay';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
-import User, { AuthUser, Role } from 'src/app/models/user';
+import { AuthUser, Role } from 'src/app/models/user';
 import {
   ContainerType,
   TaskAction,
@@ -17,6 +17,13 @@ import { UserService } from 'src/app/services/user.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
+import { EventsParams, SwiperComponent } from 'swiper/angular';
+import SwiperCore, { EffectCards } from 'swiper';
+import Post from 'src/app/models/post';
+import { HTMLPost } from '../html-post/html-post.component';
+
+// install Swiper modules
+SwiperCore.use([EffectCards]);
 
 const MOCK_ACTIVE_TASKS = [
   {
@@ -83,8 +90,11 @@ const MOCK_INACTIVE_TASKS = [
   selector: 'app-ck-workspace',
   templateUrl: './ck-workspace.component.html',
   styleUrls: ['./ck-workspace.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class CkWorkspaceComponent implements OnInit {
+  @ViewChild(SwiperComponent) swiper: SwiperComponent;
+
   user: AuthUser;
 
   project: Project;
@@ -95,7 +105,20 @@ export class CkWorkspaceComponent implements OnInit {
 
   Role: typeof Role = Role;
 
-  taskMode: boolean = false;
+  taskMode: boolean = true;
+
+  post: Post = {
+    boardID: '1',
+    postID: '1',
+    userID: '1',
+    title: 'tile',
+    desc: 'desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc',
+    tags: [],
+    fabricObject: null,
+  };
+  htmlPost: HTMLPost;
+
+  posts: HTMLPost[] = [];
 
   constructor(
     public userService: UserService,
@@ -128,10 +151,28 @@ export class CkWorkspaceComponent implements OnInit {
     this.project = await this.projectService.get(projectID);
     // this.tasks = await this.workflowService.getTask(boardID);
 
+    this.htmlPost = {
+      post: this.post,
+      board: this.board,
+      author: 'me',
+      likes: [],
+      comments: 12,
+      config: {
+        hideAuthorName: false,
+        allowMoveToBoard: false,
+        allowExpand: true,
+      },
+    };
+    this.posts.push(this.htmlPost, this.htmlPost, this.htmlPost, this.htmlPost);
+
     this.activeTasks = MOCK_ACTIVE_TASKS;
     this.inactiveTasks = MOCK_INACTIVE_TASKS;
 
     return true;
+  }
+
+  onSwiper(params: any) {
+    console.log(params);
   }
 
   showBucketsModal() {

@@ -1,18 +1,25 @@
 import { Injectable } from '@angular/core';
-import { HTMLPost } from '../components/html-post/html-post.component';
+import {
+  HTMLPost,
+  HTMLPostConfig,
+} from '../components/html-post/html-post.component';
 import Post from '../models/post';
 import { BoardService } from '../services/board.service';
 import { CommentService } from '../services/comment.service';
 import { LikesService } from '../services/likes.service';
-import { PostService } from '../services/post.service';
 import { UserService } from '../services/user.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export default class Converters {
+  defaultHTMLPostConfig: HTMLPostConfig = {
+    hideAuthorName: false,
+    allowMoveToBoard: false,
+    allowExpand: true,
+  };
+
   constructor(
-    private postService: PostService,
     private likeService: LikesService,
     private commentService: CommentService,
     private userService: UserService,
@@ -21,7 +28,7 @@ export default class Converters {
 
   async toHTMLPost(
     post: Post,
-    allowMoveToBoard: boolean = false
+    config: HTMLPostConfig = this.defaultHTMLPostConfig
   ): Promise<HTMLPost> {
     const board = await this.boardService.get(post.boardID);
     const author = await this.userService.getOneById(post.userID);
@@ -35,16 +42,14 @@ export default class Converters {
       likes: likes.map((like) => like.likerID),
       comments: comments.length,
       bucketOnly: post.fabricObject == null,
-      allowMoveToBoard: allowMoveToBoard,
+      config: config,
     };
   }
 
   async toHTMLPosts(
     posts: Post[],
-    allowMoveToBoard: boolean = false
+    config: HTMLPostConfig = this.defaultHTMLPostConfig
   ): Promise<HTMLPost[]> {
-    return Promise.all(
-      posts.map((post) => this.toHTMLPost(post, allowMoveToBoard))
-    );
+    return Promise.all(posts.map((post) => this.toHTMLPost(post, config)));
   }
 }

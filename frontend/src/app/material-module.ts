@@ -17,6 +17,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatRadioModule } from '@angular/material/radio';
@@ -50,6 +51,7 @@ import { NgModule } from '@angular/core';
     MatSnackBarModule,
     MatBadgeModule,
     MatSliderModule,
+    MatProgressBarModule,
     BrowserAnimationsModule,
   ],
   exports: [
@@ -78,6 +80,7 @@ import { NgModule } from '@angular/core';
     MatSnackBarModule,
     MatBadgeModule,
     MatSliderModule,
+    MatProgressBarModule,
     BrowserAnimationsModule,
   ],
 })

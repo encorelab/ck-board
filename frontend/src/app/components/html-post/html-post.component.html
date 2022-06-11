@@ -1,7 +1,7 @@
 <mat-card
   class="bucket-card" 
-  (click)="openPostDialog()"
-  (keyup.enter)="openPostDialog()"
+  (click)="post.config.allowExpand && openPostDialog()"
+  (keyup.enter)="post.config.allowExpand && openPostDialog()"
   *ngIf="exists"
   [ngStyle]="{'background-color': postColor}"
   role="button"
@@ -17,8 +17,8 @@
       <mat-icon class="material-icons-outlined">download</mat-icon>
     </button>
   </div>
-    <mat-card-subtitle *ngIf="!post.hideAuthorName">{{ post.author }}</mat-card-subtitle>
-    <mat-card-subtitle *ngIf="post.hideAuthorName">Anonymous</mat-card-subtitle>
+    <mat-card-subtitle *ngIf="!post.config.hideAuthorName">{{ post.author }}</mat-card-subtitle>
+    <mat-card-subtitle *ngIf="post.config.hideAuthorName">Anonymous</mat-card-subtitle>
     <mat-card-content>
       <mat-chip-list>
         <mat-chip [ngStyle]="{'background-color': tag.color, 'color': 'black'}" selected 
@@ -38,5 +38,17 @@
         <mat-icon>comment</mat-icon>
         {{ post.comments }}
       </button>
+      <button mat-button [matMenuTriggerFor]="tagMenu" (click)="$event.stopPropagation();">
+        <mat-icon>tag</mat-icon>
+        {{ post.post.tags.length }}
+      </button>
+      <mat-menu #tagMenu="matMenu">
+        <div mat-menu-item *ngIf="post.board && post.board.tags.length == 0">
+          No tags available.
+        </div>
+        <button mat-menu-item (click)="$event.stopPropagation();" *ngFor="let tag of post.board.tags">
+          <mat-checkbox [checked]="post.post.tags.includes(tag)" (change)="updateTag($event, tag)">{{ tag.name }}</mat-checkbox>
+        </button>
+      </mat-menu>
     </mat-card-actions>
 </mat-card>

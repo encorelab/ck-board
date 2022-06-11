@@ -16,6 +16,7 @@ import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
 import { ColorPickerModule } from 'ngx-color-picker';
+import { SwiperModule } from 'swiper/angular';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component';
 import { FabricPostComponent } from './components/fabric-post/fabric-post.component';
@@ -96,6 +97,7 @@ export function tokenGetter() {
     BrowserAnimationsModule,
     ReactiveFormsModule,
     ColorPickerModule,
+    SwiperModule,
     MaterialModule,
   ],
   providers: [

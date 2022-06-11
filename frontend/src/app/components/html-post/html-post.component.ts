@@ -43,11 +43,19 @@ export interface HTMLPost {
   /* If post is only stored in a bucket */
   bucketOnly?: boolean;
 
+  /* Extra configuration */
+  config: HTMLPostConfig;
+}
+
+export interface HTMLPostConfig {
   /* Display author's name as 'Anonymous' */
   hideAuthorName?: boolean;
 
   /* If post can be moved to board from bucket (download icon) */
   allowMoveToBoard?: boolean;
+
+  /* If click will open post modal */
+  allowExpand?: boolean;
 }
 
 @Component({
@@ -124,6 +132,14 @@ export class HtmlPostComponent implements OnInit {
       this.canvasService.like(like);
       this.isLiked = true;
       this.post.likes.push(this.user.userID);
+    }
+  }
+
+  async updateTag(event, tag: Tag) {
+    if (event.checked) {
+      this.post.post = await this.canvasService.tag(this.post.post, tag);
+    } else {
+      this.post.post = await this.canvasService.untag(this.post.post, tag);
     }
   }
 

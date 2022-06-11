@@ -148,10 +148,9 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       .then(async (bucket) => {
         if (bucket) {
           this.activeBucket = bucket;
-          this.posts = await this.converters.toHTMLPosts(
-            bucket.posts,
-            this.allowMovePostToBoard
-          );
+          this.posts = await this.converters.toHTMLPosts(bucket.posts, {
+            allowMoveToBoard: this.allowMovePostToBoard,
+          });
         } else {
           this.posts = [];
         }
@@ -184,10 +183,9 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       bucket: this.activeBucket,
       user: this.user,
       onComplete: async (post: Post) => {
-        const htmlPost = await this.converters.toHTMLPost(
-          post,
-          this.allowMovePostToBoard
-        );
+        const htmlPost = await this.converters.toHTMLPost(post, {
+          allowMoveToBoard: this.allowMovePostToBoard,
+        });
         this.posts.push(htmlPost);
       },
     };

@@ -29,7 +29,7 @@ class BucketRemovePost {
   }
 
   static async handleResult(io: Server, socket: Socket, result: number) {
-    // dont need to emit for now
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 

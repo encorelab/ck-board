@@ -194,7 +194,7 @@ class PostRead {
     socket: Socket,
     result: PostTagEventInput
   ) {
-    // dont need emit this for now
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 

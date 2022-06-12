@@ -31,13 +31,11 @@ export class CsvDownloadButtonComponent implements OnInit {
    */
   downloadCSV(csvContent: string): void {
     let encodedUri = encodeURIComponent(csvContent);
-    // create a dummy link element
+    // create a dummy link element to store csvContent
     let link = document.createElement('a');
     link.setAttribute('href', 'data:attachment/csv,' + encodedUri);
-    // use [] to escape characters
     const dateString = dayjs().format('YYYY-MM-DD [at] hh.mm.ss A');
     let fileName = 'CK_Trace ' + this.project.name + ' ' + dateString + '.csv';
-    // replace all space with _
     fileName = fileName.replace(/\s/g, '_');
     link.setAttribute('download', fileName);
     document.body.appendChild(link);

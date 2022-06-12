@@ -40,7 +40,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
 
   posts: HTMLPost[];
 
-  loading: boolean = true;
+  loading = true;
 
   movePostActivated: boolean;
 
@@ -76,38 +76,38 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     //   this.posts.push(await this.converters.toHTMLPost(post));
     // });
     this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) found.post = post;
     });
     this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
-      let found = this.posts.find((p) => p.post.postID == id);
+      const found = this.posts.find((p) => p.post.postID == id);
       if (found) {
         this.posts = this.posts.filter((post) => post.post.postID != id);
       }
     });
     this.socketService.listen(SocketEvent.POST_LIKE_ADD, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.like.postID);
+      const found = this.posts.find((p) => p.post.postID == result.like.postID);
       if (found) found.likes.push(result.like.likerID);
     });
     this.socketService.listen(SocketEvent.POST_LIKE_REMOVE, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.like.postID);
+      const found = this.posts.find((p) => p.post.postID == result.like.postID);
       if (found)
         found.likes = found.likes.filter((like) => like != result.like.likerID);
     });
     this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
-      let found = this.posts.find(
+      const found = this.posts.find(
         (p) => p.post.postID == result.comment.postID
       );
       if (found) found.comments += 1;
     });
     this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) {
         found.post = post;
       }
     });
     this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post, _tag }) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) {
         found.post = post;
       }
@@ -185,7 +185,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       (tag) => tag.name == NEEDS_ATTENTION_TAG.name
     );
 
-    let fabricPost = new FabricPostComponent({
+    const fabricPost = new FabricPostComponent({
       postID: postID,
       boardID: this.board.boardID,
       title: htmlPost.post.title,

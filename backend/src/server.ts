@@ -14,7 +14,7 @@ import buckets from "./api/buckets";
 import projects from "./api/projects";
 import workflows from "./api/workflows";
 import auth from "./api/auth";
-import groups from "./api/groups"
+import groups from "./api/groups";
 import { isAuthenticated } from "./utils/auth";
 dotenv.config();
 

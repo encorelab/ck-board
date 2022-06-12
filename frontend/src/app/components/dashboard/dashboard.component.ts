@@ -17,7 +17,7 @@ import { JoinProjectModalComponent } from '../join-project-modal/join-project-mo
   styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit {
-  isLoading: boolean = true;
+  isLoading = true;
 
   user: AuthUser;
 
@@ -86,7 +86,7 @@ export class DashboardComponent implements OnInit {
         'project/' + selectedProjectID + '/board/' + board.boardID,
       ]);
     });
-    let projectBoards = this.yourProjects.find(
+    const projectBoards = this.yourProjects.find(
       (project) => project.projectID == selectedProjectID
     )?.boards;
     if (projectBoards) {

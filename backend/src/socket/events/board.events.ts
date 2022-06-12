@@ -4,7 +4,7 @@ import { BoardModel } from "../../models/Board";
 
 class BoardNameUpdate {
   static type: SocketEvent = SocketEvent.BOARD_NAME_UDPATE;
-  
+
   static async handleEvent(eventData: BoardModel): Promise<BoardModel> {
     return eventData;
   }
@@ -16,7 +16,7 @@ class BoardNameUpdate {
 
 class BoardPermissionsUpdate {
   static type: SocketEvent = SocketEvent.BOARD_PERMISSIONS_UPDATE;
-  
+
   static async handleEvent(eventData: BoardModel): Promise<BoardModel> {
     return eventData;
   }
@@ -28,7 +28,7 @@ class BoardPermissionsUpdate {
 
 class BoardImageUpdate {
   static type: SocketEvent = SocketEvent.BOARD_IMAGE_UPDATE;
-  
+
   static async handleEvent(eventData: BoardModel): Promise<BoardModel> {
     return eventData;
   }
@@ -40,7 +40,7 @@ class BoardImageUpdate {
 
 class BoardTaskUpdate {
   static type: SocketEvent = SocketEvent.BOARD_TASK_UPDATE;
-  
+
   static async handleEvent(eventData: BoardModel): Promise<BoardModel> {
     return eventData;
   }
@@ -52,7 +52,7 @@ class BoardTaskUpdate {
 
 class BoardTagsUpdate {
   static type: SocketEvent = SocketEvent.BOARD_TAGS_UPDATE;
-  
+
   static async handleEvent(eventData: BoardModel): Promise<BoardModel> {
     return eventData;
   }
@@ -67,7 +67,7 @@ const boardEvents = [
   BoardPermissionsUpdate,
   BoardImageUpdate,
   BoardTaskUpdate,
-  BoardTagsUpdate
-]
+  BoardTagsUpdate,
+];
 
 export default boardEvents;

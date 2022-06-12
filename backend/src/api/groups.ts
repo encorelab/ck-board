@@ -1,79 +1,78 @@
 import { Router } from "express";
-import { GroupModel } from '../models/Group'
-import dalGroup from '../repository/dalGroup'
+import { GroupModel } from "../models/Group";
+import dalGroup from "../repository/dalGroup";
 
 const router = Router();
 
-router.get('/:id', async (req, res) => {
-    const { id } = req.params;
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
 
-    const group = await dalGroup.getById(id);
-    if (!group)
-        return res
-            .status(404)
-            .json("Group with groupID: " + id + " not found.");
-    
-    res.status(200).json(group);
-})
+  const group = await dalGroup.getById(id);
+  if (!group)
+    return res.status(404).json("Group with groupID: " + id + " not found.");
 
-router.get('/user/:id', async (req, res) => {
-    const { id } = req.params;
+  res.status(200).json(group);
+});
 
-    const groups = await dalGroup.getByUserId(id);
+router.get("/user/:id", async (req, res) => {
+  const { id } = req.params;
 
-    res.status(200).json(groups);
-})
+  const groups = await dalGroup.getByUserId(id);
 
-router.get('/project/:id', async (req, res) => {
-    const { id } = req.params;
+  res.status(200).json(groups);
+});
 
-    const groups = await dalGroup.getByProjectId(id);
+router.get("/project/:id", async (req, res) => {
+  const { id } = req.params;
 
-    res.status(200).json(groups)
-})
+  const groups = await dalGroup.getByProjectId(id);
 
-router.post('/', async (req, res) => {
-    const group: GroupModel = req.body;
+  res.status(200).json(groups);
+});
 
-    const savedGroup = await dalGroup.create(group);
-    res.status(200).json(savedGroup);
-})
+router.post("/", async (req, res) => {
+  const group: GroupModel = req.body;
 
-router.post('/:id', async (req, res) => {
-    const { id } = req.params;
+  const savedGroup = await dalGroup.create(group);
+  res.status(200).json(savedGroup);
+});
 
-    const { name, members } = req.body;
+router.post("/:id", async (req, res) => {
+  const { id } = req.params;
 
-    const group: Partial<GroupModel> = Object.assign({},
-        name === null ? null : { name },
-        members === null ? null : { members }
-    );
+  const { name, members } = req.body;
 
-    const updatedGroup = await dalGroup.update(id, group)
-    res.status(200).json(updatedGroup);
-})
+  const group: Partial<GroupModel> = Object.assign(
+    {},
+    name === null ? null : { name },
+    members === null ? null : { members }
+  );
+
+  const updatedGroup = await dalGroup.update(id, group);
+  res.status(200).json(updatedGroup);
+});
 
 router.post("/:id/users/add", async (req, res) => {
-    const { id } = req.params;
-    const { users } = req.body;
+  const { id } = req.params;
+  const { users } = req.body;
 
-    const updatedGroup = await dalGroup.addUser(id, users);
-    res.status(200).json(updatedGroup);
+  const updatedGroup = await dalGroup.addUser(id, users);
+  res.status(200).json(updatedGroup);
 });
 
 router.post("/:id/users/remove", async (req, res) => {
-    const { id } = req.params;
-    const { users } = req.body;
+  const { id } = req.params;
+  const { users } = req.body;
 
-    const updatedGroup = await dalGroup.removeUser(id, users);
-    res.status(200).json(updatedGroup);
-})
+  const updatedGroup = await dalGroup.removeUser(id, users);
+  res.status(200).json(updatedGroup);
+});
 
 router.delete("/:id", async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const deletedGroup = await dalGroup.remove(id);
-    res.status(200).json(deletedGroup);
-})
+  const deletedGroup = await dalGroup.remove(id);
+  res.status(200).json(deletedGroup);
+});
 
 export default router;

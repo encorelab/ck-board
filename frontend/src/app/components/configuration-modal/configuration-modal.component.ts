@@ -28,10 +28,10 @@ export class ConfigurationModalComponent {
   permissions: BoardPermissions;
 
   tags: Tag[];
-  newTagText: string = '';
+  newTagText = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
 
-  initialZoom: number = 100;
+  initialZoom = 100;
 
   members: string[] = [];
 
@@ -77,7 +77,7 @@ export class ConfigurationModalComponent {
     this.fileUploadService.compressFile().then(async (compressedImage) => {
       this.newCompressedImage = compressedImage;
 
-      let board = await this.canvasService.updateBoardImage(
+      const board = await this.canvasService.updateBoardImage(
         this.boardID,
         this.newCompressedImage
       );

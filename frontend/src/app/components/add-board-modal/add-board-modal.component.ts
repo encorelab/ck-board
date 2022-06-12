@@ -22,24 +22,24 @@ export class AddBoardModalComponent implements OnInit {
 
   permissions: BoardPermissions;
 
-  boardName: string = '';
+  boardName = '';
 
   bgImgURL: any = null;
   bgImgSettings: ImageSettings;
 
-  taskTitle: string = '';
-  taskMessage: string = '';
+  taskTitle = '';
+  taskMessage = '';
 
   tags: Tag[] = [];
   defaultTags: Tag[];
 
-  newTagText: string = '';
+  newTagText = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
 
-  initialZoom: number = 100;
+  initialZoom = 100;
 
   projects: Project[];
-  selectedProject: string = '';
+  selectedProject = '';
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,

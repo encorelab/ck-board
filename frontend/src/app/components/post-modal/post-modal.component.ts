@@ -44,13 +44,13 @@ export class PostModalComponent {
   editingTitle: string;
   desc: string;
   editingDesc: string;
-  isEditing: boolean = false;
+  isEditing = false;
   canEditDelete: boolean;
   canStudentComment: boolean;
   canStudentTag: boolean;
   postColor: string;
-  showComments: boolean = false;
-  showEditDelete: boolean = false;
+  showComments = false;
+  showEditDelete = false;
   showAuthorName: boolean;
 
   titleControl = new FormControl('', [
@@ -125,8 +125,8 @@ export class PostModalComponent {
         });
       });
 
-    let isStudent = this.user.role == Role.STUDENT;
-    let isTeacher = this.user.role == Role.TEACHER;
+    const isStudent = this.user.role == Role.STUDENT;
+    const isTeacher = this.user.role == Role.TEACHER;
     this.showEditDelete =
       (isStudent && data.board.permissions.allowStudentEditAddDeletePost) ||
       isTeacher;
@@ -173,8 +173,8 @@ export class PostModalComponent {
     this.editingTitle = this.title;
     this.editingDesc = this.desc;
 
-    var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
-    var update: Partial<Post> = {
+    let obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
+    const update: Partial<Post> = {
       postID: this.post.postID,
       title: this.title,
       desc: this.desc,
@@ -201,7 +201,7 @@ export class PostModalComponent {
         handleConfirm: () => {
           this.socketService.emit(SocketEvent.POST_DELETE, this.post);
 
-          var obj = this.fabricUtils.getObjectFromId(this.post.postID);
+          const obj = this.fabricUtils.getObjectFromId(this.post.postID);
           if (obj && obj.type == 'group') {
             this.fabricUtils._canvas.remove(obj);
             this.fabricUtils._canvas.renderAll();

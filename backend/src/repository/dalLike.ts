@@ -2,7 +2,7 @@ import Like, { LikeModel } from "../models/Like";
 
 export const getByPost = async (id: string) => {
   try {
-    const likes = await Like.find({postID: id});
+    const likes = await Like.find({ postID: id });
     return likes;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, " "));
@@ -11,7 +11,7 @@ export const getByPost = async (id: string) => {
 
 export const getAmountByPost = async (id: string) => {
   try {
-    const numLikes = await Like.countDocuments({postID: id});
+    const numLikes = await Like.countDocuments({ postID: id });
     return numLikes;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, " "));
@@ -20,7 +20,7 @@ export const getAmountByPost = async (id: string) => {
 
 export const isLikedBy = async (postID: string, likerID: string) => {
   try {
-    const like = await Like.findOne({postID, likerID});
+    const like = await Like.findOne({ postID, likerID });
     return like;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, " "));
@@ -38,7 +38,7 @@ export const create = async (like: LikeModel) => {
 
 export const remove = async (userID: string, postID: string) => {
   try {
-    return await Like.findOneAndDelete({likerID: userID, postID});
+    return await Like.findOneAndDelete({ likerID: userID, postID });
   } catch (err) {
     throw new Error(JSON.stringify(err, null, " "));
   }
@@ -49,7 +49,7 @@ const dalLike = {
   getAmountByPost,
   isLikedBy,
   create,
-  remove
+  remove,
 };
 
 export default dalLike;

@@ -1,6 +1,6 @@
-import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
 
-@modelOptions({ schemaOptions: { collection: 'buckets', timestamps: true } })
+@modelOptions({ schemaOptions: { collection: "buckets", timestamps: true } })
 export class BucketModel {
   @prop({ required: true })
   public bucketID!: string;

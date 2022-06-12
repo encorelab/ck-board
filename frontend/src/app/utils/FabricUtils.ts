@@ -76,7 +76,7 @@ export class FabricUtils {
     fabric.util.enlivenObjects(
       [post],
       (objects: [fabric.Object]) => {
-        var origRenderOnAddRemove = this._canvas.renderOnAddRemove;
+        const origRenderOnAddRemove = this._canvas.renderOnAddRemove;
         this._canvas.renderOnAddRemove = false;
 
         objects.forEach((o: fabric.Object) => this._canvas.add(o));
@@ -101,9 +101,9 @@ export class FabricUtils {
   }
 
   getObjectFromId(postID: string) {
-    var currentObjects: any = this._canvas?.getObjects();
+    const currentObjects: any = this._canvas?.getObjects();
 
-    for (var i = currentObjects.length - 1; i >= 0; i--) {
+    for (let i = currentObjects.length - 1; i >= 0; i--) {
       if (currentObjects[i].postID == postID) return currentObjects[i];
     }
     return null;
@@ -190,24 +190,28 @@ export class FabricUtils {
   }
 
   updateAuthor(obj: any, author: string) {
-    var children: fabric.Object[] = obj.getObjects();
-    var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
-    var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
-    var likeObj: any = children.filter((obj) => obj.name == 'like').pop();
-    var likeCountObj: any = children
+    const children: fabric.Object[] = obj.getObjects();
+    const authorObj: any = children.filter((obj) => obj.name == 'author').pop();
+    const descObj: any = children.filter((obj) => obj.name == 'desc').pop();
+    const likeObj: any = children.filter((obj) => obj.name == 'like').pop();
+    const likeCountObj: any = children
       .filter((obj) => obj.name == 'likeCount')
       .pop();
-    var commentObj: any = children.filter((obj) => obj.name == 'comment').pop();
-    var commentCountObj: any = children
+    const commentObj: any = children
+      .filter((obj) => obj.name == 'comment')
+      .pop();
+    const commentCountObj: any = children
       .filter((obj) => obj.name == 'commentCount')
       .pop();
-    var contentObj: any = children.filter((obj) => obj.name == 'content').pop();
+    const contentObj: any = children
+      .filter((obj) => obj.name == 'content')
+      .pop();
 
-    var oldAuthorHeight = authorObj.height;
+    const oldAuthorHeight = authorObj.height;
 
     authorObj.set({ text: author, dirty: true });
 
-    var authorDelta = authorObj.height - oldAuthorHeight;
+    const authorDelta = authorObj.height - oldAuthorHeight;
 
     descObj.set({ top: descObj.top + authorDelta, dirty: true });
     likeObj.set({ top: likeObj.top + authorDelta, dirty: true });
@@ -225,23 +229,27 @@ export class FabricUtils {
   }
 
   updatePostTitleDesc(obj: any, title: string, desc: string) {
-    var children: fabric.Object[] = obj.getObjects();
-    var titleObj: any = children.filter((obj) => obj.name == 'title').pop();
-    var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
-    var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
-    var likeObj: any = children.filter((obj) => obj.name == 'like').pop();
-    var likeCountObj: any = children
+    const children: fabric.Object[] = obj.getObjects();
+    const titleObj: any = children.filter((obj) => obj.name == 'title').pop();
+    const authorObj: any = children.filter((obj) => obj.name == 'author').pop();
+    const descObj: any = children.filter((obj) => obj.name == 'desc').pop();
+    const likeObj: any = children.filter((obj) => obj.name == 'like').pop();
+    const likeCountObj: any = children
       .filter((obj) => obj.name == 'likeCount')
       .pop();
-    var commentObj: any = children.filter((obj) => obj.name == 'comment').pop();
-    var commentCountObj: any = children
+    const commentObj: any = children
+      .filter((obj) => obj.name == 'comment')
+      .pop();
+    const commentCountObj: any = children
       .filter((obj) => obj.name == 'commentCount')
       .pop();
-    var contentObj: any = children.filter((obj) => obj.name == 'content').pop();
+    const contentObj: any = children
+      .filter((obj) => obj.name == 'content')
+      .pop();
 
-    var oldTitleHeight = titleObj.height;
-    var oldDescHeight = descObj.height;
-    var oldAuthorHeight = authorObj.height;
+    const oldTitleHeight = titleObj.height;
+    const oldDescHeight = descObj.height;
+    const oldAuthorHeight = authorObj.height;
 
     titleObj.set({ text: title, dirty: true });
     descObj.set({
@@ -249,9 +257,9 @@ export class FabricUtils {
       dirty: true,
     });
 
-    var titleDelta = titleObj.height - oldTitleHeight;
-    var authorDelta = authorObj.height - oldAuthorHeight;
-    var descDelta = descObj.height - oldDescHeight;
+    const titleDelta = titleObj.height - oldTitleHeight;
+    const authorDelta = authorObj.height - oldAuthorHeight;
+    const descDelta = descObj.height - oldDescHeight;
 
     authorObj.set({ top: authorObj.top + titleDelta, dirty: true });
     descObj.set({ top: descObj.top + titleDelta + authorDelta, dirty: true });
@@ -324,7 +332,7 @@ export class FabricUtils {
   }
 
   setLikeCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    var likeCount: any = fabricObject
+    const likeCount: any = fabricObject
       .getObjects()
       .find((obj) => obj.name == 'likeCount');
 
@@ -336,10 +344,10 @@ export class FabricUtils {
   }
 
   setCommentCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    var comment: any = fabricObject
+    const comment: any = fabricObject
       .getObjects()
       .find((obj) => obj.name == 'comment');
-    var commentCount: any = fabricObject
+    const commentCount: any = fabricObject
       .getObjects()
       .find((obj) => obj.name == 'commentCount');
 
@@ -360,9 +368,9 @@ export class FabricUtils {
   }
 
   createImageSettings(image: fabric.Image): ImageSettings {
-    let dimensions = this._calcCanvasDimensions();
-    let scale = this._scaleImage(image, dimensions);
-    let offset = this._calcImageOffsets(image, scale, dimensions);
+    const dimensions = this._calcCanvasDimensions();
+    const scale = this._scaleImage(image, dimensions);
+    const offset = this._calcImageOffsets(image, scale, dimensions);
 
     return {
       top: offset.offsetY,
@@ -391,7 +399,7 @@ export class FabricUtils {
   }
 
   setPostMovement(object: any, lock: boolean) {
-    let updatedObj = this.setField(object, 'lockMovementX', lock);
+    const updatedObj = this.setField(object, 'lockMovementX', lock);
     return this.setField(updatedObj, 'lockMovementY', lock);
   }
 
@@ -416,7 +424,7 @@ export class FabricUtils {
       return { width: window.innerWidth, height: window.innerHeight - 64 };
     }
 
-    let vptCoords = this._canvas.vptCoords!;
+    const vptCoords = this._canvas.vptCoords!;
     let width = this._canvas.getWidth();
     let height = this._canvas.getHeight();
 
@@ -472,13 +480,13 @@ export class FabricUtils {
     scale: ImageScale,
     dimensions: CanvasDimensions
   ): ImageOffset {
-    let offsetX = Math.floor(
+    const offsetX = Math.floor(
       (dimensions.width - scale.scaleX * image.width!) / 2
     );
-    let offsetY = Math.floor(
+    const offsetY = Math.floor(
       (dimensions.height - scale.scaleY * image.height!) / 2
     );
-    let vptCoords = this._canvas.vptCoords;
+    const vptCoords = this._canvas.vptCoords;
 
     if (vptCoords) {
       return {

@@ -1,4 +1,4 @@
-import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
 
 @modelOptions({ schemaOptions: { collection: "projects", timestamps: true } })
 export class ProjectModel {

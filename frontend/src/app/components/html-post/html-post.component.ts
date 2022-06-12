@@ -56,14 +56,14 @@ export class HtmlPostComponent implements OnInit {
   @Input() post: HTMLPost;
   @Output() movePostToBoardEvent = new EventEmitter<string>();
 
-  exists: boolean = true;
+  exists = true;
 
   user: AuthUser;
 
   postColor: string = POST_COLOR;
 
-  isLiked: boolean = false;
-  showUsername: boolean = false;
+  isLiked = false;
+  showUsername = false;
 
   constructor(
     public commentService: CommentService,

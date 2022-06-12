@@ -21,7 +21,7 @@ export interface AddPostDialog {
   user: User;
   board: Board;
   bucket?: Bucket;
-  spawnPosition: { left: Number; top: Number };
+  spawnPosition: { left: number; top: number };
   onComplete?: (post: Post) => any;
 }
 
@@ -34,8 +34,8 @@ export class AddPostComponent {
   user: User;
   board: Board;
 
-  title: string = '';
-  message: string = '';
+  title = '';
+  message = '';
 
   tags: Tag[] = [];
   tagOptions: Tag[] = [];
@@ -80,7 +80,7 @@ export class AddPostComponent {
       (tag) => tag.name == NEEDS_ATTENTION_TAG.name
     );
 
-    var fabricPost = new FabricPostComponent({
+    const fabricPost = new FabricPostComponent({
       postID: Utils.generateUniqueID(),
       boardID: this.board.boardID,
       title: this.title,

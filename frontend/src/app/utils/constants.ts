@@ -33,16 +33,16 @@ export enum SocketEvent {
   NOTIFICATION_CREATE = 'NOTIFICATION_CREATE',
 }
 
-export const POST_COLOR: string = '#FFE663';
+export const POST_COLOR = '#FFE663';
 
-export const POST_DEFAULT_OPACITY: number = 1;
-export const POST_DEFAULT_BORDER: string = 'black';
-export const POST_DEFAULT_BORDER_THICKNESS: number = 2;
+export const POST_DEFAULT_OPACITY = 1;
+export const POST_DEFAULT_BORDER = 'black';
+export const POST_DEFAULT_BORDER_THICKNESS = 2;
 
-export const POST_TAGGED_BORDER_THICKNESS: number = 4;
+export const POST_TAGGED_BORDER_THICKNESS = 4;
 
-export const POST_MOVING_FILL: string = '#999999';
-export const POST_MOVING_OPACITY: number = 0.5;
+export const POST_MOVING_FILL = '#999999';
+export const POST_MOVING_OPACITY = 0.5;
 
 export const IDEA_TAG: Partial<Tag> = {
   name: 'Idea',

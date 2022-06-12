@@ -16,7 +16,7 @@ const CONTENT_EXTRA_HEIGHT = 55;
 })
 export class FabricPostComponent extends fabric.Group {
   constructor(@Inject(Object) options: any) {
-    var title = new fabric.Textbox(options.title, {
+    const title = new fabric.Textbox(options.title, {
       name: 'title',
       width: 280,
       left: 18,
@@ -28,7 +28,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var author = new fabric.Textbox(options.author, {
+    const author = new fabric.Textbox(options.author, {
       name: 'author',
       width: 300,
       left: 18,
@@ -39,7 +39,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var desc = new fabric.Textbox(
+    const desc = new fabric.Textbox(
       options.desc.length > 200
         ? options.desc.substr(0, 200) + '...'
         : options.desc,
@@ -55,7 +55,7 @@ export class FabricPostComponent extends fabric.Group {
       }
     );
 
-    var commentButton = new fabric.Textbox('💬', {
+    const commentButton = new fabric.Textbox('💬', {
       name: 'comment',
       width: 55,
       top:
@@ -71,7 +71,7 @@ export class FabricPostComponent extends fabric.Group {
       opacity: 0,
     });
 
-    var commentCount = new fabric.Textbox('0', {
+    const commentCount = new fabric.Textbox('0', {
       name: 'commentCount',
       width: 55,
       top:
@@ -87,7 +87,7 @@ export class FabricPostComponent extends fabric.Group {
       opacity: 0,
     });
 
-    var likeButton = new fabric.Textbox('👍🏼', {
+    const likeButton = new fabric.Textbox('👍🏼', {
       name: 'like',
       width: 55,
       top:
@@ -102,7 +102,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var likeCount = new fabric.Textbox('0', {
+    const likeCount = new fabric.Textbox('0', {
       name: 'likeCount',
       width: 55,
       top:
@@ -117,7 +117,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var content = new fabric.Rect({
+    const content = new fabric.Rect({
       name: 'content',
       top: 40,
       width: 330,

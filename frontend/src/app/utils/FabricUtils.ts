@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
-import Post, { Tag } from '../models/post';
+import { Tag } from '../models/tag';
 import {
   DEFAULT_TAGS,
   POST_COLOR,
@@ -9,7 +9,7 @@ import {
   POST_DEFAULT_OPACITY,
 } from './constants';
 
-export class ImageSettings {
+export interface ImageSettings {
   top: number;
   left: number;
   width: number;
@@ -18,17 +18,17 @@ export class ImageSettings {
   scaleY: number;
 }
 
-export class CanvasDimensions {
+export interface CanvasDimensions {
   width: number;
   height: number;
 }
 
-export class ImageScale {
+export interface ImageScale {
   scaleX: number;
   scaleY: number;
 }
 
-export class ImageOffset {
+export interface ImageOffset {
   offsetX: number;
   offsetY: number;
 }
@@ -36,20 +36,6 @@ export class ImageOffset {
 @Injectable({ providedIn: 'root' })
 export class FabricUtils {
   _canvas: fabric.Canvas;
-
-  serializableProperties = [
-    'name',
-    'postID',
-    'title',
-    'desc',
-    'author',
-    'authorID',
-    'hasControls',
-    'subTargetCheck',
-    'removed',
-    'tags',
-    'boardID',
-  ];
 
   canvasConfig = {
     width: window.innerWidth,
@@ -68,38 +54,6 @@ export class FabricUtils {
     return obj;
   }
 
-  toJSON(fabricObj) {
-    return JSON.stringify(fabricObj.toJSON(this.serializableProperties));
-  }
-
-  fromJSON(post: any): void {
-    fabric.util.enlivenObjects(
-      [post],
-      (objects: [fabric.Object]) => {
-        var origRenderOnAddRemove = this._canvas.renderOnAddRemove;
-        this._canvas.renderOnAddRemove = false;
-
-        objects.forEach((o: fabric.Object) => this._canvas.add(o));
-
-        this._canvas.renderOnAddRemove = origRenderOnAddRemove;
-        this._canvas.renderAll();
-      },
-      'fabric'
-    );
-  }
-
-  fromFabricPost(post: any): Post {
-    return {
-      postID: post.postID,
-      userID: post.authorID,
-      boardID: post.boardID,
-      title: post.title,
-      desc: post.desc,
-      tags: post.tags,
-      fabricObject: this.toJSON(post),
-    };
-  }
-
   getObjectFromId(postID: string) {
     var currentObjects: any = this._canvas?.getObjects();
 
@@ -107,12 +61,6 @@ export class FabricUtils {
       if (currentObjects[i].postID == postID) return currentObjects[i];
     }
     return null;
-  }
-
-  clonePost(post, newID) {
-    let fabricObj = this.getObjectFromId(post.postID);
-    fabricObj = this.setField(fabricObj, 'postID', newID);
-    return this.toJSON(fabricObj);
   }
 
   getDefaultTagsForBoard(boardID: string): Tag[] {
@@ -310,6 +258,15 @@ export class FabricUtils {
     return fabricPost;
   }
 
+  /** 
+  Resets display attributes of a post to its default values.
+
+	Attributes that are reset can range from changed border width, 
+  border color,  post color, etc. 
+
+	@param fabricPost the post being tagged
+	@returns updated post with default attributes
+	*/
   resetTagFeatures(fabricPost: any) {
     fabricPost = this.setBorderColor(fabricPost, POST_DEFAULT_BORDER);
     fabricPost = this.setBorderThickness(
@@ -355,10 +312,6 @@ export class FabricUtils {
     return fabricObject;
   }
 
-  setTags(fabricObject: any, tags: Tag[]) {
-    return this.setField(fabricObject, 'tags', tags);
-  }
-
   createImageSettings(image: fabric.Image): ImageSettings {
     let dimensions = this._calcCanvasDimensions();
     let scale = this._scaleImage(image, dimensions);
@@ -391,8 +344,9 @@ export class FabricUtils {
   }
 
   setPostMovement(object: any, lock: boolean) {
-    let updatedObj = this.setField(object, 'lockMovementX', lock);
-    return this.setField(updatedObj, 'lockMovementY', lock);
+    object = object.set('lockMovementX', lock);
+    object = object.set('lockMovementY', lock);
+    return object;
   }
 
   setBackgroundImage(image: fabric.Image | string | undefined, settings?: any) {

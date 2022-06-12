@@ -1,13 +1,14 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import Post, { Tag } from 'src/app/models/post';
+import Post from 'src/app/models/post';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from '../../utils/converters';
+import { Tag } from 'src/app/models/tag';
 
 @Component({
   selector: 'app-list-modal',

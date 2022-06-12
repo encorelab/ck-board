@@ -12,7 +12,7 @@ import {
   AddPostComponent,
   AddPostDialog,
 } from 'src/app/components/add-post-modal/add-post.component';
-import Post, { PostType, Tag } from 'src/app/models/post';
+import Post, { PostType, DisplayAttributes } from 'src/app/models/post';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import {
@@ -204,24 +204,31 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       (tag) => tag.name == NEEDS_ATTENTION_TAG.name
     );
 
-    let fabricPost = new FabricPostComponent({
+    const renderAttr: DisplayAttributes = {
+      position: {
+        left: this.Xoffset,
+        top: this.Yoffset,
+      },
+      lock: !this.board.permissions.allowStudentMoveAny,
+      borderColor: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : undefined,
+      borderWidth: containsAttentionTag
+        ? POST_TAGGED_BORDER_THICKNESS
+        : undefined,
+    };
+
+    const post: Post = {
       postID: postID,
+      userID: this.user.userID,
       boardID: this.board.boardID,
+      type: PostType.BOARD,
       title: htmlPost.post.title,
       author: this.user.username,
-      authorID: this.user.userID,
       desc: htmlPost.post.desc,
       tags: htmlPost.post.tags ?? [],
-      lock: !this.board.permissions.allowStudentMoveAny,
-      left: this.Xoffset,
-      top: this.Yoffset,
-      color: POST_COLOR,
-      stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
-      strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null,
-    });
+      displayAttributes: renderAttr,
+    };
 
-    const canvasPost: Post = this.fabricUtils.fromFabricPost(fabricPost);
-    await this.canvasService.createBoardPostFromBucket(canvasPost);
+    await this.canvasService.createBoardPostFromBucket(post);
     htmlPost.bucketOnly = false;
 
     this.Yoffset += 50;

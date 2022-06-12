@@ -32,9 +32,38 @@ const movePostToBucket = async (
   });
   await Promise.all(tracePromises);
 };
+/**
+ * Creates a trace for each post removed from a bucket
+ * input.eventData.posts is string[] of postIDs
+ * input.eventData.bucketID is the bucketID of the bucket from which the post was removed
+ * @param input
+ * @param eventType
+ * @returns
+ */
+const removePostFromBucket = async (
+  input: SocketPayload<BucketEventInput>,
+  eventType: string
+) => {
+  const trace = await createTrace(input.trace);
+  const bucketEvent = input.eventData;
+  const bucket = await dalBucket.getById(bucketEvent.bucketID);
+  if (!bucket) return;
+  // create a trace for each postID in posts
+  let tracePromises = bucketEvent.posts.map(async (postID) => {
+    trace.event = {
+      postRemovedFromBucketID: bucket.bucketID,
+      postRemovedFromBucketName: bucket.name,
+      postID: postID,
+    };
+    trace.eventType = eventType;
+    return dalTrace.create(trace);
+  });
+  await Promise.all(tracePromises);
+};
 
 const bucketTrace = {
   movePostToBucket,
+  removePostFromBucket,
 };
 
 export default bucketTrace;

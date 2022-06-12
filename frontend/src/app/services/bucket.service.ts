@@ -30,6 +30,10 @@ export class BucketService {
   }
 
   remove(bucketID: string, ...posts: string[]): Promise<Bucket> {
+    this.socketService.emit(SocketEvent.BUCKET_REMOVE_POST, {
+      bucketID,
+      posts,
+    });
     return this.http
       .post<Bucket>('buckets/' + bucketID + '/remove', { posts })
       .toPromise();

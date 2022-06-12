@@ -4,10 +4,16 @@ import { FabricPostComponent } from '../components/fabric-post/fabric-post.compo
 import { Board, BoardPermissions } from '../models/board';
 import Comment from '../models/comment';
 import Like from '../models/like';
-import Post from '../models/post';
+import Post, { DisplayAttributes, PostType } from '../models/post';
 import { Tag } from '../models/tag';
 import { DistributionWorkflow } from '../models/workflow';
-import { SocketEvent } from '../utils/constants';
+import {
+  POST_COLOR,
+  POST_DEFAULT_BORDER,
+  POST_DEFAULT_BORDER_THICKNESS,
+  POST_DEFAULT_OPACITY,
+  SocketEvent,
+} from '../utils/constants';
 import { FabricUtils } from '../utils/FabricUtils';
 import { BoardService } from './board.service';
 import { BucketService } from './bucket.service';
@@ -108,16 +114,19 @@ export class CanvasService {
   async tag(post: Post, tag: Tag): Promise<Post> {
     const tags = [...post.tags, tag];
 
-    let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
-    if (!fabricObject) {
+    if (post.type == PostType.BUCKET) {
       return await this.postService.update(post.postID, { tags: tags });
     }
 
-    if (tag.specialAttributes) {
-      fabricObject = this.fabricUtils.applyTagFeatures(fabricObject, tag);
+    let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
+    if (fabricObject && tag.specialAttributes) {
+      this.fabricUtils.applyTagFeatures(fabricObject, tag);
     }
 
-    const savedPost = await this.postService.update(post.postID, { tags });
+    const savedPost = await this.postService.update(post.postID, {
+      tags: tags,
+      displayAttributes: tag.specialAttributes,
+    });
 
     this.socketService.emit(SocketEvent.POST_TAG_ADD, { tag, post: savedPost });
 
@@ -135,16 +144,18 @@ export class CanvasService {
     post.tags = post.tags.filter((t) => t.name != tag.name);
 
     let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
-    if (!fabricObject) {
-      return await this.postService.update(post.postID, { tags: post.tags });
-    }
-
-    if (tag.specialAttributes) {
+    if (fabricObject && tag.specialAttributes) {
       fabricObject = this.fabricUtils.resetTagFeatures(fabricObject);
     }
 
     const savedPost = await this.postService.update(post.postID, {
       tags: post.tags,
+      displayAttributes: {
+        opacity: POST_DEFAULT_OPACITY,
+        fillColor: POST_COLOR,
+        borderColor: POST_DEFAULT_BORDER,
+        borderWidth: POST_DEFAULT_BORDER_THICKNESS,
+      },
     });
 
     this.socketService.emit(SocketEvent.POST_TAG_REMOVE, {

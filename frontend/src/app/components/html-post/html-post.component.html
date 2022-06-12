@@ -24,7 +24,19 @@
         <mat-chip [ngStyle]="{'background-color': tag.color, 'color': 'black'}" selected 
           *ngFor="let tag of post.post.tags">
           {{ tag.name }}
+          <mat-icon class="cancel" (click)="$event.stopPropagation(); removeTag(tag)">cancel</mat-icon>
         </mat-chip>
+        <mat-chip [matMenuTriggerFor]="tagMenu" (click)="$event.stopPropagation();" style="background-color: #9d9ad9">
+          Add Tag +
+        </mat-chip>
+        <mat-menu #tagMenu="matMenu">
+          <div mat-menu-item *ngIf="availableTags.length == 0">
+            No tags available.
+          </div>
+          <button mat-menu-item (click)="addTag(tag)" *ngFor="let tag of availableTags">
+            {{ tag.name }}
+          </button>
+        </mat-menu>
       </mat-chip-list>
       <p class="content">{{ post.post.desc }}</p>
     </mat-card-content>
@@ -38,17 +50,9 @@
         <mat-icon>comment</mat-icon>
         {{ post.comments }}
       </button>
-      <button mat-button [matMenuTriggerFor]="tagMenu" (click)="$event.stopPropagation();">
+      <!-- <button mat-button [matMenuTriggerFor]="tagMenu" (click)="$event.stopPropagation();">
         <mat-icon>tag</mat-icon>
         {{ post.post.tags.length }}
-      </button>
-      <mat-menu #tagMenu="matMenu">
-        <div mat-menu-item *ngIf="post.board && post.board.tags.length == 0">
-          No tags available.
-        </div>
-        <button mat-menu-item (click)="$event.stopPropagation();" *ngFor="let tag of post.board.tags">
-          <mat-checkbox [checked]="post.post.tags.includes(tag)" (change)="updateTag($event, tag)">{{ tag.name }}</mat-checkbox>
-        </button>
-      </mat-menu>
+      </button> -->
     </mat-card-actions>
 </mat-card>

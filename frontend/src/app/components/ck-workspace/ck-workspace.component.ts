@@ -19,7 +19,7 @@ import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component'
 import { ListModalComponent } from '../list-modal/list-modal.component';
 import { EventsParams, SwiperComponent } from 'swiper/angular';
 import SwiperCore, { EffectCards } from 'swiper';
-import Post from 'src/app/models/post';
+import Post, { PostType } from 'src/app/models/post';
 import { HTMLPost } from '../html-post/html-post.component';
 
 // install Swiper modules
@@ -111,10 +111,12 @@ export class CkWorkspaceComponent implements OnInit {
     boardID: '1',
     postID: '1',
     userID: '1',
+    author: 'ammar',
+    type: PostType.BOARD,
     title: 'tile',
     desc: 'desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc',
     tags: [],
-    fabricObject: null,
+    displayAttributes: null,
   };
   htmlPost: HTMLPost;
 

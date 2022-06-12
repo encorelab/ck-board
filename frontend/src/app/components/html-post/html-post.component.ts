@@ -77,6 +77,8 @@ export class HtmlPostComponent implements OnInit {
   isLiked: boolean = false;
   showUsername: boolean = false;
 
+  availableTags: Tag[] = [];
+
   constructor(
     public commentService: CommentService,
     public likesService: LikesService,
@@ -91,6 +93,9 @@ export class HtmlPostComponent implements OnInit {
   ngOnInit(): void {
     this.user = this.userService.user!;
     this.isLiked = this.post.likes.includes(this.user.userID);
+    this.availableTags = this.post.board.tags.filter(
+      (n) => !this.post.post.tags.map((b) => b.name).includes(n.name)
+    );
   }
 
   openPostDialog() {
@@ -136,12 +141,14 @@ export class HtmlPostComponent implements OnInit {
     }
   }
 
-  async updateTag(event, tag: Tag) {
-    if (event.checked) {
-      this.post.post = await this.canvasService.tag(this.post.post, tag);
-    } else {
-      this.post.post = await this.canvasService.untag(this.post.post, tag);
-    }
+  async addTag(tag: Tag) {
+    this.post.post = await this.canvasService.tag(this.post.post, tag);
+    this.availableTags = this.availableTags.filter((t) => t.name != tag.name);
+  }
+
+  async removeTag(tag: Tag) {
+    this.post.post = await this.canvasService.untag(this.post.post, tag);
+    this.availableTags.push(tag);
   }
 
   movePostToBoard(postID: string) {

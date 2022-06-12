@@ -282,7 +282,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  configureBoard() {
+  async configureBoard() {
     const map = this.activatedRoute.snapshot.paramMap;
 
     if (map.has('boardID') && map.has('projectID')) {
@@ -293,41 +293,39 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.router.navigate(['error']);
     }
 
-    this.postService.getAllByBoard(this.boardID).then((data) => {
-      data.forEach(async (post) => {
-        if (post.type == PostType.BOARD) {
-          const likes = await this.likesService.getLikesByPost(post.postID);
-          const comments = await this.commentService.getCommentsByPost(
-            post.postID
-          );
-          this.canvas.add(
-            new FabricPostComponent(post, {
-              likes: likes.length,
-              comments: comments.length,
-            })
-          );
-        }
-      });
-      this.boardService.get(this.boardID).then((board) => {
-        if (board) {
-          this.board = board;
-          this.configureZoom();
-          this.fabricUtils.setBackgroundImage(
-            board.bgImage?.url,
-            board.bgImage?.imgSettings
-          );
-          this.lockPostsMovement(
-            !board.permissions.allowStudentMoveAny &&
-              this.user.role == Role.STUDENT
-          );
-          this.updateShowAddPost(this.board.permissions);
-          this.setAuthorVisibilityAll();
-        }
-      });
-    });
-    this.projectService
-      .get(this.projectID)
-      .then((project) => (this.project = project));
+    const posts = await this.postService.getAllByBoard(this.boardID);
+    for await (const post of posts) {
+      if (post.type == PostType.BOARD) {
+        const likes = await this.likesService.getLikesByPost(post.postID);
+        const comments = await this.commentService.getCommentsByPost(
+          post.postID
+        );
+        this.canvas.add(
+          new FabricPostComponent(post, {
+            likes: likes.length,
+            comments: comments.length,
+          })
+        );
+      }
+    }
+
+    const board = await this.boardService.get(this.boardID);
+    if (board) {
+      this.board = board;
+      this.configureZoom();
+      this.fabricUtils.setBackgroundImage(
+        board.bgImage?.url,
+        board.bgImage?.imgSettings
+      );
+
+      this.lockPostsMovement(
+        !board.permissions.allowStudentMoveAny && this.user.role == Role.STUDENT
+      );
+      this.updateShowAddPost(this.board.permissions);
+      this.setAuthorVisibilityAll();
+    }
+
+    this.project = await this.projectService.get(this.projectID);
   }
 
   configureZoom() {

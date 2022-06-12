@@ -55,7 +55,9 @@ export class FabricUtils {
   }
 
   getObjectFromId(postID: string) {
-    var currentObjects: any = this._canvas?.getObjects();
+    if (!this._canvas) return null;
+
+    var currentObjects: any = this._canvas.getObjects();
 
     for (var i = currentObjects.length - 1; i >= 0; i--) {
       if (currentObjects[i].postID == postID) return currentObjects[i];
@@ -243,6 +245,9 @@ export class FabricUtils {
 	@returns updated post with new attributes
 	*/
   applyTagFeatures(fabricPost: any, tag: Tag) {
+    if (!this._canvas) return null;
+    // assert canvas
+
     const attributes = tag.specialAttributes;
 
     if (attributes == null) {

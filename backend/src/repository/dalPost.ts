@@ -36,14 +36,20 @@ export const remove = async (id: string) => {
   }
 };
 
-export const update = async (id: string, post: Partial<PostModel>) => {
+export const update = async (postID: string, post: Partial<PostModel>) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const updatedPost = await Post.findOneAndUpdate({ postID: id }, post, {
+    await _updateDisplayAttributes(postID, post);
+    const updatedPost = await Post.findOneAndUpdate({ postID }, post, {
       new: true,
     });
     return updatedPost;
   } catch (err) {
     throw new Error("500");
+  } finally {
+    await session.endSession();
   }
 };
 
@@ -58,6 +64,22 @@ export const createMany = async (posts: PostModel[]) => {
   } finally {
     await session.endSession();
   }
+};
+
+const _updateDisplayAttributes = async (
+  postID: string,
+  post: Partial<PostModel>
+) => {
+  if (!post.displayAttributes) return;
+
+  const finalAttrs = Object.assign({});
+
+  for (const [key, value] of Object.entries(post.displayAttributes)) {
+    finalAttrs["displayAttributes." + key] = value;
+  }
+
+  await Post.findOneAndUpdate({ postID }, { $set: finalAttrs });
+  delete post.displayAttributes;
 };
 
 const dalPost = {

@@ -9,6 +9,8 @@
 }
 
 .content {
+  padding-top: 8px;
+
   overflow: hidden;
   text-overflow: ellipsis;
 
@@ -30,4 +32,11 @@ mat-chip {
 .mat-title {
   line-height: 1.2;
   margin-bottom: 10px;
+}
+
+.cancel {
+  padding: 0px 5px;
+  width: 12px;
+  height: 15px;
+  font-size: medium;
 }

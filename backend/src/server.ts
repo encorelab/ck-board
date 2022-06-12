@@ -43,7 +43,7 @@ app.use("/api/comments", isAuthenticated, comments);
 app.use("/api/notifications", isAuthenticated, notifications);
 app.use("/api/groups", isAuthenticated, groups);
 app.use("/api/auth", auth);
-app.use("/api/trace", trace);
+app.use("/api/trace", isAuthenticated, trace);
 
 mongoose
   .connect(dbURI)

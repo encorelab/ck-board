@@ -5,7 +5,7 @@ export const getById = async (id: string) => {
     const board = await Board.findOne({ boardID: id });
     return board;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -14,7 +14,7 @@ export const getMultipleByIds = async (ids: string[]) => {
     const boards = await Board.find({ boardID: { $in: ids } });
     return boards;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -23,7 +23,7 @@ export const getByUserId = async (id: string) => {
     const boards = await Board.find({ members: id });
     return boards;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -32,7 +32,7 @@ export const create = async (board: BoardModel) => {
     const savedBoard = await Board.create(board);
     return savedBoard;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -43,7 +43,7 @@ export const update = async (id: string, board: Partial<BoardModel>) => {
     });
     return updatedBoard;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 

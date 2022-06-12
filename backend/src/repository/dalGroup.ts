@@ -5,7 +5,7 @@ export const getById = async (id: string) => {
         const group = await Group.findOne({ groupID: id })
         return group;
     } catch (err) {
-        throw new Error("500");
+        throw new Error(JSON.stringify(err, null, " "));
     }
 }
 
@@ -14,7 +14,7 @@ export const getByUserId = async (id: string) => {
         const groups = await Group.find({ members: id });
         return groups;
     } catch (err) {
-        throw new Error("500");
+        throw new Error(JSON.stringify(err, null, " "));
     }
 }
 
@@ -23,7 +23,7 @@ export const getByProjectId = async (projectID: string) => {
         const groups = await Group.find({ projectID });
         return groups;
     } catch (err) {
-        throw new Error("500");
+        throw new Error(JSON.stringify(err, null, " "));
     }
 }
 
@@ -32,7 +32,7 @@ export const create = async (group: GroupModel) => {
         const savedGroup = await Group.create(group);
         return savedGroup;
     } catch (err) {
-        throw new Error("500");
+        throw new Error(JSON.stringify(err, null, " "));
     }
 }
 
@@ -46,7 +46,7 @@ export const addUser = async (id: string, users: string[]) => {
         );
         return updatedGroup;
     } catch (err) {
-        throw new Error("500");
+        throw new Error(JSON.stringify(err, null, " "));
     }
 }
 
@@ -55,7 +55,7 @@ export const remove = async (id: string) => {
     try {
         await Group.findOneAndDelete({groupID: id})
     } catch (err) {
-        throw new Error("500");
+        throw new Error(JSON.stringify(err, null, " "));
     }
 }
 
@@ -69,7 +69,7 @@ export const removeUser = async (id: string, users: string[]) => {
         )
         return updatedGroup;
     } catch (err) {
-        throw new Error("500");
+        throw new Error(JSON.stringify(err, null, " "));
     }
 }
 
@@ -82,7 +82,7 @@ export const update = async (id: string, group: Partial<GroupModel>) => {
         )
         return updatedGroup;
     } catch (err) {
-        throw new Error("500");
+        throw new Error(JSON.stringify(err, null, " "));
     }
 }
 

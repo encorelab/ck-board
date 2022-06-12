@@ -16,6 +16,10 @@
                     Create Board
             </button>
         </mat-menu>
+        <app-csv-download-button
+            [projectID] ="this.projectID"
+            *ngIf="user && user.role == Role.TEACHER && boards.length > 0">
+        </app-csv-download-button>
         <button 
             *ngIf="user && user.role == Role.TEACHER" 
             mat-icon-button (click)="openSettingsDialog()" 

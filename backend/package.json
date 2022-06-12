@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --respawn ./src/server.ts",
-    "style:linter": "eslint . --ext .ts",
+    "style:linter": "eslint . --fix --ext .ts",
     "style:formatter": "prettier --check '**/*.{js,jsx,ts,tsx}'",
     "style": "prettier --write '**/*.{js,jsx,ts,tsx}'"
   },

@@ -41,6 +41,7 @@ import { SnackBarComponent } from './components/snackbar/snackbar.component';
 import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
 import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
+import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -74,6 +75,7 @@ export function tokenGetter() {
     SnackBarComponent,
     ConfirmModalComponent,
     NotificationDropdownComponent,
+    CsvDownloadButtonComponent,
   ],
   imports: [
     BrowserModule,

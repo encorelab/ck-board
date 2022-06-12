@@ -245,4 +245,8 @@ export class CanvasService {
   async runDistributionWorkflow(workflow: DistributionWorkflow) {
     this.socketService.emit(SocketEvent.WORKFLOW_RUN_DISTRIBUTION, workflow);
   }
+
+  async readPost(postID: string) {
+    this.socketService.emit(SocketEvent.POST_READ, postID);
+  }
 }

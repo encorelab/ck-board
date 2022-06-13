@@ -5,7 +5,6 @@ import {
   getDiscriminatorModelForClass,
 } from "@typegoose/typegoose";
 
-import { UserModel } from "./User"
 import { GroupModel } from "./Group";
 
 
@@ -78,9 +77,6 @@ export class TaskWorkflowModel extends WorkflowModel {
   
   @prop({ required: true, type: () => [TaskAction]})
   public requiredActions!: TaskAction[]; 
-
-  @prop({ required: true, type: () => [TaskAction]})
-  public optionalActions!: TaskAction[]; // Can be empty
 
   @prop({ required: true, type: () => [GroupModel]})
   public assignedGroups!: GroupModel[]; 

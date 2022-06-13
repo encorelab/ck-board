@@ -19,8 +19,7 @@ export enum ContainerType {
   BUCKET = "BUCKET",
 }
 
-
-export enum TaskAction {
+export enum TaskActionType {
   LIKE = 'LIKE',
   COMMENT = 'COMMENT',
   TAG = 'TAG',
@@ -36,6 +35,14 @@ export class Container {
 
   @prop({ required: true })
   public name!: string;
+}
+
+export class TaskAction {
+  @prop({ enum: TaskActionType, type: String, required: true })
+  public type!: TaskActionType;
+
+  @prop({ required: true })
+  public amountRequired!: number;
 }
 
 @modelOptions({ schemaOptions: { collection: "workflows", timestamps: true } })
@@ -68,9 +75,17 @@ export class DistributionWorkflowModel extends WorkflowModel {
 export class TaskWorkflowModel extends WorkflowModel {
   @prop({ required: true})
   public prompt!: string;  
+  
+  @prop({ required: true, type: () => [TaskAction]})
   public requiredActions!: TaskAction[]; 
+
+  @prop({ required: true, type: () => [TaskAction]})
   public optionalActions!: TaskAction[]; // Can be empty
+
+  @prop({ required: true, type: () => [GroupModel]})
   public assignedGroups!: GroupModel[]; 
+
+  @prop({ required: true})
   public postsPerGroup!: number;
 }
 

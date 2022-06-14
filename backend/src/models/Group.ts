@@ -16,7 +16,7 @@ export class GroupModel {
     public members!: string[];
 
     @prop( { required: true })
-    public groupTasks!: GroupTaskModel[]
+    public groupTasks!: string[]
 }
 
 export default getModelForClass(GroupModel);

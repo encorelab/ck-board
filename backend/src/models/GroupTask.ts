@@ -3,13 +3,13 @@ import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
 @modelOptions({ schemaOptions: { collection: "groupTasks", timestamps: true } })
 export class GroupTaskModel {
     @prop({ required: true })
-    public id!: string;
+    public groupTaskID!: string;
+
+    @prop({ required: true })
+    public groupID!: string // is this possible to have required before groups are assigned?
     
     @prop({ required: true })
     public workflowID!: string;
-
-    @prop({ required: true })
-    public members!: string[]; // Group members assigned to this group task
 
     @prop({ required: true })
     public posts!: {

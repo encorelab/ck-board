@@ -24,7 +24,7 @@
       </div>
     </app-toolbar>
     <div class="canvas-area">
-      <canvas id="canvas"></canvas>
+      <canvas id="canvas" (window:resize)="onResize($event)"></canvas>
       <div class="nav">
         <a routerLink="{{'/project/'+projectID}}">Back to Project</a>
       </div>

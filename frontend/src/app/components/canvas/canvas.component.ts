@@ -396,6 +396,28 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.canvas.renderAll();
   }
 
+  onResize(event) {
+    let scaleX = event.target.innerWidth / this.canvas.getWidth();
+    let scaleY = event.target.innerHeight / this.canvas.getHeight();
+    let objects = this.canvas.getObjects();
+
+    // Resize all objects inside the canvas
+    for (var i in objects) {
+      objects[i].scaleX = (objects[i].getObjectScaling().scaleX) * scaleY;
+      objects[i].scaleY = (objects[i].getObjectScaling().scaleY) * scaleY;
+      objects[i].left = (objects[i].left || 0) * scaleX;
+      objects[i].top = (objects[i].top || 0) * scaleY;
+    }
+
+    this.canvas.setWidth(event.target.innerWidth);
+
+    // Without toolbar height 
+    this.canvas.setHeight(event.target.innerHeight - 64);
+    this.canvas.renderAll();
+    this.canvas.calcOffset();
+
+  }
+
   hideAuthorNames() {
     this.canvas.getObjects().map((obj) => {
       this.fabricUtils.updateAuthor(obj, 'Anonymous');

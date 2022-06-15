@@ -14,7 +14,7 @@ export class GroupTaskModel {
     @prop({ required: true })
     public posts!: {
         postID: string; 
-        memberID: string; // Group members assigned to post
+        // memberID: string; // Group members assigned to post
         complete: boolean 
       }[]
 }

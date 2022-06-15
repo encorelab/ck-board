@@ -398,7 +398,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   onResize(event) {
     let scaleX = event.target.innerWidth / this.canvas.getWidth();
-    let scaleY = event.target.innerHeight / this.canvas.getHeight();
+    // Without toolbar height
+    let scaleY = (event.target.innerHeight - 64) / this.canvas.getHeight();
     let objects = this.canvas.getObjects();
 
     // Resize all objects inside the canvas
@@ -407,15 +408,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
       objects[i].scaleY = (objects[i].getObjectScaling().scaleY) * scaleY;
       objects[i].left = (objects[i].left || 0) * scaleX;
       objects[i].top = (objects[i].top || 0) * scaleY;
+      objects[i].setCoords();
     }
 
     this.canvas.setWidth(event.target.innerWidth);
-
     // Without toolbar height 
     this.canvas.setHeight(event.target.innerHeight - 64);
+
     this.canvas.renderAll();
     this.canvas.calcOffset();
-
   }
 
   hideAuthorNames() {

@@ -103,6 +103,14 @@ export default [
     default: '',
   },
   {
+    value: 'postRemovedFromBucketID',
+    default: '',
+  },
+  {
+    value: 'postRemovedFromBucketName',
+    default: '',
+  },
+  {
     value: 'postRead',
     default: 0,
   },

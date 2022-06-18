@@ -37,6 +37,7 @@ export class AddBoardModalComponent implements OnInit {
   newTagColor: any = TAG_DEFAULT_COLOR;
 
   initialZoom: number = 100;
+  upvoteLimit: number = 5;
 
   projects: Project[];
   selectedProject: string = '';
@@ -106,6 +107,7 @@ export class AddBoardModalComponent implements OnInit {
         members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),
         initialZoom: this.initialZoom,
+        upvoteLimit: this.upvoteLimit,
       },
       this.selectedProject
     );

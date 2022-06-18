@@ -87,7 +87,7 @@ export class FabricPostComponent extends fabric.Group {
       opacity: 0,
     });
 
-    var likeButton = new fabric.Textbox('👍🏼', {
+    var likeButton = new fabric.Textbox('⬆', {
       name: 'like',
       width: 55,
       top:

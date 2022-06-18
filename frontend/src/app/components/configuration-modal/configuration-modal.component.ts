@@ -32,6 +32,7 @@ export class ConfigurationModalComponent {
   newTagColor: any = TAG_DEFAULT_COLOR;
 
   initialZoom: number = 100;
+  upvoteLimit: number = 5;
 
   members: string[] = [];
 
@@ -51,6 +52,7 @@ export class ConfigurationModalComponent {
     this.tags = data.board.tags ?? [];
     this.permissions = data.board.permissions;
     this.initialZoom = data.board.initialZoom;
+    this.upvoteLimit = data.board.upvoteLimit;
     data.board.members.map((id) => {
       userService.getOneById(id).then((user) => {
         if (user) {
@@ -109,6 +111,7 @@ export class ConfigurationModalComponent {
     board = await this.canvasService.updateBoardTags(this.boardID, this.tags);
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,
+      upvoteLimit: this.upvoteLimit,
     });
     this.data.update(board);
     this.dialogRef.close();

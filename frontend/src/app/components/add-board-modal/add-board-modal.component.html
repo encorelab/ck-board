@@ -20,6 +20,10 @@
           Project is required.
         </mat-error>
       </mat-form-field>
+      <div style="flex: display; flex-direction: column">
+        <mat-label style="font-weight: bold;">Upvotes Per Student: {{upvoteLimit}}</mat-label>
+        <mat-slider class="slider"  min="0" max="200" step="1" [(ngModel)]="upvoteLimit" thumbLabel ></mat-slider>
+      </div>
       <h4>Set Background Image:</h4>
       <mat-chip (click)="compressFile()" color="primary" selected>
         <mat-icon class="chip-icon">upload</mat-icon>

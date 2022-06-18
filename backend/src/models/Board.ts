@@ -71,6 +71,9 @@ export class BoardModel {
 
   @prop({ required: true })
   public initialZoom!: number;
+
+  @prop({ required: true })
+  public upvoteLimit!: number;
 }
 
 export default getModelForClass(BoardModel);

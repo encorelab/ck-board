@@ -32,4 +32,5 @@ export class Board {
   members: string[];
   tags: Tag[];
   initialZoom: number = 100;
+  upvoteLimit: number = 5;
 }

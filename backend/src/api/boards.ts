@@ -20,8 +20,16 @@ router.post("/multiple", async (req, res) => {
 
 router.post("/:id", async (req, res) => {
   const id = req.params.id;
-  const { name, members, task, permissions, bgImage, tags, initialZoom } =
-    req.body;
+  const {
+    name,
+    members,
+    task,
+    permissions,
+    bgImage,
+    tags,
+    initialZoom,
+    upvoteLimit,
+  } = req.body;
 
   const board: Partial<BoardModel> = Object.assign(
     {},
@@ -31,7 +39,8 @@ router.post("/:id", async (req, res) => {
     permissions === undefined ? null : { permissions },
     bgImage === undefined ? null : { bgImage },
     tags === undefined ? null : { tags },
-    initialZoom === undefined ? null : { initialZoom }
+    initialZoom === undefined ? null : { initialZoom },
+    upvoteLimit === undefined ? null : { upvoteLimit }
   );
 
   const updatedBoard = await dalBoard.update(id, board);

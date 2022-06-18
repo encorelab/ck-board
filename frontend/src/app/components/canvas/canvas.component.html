@@ -1,6 +1,6 @@
 <div>
   <div style="position: absolute;">
-    <app-toolbar [user]="user">
+    <app-toolbar *ngIf="user && board" [user]="user">
       <span *ngIf="board && board.name">{{ board.name }}</span>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="Read Task">
         <mat-icon>task</mat-icon>
@@ -9,7 +9,7 @@
       <button mat-icon-button *ngIf="user && user.role == Role.TEACHER" (click)="openWorkflowDialog()" matTooltip="Workflows">
         <mat-icon>timeline</mat-icon>
       </button>
-      <button mat-icon-button *ngIf="!(user && user.role == Role.STUDENT && !board.permissions.showBucketStudent)" (click)="showBucketsModal()" matTooltip="View Buckets">
+      <button mat-icon-button *ngIf="!(user.role == Role.STUDENT && !board.permissions.showBucketStudent)" (click)="showBucketsModal()" matTooltip="View Buckets">
         <mat-icon>shopping_basket</mat-icon>
       </button>
       <button mat-icon-button (click)="showListModal()" matTooltip="List Posts">

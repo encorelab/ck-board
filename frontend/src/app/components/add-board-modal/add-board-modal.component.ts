@@ -4,7 +4,7 @@ import { UserService } from 'src/app/services/user.service';
 import { Project } from 'src/app/models/project';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
-import { Tag } from 'src/app/models/post';
+import { Tag } from 'src/app/models/tag';
 import Utils from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';

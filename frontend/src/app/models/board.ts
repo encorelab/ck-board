@@ -1,5 +1,5 @@
 import { ImageSettings } from '../utils/FabricUtils';
-import { Tag } from './post';
+import { Tag } from './tag';
 
 export class BoardBackgroundImage {
   url: string;

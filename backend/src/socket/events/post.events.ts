@@ -1,5 +1,11 @@
 import { Server, Socket } from "socket.io";
-import { SocketEvent } from "../../constants";
+import {
+  POST_COLOR,
+  POST_DEFAULT_OPACITY,
+  POST_MOVING_FILL,
+  POST_MOVING_OPACITY,
+  SocketEvent,
+} from "../../constants";
 import { BucketModel } from "../../models/Bucket";
 import { CommentModel } from "../../models/Comment";
 import { LikeModel } from "../../models/Like";
@@ -9,7 +15,11 @@ import dalComment from "../../repository/dalComment";
 import dalLike from "../../repository/dalLike";
 import dalPost from "../../repository/dalPost";
 import postTrace from "../trace/post.trace";
-import { PostTagEventInput, SocketPayload } from "../types/event.types";
+import {
+  PostStopMoveEventInput,
+  PostTagEventInput,
+  SocketPayload,
+} from "../types/event.types";
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
@@ -70,7 +80,12 @@ class PostStartMove {
   static async handleEvent(
     input: SocketPayload<PostModel>
   ): Promise<PostModel | null> {
-    const post = await dalPost.update(input.eventData.postID, input.eventData);
+    const post = await dalPost.update(input.eventData.postID, {
+      displayAttributes: {
+        fillColor: POST_MOVING_FILL,
+        opacity: POST_MOVING_OPACITY,
+      },
+    });
     return post;
   }
 
@@ -83,9 +98,15 @@ class PostStopMove {
   static type: SocketEvent = SocketEvent.POST_STOP_MOVE;
 
   static async handleEvent(
-    input: SocketPayload<PostModel>
+    input: SocketPayload<PostStopMoveEventInput>
   ): Promise<PostModel | null> {
-    const post = await dalPost.update(input.eventData.postID, input.eventData);
+    const post = await dalPost.update(input.eventData.postID, {
+      displayAttributes: {
+        position: { left: input.eventData.left, top: input.eventData.top },
+        fillColor: POST_COLOR,
+        opacity: POST_DEFAULT_OPACITY,
+      },
+    });
     await postTrace.move(input, this.type);
     return post;
   }

@@ -14,7 +14,7 @@ import Like from 'src/app/models/like';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Post, { Tag } from 'src/app/models/post';
+import Post from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
@@ -23,6 +23,7 @@ import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { UserService } from 'src/app/services/user.service';
 import Utils from 'src/app/utils/Utils';
+import { Tag } from 'src/app/models/tag';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -173,20 +174,11 @@ export class PostModalComponent {
     this.editingTitle = this.title;
     this.editingDesc = this.desc;
 
-    var obj: any = this.fabricUtils.getObjectFromId(this.post.postID);
     var update: Partial<Post> = {
       postID: this.post.postID,
       title: this.title,
       desc: this.desc,
     };
-
-    // check if post is on board
-    if (obj) {
-      obj = this.fabricUtils.updatePostTitleDesc(obj, this.title, this.desc);
-      obj.set({ title: this.title, desc: this.desc });
-      this.fabricUtils._canvas.renderAll();
-      update.fabricObject = this.fabricUtils.toJSON(obj);
-    }
 
     this.socketService.emit(SocketEvent.POST_UPDATE, update);
     this.toggleEdit();

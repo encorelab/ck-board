@@ -7,7 +7,6 @@
 
 .swiper {
   width: 400px;
-  height: 300px;
 }
 
 .swiper-slide {
@@ -18,15 +17,9 @@
   font-size: 22px;
   font-weight: bold;
   color: #fff;
+
+  padding: 15px 0px;
 }
-
-// .swiper-slide:nth-child(1n) {
-//   background-color: rgb(206, 17, 17);
-// }
-
-// .swiper-slide:nth-child(1n) {
-//   background-color: rgb(0, 140, 255);
-// }
 
 .swiper-slide:nth-child(1n) {
   background-color: rgb(10, 184, 111);
@@ -39,10 +32,6 @@
 .swiper-slide:nth-child(3n) {
   background-color: rgb(118, 163, 12);
 }
-
-// .swiper-slide:nth-child(6n) {
-//   background-color: rgb(180, 10, 47);
-// }
 
 .swiper-slide:nth-child(4n) {
   background-color: rgb(0, 68, 255);

@@ -114,11 +114,23 @@ export class CkWorkspaceComponent implements OnInit {
     author: 'ammar',
     type: PostType.BOARD,
     title: 'tile',
-    desc: 'desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc',
+    desc: 'desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc desc desc descdes descdescdescdescdescdescdescdescdescdescdescdescdescc',
+    tags: [],
+    displayAttributes: null,
+  };
+  post1: Post = {
+    boardID: '1',
+    postID: '2',
+    userID: '1',
+    author: 'ammar',
+    type: PostType.BOARD,
+    title: 'tile',
+    desc: 'desc desc descdes descdescdescdescdescdescdescd',
     tags: [],
     displayAttributes: null,
   };
   htmlPost: HTMLPost;
+  htmlPost1: HTMLPost;
 
   posts: HTMLPost[] = [];
 
@@ -165,7 +177,24 @@ export class CkWorkspaceComponent implements OnInit {
         allowExpand: true,
       },
     };
-    this.posts.push(this.htmlPost, this.htmlPost, this.htmlPost, this.htmlPost);
+    this.htmlPost1 = {
+      post: this.post1,
+      board: this.board,
+      author: 'me',
+      likes: [],
+      comments: 12,
+      config: {
+        hideAuthorName: false,
+        allowMoveToBoard: false,
+        allowExpand: true,
+      },
+    };
+    this.posts.push(
+      this.htmlPost,
+      this.htmlPost1,
+      this.htmlPost,
+      this.htmlPost1
+    );
 
     this.activeTasks = MOCK_ACTIVE_TASKS;
     this.inactiveTasks = MOCK_INACTIVE_TASKS;

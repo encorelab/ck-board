@@ -5,7 +5,7 @@ export const getByPost = async (id: string) => {
     const comments = await Comment.find({postID: id});
     return comments;
   } catch (err) {
-    throw new Error('500');
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -14,7 +14,7 @@ export const getAmountByPost = async (id: string) => {
     const numComments = await Comment.countDocuments({postID: id});
     return numComments;
   } catch (err) {
-    throw new Error('500');
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -23,7 +23,7 @@ export const create = async (comment: CommentModel) => {
     const savedComment = await Comment.create(comment);
     return savedComment;
   } catch (err) {
-    throw new Error('500');
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 

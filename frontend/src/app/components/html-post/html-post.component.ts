@@ -101,6 +101,7 @@ export class HtmlPostComponent implements OnInit {
           this.post.post = await this.postService.get(this.post.post.postID);
         }
       });
+    this.canvasService.readPost(this.post.post.postID);
   }
 
   handleLike(event) {

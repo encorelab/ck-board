@@ -89,7 +89,7 @@ class PostStartMove {
     return post;
   }
 
-  static async handleResult(io: Server, socket: Socket, result: string) {
+  static async handleResult(io: Server, socket: Socket, result: PostModel) {
     socket.to(socket.data.room).emit(this.type, result);
   }
 }

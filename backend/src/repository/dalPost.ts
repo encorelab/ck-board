@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Post, { PostModel } from "../models/Post";
+import Post, { DisplayAttributes, PostModel } from "../models/Post";
 
 export const getById = async (id: string) => {
   try {
@@ -38,9 +38,17 @@ export const remove = async (id: string) => {
 
 export const update = async (id: string, post: Partial<PostModel>) => {
   try {
-    const updatedPost = await Post.findOneAndUpdate({ postID: id }, post, {
-      new: true,
-    });
+    const attrUpdate = formatAttributes(post);
+    const updatedPost = await Post.findOneAndUpdate(
+      { postID: id },
+      {
+        ...post,
+        $set: attrUpdate,
+      },
+      {
+        new: true,
+      }
+    );
     return updatedPost;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, " "));
@@ -58,6 +66,21 @@ export const createMany = async (posts: PostModel[]) => {
   } finally {
     await session.endSession();
   }
+};
+
+const formatAttributes = (post: Partial<PostModel>) => {
+  if (!post.displayAttributes) return {};
+
+  const displayAttributes = post.displayAttributes;
+  delete post.displayAttributes;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const update: any = {};
+  for (const [key, value] of Object.entries(displayAttributes)) {
+    update[`displayAttributes.${key}`] = value;
+  }
+
+  return update;
 };
 
 const dalPost = {

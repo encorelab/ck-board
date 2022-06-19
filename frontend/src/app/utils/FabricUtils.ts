@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
+import { DisplayAttributes } from '../models/post';
 import { Tag } from '../models/tag';
 import {
   DEFAULT_TAGS,
@@ -240,22 +241,30 @@ export class FabricUtils {
 
 	@param fabricPost the post being tagged
 	@param tag the tag being attached
-	@returns updated post with new attributes
+	@returns display attributes for post
 	*/
-  applyTagFeatures(fabricPost: any, tag: Tag) {
-    const attributes = tag.specialAttributes;
-
-    if (attributes == null) {
-      return fabricPost;
+  applyTagFeatures(fabricPost: any, tag: Tag): DisplayAttributes {
+    if (tag.specialAttributes == null) {
+      return {};
     }
 
-    fabricPost = this.setBorderColor(fabricPost, attributes.borderColor);
-    fabricPost = this.setBorderThickness(fabricPost, attributes.borderWidth);
-    fabricPost = this.setFillColor(fabricPost, attributes.fillColor);
-    fabricPost = this.setOpacity(fabricPost, attributes.opacity);
+    const { borderColor, borderWidth, fillColor, opacity } =
+      tag.specialAttributes;
+
+    fabricPost = this.setBorderColor(fabricPost, borderColor);
+    fabricPost = this.setBorderThickness(fabricPost, borderWidth);
+    fabricPost = this.setFillColor(fabricPost, fillColor);
+    fabricPost = this.setOpacity(fabricPost, opacity);
 
     this._canvas.requestRenderAll();
-    return fabricPost;
+
+    return Object.assign(
+      {},
+      borderColor === null ? null : { borderColor },
+      borderWidth === null ? null : { borderWidth },
+      fillColor === null ? null : { fillColor },
+      opacity === null ? null : { opacity }
+    );
   }
 
   /** 
@@ -265,9 +274,9 @@ export class FabricUtils {
   border color,  post color, etc. 
 
 	@param fabricPost the post being tagged
-	@returns updated post with default attributes
+	@returns display attributes for post
 	*/
-  resetTagFeatures(fabricPost: any) {
+  resetTagFeatures(fabricPost: any): DisplayAttributes {
     fabricPost = this.setBorderColor(fabricPost, POST_DEFAULT_BORDER);
     fabricPost = this.setBorderThickness(
       fabricPost,
@@ -277,7 +286,13 @@ export class FabricUtils {
     fabricPost = this.setOpacity(fabricPost, POST_DEFAULT_OPACITY);
 
     this._canvas.requestRenderAll();
-    return fabricPost;
+
+    return {
+      borderColor: POST_DEFAULT_BORDER,
+      borderWidth: POST_DEFAULT_BORDER_THICKNESS,
+      fillColor: POST_COLOR,
+      opacity: POST_DEFAULT_OPACITY,
+    };
   }
 
   setLikeCount(fabricObject: fabric.Group, amount: number): fabric.Group {

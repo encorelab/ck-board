@@ -48,7 +48,7 @@ class PostUpdate {
   }
 
   static async handleResult(io: Server, socket: Socket, result: PostModel) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 

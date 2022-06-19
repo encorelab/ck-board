@@ -34,6 +34,12 @@ $controls-border-radius: 0.75em;
   background-size: $dot-space $dot-space;
 }
 
+.toolbarTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .toolSection {
   position: absolute;
   padding: 1em;

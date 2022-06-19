@@ -22,7 +22,7 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { UserService } from 'src/app/services/user.service';
-import Utils from 'src/app/utils/Utils';
+import Utils, { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
@@ -54,6 +54,7 @@ export class PostModalComponent {
   showEditDelete: boolean = false;
   showAuthorName: boolean;
 
+  error: string = '';
   titleControl = new FormControl('', [
     Validators.required,
     Validators.maxLength(50),
@@ -227,7 +228,7 @@ export class PostModalComponent {
   addComment() {
     const comment: Comment = {
       comment: this.newComment,
-      commentID: Utils.generateUniqueID(),
+      commentID: generateUniqueID(),
       userID: this.data.user.userID,
       postID: this.post.postID,
       boardID: this.data.board.boardID,
@@ -239,7 +240,7 @@ export class PostModalComponent {
     this.comments.push(comment);
   }
 
-  handleLikeClick() {
+  async handleLikeClick() {
     // if liking is locked just return (do nothing)
     if (
       this.user.role == Role.STUDENT &&
@@ -255,15 +256,15 @@ export class PostModalComponent {
         (like) => like.likerID != this.user.userID
       );
     } else {
-      const like: Like = {
-        likeID: Utils.generateUniqueID(),
-        likerID: this.user.userID,
-        postID: this.post.postID,
-        boardID: this.data.board.boardID,
-      };
-      this.canvasService.like(like);
-      this.isLiked = like;
-      this.likes.push(like);
+      this.canvasService
+        .like(this.user.userID, this.post)
+        .then((like) => (this.isLiked = like) && this.likes.push(like))
+        .catch((e) => this.setError(getErrorMessage(e)));
     }
+  }
+
+  setError(error: string) {
+    this.error = error;
+    setTimeout(() => (this.error = ''), 5000);
   }
 }

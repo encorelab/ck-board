@@ -23,7 +23,7 @@ import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
-import Utils from 'src/app/utils/Utils';
+import Utils, { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 
 export interface HTMLPost {
   /* Board which contains this post */
@@ -66,6 +66,8 @@ export class HtmlPostComponent implements OnInit {
   isLiked: boolean = false;
   showUsername: boolean = false;
 
+  error: string = '';
+
   constructor(
     public commentService: CommentService,
     public likesService: LikesService,
@@ -104,29 +106,31 @@ export class HtmlPostComponent implements OnInit {
     this.canvasService.readPost(this.post.post.postID);
   }
 
-  handleLike(event) {
+  async handleLike(event) {
     event.stopPropagation();
 
     if (this.isLiked) {
-      this.canvasService.unlike(this.user.userID, this.post.post.postID);
+      this.canvasService.unlike(this.user.userID, this.post.post);
       this.isLiked = false;
       this.post.likes = this.post.likes.filter(
         (like) => like !== this.user.userID
       );
     } else {
-      const like: Like = {
-        likeID: Utils.generateUniqueID(),
-        likerID: this.user.userID,
-        postID: this.post.post.postID,
-        boardID: this.post.board.boardID,
-      };
-      this.canvasService.like(like);
-      this.isLiked = true;
-      this.post.likes.push(this.user.userID);
+      this.canvasService
+        .like(this.user.userID, this.post.post)
+        .then(
+          () => (this.isLiked = true) && this.post.likes.push(this.user.userID)
+        )
+        .catch((e) => this.setError(getErrorMessage(e)));
     }
   }
 
   movePostToBoard(postID: string) {
     this.movePostToBoardEvent.next(postID);
+  }
+
+  setError(error: string) {
+    this.error = error;
+    setTimeout(() => (this.error = ''), 5000);
   }
 }

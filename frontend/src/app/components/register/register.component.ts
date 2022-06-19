@@ -5,7 +5,7 @@ import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import User, { Role } from 'src/app/models/user';
-import Utils from 'src/app/utils/Utils';
+import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 
 enum Step {
   CHOOSE_TYPE,
@@ -46,7 +46,7 @@ export class RegisterComponent {
     this.invalidCredentials = false;
 
     const user: User = {
-      userID: Utils.generateUniqueID(),
+      userID: generateUniqueID(),
       email: this.email,
       username: this.username,
       password: this.password,

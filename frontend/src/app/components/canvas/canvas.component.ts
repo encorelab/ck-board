@@ -39,7 +39,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { ComponentType } from '@angular/cdk/portal';
-import Utils from 'src/app/utils/Utils';
+import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
@@ -506,15 +506,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.user.userID
       );
       if (!isLiked) {
-        const like: Like = {
-          likeID: Utils.generateUniqueID(),
-          likerID: this.user.userID,
-          postID: post.postID,
-          boardID: this.board.boardID,
-        };
-        await this.canvasService.like(like);
+        this.canvasService
+          .like(this.user.userID, post.postID)
+          .catch((e) => this.snackbarService.queueSnackbar(getErrorMessage(e)));
       } else {
-        await this.canvasService.unlike(this.user.userID, isLiked.postID);
+        this.canvasService
+          .unlike(this.user.userID, isLiked.postID)
+          .catch((e) => this.snackbarService.queueSnackbar(getErrorMessage(e)));
       }
     }
   };

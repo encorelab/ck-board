@@ -4,11 +4,12 @@ import { FabricPostComponent } from '../components/fabric-post/fabric-post.compo
 import { Board, BoardPermissions } from '../models/board';
 import Comment from '../models/comment';
 import Like from '../models/like';
-import Post from '../models/post';
+import Post, { PostType } from '../models/post';
 import { Tag } from '../models/tag';
 import { DistributionWorkflow } from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
 import { FabricUtils } from '../utils/FabricUtils';
+import { generateUniqueID } from '../utils/Utils';
 import { BoardService } from './board.service';
 import { BucketService } from './bucket.service';
 import { CommentService } from './comment.service';
@@ -57,31 +58,50 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.POST_CREATE, post);
   }
 
-  async like(like: Like) {
+  async like(userID: string, post: string | Post) {
+    if (typeof post === 'string') {
+      post = await this.postService.get(post);
+    }
+
+    const like: Like = {
+      likeID: generateUniqueID(),
+      likerID: userID,
+      postID: post.postID,
+      boardID: post.boardID,
+    };
+
     const result = await this.likesService.add(like);
 
-    let existing = this.fabricUtils.getObjectFromId(result.like.postID);
-    existing = this.fabricUtils.setLikeCount(existing, result.count);
-    this.fabricUtils._canvas.requestRenderAll();
-
-    const post = await this.postService.get(result.like.postID);
+    if (post.type == PostType.BOARD) {
+      let existing = this.fabricUtils.getObjectFromId(result.like.postID);
+      existing = this.fabricUtils.setLikeCount(existing, result.count);
+      this.fabricUtils._canvas.requestRenderAll();
+    }
 
     this.socketService.emit(SocketEvent.POST_LIKE_ADD, like);
 
-    if (post.userID !== like.likerID) {
+    if (post.userID !== userID) {
       this.socketService.emit(
         SocketEvent.NOTIFICATION_CREATE,
         this.notificationService.buildLikeNotification(post)
       );
     }
+
+    return result.like;
   }
 
-  async unlike(userID: string, postID: string) {
-    const result = await this.likesService.remove(userID, postID);
+  async unlike(userID: string, post: string | Post) {
+    if (typeof post === 'string') {
+      post = await this.postService.get(post);
+    }
 
-    let existing = this.fabricUtils.getObjectFromId(result.like.postID);
-    existing = this.fabricUtils.setLikeCount(existing, result.count);
-    this.fabricUtils._canvas.requestRenderAll();
+    const result = await this.likesService.remove(userID, post.postID);
+
+    if (post.type == PostType.BOARD) {
+      let existing = this.fabricUtils.getObjectFromId(result.like.postID);
+      existing = this.fabricUtils.setLikeCount(existing, result.count);
+      this.fabricUtils._canvas.requestRenderAll();
+    }
 
     this.socketService.emit(SocketEvent.POST_LIKE_REMOVE, result.like);
   }

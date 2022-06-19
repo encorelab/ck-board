@@ -96,6 +96,8 @@
     <button color="primary" matSuffix mat-button (click)="addComment()">Comment!</button>
   </mat-form-field>
 </div>
-<div mat-dialog-actions align="end">
+<div mat-dialog-actions>
+  <mat-error *ngIf="error">{{ error }}</mat-error>
+  <span style="flex: 1 1 auto"></span>
   <button *ngIf="!isEditing" mat-button (click)="close()">Close</button>
 </div>

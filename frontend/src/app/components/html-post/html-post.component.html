@@ -39,4 +39,5 @@
         {{ post.comments }}
       </button>
     </mat-card-actions>
+    <mat-error *ngIf="error">{{ error }}</mat-error>
 </mat-card>

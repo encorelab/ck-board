@@ -29,10 +29,9 @@
       <p class="content">{{ post.post.desc }}</p>
     </mat-card-content>
     <mat-card-actions>
-      <button mat-button (click)="handleLike($event)">
-        <mat-icon *ngIf="isLiked">thumb_up</mat-icon>
-        <i class="material-icons-outlined" *ngIf="!isLiked">thumb_up</i>
-        {{ post.likes.length }}
+      <button mat-button [ngStyle]="isUpvoted && {'color': '#4f47ff'}" (click)="handleUpvote($event)">
+        <mat-icon>arrow_upward</mat-icon>
+        {{ post.upvotes.length }}
       </button>
       <button mat-button>
         <mat-icon>comment</mat-icon>

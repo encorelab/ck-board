@@ -12,7 +12,7 @@ const DESC_OFFSET = 80;
 const CONTENT_EXTRA_HEIGHT = 55;
 
 export interface PostOptions {
-  likes: number;
+  upvotes: number;
   comments: number;
 }
 
@@ -95,8 +95,8 @@ export class FabricPostComponent extends fabric.Group {
       opacity: options && options.comments > 0 ? 1 : 0,
     });
 
-    var likeButton = new fabric.Textbox('⬆', {
-      name: 'like',
+    var upvoteButton = new fabric.Textbox('⬆', {
+      name: 'upvote',
       width: 55,
       top:
         title.getScaledHeight() +
@@ -110,15 +110,15 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var likeCount = new fabric.Textbox(options?.likes.toString() ?? '0', {
-      name: 'likeCount',
+    var upvoteCount = new fabric.Textbox(options?.upvotes.toString() ?? '0', {
+      name: 'upvoteCount',
       width: 55,
       top:
         title.getScaledHeight() +
         author.getScaledHeight() +
         desc.getScaledHeight() +
         90,
-      left: (likeButton.left ?? 0) + 28,
+      left: (upvoteButton.left ?? 0) + 28,
       fontSize: 20,
       fontFamily: 'Helvetica',
       fill: '#555555',
@@ -172,8 +172,8 @@ export class FabricPostComponent extends fabric.Group {
         title,
         author,
         desc,
-        likeButton,
-        likeCount,
+        upvoteButton,
+        upvoteCount,
         commentButton,
         commentCount,
       ],

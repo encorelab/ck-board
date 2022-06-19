@@ -52,7 +52,7 @@ export class AddBoardModalComponent implements OnInit {
   ) {
     this.permissions = {
       allowStudentMoveAny: true,
-      allowStudentLiking: true,
+      allowStudentUpvoting: true,
       allowStudentEditAddDeletePost: true,
       allowStudentCommenting: true,
       allowStudentTagging: true,

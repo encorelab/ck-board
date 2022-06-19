@@ -22,7 +22,7 @@ export class PermissionsModel {
   public allowStudentMoveAny!: boolean;
 
   @prop({ required: true })
-  public allowStudentLiking!: boolean;
+  public allowStudentUpvoting!: boolean;
 
   @prop({ required: true })
   public allowStudentEditAddDeletePost!: boolean;

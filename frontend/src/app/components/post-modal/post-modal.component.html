@@ -29,10 +29,9 @@
     <p style="overflow-wrap: break-word;" [innerHTML]="editingDesc"> {{ editingDesc }} </p>
   </mat-card-content>
   <mat-card-actions align="end" style="margin-bottom: -1.25em">
-    <button mat-button (click)="handleLikeClick()">
-      <mat-icon *ngIf="isLiked">thumb_up</mat-icon>
-      <i class="material-icons-outlined" *ngIf="!isLiked">thumb_up</i>
-      {{ likes.length }}
+    <button mat-button [ngStyle]="isUpvoted && {'color': '#4f47ff'}" (click)="handleUpvoteClick()">
+      <mat-icon>arrow_upward</mat-icon>
+      {{ upvotes.length }}
     </button>
   </mat-card-actions>
   <mat-card-actions style="margin-bottom: -1.25em" >

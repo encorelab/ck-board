@@ -8,11 +8,10 @@ import {
 } from "../../constants";
 import { BucketModel } from "../../models/Bucket";
 import { CommentModel } from "../../models/Comment";
-import { LikeModel } from "../../models/Like";
+import { UpvoteModel } from "../../models/Upvote";
 import { PostModel } from "../../models/Post";
 import dalBucket from "../../repository/dalBucket";
 import dalComment from "../../repository/dalComment";
-import dalLike from "../../repository/dalLike";
 import dalPost from "../../repository/dalPost";
 import postTrace from "../trace/post.trace";
 import {
@@ -20,6 +19,7 @@ import {
   PostTagEventInput,
   SocketPayload,
 } from "../types/event.types";
+import dalVote from "../../repository/dalVote";
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
@@ -116,14 +116,14 @@ class PostStopMove {
   }
 }
 
-class PostLikeAdd {
-  static type: SocketEvent = SocketEvent.POST_LIKE_ADD;
+class PostUpvoteAdd {
+  static type: SocketEvent = SocketEvent.POST_UPVOTE_ADD;
 
-  static async handleEvent(input: SocketPayload<LikeModel>): Promise<object> {
-    const likeAmount = await dalLike.getAmountByPost(input.eventData.postID);
-    await postTrace.likeAdd(input, this.type);
+  static async handleEvent(input: SocketPayload<UpvoteModel>): Promise<object> {
+    const upvoteAmount = await dalVote.getAmountByPost(input.eventData.postID);
+    await postTrace.upvoteAdd(input, this.type);
 
-    return { like: input.eventData, amount: likeAmount };
+    return { upvote: input.eventData, amount: upvoteAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
@@ -131,13 +131,13 @@ class PostLikeAdd {
   }
 }
 
-class PostLikeRemove {
-  static type: SocketEvent = SocketEvent.POST_LIKE_REMOVE;
+class PostUpvoteRemove {
+  static type: SocketEvent = SocketEvent.POST_UPVOTE_REMOVE;
 
-  static async handleEvent(input: SocketPayload<LikeModel>): Promise<object> {
-    const likeAmount = await dalLike.getAmountByPost(input.eventData.postID);
-    await postTrace.likeRemove(input, this.type);
-    return { like: input.eventData, amount: likeAmount };
+  static async handleEvent(input: SocketPayload<UpvoteModel>): Promise<object> {
+    const upvoteAmount = await dalVote.getAmountByPost(input.eventData.postID);
+    await postTrace.upvoteRemove(input, this.type);
+    return { upvote: input.eventData, amount: upvoteAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
@@ -225,8 +225,8 @@ const postEvents = [
   PostDelete,
   PostStartMove,
   PostStopMove,
-  PostLikeAdd,
-  PostLikeRemove,
+  PostUpvoteAdd,
+  PostUpvoteRemove,
   PostCommentAdd,
   PostTagAdd,
   PostTagRemove,

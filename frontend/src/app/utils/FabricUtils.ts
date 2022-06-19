@@ -141,9 +141,9 @@ export class FabricUtils {
     var children: fabric.Object[] = obj.getObjects();
     var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
     var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
-    var likeObj: any = children.filter((obj) => obj.name == 'like').pop();
-    var likeCountObj: any = children
-      .filter((obj) => obj.name == 'likeCount')
+    var upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
+    var upvoteCountObj: any = children
+      .filter((obj) => obj.name == 'upvoteCount')
       .pop();
     var commentObj: any = children.filter((obj) => obj.name == 'comment').pop();
     var commentCountObj: any = children
@@ -158,8 +158,8 @@ export class FabricUtils {
     var authorDelta = authorObj.height - oldAuthorHeight;
 
     descObj.set({ top: descObj.top + authorDelta, dirty: true });
-    likeObj.set({ top: likeObj.top + authorDelta, dirty: true });
-    likeCountObj.set({ top: likeCountObj.top + authorDelta, dirty: true });
+    upvoteObj.set({ top: upvoteObj.top + authorDelta, dirty: true });
+    upvoteCountObj.set({ top: upvoteCountObj.top + authorDelta, dirty: true });
     commentObj.set({ top: commentObj.top + authorDelta, dirty: true });
     commentCountObj.set({
       top: commentCountObj.top + authorDelta,
@@ -177,9 +177,9 @@ export class FabricUtils {
     var titleObj: any = children.filter((obj) => obj.name == 'title').pop();
     var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
     var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
-    var likeObj: any = children.filter((obj) => obj.name == 'like').pop();
-    var likeCountObj: any = children
-      .filter((obj) => obj.name == 'likeCount')
+    var upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
+    var upvoteCountObj: any = children
+      .filter((obj) => obj.name == 'upvoteCount')
       .pop();
     var commentObj: any = children.filter((obj) => obj.name == 'comment').pop();
     var commentCountObj: any = children
@@ -203,12 +203,12 @@ export class FabricUtils {
 
     authorObj.set({ top: authorObj.top + titleDelta, dirty: true });
     descObj.set({ top: descObj.top + titleDelta + authorDelta, dirty: true });
-    likeObj.set({
-      top: likeObj.top + titleDelta + authorDelta + descDelta,
+    upvoteObj.set({
+      top: upvoteObj.top + titleDelta + authorDelta + descDelta,
       dirty: true,
     });
-    likeCountObj.set({
-      top: likeCountObj.top + titleDelta + authorDelta + descDelta,
+    upvoteCountObj.set({
+      top: upvoteCountObj.top + titleDelta + authorDelta + descDelta,
       dirty: true,
     });
     commentObj.set({
@@ -280,12 +280,12 @@ export class FabricUtils {
     return fabricPost;
   }
 
-  setLikeCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    var likeCount: any = fabricObject
+  setUpvoteCount(fabricObject: fabric.Group, amount: number): fabric.Group {
+    var upvoteCount: any = fabricObject
       .getObjects()
-      .find((obj) => obj.name == 'likeCount');
+      .find((obj) => obj.name == 'upvoteCount');
 
-    likeCount.set({ text: amount.toString(), dirty: true });
+    upvoteCount.set({ text: amount.toString(), dirty: true });
 
     fabricObject.dirty = true;
     fabricObject.addWithUpdate();

@@ -85,14 +85,16 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         this.posts = this.posts.filter((post) => post.post.postID != id);
       }
     });
-    this.socketService.listen(SocketEvent.POST_LIKE_ADD, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.like.postID);
-      if (found) found.likes.push(result.like.likerID);
+    this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result: any) => {
+      let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
+      if (found) found.upvotes.push(result.upvote.voterID);
     });
-    this.socketService.listen(SocketEvent.POST_LIKE_REMOVE, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.like.postID);
+    this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result: any) => {
+      let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
       if (found)
-        found.likes = found.likes.filter((like) => like != result.like.likerID);
+        found.upvotes = found.upvotes.filter(
+          (upvote) => upvote != result.upvote.voterID
+        );
     });
     this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
       let found = this.posts.find(

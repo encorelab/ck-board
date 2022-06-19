@@ -9,8 +9,7 @@ import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import Comment from 'src/app/models/comment';
 import { CommentService } from 'src/app/services/comment.service';
 import User, { Role } from 'src/app/models/user';
-import { LikesService } from 'src/app/services/likes.service';
-import Like from 'src/app/models/like';
+import { UpvotesService } from 'src/app/services/upvotes.service';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
@@ -22,8 +21,9 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { UserService } from 'src/app/services/user.service';
-import Utils, { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
+import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
+import Upvote from 'src/app/models/upvote';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -65,14 +65,14 @@ export class PostModalComponent {
   newComment: string;
   comments: Comment[] = [];
 
-  isLiked: Like | null;
-  likes: Like[] = [];
+  isUpvoted: Upvote | null;
+  upvotes: Upvote[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
     public dialog: MatDialog,
     public commentService: CommentService,
-    public likesService: LikesService,
+    public upvotesService: UpvotesService,
     public postService: PostService,
     public bucketService: BucketService,
     public socketService: SocketService,
@@ -109,10 +109,10 @@ export class PostModalComponent {
         this.comments.push(comment);
       });
     });
-    this.likesService.getLikesByPost(data.post.postID).then((data) => {
-      data.forEach((like) => {
-        if (like.likerID == this.user.userID) this.isLiked = like;
-        this.likes.push(like);
+    this.upvotesService.getUpvotesByPost(data.post.postID).then((data) => {
+      data.forEach((upvote) => {
+        if (upvote.voterID == this.user.userID) this.isUpvoted = upvote;
+        this.upvotes.push(upvote);
       });
     });
     this.bucketService
@@ -240,25 +240,27 @@ export class PostModalComponent {
     this.comments.push(comment);
   }
 
-  async handleLikeClick() {
-    // if liking is locked just return (do nothing)
+  async handleUpvoteClick() {
+    // if upvoting is locked just return (do nothing)
     if (
       this.user.role == Role.STUDENT &&
-      !this.data.board.permissions.allowStudentLiking
+      !this.data.board.permissions.allowStudentUpvoting
     ) {
       return;
     }
 
-    if (this.isLiked) {
-      this.canvasService.unlike(this.user.userID, this.post.postID);
-      this.isLiked = null;
-      this.likes = this.likes.filter(
-        (like) => like.likerID != this.user.userID
+    if (this.isUpvoted) {
+      this.canvasService.unupvote(this.user.userID, this.post.postID);
+      this.isUpvoted = null;
+      this.upvotes = this.upvotes.filter(
+        (upvote) => upvote.voterID != this.user.userID
       );
     } else {
       this.canvasService
-        .like(this.user.userID, this.post)
-        .then((like) => (this.isLiked = like) && this.likes.push(like))
+        .upvote(this.user.userID, this.post)
+        .then(
+          (upvote) => (this.isUpvoted = upvote) && this.upvotes.push(upvote)
+        )
         .catch((e) => this.setError(getErrorMessage(e)));
     }
   }

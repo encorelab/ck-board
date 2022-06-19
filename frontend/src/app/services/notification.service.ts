@@ -35,10 +35,10 @@ export class NotificationService {
       .toPromise();
   }
 
-  buildLikeNotification(post: Post): Notification {
+  buildUpvoteNotification(post: Post): Notification {
     return {
       notificationID: generateUniqueID(),
-      text: this.userService.user?.username + ' liked "' + post.title + '"',
+      text: this.userService.user?.username + ' upvoted "' + post.title + '"',
       viewed: false,
       userID: post.userID,
       postID: post.postID,

@@ -3,7 +3,6 @@ import { fabric } from 'fabric';
 import { FabricPostComponent } from '../components/fabric-post/fabric-post.component';
 import { Board, BoardPermissions } from '../models/board';
 import Comment from '../models/comment';
-import Like from '../models/like';
 import Post, { PostType } from '../models/post';
 import { Tag } from '../models/tag';
 import { DistributionWorkflow } from '../models/workflow';
@@ -14,10 +13,11 @@ import { BoardService } from './board.service';
 import { BucketService } from './bucket.service';
 import { CommentService } from './comment.service';
 import { FileUploadService } from './fileUpload.service';
-import { LikesService } from './likes.service';
+import { UpvotesService } from './upvotes.service';
 import { NotificationService } from './notification.service';
 import { PostService } from './post.service';
 import { SocketService } from './socket.service';
+import Upvote from '../models/upvote';
 
 @Injectable({
   providedIn: 'root',
@@ -27,7 +27,7 @@ export class CanvasService {
     private socketService: SocketService,
     private fileUploadService: FileUploadService,
     private postService: PostService,
-    private likesService: LikesService,
+    private upvotesService: UpvotesService,
     private commentService: CommentService,
     private boardService: BoardService,
     private bucketService: BucketService,
@@ -58,52 +58,52 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.POST_CREATE, post);
   }
 
-  async like(userID: string, post: string | Post) {
+  async upvote(userID: string, post: string | Post) {
     if (typeof post === 'string') {
       post = await this.postService.get(post);
     }
 
-    const like: Like = {
-      likeID: generateUniqueID(),
-      likerID: userID,
+    const upvote: Upvote = {
+      upvoteID: generateUniqueID(),
+      voterID: userID,
       postID: post.postID,
       boardID: post.boardID,
     };
 
-    const result = await this.likesService.add(like);
+    const result = await this.upvotesService.add(upvote);
 
     if (post.type == PostType.BOARD) {
-      let existing = this.fabricUtils.getObjectFromId(result.like.postID);
-      existing = this.fabricUtils.setLikeCount(existing, result.count);
+      let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
+      existing = this.fabricUtils.setUpvoteCount(existing, result.count);
       this.fabricUtils._canvas.requestRenderAll();
     }
 
-    this.socketService.emit(SocketEvent.POST_LIKE_ADD, like);
+    this.socketService.emit(SocketEvent.POST_UPVOTE_ADD, upvote);
 
     if (post.userID !== userID) {
       this.socketService.emit(
         SocketEvent.NOTIFICATION_CREATE,
-        this.notificationService.buildLikeNotification(post)
+        this.notificationService.buildUpvoteNotification(post)
       );
     }
 
-    return result.like;
+    return result.upvote;
   }
 
-  async unlike(userID: string, post: string | Post) {
+  async unupvote(userID: string, post: string | Post) {
     if (typeof post === 'string') {
       post = await this.postService.get(post);
     }
 
-    const result = await this.likesService.remove(userID, post.postID);
+    const result = await this.upvotesService.remove(userID, post.postID);
 
     if (post.type == PostType.BOARD) {
-      let existing = this.fabricUtils.getObjectFromId(result.like.postID);
-      existing = this.fabricUtils.setLikeCount(existing, result.count);
+      let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
+      existing = this.fabricUtils.setUpvoteCount(existing, result.count);
       this.fabricUtils._canvas.requestRenderAll();
     }
 
-    this.socketService.emit(SocketEvent.POST_LIKE_REMOVE, result.like);
+    this.socketService.emit(SocketEvent.POST_UPVOTE_REMOVE, result.upvote);
   }
 
   async comment(comment: Comment) {

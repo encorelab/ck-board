@@ -75,25 +75,22 @@ router.delete("/:id", async (req, res) => {
     const deletedTags = await dalTag.removeByBoard(id)
     const deletedTrace = await dalTrace.removeByBoard(id)
     const deletedWorkflow = await dalWorkflow.removeByBoard(id)
-    const deletedProjectBucket = await dalProject.removeBoard(
+    const deletedProjectBoard = await dalProject.removeBoard(
       deletedBoard!.projectID,
       id
     );
-    console.log(deletedProjectBucket);
-    res
-      .status(200)
-      .json({
-        deletedBoard,
-        deletedPosts,
-        deletedLikes,
-        deletedComments,
-        deletedTags,
-        deletedTrace,
-        deletedWorkflow,
-        deletedBuckets,
-        deletedNotifications,
-        deletedProjectBucket,
-      });
+    res.status(200).json({
+      deletedBoard,
+      deletedPosts,
+      deletedLikes,
+      deletedComments,
+      deletedTags,
+      deletedTrace,
+      deletedWorkflow,
+      deletedBuckets,
+      deletedNotifications,
+      deletedProjectBoard,
+    });
   } else {
     res.status(404).json({"Error" : "Objected already deleted or not found!"})
   }

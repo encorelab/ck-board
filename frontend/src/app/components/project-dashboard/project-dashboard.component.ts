@@ -45,7 +45,6 @@ export class ProjectDashboardComponent implements OnInit {
     this.project = await this.projectService.get(this.projectID);
     for (let boardID of this.project.boards) {
       let board = await this.boardService.get(boardID);
-      console.log(board)
       this.boards.push(board);
     }
   }

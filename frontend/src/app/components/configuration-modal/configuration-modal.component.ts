@@ -52,7 +52,6 @@ export class ConfigurationModalComponent {
   ) {
     
     this.projectID = data.board.projectID;
-    console.log(this.projectID);
     this.boardID = data.board.boardID;
     this.boardName = data.board.name;
     this.currentBgImage = data.board.bgImage;
@@ -136,7 +135,6 @@ export class ConfigurationModalComponent {
 
   async deleteBoard() {
     const board = await this.boardService.remove(this.boardID)
-    console.log(board)
     if (board) {
       this.confirmationRef.close();
       this.dialogRef.close();

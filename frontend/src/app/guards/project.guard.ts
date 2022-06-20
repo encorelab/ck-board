@@ -49,7 +49,6 @@ export class ProjectGuard implements CanActivate {
       });
     }
     if (boardID) {
-      console.log(boardID)
       const isValidBoard = await this.isValidBoard(boardID)
       if (!isValidBoard) {
         this.router.navigate(['/error'], {
@@ -68,7 +67,6 @@ export class ProjectGuard implements CanActivate {
 
   async isValidBoard(boardID: string) {
     this.board = await this.boardService.get(boardID);
-    console.log(this.board)
     return this.board !== null;
   }
 

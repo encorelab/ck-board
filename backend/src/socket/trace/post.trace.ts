@@ -16,6 +16,9 @@ import { createTrace } from "./base.trace";
  */
 const create = async (input: SocketPayload<PostModel>, eventType: string) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const post = input.eventData;
   trace.event = {
     postID: post.postID,
@@ -36,6 +39,9 @@ const update = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const post = input.eventData;
   // find the last modified post trace
   const lastModifiedPost = await dalTrace.getLastModifiedPost(
@@ -65,6 +71,9 @@ const update = async (
  */
 const remove = async (input: SocketPayload<PostModel>, eventType: string) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const post = input.eventData;
   trace.event = {
     postID: post.postID,
@@ -81,6 +90,9 @@ const remove = async (input: SocketPayload<PostModel>, eventType: string) => {
  */
 const likeAdd = async (input: SocketPayload<LikeModel>, eventType: string) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const like = input.eventData;
   trace.event = {
     postID: like.postID,
@@ -100,6 +112,9 @@ const likeRemove = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const like = input.eventData;
   trace.event = {
     postID: like.postID,
@@ -119,6 +134,9 @@ const commentAdd = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const comment = input.eventData;
   trace.event = {
     postID: comment.postID,
@@ -139,6 +157,9 @@ const tagAdd = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const post = input.eventData.post;
   const tag = input.eventData.tag;
   trace.event = {
@@ -159,6 +180,9 @@ const tagRemove = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const post = input.eventData.post;
   const tag = input.eventData.tag;
   trace.event = {
@@ -179,6 +203,9 @@ const move = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
 
   trace.event = {
     postID: input.eventData.postID,
@@ -197,6 +224,9 @@ const move = async (
  */
 const read = async (input: SocketPayload<string>, eventType: string) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const postID = input.eventData;
   trace.event = {
     postID: postID,

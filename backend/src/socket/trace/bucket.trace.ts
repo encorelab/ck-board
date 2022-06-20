@@ -17,6 +17,9 @@ const movePostToBucket = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const bucketEvent = input.eventData;
   const bucket = await dalBucket.getById(bucketEvent.bucketID);
   if (!bucket) return;
@@ -45,6 +48,9 @@ const removePostFromBucket = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  if (!trace) {
+    return;
+  }
   const bucketEvent = input.eventData;
   const bucket = await dalBucket.getById(bucketEvent.bucketID);
   if (!bucket) return;

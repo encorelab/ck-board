@@ -1,73 +1,132 @@
 <h1 mat-dialog-title>Board Configuration</h1>
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
-    <mat-tab label="Board"> 
-      <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
+    <mat-tab label="Board">
+      <mat-form-field
+        appearance="outline"
+        style="width: 100%; margin-top: 20px"
+      >
         <mat-label>Board Name</mat-label>
-        <input matInput [(ngModel)]="boardName" #boardNameInput="ngModel" required>
+        <input
+          matInput
+          [(ngModel)]="boardName"
+          #boardNameInput="ngModel"
+          required
+        />
         <mat-error *ngIf="boardNameInput.invalid">
           Board Name is required.
         </mat-error>
       </mat-form-field>
-      <mat-label>Initial zoom: {{initialZoom}}%</mat-label>
-      <mat-slider class="slider"  min="0" max="200" step="5" [(ngModel)]="initialZoom" thumbLabel ></mat-slider>
+      <mat-label>Initial zoom: {{ initialZoom }}%</mat-label>
+      <mat-slider
+        class="slider"
+        min="0"
+        max="200"
+        step="5"
+        [(ngModel)]="initialZoom"
+        thumbLabel
+      ></mat-slider>
       <div class="image-form">
         <mat-chip (click)="compressFile()" color="primary" selected>
           <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
           Upload New Background Image
         </mat-chip>
-        <mat-chip *ngIf="currentBgImage && currentBgImage.url" color="warn" selected (click)="removeImage()">
+        <mat-chip
+          *ngIf="currentBgImage && currentBgImage.url"
+          color="warn"
+          selected
+          (click)="removeImage()"
+        >
           <mat-icon class="chip-icon">cancel</mat-icon>
           Remove Current Background Image
         </mat-chip>
       </div>
     </mat-tab>
     <mat-tab label="Task">
-      <mat-form-field appearance="outline" style="width:100%; margin-top: 20px;">
+      <mat-form-field
+        appearance="outline"
+        style="width: 100%; margin-top: 20px"
+      >
         <mat-label>Task Title</mat-label>
-        <input matInput [(ngModel)]="taskTitle" #taskTitleInput="ngModel">
-        <mat-hint class="mat-error" *ngIf="(taskMessage && !taskTitle.trim()) || (taskTitle && !taskTitle.trim())">
+        <input matInput [(ngModel)]="taskTitle" #taskTitleInput="ngModel" />
+        <mat-hint
+          class="mat-error"
+          *ngIf="
+            (taskMessage && !taskTitle.trim()) ||
+            (taskTitle && !taskTitle.trim())
+          "
+        >
           Task Title is required.
         </mat-hint>
       </mat-form-field>
-      <mat-form-field appearance="outline" style="width:100%">
+      <mat-form-field appearance="outline" style="width: 100%">
         <mat-label>Task Message</mat-label>
-        <textarea matInput rows="5" cols="40" [(ngModel)]='taskMessage'></textarea>
+        <textarea
+          matInput
+          rows="5"
+          cols="40"
+          [(ngModel)]="taskMessage"
+        ></textarea>
       </mat-form-field>
     </mat-tab>
     <mat-tab label="Permissions">
-      <h2 style="margin-top: 20px;">Post Features</h2>
+      <h2 style="margin-top: 20px">Tracing</h2>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny">Allow students to move any post</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.allowTracing"
+          >Allow tracing of board activity</mat-checkbox
+        >
+      </p>
+      <h2 style="margin-top: 20px">Post Features</h2>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny"
+          >Allow students to move any post</mat-checkbox
+        >
       </p>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.allowStudentEditAddDeletePost" >Allow students to create, edit, and delete posts</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentEditAddDeletePost"
+          >Allow students to create, edit, and delete posts</mat-checkbox
+        >
       </p>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.allowStudentLiking" >Allow students to like posts</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentLiking"
+          >Allow students to like posts</mat-checkbox
+        >
       </p>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.allowStudentCommenting" >Allow students to comment on posts</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentCommenting"
+          >Allow students to comment on posts</mat-checkbox
+        >
       </p>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.allowStudentTagging" >Allow students to tag posts</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.allowStudentTagging"
+          >Allow students to tag posts</mat-checkbox
+        >
       </p>
       <h2>Anonymization</h2>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.showAuthorNameStudent" >Show author names to students</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.showAuthorNameStudent"
+          >Show author names to students</mat-checkbox
+        >
       </p>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.showAuthorNameTeacher" >Show author names to teachers</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.showAuthorNameTeacher"
+          >Show author names to teachers</mat-checkbox
+        >
       </p>
       <h2>UI Elements</h2>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.showBucketStudent" >Show buckets to students</mat-checkbox>
+        <mat-checkbox [(ngModel)]="permissions.showBucketStudent"
+          >Show buckets to students</mat-checkbox
+        >
       </p>
     </mat-tab>
     <mat-tab label="Tags">
       <div class="tags-list">
         <mat-chip-list>
-          <mat-chip *ngFor="let tag of tags" [ngStyle]="{'background-color': tag.color}">
+          <mat-chip
+            *ngFor="let tag of tags"
+            [ngStyle]="{ 'background-color': tag.color }"
+          >
             {{ tag.name }}
             <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
           </mat-chip>
@@ -75,19 +134,44 @@
       </div>
       <mat-form-field appearance="fill">
         <mat-label>New Tag Name...</mat-label>
-        <input matInput [(ngModel)]="newTagText" (keyup.enter)="addTag()">
+        <input matInput [(ngModel)]="newTagText" (keyup.enter)="addTag()" />
         <button mat-icon-button matSuffix>
           <mat-icon [(colorPicker)]="newTagColor" [style.color]="newTagColor">
             circle
           </mat-icon>
         </button>
       </mat-form-field>
-      <button mat-button [disabled]="newTagText.length < 1" color="primary" (click)="addTag()">Add Tag</button>
-      <button mat-button [disabled]="newTagColor == tagDefaultColor" color="primary" (click)="resetColor()">Reset Color</button>
+      <button
+        mat-button
+        [disabled]="newTagText.length < 1"
+        color="primary"
+        (click)="addTag()"
+      >
+        Add Tag
+      </button>
+      <button
+        mat-button
+        [disabled]="newTagColor == tagDefaultColor"
+        color="primary"
+        (click)="resetColor()"
+      >
+        Reset Color
+      </button>
     </mat-tab>
   </mat-tab-group>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button (click)="handleDialogSubmit()" [disabled]="(taskMessage && !taskTitle.trim()) || (taskTitle && !taskTitle.trim()) || boardNameInput.invalid" cdkFocusInitial>Update Configuration!</button>
+  <button
+    mat-button
+    (click)="handleDialogSubmit()"
+    [disabled]="
+      (taskMessage && !taskTitle.trim()) ||
+      (taskTitle && !taskTitle.trim()) ||
+      boardNameInput.invalid
+    "
+    cdkFocusInitial
+  >
+    Update Configuration!
+  </button>
 </div>

@@ -1,3 +1,4 @@
+import { BoardModel } from "../../models/Board";
 import { TraceModel } from "../../models/trace";
 import dalBoard from "../../repository/dalBoard";
 import dalProject from "../../repository/dalProject";
@@ -6,7 +7,7 @@ import { TraceContext } from "../types/event.types";
 
 export const createTrace = async (
   traceContext: TraceContext
-): Promise<TraceModel> => {
+): Promise<TraceModel | null> => {
   const board = await dalBoard.getById(traceContext.boardID);
   const project = await dalProject.getById(traceContext.projectID);
   const user = await dalUser.findByUserID(traceContext.userID);
@@ -17,6 +18,10 @@ export const createTrace = async (
   ) {
     throw new Error("Invalid board project or user in Trace Context");
   } else {
+    // check tracing enabled
+    if (!board.permissions.allowTracing) {
+      return null;
+    }
     const trace: TraceModel = {
       projectID: project?.projectID,
       projectName: project.name,

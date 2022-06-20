@@ -1,4 +1,3 @@
-import { BoardModel } from "../../models/Board";
 import { TraceModel } from "../../models/trace";
 import dalBoard from "../../repository/dalBoard";
 import dalProject from "../../repository/dalProject";

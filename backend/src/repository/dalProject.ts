@@ -49,12 +49,26 @@ export const update = async (id: string, project: Partial<ProjectModel>) => {
   }
 };
 
+export const removeBoard = async (id: string, boardID: string) => {
+  try {
+    const updatedProject = await Project.findOneAndUpdate(
+      { projectID: id },
+      { $pull: { boards: boardID } },
+      { new: true }
+    );
+    return updatedProject;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, " "));
+  }
+}
+
 const dalProject = {
   getById,
   getByUserId,
   getByJoinCode,
   create,
   update,
+  removeBoard,
 };
 
 export default dalProject;

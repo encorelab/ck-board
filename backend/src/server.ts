@@ -34,7 +34,7 @@ const socket = Socket.Instance;
 socket.init();
 
 app.use("/api/projects", isAuthenticated, projects);
-app.use("/api/boards", isAuthenticated, boards);
+app.use("/api/boards", boards);
 app.use("/api/buckets", isAuthenticated, buckets);
 app.use("/api/workflows", isAuthenticated, workflows);
 app.use("/api/posts", isAuthenticated, posts);

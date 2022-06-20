@@ -47,12 +47,22 @@ export const update = async (id: string, board: Partial<BoardModel>) => {
   }
 };
 
+export const remove = async (id: string) => {
+  try {
+    const deletedBoard = await Board.findOneAndDelete({ boardID: id });
+    return deletedBoard;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, " "));
+  }
+}
+
 const dalBoard = {
   getById,
   getMultipleByIds,
   getByUserId,
   create,
   update,
+  remove,
 };
 
 export default dalBoard;

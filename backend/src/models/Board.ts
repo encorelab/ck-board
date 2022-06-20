@@ -46,6 +46,9 @@ export class PermissionsModel {
 @modelOptions({ schemaOptions: { collection: "boards", timestamps: true } })
 export class BoardModel {
   @prop({ required: true })
+  public projectID!: string;
+    
+  @prop({ required: true })
   public boardID!: string;
 
   @prop({ required: true })

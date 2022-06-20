@@ -47,11 +47,21 @@ export const remove = async (id: string) => {
   }
 };
 
+export const removeByBoard = async (boardID: string) => {
+  try {
+    const deletedNotifications = await Notification.deleteMany({ boardID: boardID });
+    return deletedNotifications;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, " "));
+  }
+};
+
 const dalNotification = {
   getByUserAndBoard,
   create,
   update,
   remove,
+  removeByBoard,
 };
 
 export default dalNotification;

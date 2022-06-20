@@ -44,12 +44,22 @@ export const remove = async (userID: string, postID: string) => {
   }
 };
 
+export const removeByBoard = async (boardID: string) => {
+  try {
+    const deletedLikes = await Like.deleteMany({ boardID: boardID });
+    return deletedLikes;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, " "));
+  }
+};
+
 const dalLike = {
   getByPost,
   getAmountByPost,
   isLikedBy,
   create,
-  remove
+  remove,
+  removeByBoard,
 };
 
 export default dalLike;

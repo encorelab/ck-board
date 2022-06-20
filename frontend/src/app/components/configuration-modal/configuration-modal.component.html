@@ -87,7 +87,18 @@
     </mat-tab>
   </mat-tab-group>
 </div>
+<ng-template #confirmation>
+  <h2 mat-dialog-title>Delete Board</h2>
+  <div mat-dialog-content>
+    <h4>This will permanently delete the board and all related content. Are you sure you want to do this?</h4>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button (click)="closeConfirmation()">Cancel</button>
+    <button mat-button (click)="deleteBoard()">Ok</button>
+  </div>
+</ng-template>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
   <button mat-button (click)="handleDialogSubmit()" [disabled]="(taskMessage && !taskTitle.trim()) || (taskTitle && !taskTitle.trim()) || boardNameInput.invalid" cdkFocusInitial>Update Configuration!</button>
+  <button mat-button style="color:red" (click)="openConfirmation()">Delete Board!</button>
 </div>

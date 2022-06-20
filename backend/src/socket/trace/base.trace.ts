@@ -1,4 +1,4 @@
-import { TraceModel } from "../../models/trace";
+import { TraceModel } from "../../models/Trace";
 import dalBoard from "../../repository/dalBoard";
 import dalProject from "../../repository/dalProject";
 import dalUser from "../../repository/dalUser";

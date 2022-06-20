@@ -17,6 +17,12 @@ export type PostTagEventInput = {
   tag: TagModel;
 };
 
+export type PostStopMoveEventInput = {
+  postID: string;
+  left: number;
+  top: number;
+};
+
 export type BucketEventInput = {
   bucketID: string;
   posts: string[];

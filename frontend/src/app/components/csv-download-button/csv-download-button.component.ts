@@ -2,6 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { parseAsync } from 'json2csv';
 import { TraceService } from 'src/app/services/trace.service';
 import traceDefaults from './traceDefaults';
+import * as dayjs from 'dayjs';
+import { ProjectService } from 'src/app/services/project.service';
+import { Project } from 'src/app/models/project';
 
 @Component({
   selector: 'app-csv-download-button',
@@ -10,22 +13,31 @@ import traceDefaults from './traceDefaults';
 })
 export class CsvDownloadButtonComponent implements OnInit {
   @Input() projectID: string;
+  project: Project;
 
-  private static readonly CSV_FILENAME: string = 'CK_Trace.csv';
+  constructor(
+    private traceService: TraceService,
+    private projectService: ProjectService
+  ) {}
 
-  constructor(private traceService: TraceService) {}
-
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.projectService.get(this.projectID).then((project) => {
+      this.project = project;
+    });
+  }
   /**
    * Converts csv string to csv file an downloads it
    * @param csvContent Csv string to convert and download
    */
   downloadCSV(csvContent: string): void {
-    const encodedUri = encodeURIComponent(csvContent);
-    // create a dummy link element
-    const link = document.createElement('a');
+    let encodedUri = encodeURIComponent(csvContent);
+    // create a dummy link element to store csvContent
+    let link = document.createElement('a');
     link.setAttribute('href', 'data:attachment/csv,' + encodedUri);
-    link.setAttribute('download', CsvDownloadButtonComponent.CSV_FILENAME);
+    const dateString = dayjs().format('YYYY-MM-DD [at] hh.mm.ss A');
+    let fileName = 'CK_Trace ' + this.project.name + ' ' + dateString + '.csv';
+    fileName = fileName.replace(/\s/g, '_');
+    link.setAttribute('download', fileName);
     document.body.appendChild(link);
     // click created link to dowload csv
     link.click();

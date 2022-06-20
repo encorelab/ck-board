@@ -1,4 +1,4 @@
-import { Tag } from '../models/post';
+import { Tag } from '../models/tag';
 
 export enum Mode {
   PAN,
@@ -25,6 +25,7 @@ export enum SocketEvent {
   POST_READ = 'POST_READ',
 
   BUCKET_ADD_POST = 'BUCKET_ADD_POST',
+  BUCKET_REMOVE_POST = 'BUCKET_REMOVE_POST',
 
   BOARD_NAME_UPDATE = 'BOARD_NAME_UDPATE',
   BOARD_IMAGE_UPDATE = 'BOARD_IMAGE_UPDATE',

@@ -27,14 +27,15 @@ router.post("/", async (req, res) => {
 
 router.post("/:id", async (req, res) => {
   const id = req.params.id;
-  const { title, desc, tags, fabricObject } = req.body;
+  const { type, title, desc, tags, displayAttributes } = req.body;
 
   const post: Partial<PostModel> = Object.assign(
     {},
+    type === null ? null : { type },
     title === null ? null : { title },
     desc === null ? null : { desc },
     tags === null ? null : { tags },
-    fabricObject === null ? null : { fabricObject }
+    displayAttributes === null ? null : { displayAttributes }
   );
 
   const updatedPost = await dalPost.update(id, post);

@@ -51,7 +51,7 @@ export class ConfigurationModalComponent {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     
-    this.projectID = data.board.projectID;
+    this.projectID = data.projectID;
     this.boardID = data.board.boardID;
     this.boardName = data.board.name;
     this.currentBgImage = data.board.bgImage;

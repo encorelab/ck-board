@@ -1,10 +1,10 @@
-import { Router } from "express";
-import { CommentModel } from "../models/Comment";
-import dalComment from "../repository/dalComment";
+import { Router } from 'express';
+import { CommentModel } from '../models/Comment';
+import dalComment from '../repository/dalComment';
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   const comment: CommentModel = req.body.comment;
 
   const savedComment = await dalComment.create(comment);
@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
   });
 });
 
-router.get("/posts/:id", async (req, res) => {
+router.get('/posts/:id', async (req, res) => {
   const id = req.params.id;
 
   const comments = await dalComment.getByPost(id);

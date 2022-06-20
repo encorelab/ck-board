@@ -3,14 +3,14 @@ import {
   Workflow,
   WorkflowType,
   DistributionWorkflow,
-} from "../models/Workflow";
+} from '../models/Workflow';
 
 export const getAllByBoardId = async (id: string) => {
   try {
     const workflows = await Workflow.find({ boardID: id });
     return workflows;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -20,7 +20,7 @@ export const getByBoardId = async (type: WorkflowType, id: string) => {
       return await DistributionWorkflow.find({ boardID: id });
     }
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -30,7 +30,7 @@ export const create = async (type: WorkflowType, workflow: WorkflowModel) => {
       return await DistributionWorkflow.create(workflow);
     }
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -48,7 +48,7 @@ export const update = async (
       );
     }
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -58,7 +58,7 @@ export const remove = async (type: WorkflowType, id: string) => {
       return await DistributionWorkflow.findOneAndDelete({ workflowID: id });
     }
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 

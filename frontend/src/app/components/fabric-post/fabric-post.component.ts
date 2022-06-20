@@ -26,7 +26,7 @@ export class FabricPostComponent extends fabric.Group {
     @Inject(Object) post: Post,
     @Inject(Object) options?: PostOptions
   ) {
-    var title = new fabric.Textbox(post.title, {
+    const title = new fabric.Textbox(post.title, {
       name: 'title',
       width: 280,
       left: 18,
@@ -38,7 +38,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var author = new fabric.Textbox(post.author, {
+    const author = new fabric.Textbox(post.author, {
       name: 'author',
       width: 300,
       left: 18,
@@ -49,7 +49,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var desc = new fabric.Textbox(
+    const desc = new fabric.Textbox(
       post.desc.length > 200 ? post.desc.substr(0, 200) + '...' : post.desc,
       {
         name: 'desc',
@@ -79,21 +79,24 @@ export class FabricPostComponent extends fabric.Group {
       opacity: options && options.comments > 0 ? 1 : 0,
     });
 
-    var commentCount = new fabric.Textbox(options?.comments.toString() ?? '0', {
-      name: 'commentCount',
-      width: 55,
-      top:
-        title.getScaledHeight() +
-        author.getScaledHeight() +
-        desc.getScaledHeight() +
-        90,
-      left: (commentButton.left ?? 0) + 28,
-      fontSize: 20,
-      fontFamily: 'Helvetica',
-      fill: '#555555',
-      splitByGrapheme: true,
-      opacity: options && options.comments > 0 ? 1 : 0,
-    });
+    const commentCount = new fabric.Textbox(
+      options?.comments.toString() ?? '0',
+      {
+        name: 'commentCount',
+        width: 55,
+        top:
+          title.getScaledHeight() +
+          author.getScaledHeight() +
+          desc.getScaledHeight() +
+          90,
+        left: (commentButton.left ?? 0) + 28,
+        fontSize: 20,
+        fontFamily: 'Helvetica',
+        fill: '#555555',
+        splitByGrapheme: true,
+        opacity: options && options.comments > 0 ? 1 : 0,
+      }
+    );
 
     const likeButton = new fabric.Textbox('👍🏼', {
       name: 'like',
@@ -110,7 +113,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var likeCount = new fabric.Textbox(options?.likes.toString() ?? '0', {
+    const likeCount = new fabric.Textbox(options?.likes.toString() ?? '0', {
       name: 'likeCount',
       width: 55,
       top:
@@ -127,7 +130,7 @@ export class FabricPostComponent extends fabric.Group {
 
     const { borderWidth, borderColor, fillColor } = post.displayAttributes!;
 
-    var content = new fabric.Rect({
+    const content = new fabric.Rect({
       name: 'content',
       top: 40,
       width: 330,

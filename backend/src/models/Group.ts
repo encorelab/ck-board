@@ -1,6 +1,6 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 
-@modelOptions({ schemaOptions: { collection: "groups", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: 'groups', timestamps: true } })
 export class GroupModel {
   @prop({ required: true })
   public groupID!: string;

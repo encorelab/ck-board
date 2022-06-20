@@ -174,7 +174,7 @@ export class PostModalComponent {
     this.editingTitle = this.title;
     this.editingDesc = this.desc;
 
-    var update: Partial<Post> = {
+    const update: Partial<Post> = {
       postID: this.post.postID,
       title: this.title,
       desc: this.desc,

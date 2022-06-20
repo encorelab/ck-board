@@ -109,7 +109,7 @@ export class CanvasService {
     const tags = [...post.tags, tag];
     const update: Partial<Post> = { tags };
 
-    let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
+    const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
     if (!fabricObject) {
       return await this.postService.update(post.postID, { tags: tags });
     }
@@ -139,7 +139,7 @@ export class CanvasService {
     post.tags = post.tags.filter((t) => t.name != tag.name);
     const update: Partial<Post> = { tags: post.tags };
 
-    let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
+    const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
     if (!fabricObject) {
       return await this.postService.update(post.postID, update);
     }

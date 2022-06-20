@@ -1,4 +1,4 @@
-import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
 
 export class TagSpecialAttributes {
   @prop({ required: false })
@@ -14,7 +14,7 @@ export class TagSpecialAttributes {
   public opacity?: number;
 }
 
-@modelOptions({ schemaOptions: { collection: "tags" } })
+@modelOptions({ schemaOptions: { collection: 'tags' } })
 export class TagModel {
   @prop({ required: false })
   public boardID!: string;

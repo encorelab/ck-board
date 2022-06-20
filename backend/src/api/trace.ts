@@ -1,9 +1,9 @@
-import { Router } from "express";
-import dalTrace from "../repository/dalTrace";
+import { Router } from 'express';
+import dalTrace from '../repository/dalTrace';
 
 const router = Router();
 
-router.get("/:projectID", async (req, res) => {
+router.get('/:projectID', async (req, res) => {
   try {
     const traces = await dalTrace.getAllTrace(req.params.projectID);
     res.status(200).json(traces);

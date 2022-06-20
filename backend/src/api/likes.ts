@@ -1,10 +1,10 @@
-import { Router } from "express";
-import { LikeModel } from "../models/Like";
-import dalLike from "../repository/dalLike";
+import { Router } from 'express';
+import { LikeModel } from '../models/Like';
+import dalLike from '../repository/dalLike';
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   const like: LikeModel = req.body.like;
 
   const savedLike = await dalLike.create(like);
@@ -16,21 +16,21 @@ router.post("/", async (req, res) => {
   });
 });
 
-router.get("/posts/:id", async (req, res) => {
+router.get('/posts/:id', async (req, res) => {
   const id = req.params.id;
 
   const likes = await dalLike.getByPost(id);
   res.json(likes);
 });
 
-router.get("/posts/:postID/users/:userID", async (req, res) => {
+router.get('/posts/:postID/users/:userID', async (req, res) => {
   const { postID, userID } = req.params;
 
   const like = await dalLike.isLikedBy(postID, userID);
   res.json(like);
 });
 
-router.delete("/", async (req, res) => {
+router.delete('/', async (req, res) => {
   const postID = req.query.post as string;
   const userID = req.query.user as string;
 

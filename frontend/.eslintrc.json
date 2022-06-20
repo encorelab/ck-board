@@ -4,9 +4,6 @@
   "plugins": [
     "@typescript-eslint"
   ],
-  "ignorePatterns": [
-    "projects/**/*"
-  ],
   "overrides": [
     {
       "files": [
@@ -26,6 +23,13 @@
         "plugin:@typescript-eslint/recommended"
       ],
       "rules": {
+        "@typescript-eslint/quotes": [
+          "error",
+          "single",
+          {
+            "allowTemplateLiterals": true
+          }
+        ],
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-var-requires": "off",
         "no-empty-function": "off",

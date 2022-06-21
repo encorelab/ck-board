@@ -88,7 +88,7 @@
       <mat-card-content>
           {{ comment.comment }}
           <button mat-icon-button *ngIf="showEditDelete && canEditDelete" 
-          (click)="commentDelete(comment.commentID)">
+          (click)="deleteComment(comment)">
             <mat-icon>delete</mat-icon>
           </button> 
       </mat-card-content> 

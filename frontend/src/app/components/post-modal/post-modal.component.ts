@@ -204,24 +204,6 @@ export class PostModalComponent {
     });
   }
 
-  async commentDelete(commentID: string) {
-    this.dialog.open(ConfirmModalComponent, {
-      width: '500px',
-      data: {
-        title: 'Confirmation',
-        message: 'Are you sure you want to delete this comment?',
-         handleConfirm: () => {
-          // this.socketService.emit(SocketEvent.COMMENT_DELETE, commentID);
-          this.commentService.remove(commentID)
-
-          this.dialogRef.close();
-        
-
-        },
-      },
-    });
-  }
-
   async addTag(event, tagOption) {
     event.stopPropagation();
 
@@ -255,6 +237,27 @@ export class PostModalComponent {
     this.canvasService.comment(comment);
     this.newComment = '';
     this.comments.push(comment);
+  }
+
+  async deleteComment(comment: Comment) {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to delete this comment?',
+         handleConfirm: () => {
+          // this.socketService.emit(SocketEvent.COMMENT_DELETE, commentID);
+          this.canvasService.deleteComment(comment.commentID, comment.postID)
+          // this.commentService.remove(commentID)
+          // this.dialogRef.close();
+          let ind = this.comments.indexOf(comment)
+          if (ind != -1){
+            this.comments.splice(ind, 1)
+          }
+        },
+      },
+    });
+   
   }
 
   handleLikeClick() {

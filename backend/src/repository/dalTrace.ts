@@ -1,5 +1,5 @@
 import { SocketEvent } from "../constants";
-import Trace, { TraceModel } from "../models/trace";
+import Trace, { TraceModel } from "../models/Trace";
 
 const create = async (trace: TraceModel) => {
   const createdTrace = await Trace.create(trace);

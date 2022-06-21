@@ -248,8 +248,6 @@ export class PostModalComponent {
          handleConfirm: () => {
           // this.socketService.emit(SocketEvent.COMMENT_DELETE, commentID);
           this.canvasService.deleteComment(comment.commentID, comment.postID)
-          // this.commentService.remove(commentID)
-          // this.dialogRef.close();
           let ind = this.comments.indexOf(comment)
           if (ind != -1){
             this.comments.splice(ind, 1)

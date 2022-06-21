@@ -107,9 +107,11 @@ export class CanvasService {
 
   async deleteComment(commentID: string, postID: string){
     const result = await this.commentService.remove(commentID)
-    let existing = this.fabricUtils.getObjectFromId(postID);
-    existing = this.fabricUtils.setCommentCount(existing, result.count);
-    this.fabricUtils._canvas.requestRenderAll();
+    if (parseInt(result.count) != -1) {
+      let existing = this.fabricUtils.getObjectFromId(postID);
+      existing = this.fabricUtils.setCommentCount(existing, result.count);
+      this.fabricUtils._canvas.requestRenderAll();
+    }
   }
 
   async tag(post: Post, tag: Tag): Promise<Post> {

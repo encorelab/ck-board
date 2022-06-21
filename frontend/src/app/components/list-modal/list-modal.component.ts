@@ -1,13 +1,14 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import Post, { Tag } from 'src/app/models/post';
+import Post from 'src/app/models/post';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from '../../utils/converters';
+import { Tag } from 'src/app/models/tag';
 
 @Component({
   selector: 'app-list-modal',
@@ -17,11 +18,11 @@ import Converters from '../../utils/converters';
 export class ListModalComponent implements OnInit, OnDestroy {
   board: Board;
 
-  loading: boolean = true;
-  loadingMore: boolean = false;
+  loading = true;
+  loadingMore = false;
 
   posts: HTMLPost[];
-  page: number = 0;
+  page = 0;
 
   activeFilters: Tag[] = [];
   filterOptions: Tag[] = [];
@@ -53,40 +54,40 @@ export class ListModalComponent implements OnInit, OnDestroy {
       this.filterPosts();
     });
     this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) found.post = post;
     });
     this.socketService.listen(SocketEvent.POST_LIKE_ADD, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.like.postID);
+      const found = this.posts.find((p) => p.post.postID == result.like.postID);
       if (found) found.likes.push(result.like.likerID);
     });
     this.socketService.listen(SocketEvent.POST_LIKE_REMOVE, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.like.postID);
+      const found = this.posts.find((p) => p.post.postID == result.like.postID);
       if (found)
         found.likes = found.likes.filter((like) => like != result.like.likerID);
     });
     this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
-      let found = this.posts.find(
+      const found = this.posts.find(
         (p) => p.post.postID == result.comment.postID
       );
       if (found) found.comments += 1;
     });
     this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
-      let found = this.posts.find((p) => p.post.postID == id);
+      const found = this.posts.find((p) => p.post.postID == id);
       if (found) {
         this.posts = this.posts.filter((post) => post.post.postID != id);
         this.filterPosts();
       }
     });
     this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) {
         found.post = post;
         this.filterPosts();
       }
     });
     this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post, _tag }) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) {
         found.post = post;
         this.filterPosts();

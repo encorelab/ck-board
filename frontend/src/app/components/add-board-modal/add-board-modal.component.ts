@@ -4,7 +4,7 @@ import { UserService } from 'src/app/services/user.service';
 import { Project } from 'src/app/models/project';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
-import { Tag } from 'src/app/models/post';
+import { Tag } from 'src/app/models/tag';
 import Utils from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
@@ -22,24 +22,24 @@ export class AddBoardModalComponent implements OnInit {
 
   permissions: BoardPermissions;
 
-  boardName: string = '';
+  boardName = '';
 
   bgImgURL: any = null;
   bgImgSettings: ImageSettings;
 
-  taskTitle: string = '';
-  taskMessage: string = '';
+  taskTitle = '';
+  taskMessage = '';
 
   tags: Tag[] = [];
   defaultTags: Tag[];
 
-  newTagText: string = '';
+  newTagText = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
 
-  initialZoom: number = 100;
+  initialZoom = 100;
 
   projects: Project[];
-  selectedProject: string = '';
+  selectedProject = '';
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,

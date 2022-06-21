@@ -3,7 +3,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
-import Post, { PostType, Tag } from 'src/app/models/post';
+import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
+import { Tag } from 'src/app/models/tag';
 import User from 'src/app/models/user';
 import { CanvasService } from 'src/app/services/canvas.service';
 import {
@@ -21,7 +22,7 @@ export interface AddPostDialog {
   user: User;
   board: Board;
   bucket?: Bucket;
-  spawnPosition: { left: Number; top: Number };
+  spawnPosition: { left: number; top: number };
   onComplete?: (post: Post) => any;
 }
 
@@ -34,8 +35,8 @@ export class AddPostComponent {
   user: User;
   board: Board;
 
-  title: string = '';
-  message: string = '';
+  title = '';
+  message = '';
 
   tags: Tag[] = [];
   tagOptions: Tag[] = [];
@@ -80,23 +81,30 @@ export class AddPostComponent {
       (tag) => tag.name == NEEDS_ATTENTION_TAG.name
     );
 
-    var fabricPost = new FabricPostComponent({
+    const displayAttributes: DisplayAttributes = {
+      position: {
+        left: this.data.spawnPosition.left,
+        top: this.data.spawnPosition.top,
+      },
+      lock: !this.board.permissions.allowStudentMoveAny,
+      borderColor: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : undefined,
+      borderWidth: containsAttentionTag
+        ? POST_TAGGED_BORDER_THICKNESS
+        : undefined,
+    };
+
+    const post: Post = {
       postID: Utils.generateUniqueID(),
+      userID: this.user.userID,
       boardID: this.board.boardID,
+      type: PostType.BOARD,
       title: this.title,
       author: this.user.username,
-      authorID: this.user.userID,
       desc: this.message,
       tags: this.tags,
-      lock: !this.board.permissions.allowStudentMoveAny,
-      left: this.data.spawnPosition.left,
-      top: this.data.spawnPosition.top,
-      color: POST_COLOR,
-      stroke: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : null,
-      strokeWidth: containsAttentionTag ? POST_TAGGED_BORDER_THICKNESS : null,
-    });
+      displayAttributes: displayAttributes,
+    };
 
-    const post: Post = this.fabricUtils.fromFabricPost(fabricPost);
     await this.canvasService.createPost(post);
     return post;
   }
@@ -105,12 +113,14 @@ export class AddPostComponent {
     const boardID: string = this.data.bucket!.bucketID;
     const post: Post = {
       postID: Utils.generateUniqueID(),
+      userID: this.user.userID,
+      boardID: this.board.boardID,
+      author: this.user.username,
+      type: PostType.BUCKET,
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      userID: this.user.userID,
-      boardID: this.board.boardID,
-      fabricObject: null,
+      displayAttributes: null,
     };
 
     return await this.canvasService.createBucketPost(boardID, post);

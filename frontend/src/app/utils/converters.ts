@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HTMLPost } from '../components/html-post/html-post.component';
-import Post from '../models/post';
+import Post, { PostType } from '../models/post';
 import { BoardService } from '../services/board.service';
 import { CommentService } from '../services/comment.service';
 import { LikesService } from '../services/likes.service';
@@ -31,7 +31,7 @@ export default class Converters {
       author: author!.username,
       likes: likes.map((like) => like.likerID),
       comments: comments.length,
-      bucketOnly: post.fabricObject == null,
+      bucketOnly: post.type == PostType.BUCKET,
     };
   }
 

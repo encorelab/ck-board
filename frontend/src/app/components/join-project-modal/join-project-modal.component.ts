@@ -10,9 +10,9 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./join-project-modal.component.scss'],
 })
 export class JoinProjectModalComponent implements OnInit {
-  inputCode: string = '';
-  isError: boolean = false;
-  errorMessage: string = '';
+  inputCode = '';
+  isError = false;
+  errorMessage = '';
 
   constructor(
     public dialogRef: MatDialogRef<JoinProjectModalComponent>,

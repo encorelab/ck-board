@@ -1,9 +1,13 @@
-import { CommentModel } from "../../models/Comment";
-import { LikeModel } from "../../models/Like";
-import { PostModel } from "../../models/Post";
-import dalTrace from "../../repository/dalTrace";
-import { PostTagEventInput, SocketPayload } from "../types/event.types";
-import { createTrace } from "./base.trace";
+import { CommentModel } from '../../models/Comment';
+import { LikeModel } from '../../models/Like';
+import { PostModel } from '../../models/Post';
+import dalTrace from '../../repository/dalTrace';
+import {
+  PostStopMoveEventInput,
+  PostTagEventInput,
+  SocketPayload,
+} from '../types/event.types';
+import { createTrace } from './base.trace';
 /**
  * Creates a trace for post creation
  * @param input
@@ -28,7 +32,7 @@ const create = async (input: SocketPayload<PostModel>, eventType: string) => {
  * @returns
  */
 const update = async (
-  input: SocketPayload<Partial<PostModel> & Pick<PostModel, "postID">>,
+  input: SocketPayload<Partial<PostModel> & Pick<PostModel, 'postID'>>,
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
@@ -170,19 +174,16 @@ const tagRemove = async (
  * @param eventType the associated SocketEvent
  * @returns
  */
-const move = async (input: SocketPayload<PostModel>, eventType: string) => {
-  const post = input.eventData;
-  if (!post.fabricObject) {
-    return;
-  }
+const move = async (
+  input: SocketPayload<PostStopMoveEventInput>,
+  eventType: string
+) => {
   const trace = await createTrace(input.trace);
-  // parse fabric object to get location information
-  let parsed = JSON.parse(post.fabricObject);
 
   trace.event = {
-    postID: post.postID,
-    postModifiedLocationX: parsed.left,
-    postModifiedLocationY: parsed.top,
+    postID: input.eventData.postID,
+    postModifiedLocationX: input.eventData.left,
+    postModifiedLocationY: input.eventData.top,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);

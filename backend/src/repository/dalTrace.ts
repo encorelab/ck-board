@@ -1,14 +1,16 @@
-import { SocketEvent } from "../constants";
-import Trace, { TraceModel } from "../models/Trace";
+import Trace, { TraceModel } from '../models/Trace';
 
 export const create = async (trace: TraceModel) => {
   const createdTrace = await Trace.create(trace);
   return createdTrace;
 };
 
-export const getLastModifiedPost = async (postID: string, eventType: string) => {
+export const getLastModifiedPost = async (
+  postID: string,
+  eventType: string
+) => {
   const lastModifiedPost = await Trace.find({
-    "event.postID": postID,
+    'event.postID': postID,
     eventType: eventType,
   })
     .sort({ updatedAt: -1 })
@@ -24,12 +26,12 @@ export const getAllTrace = async (projectID: string) => {
 
 export const removeByBoard = async (boardID: string) => {
   try {
-    const deletedTrace = await Trace.deleteMany({ boardID: boardID})
+    const deletedTrace = await Trace.deleteMany({ boardID: boardID });
     return deletedTrace;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "))
+    throw new Error(JSON.stringify(err, null, ' '));
   }
-}
+};
 
 const dalTrace = {
   create,

@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import { ProjectModel } from '../models/Project';
 import dalProject from '../repository/dalProject';
 
@@ -13,12 +13,13 @@ router.post('/', async (req, res) => {
 
 router.post('/:id', async (req, res) => {
   const id = req.params.id;
-  const {name, members, boards} = req.body;
+  const { name, members, boards } = req.body;
 
-  const project: Partial<ProjectModel> = Object.assign({},
-    name === null ? null : {name},
-    members === null ? null : {members},
-    boards === null ? null : {boards},
+  const project: Partial<ProjectModel> = Object.assign(
+    {},
+    name === null ? null : { name },
+    members === null ? null : { members },
+    boards === null ? null : { boards }
   );
 
   const updatedProject = await dalProject.update(id, project);

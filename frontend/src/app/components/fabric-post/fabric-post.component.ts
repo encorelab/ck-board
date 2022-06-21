@@ -1,6 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { fabric } from 'fabric';
+import Post from 'src/app/models/post';
 import {
+  POST_COLOR,
   POST_DEFAULT_BORDER,
   POST_DEFAULT_BORDER_THICKNESS,
 } from 'src/app/utils/constants';
@@ -9,14 +11,22 @@ const AUTHOR_OFFSET = 65;
 const DESC_OFFSET = 80;
 const CONTENT_EXTRA_HEIGHT = 55;
 
+export interface PostOptions {
+  likes: number;
+  comments: number;
+}
+
 @Component({
   selector: 'app-fabric-post',
   templateUrl: './fabric-post.component.html',
   styleUrls: ['./fabric-post.component.scss'],
 })
 export class FabricPostComponent extends fabric.Group {
-  constructor(@Inject(Object) options: any) {
-    var title = new fabric.Textbox(options.title, {
+  constructor(
+    @Inject(Object) post: Post,
+    @Inject(Object) options?: PostOptions
+  ) {
+    const title = new fabric.Textbox(post.title, {
       name: 'title',
       width: 280,
       left: 18,
@@ -28,7 +38,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var author = new fabric.Textbox(options.author, {
+    const author = new fabric.Textbox(post.author, {
       name: 'author',
       width: 300,
       left: 18,
@@ -39,10 +49,8 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var desc = new fabric.Textbox(
-      options.desc.length > 200
-        ? options.desc.substr(0, 200) + '...'
-        : options.desc,
+    const desc = new fabric.Textbox(
+      post.desc.length > 200 ? post.desc.substr(0, 200) + '...' : post.desc,
       {
         name: 'desc',
         width: 300,
@@ -55,7 +63,7 @@ export class FabricPostComponent extends fabric.Group {
       }
     );
 
-    var commentButton = new fabric.Textbox('💬', {
+    const commentButton = new fabric.Textbox('💬', {
       name: 'comment',
       width: 55,
       top:
@@ -68,26 +76,29 @@ export class FabricPostComponent extends fabric.Group {
       fontFamily: 'Helvetica',
       fill: '#000000',
       splitByGrapheme: true,
-      opacity: 0,
+      opacity: options && options.comments > 0 ? 1 : 0,
     });
 
-    var commentCount = new fabric.Textbox('0', {
-      name: 'commentCount',
-      width: 55,
-      top:
-        title.getScaledHeight() +
-        author.getScaledHeight() +
-        desc.getScaledHeight() +
-        90,
-      left: (commentButton.left ?? 0) + 28,
-      fontSize: 20,
-      fontFamily: 'Helvetica',
-      fill: '#555555',
-      splitByGrapheme: true,
-      opacity: 0,
-    });
+    const commentCount = new fabric.Textbox(
+      options?.comments.toString() ?? '0',
+      {
+        name: 'commentCount',
+        width: 55,
+        top:
+          title.getScaledHeight() +
+          author.getScaledHeight() +
+          desc.getScaledHeight() +
+          90,
+        left: (commentButton.left ?? 0) + 28,
+        fontSize: 20,
+        fontFamily: 'Helvetica',
+        fill: '#555555',
+        splitByGrapheme: true,
+        opacity: options && options.comments > 0 ? 1 : 0,
+      }
+    );
 
-    var likeButton = new fabric.Textbox('👍🏼', {
+    const likeButton = new fabric.Textbox('👍🏼', {
       name: 'like',
       width: 55,
       top:
@@ -102,7 +113,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var likeCount = new fabric.Textbox('0', {
+    const likeCount = new fabric.Textbox(options?.likes.toString() ?? '0', {
       name: 'likeCount',
       width: 55,
       top:
@@ -117,7 +128,9 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var content = new fabric.Rect({
+    const { borderWidth, borderColor, fillColor } = post.displayAttributes!;
+
+    const content = new fabric.Rect({
       name: 'content',
       top: 40,
       width: 330,
@@ -127,30 +140,33 @@ export class FabricPostComponent extends fabric.Group {
         desc.getScaledHeight() +
         commentButton.getScaledHeight() +
         CONTENT_EXTRA_HEIGHT,
-      fill: options.color,
+      fill: fillColor ?? POST_COLOR,
       rx: 20,
       ry: 20,
-      strokeWidth: options.strokeWidth ?? POST_DEFAULT_BORDER_THICKNESS,
-      stroke: options.stroke ?? POST_DEFAULT_BORDER,
+      strokeWidth: borderWidth ?? POST_DEFAULT_BORDER_THICKNESS,
+      stroke: borderColor ?? POST_DEFAULT_BORDER,
     });
+
+    const position = {
+      left: post.displayAttributes?.position
+        ? post.displayAttributes?.position.left
+        : 0,
+      top: post.displayAttributes?.position
+        ? post.displayAttributes?.position.top
+        : 0,
+    };
 
     const groupOptions = {
       name: 'post',
-      left: options.left - 330 / 2,
-      top: options.top - (content.height ?? 0) / 2,
+      postID: post.postID,
+      left: position.left,
+      top: position.top,
       hasControls: false,
       transparentCorners: false,
       cornerSize: 7,
-      lockMovementX: options.lock,
-      lockMovementY: options.lock,
-      title: options.title,
-      desc: options.desc,
-      author: options.author,
-      tags: options.tags,
+      lockMovementX: post.displayAttributes?.lock ?? false,
+      lockMovementY: post.displayAttributes?.lock ?? false,
       subTargetCheck: true,
-      authorID: options.authorID,
-      boardID: options.boardID,
-      postID: options.postID,
     };
 
     super(

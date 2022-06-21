@@ -1,5 +1,5 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
-import { TagModel } from "./Tag";
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { TagModel } from './Tag';
 
 export class TaskModel {
   @prop({ required: false })
@@ -43,11 +43,11 @@ export class PermissionsModel {
   public showBucketStudent!: boolean;
 }
 
-@modelOptions({ schemaOptions: { collection: "boards", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })
 export class BoardModel {
   @prop({ required: true })
   public projectID!: string;
-    
+
   @prop({ required: true })
   public boardID!: string;
 

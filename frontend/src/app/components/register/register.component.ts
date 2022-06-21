@@ -35,7 +35,7 @@ export class RegisterComponent {
     Validators.minLength(12),
     Validators.maxLength(30),
   ]);
-  invalidCredentials: boolean = false;
+  invalidCredentials = false;
   matcher = new MyErrorStateMatcher();
 
   constructor(public userService: UserService, private router: Router) {

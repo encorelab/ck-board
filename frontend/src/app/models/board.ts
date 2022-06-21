@@ -1,5 +1,5 @@
 import { ImageSettings } from '../utils/FabricUtils';
-import { Tag } from './post';
+import { Tag } from './tag';
 
 export class BoardBackgroundImage {
   url: string;
@@ -31,5 +31,5 @@ export class Board {
   permissions: BoardPermissions;
   members: string[];
   tags: Tag[];
-  initialZoom: number = 100;
+  initialZoom = 100;
 }

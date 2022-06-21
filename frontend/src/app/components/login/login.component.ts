@@ -14,7 +14,7 @@ export class LoginComponent {
 
   matcher = new MyErrorStateMatcher();
 
-  invalidCredentials: boolean = false;
+  invalidCredentials = false;
 
   constructor(private userService: UserService, private router: Router) {
     if (this.userService.loggedIn) this.router.navigate(['/dashboard']);

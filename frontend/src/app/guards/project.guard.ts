@@ -49,7 +49,7 @@ export class ProjectGuard implements CanActivate {
       });
     }
     if (boardID) {
-      const isValidBoard = await this.isValidBoard(boardID)
+      const isValidBoard = await this.isValidBoard(boardID);
       if (!isValidBoard) {
         this.router.navigate(['/error'], {
           state: { code: 404, message: 'This board does not exist!' },

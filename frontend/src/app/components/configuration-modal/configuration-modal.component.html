@@ -20,6 +20,9 @@
           <mat-icon class="chip-icon">cancel</mat-icon>
           Remove Current Background Image
         </mat-chip>
+        <button mat-raised-button color="warn" (click)="openConfirmation()">
+          Delete Board!
+        </button>
       </div>
     </mat-tab>
     <mat-tab label="Task">
@@ -100,5 +103,4 @@
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
   <button mat-button (click)="handleDialogSubmit()" [disabled]="(taskMessage && !taskTitle.trim()) || (taskTitle && !taskTitle.trim()) || boardNameInput.invalid" cdkFocusInitial>Update Configuration!</button>
-  <button mat-button style="color:red" (click)="openConfirmation()">Delete Board!</button>
 </div>

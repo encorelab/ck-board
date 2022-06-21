@@ -1,7 +1,7 @@
-import { Server, Socket } from "socket.io";
-import { SocketEvent } from "../../constants";
-import bucketTrace from "../trace/bucket.trace";
-import { BucketEventInput, SocketPayload } from "../types/event.types";
+import { Server, Socket } from 'socket.io';
+import { SocketEvent } from '../../constants';
+import bucketTrace from '../trace/bucket.trace';
+import { BucketEventInput, SocketPayload } from '../types/event.types';
 
 class BucketAddPost {
   static type: SocketEvent = SocketEvent.BUCKET_ADD_POST;

@@ -1,8 +1,8 @@
-import { TraceModel } from '../../models/trace';
-import dalBoard from '../../repository/dalBoard';
-import dalProject from '../../repository/dalProject';
-import dalUser from '../../repository/dalUser';
-import { TraceContext } from '../types/event.types';
+import { TraceModel } from "../../models/Trace";
+import dalBoard from "../../repository/dalBoard";
+import dalProject from "../../repository/dalProject";
+import dalUser from "../../repository/dalUser";
+import { TraceContext } from "../types/event.types";
 
 export const createTrace = async (
   traceContext: TraceContext

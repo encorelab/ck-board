@@ -1,4 +1,3 @@
-import { SocketEvent } from "../constants";
 import Trace, { TraceModel } from "../models/Trace";
 
 

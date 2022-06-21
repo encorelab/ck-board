@@ -93,7 +93,7 @@ router.delete("/distribution/:id", async (req, res) => {
 router.post("/task/:id", async (req, res) => {
   const id = req.params.id;
   const { name, active, source, destinations, prompt, 
-    requiredActions, optionalActions, assignedGroups, postsPerGroup } = req.body;
+    requiredActions, assignedGroups, postsPerGroup } = req.body;
 
   const workflow: Partial<TaskWorkflowModel> = Object.assign(
     {},
@@ -103,7 +103,6 @@ router.post("/task/:id", async (req, res) => {
     destinations === null ? null : { destinations },
     prompt === null ? null : { prompt },
     requiredActions === null ? null : { requiredActions },
-    optionalActions === null ? null : { optionalActions },
     assignedGroups === null ? null : { assignedGroups },
     postsPerGroup === null ? null : { postsPerGroup },
 

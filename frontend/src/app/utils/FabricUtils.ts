@@ -321,6 +321,11 @@ export class FabricUtils {
       commentCount.set({ opacity: 1, dirty: true });
       comment.set({ opacity: 1, dirty: true });
     }
+    else {
+      commentCount.set({ opacity: 0, dirty: true });
+      comment.set({ opacity: 0, dirty: true });
+
+    }
 
     fabricObject.dirty = true;
     fabricObject.addWithUpdate();

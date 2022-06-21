@@ -23,4 +23,15 @@ router.get('/posts/:id', async (req, res) => {
   res.json(comments);
 });
 
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const deletedComment = await dalComment.remove(id)
+  if (deletedComment) {
+    res.status(200).json({deletedComment,});
+  } else {
+    res.status(404).json({"Error" : "Objected already deleted or not found!"})
+  }
+});
+
 export default router;

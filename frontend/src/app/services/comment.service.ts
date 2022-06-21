@@ -16,4 +16,8 @@ export class CommentService {
   add(comment: Comment): any {
     return this.http.post('comments/', {comment}).toPromise();
   }
+
+  remove(id: string) {
+    return this.http.delete<Comment>('comments/' + id).toPromise();
+  }
 } 

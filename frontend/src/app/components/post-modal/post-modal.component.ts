@@ -204,6 +204,24 @@ export class PostModalComponent {
     });
   }
 
+  async commentDelete(commentID: string) {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to delete this comment?',
+         handleConfirm: () => {
+          // this.socketService.emit(SocketEvent.COMMENT_DELETE, commentID);
+          this.commentService.remove(commentID)
+
+          this.dialogRef.close();
+        
+
+        },
+      },
+    });
+  }
+
   async addTag(event, tagOption) {
     event.stopPropagation();
 

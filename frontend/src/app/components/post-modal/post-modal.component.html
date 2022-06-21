@@ -87,7 +87,11 @@
       <mat-card-title style="font-size: small;">{{ comment.author }}</mat-card-title>
       <mat-card-content>
           {{ comment.comment }}
-      </mat-card-content>
+          <button mat-icon-button *ngIf="showEditDelete && canEditDelete" 
+          (click)="commentDelete(comment.commentID)">
+            <mat-icon>delete</mat-icon>
+          </button> 
+      </mat-card-content> 
     </mat-card>
   </div>
   <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments && canStudentComment">

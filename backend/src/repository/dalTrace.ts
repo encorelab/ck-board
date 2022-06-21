@@ -1,5 +1,4 @@
-import Trace, { TraceModel } from "../models/Trace";
-
+import Trace, { TraceModel } from '../models/Trace';
 
 const create = async (trace: TraceModel) => {
   const createdTrace = await Trace.create(trace);

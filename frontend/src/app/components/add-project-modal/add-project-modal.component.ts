@@ -9,7 +9,7 @@ import Utils from 'src/app/utils/Utils';
   styleUrls: ['./add-project-modal.component.scss'],
 })
 export class AddProjectModalComponent implements OnInit {
-  name: string = '';
+  name = '';
 
   constructor(
     public dialogRef: MatDialogRef<AddProjectModalComponent>,

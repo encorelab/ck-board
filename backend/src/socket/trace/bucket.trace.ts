@@ -1,8 +1,8 @@
-import { BucketModel } from "../../models/Bucket";
-import dalBucket from "../../repository/dalBucket";
-import dalTrace from "../../repository/dalTrace";
-import { BucketEventInput, SocketPayload } from "../types/event.types";
-import { createTrace } from "./base.trace";
+import { BucketModel } from '../../models/Bucket';
+import dalBucket from '../../repository/dalBucket';
+import dalTrace from '../../repository/dalTrace';
+import { BucketEventInput, SocketPayload } from '../types/event.types';
+import { createTrace } from './base.trace';
 
 /**
  * Creates a trace for each post moved to bucket
@@ -21,7 +21,7 @@ const movePostToBucket = async (
   const bucket = await dalBucket.getById(bucketEvent.bucketID);
   if (!bucket) return;
   // create a trace for each postID in posts
-  let tracePromises = bucketEvent.posts.map(async (postID) => {
+  const tracePromises = bucketEvent.posts.map(async (postID) => {
     trace.event = {
       postMovedToBucketID: bucket.bucketID,
       postMovedToBucketName: bucket.name,
@@ -49,7 +49,7 @@ const removePostFromBucket = async (
   const bucket = await dalBucket.getById(bucketEvent.bucketID);
   if (!bucket) return;
   // create a trace for each postID in posts
-  let tracePromises = bucketEvent.posts.map(async (postID) => {
+  const tracePromises = bucketEvent.posts.map(async (postID) => {
     trace.event = {
       postRemovedFromBucketID: bucket.bucketID,
       postRemovedFromBucketName: bucket.name,

@@ -1,25 +1,25 @@
-import { Server, Socket } from "socket.io";
+import { Server, Socket } from 'socket.io';
 import {
   POST_COLOR,
   POST_DEFAULT_OPACITY,
   POST_MOVING_FILL,
   POST_MOVING_OPACITY,
   SocketEvent,
-} from "../../constants";
-import { BucketModel } from "../../models/Bucket";
-import { CommentModel } from "../../models/Comment";
-import { LikeModel } from "../../models/Like";
-import { PostModel } from "../../models/Post";
-import dalBucket from "../../repository/dalBucket";
-import dalComment from "../../repository/dalComment";
-import dalLike from "../../repository/dalLike";
-import dalPost from "../../repository/dalPost";
-import postTrace from "../trace/post.trace";
+} from '../../constants';
+import { BucketModel } from '../../models/Bucket';
+import { CommentModel } from '../../models/Comment';
+import { LikeModel } from '../../models/Like';
+import { PostModel } from '../../models/Post';
+import dalBucket from '../../repository/dalBucket';
+import dalComment from '../../repository/dalComment';
+import dalLike from '../../repository/dalLike';
+import dalPost from '../../repository/dalPost';
+import postTrace from '../trace/post.trace';
 import {
   PostStopMoveEventInput,
   PostTagEventInput,
   SocketPayload,
-} from "../types/event.types";
+} from '../types/event.types';
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
@@ -40,7 +40,7 @@ class PostUpdate {
   static type: SocketEvent = SocketEvent.POST_UPDATE;
 
   static async handleEvent(
-    input: SocketPayload<Partial<PostModel> & Pick<PostModel, "postID">>
+    input: SocketPayload<Partial<PostModel> & Pick<PostModel, 'postID'>>
   ): Promise<PostModel | null> {
     const post = await dalPost.update(input.eventData.postID, input.eventData);
     await postTrace.update(input, this.type);

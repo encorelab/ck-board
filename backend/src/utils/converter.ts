@@ -1,10 +1,10 @@
-import { BucketModel } from "../models/Bucket";
-import { PostModel } from "../models/Post";
-import dalPost from "../repository/dalPost";
+import { BucketModel } from '../models/Bucket';
+import { PostModel } from '../models/Post';
+import dalPost from '../repository/dalPost';
 
 export const convertPostFromID = async (postID: string): Promise<PostModel> => {
   const post = await dalPost.getById(postID);
-  if (post == null) throw new Error("500");
+  if (post == null) throw new Error('500');
 
   return post;
 };

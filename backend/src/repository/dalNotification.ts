@@ -1,4 +1,4 @@
-import Notification, { NotificationModel } from "../models/Notification";
+import Notification, { NotificationModel } from '../models/Notification';
 
 export const getByUserAndBoard = async (user: string, board: string) => {
   try {
@@ -8,7 +8,7 @@ export const getByUserAndBoard = async (user: string, board: string) => {
     });
     return notifications;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -17,7 +17,7 @@ export const create = async (notification: NotificationModel) => {
     const savedNotification = await Notification.create(notification);
     return savedNotification;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -35,7 +35,7 @@ export const update = async (
     );
     return updatedNotif;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -43,7 +43,7 @@ export const remove = async (id: string) => {
   try {
     return await Notification.findOneAndDelete({ notificationID: id });
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 

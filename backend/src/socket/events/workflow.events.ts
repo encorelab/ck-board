@@ -1,9 +1,9 @@
-import { Server, Socket } from "socket.io";
-import { run, runDistributionWorkflow } from "../../agents/workflow.agent";
-import { SocketEvent } from "../../constants";
-import { DistributionWorkflowModel, WorkflowType } from "../../models/Workflow";
-import dalWorkflow from "../../repository/dalWorkflow";
-import { SocketPayload } from "../types/event.types";
+import { Server, Socket } from 'socket.io';
+import { run, runDistributionWorkflow } from '../../agents/workflow.agent';
+import { SocketEvent } from '../../constants';
+import { DistributionWorkflowModel, WorkflowType } from '../../models/Workflow';
+import dalWorkflow from '../../repository/dalWorkflow';
+import { SocketPayload } from '../types/event.types';
 
 class WorkflowRunDistribution {
   static type: SocketEvent = SocketEvent.WORKFLOW_RUN_DISTRIBUTION;

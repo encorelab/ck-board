@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import { LikeModel } from '../models/Like';
 import dalLike from '../repository/dalLike';
 
@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
 
   res.json({
     like: savedLike,
-    count: amount
+    count: amount,
   });
 });
 
@@ -24,7 +24,7 @@ router.get('/posts/:id', async (req, res) => {
 });
 
 router.get('/posts/:postID/users/:userID', async (req, res) => {
-  const {postID, userID} = req.params;
+  const { postID, userID } = req.params;
 
   const like = await dalLike.isLikedBy(postID, userID);
   res.json(like);
@@ -42,10 +42,10 @@ router.delete('/', async (req, res) => {
 
   if (likeRemoved) {
     const amount = await dalLike.getAmountByPost(likeRemoved.postID);
-    return res.json({like: likeRemoved, count: amount});
+    return res.json({ like: likeRemoved, count: amount });
   }
-  
+
   res.status(404).end();
-})
+});
 
 export default router;

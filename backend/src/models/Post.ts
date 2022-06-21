@@ -1,9 +1,9 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
-import { TagModel } from "./Tag";
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { TagModel } from './Tag';
 
 export enum PostType {
-  BOARD = "BOARD",
-  BUCKET = "BUCKET",
+  BOARD = 'BOARD',
+  BUCKET = 'BUCKET',
 }
 
 export class Position {
@@ -34,7 +34,7 @@ export class DisplayAttributes {
   public opacity?: number;
 }
 
-@modelOptions({ schemaOptions: { collection: "posts", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: 'posts', timestamps: true } })
 export class PostModel {
   @prop({ required: true })
   public postID!: string;

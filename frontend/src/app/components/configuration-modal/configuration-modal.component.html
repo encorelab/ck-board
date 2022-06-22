@@ -20,9 +20,11 @@
           <mat-icon class="chip-icon">cancel</mat-icon>
           Remove Current Background Image
         </mat-chip>
-        <mat-chip mat-raised-button color="warn" (click)="openConfirmation()" selected>
-          <mat-icon class="chip-icon">delete</mat-icon>
+        <mat-chip mat-raised-button color="warn" (click)="openConfirmation()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
+          <span style="width: 100%;text-align: center;">
           Delete Board
+          </span>
         </mat-chip>
       </div>
     </mat-tab>

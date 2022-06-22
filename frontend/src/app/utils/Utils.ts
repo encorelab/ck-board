@@ -25,6 +25,10 @@ export const shuffle = (array) => {
   }
 };
 
+export const numDigits = (x: number) => {
+  return ((Math.log((x ^ (x >> 31)) - (x >> 31)) * Math.LOG10E) | 0) + 1;
+};
+
 export const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) return error.message;
   if (error instanceof HttpErrorResponse) return error.error;

@@ -14,6 +14,7 @@ import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
 import { POST_COLOR } from 'src/app/utils/constants';
 import { getErrorMessage } from 'src/app/utils/Utils';
+import Upvote from 'src/app/models/upvote';
 
 export interface HTMLPost {
   /* Board which contains this post */
@@ -25,8 +26,8 @@ export interface HTMLPost {
   /* Author name */
   author: string;
 
-  /* Array of user IDs who've upvoted the post */
-  upvotes: string[];
+  /* Array of post's upvotes */
+  upvotes: Upvote[];
 
   /* Number of comments */
   comments: number;
@@ -53,7 +54,6 @@ export class HtmlPostComponent implements OnInit {
 
   postColor: string = POST_COLOR;
 
-  isUpvoted: Boolean = true;
   showUsername: boolean = false;
 
   error: string = '';
@@ -71,7 +71,6 @@ export class HtmlPostComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.userService.user!;
-    this.isUpvoted = this.post.upvotes.includes(this.user.userID);
   }
 
   openPostDialog() {
@@ -99,25 +98,25 @@ export class HtmlPostComponent implements OnInit {
   async handleUpvote(event) {
     event.stopPropagation();
 
-    if (this.isUpvoted) {
-      this.canvasService.unupvote(this.user.userID, this.post.post);
-      this.isUpvoted = false;
-      this.post.upvotes = this.post.upvotes.filter(
-        (upvote) => upvote !== this.user.userID
-      );
-    } else {
-      this.canvasService
-        .upvote(this.user.userID, this.post.post)
-        .then(
-          () =>
-            (this.isUpvoted = true) && this.post.upvotes.push(this.user.userID)
-        )
-        .catch((e) => this.setError(getErrorMessage(e)));
-    }
+    this.canvasService
+      .upvote(this.user.userID, this.post.post)
+      .catch((e) => this.setError(getErrorMessage(e)));
+  }
+
+  async handleDownvote(event) {
+    event.stopPropagation();
+
+    this.canvasService
+      .unupvote(this.user.userID, this.post.post)
+      .catch((e) => this.setError(getErrorMessage(e)));
   }
 
   movePostToBoard(postID: string) {
     this.movePostToBoardEvent.next(postID);
+  }
+
+  isUpvoted(): Boolean {
+    return this.post.upvotes.some((u) => u.voterID == this.user.userID);
   }
 
   setError(error: string) {

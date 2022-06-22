@@ -28,12 +28,17 @@
       </mat-chip-list>
       <p class="content">{{ post.post.desc }}</p>
     </mat-card-content>
-    <mat-card-actions>
-      <button mat-button [ngStyle]="isUpvoted && {'color': '#4f47ff'}" (click)="handleUpvote($event)">
+    <mat-card-actions style="display: flex">
+      <button mat-icon-button [ngStyle]="isUpvoted() && {'color': '#4f47ff'}" (click)="handleUpvote($event)">
         <mat-icon>arrow_upward</mat-icon>
+      </button>
+      <button mat-icon-button [ngStyle]="isUpvoted() && {'color': '#4f47ff'}">
         {{ post.upvotes.length }}
       </button>
-      <button mat-button>
+      <button mat-icon-button (click)="handleDownvote($event)">
+        <mat-icon>arrow_downward</mat-icon>
+      </button>
+      <button mat-button style="margin-left: auto;">
         <mat-icon>comment</mat-icon>
         {{ post.comments }}
       </button>

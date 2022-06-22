@@ -13,11 +13,9 @@ import {
   AddPostDialog,
 } from 'src/app/components/add-post-modal/add-post.component';
 import Post, { PostType, DisplayAttributes } from 'src/app/models/post';
-import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import {
   NEEDS_ATTENTION_TAG,
-  POST_COLOR,
   POST_TAGGED_BORDER_THICKNESS,
   SocketEvent,
 } from 'src/app/utils/constants';
@@ -87,13 +85,13 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     });
     this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result: any) => {
       let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
-      if (found) found.upvotes.push(result.upvote.voterID);
+      if (found) found.upvotes.push(result.upvote);
     });
     this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result: any) => {
       let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
       if (found)
         found.upvotes = found.upvotes.filter(
-          (upvote) => upvote != result.upvote.voterID
+          (upvote) => upvote.upvoteID != result.upvote.upvoteID
         );
     });
     this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {

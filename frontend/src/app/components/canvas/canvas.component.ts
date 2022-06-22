@@ -77,6 +77,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   showAddPost: boolean = true;
   lockArrowKeys: boolean = false;
 
+  upvoteCounter: number = 0;
+
   unsubListeners: Subscription[] = [];
 
   constructor(
@@ -211,12 +213,18 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handlePostUpvoteAddEvent = (result: any) => {
+    if (result.upvote.voterID == this.user.userID) this.upvoteCounter -= 1;
+
     let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
-    existing = this.fabricUtils.setUpvoteCount(existing, result.amount);
-    this.canvas.requestRenderAll();
+    if (existing) {
+      existing = this.fabricUtils.setUpvoteCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostUpvoteRemoveEvent = (result: any) => {
+    if (result.upvote.voterID == this.user.userID) this.upvoteCounter += 1;
+
     let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
     existing = this.fabricUtils.setUpvoteCount(existing, result.amount);
     this.canvas.requestRenderAll();
@@ -316,6 +324,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.boardService.get(this.boardID).then((board) => {
         if (board) {
           this.board = board;
+          this.upvotesService
+            .getByBoardAndUser(this.boardID, this.user.userID)
+            .then((votes) => {
+              this.upvoteCounter = this.board.upvoteLimit - votes.length;
+            });
           this.configureZoom();
           this.fabricUtils.setBackgroundImage(
             board.bgImage?.url,
@@ -489,33 +502,33 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initUpvoteClickListener() {
     this.canvas.on('mouse:down', this.handleUpvoteClick);
+    this.canvas.on('mouse:down', this.handleDownvoteClick);
 
     return () => {
       this.canvas.off('mouse:down', this.handleUpvoteClick);
+      this.canvas.off('mouse:down', this.handleDownvoteClick);
     };
   }
 
   handleUpvoteClick = async (e: fabric.IEvent) => {
     var post: any = e.target;
     var upvoteButton = e.subTargets?.find((o) => o.name == 'upvote');
-    let isStudent = this.user.role == Role.STUDENT;
-    let isTeacher = this.user.role == Role.TEACHER;
-    let studentHasPerm =
-      isStudent && this.board.permissions.allowStudentUpvoting;
-    if (upvoteButton && (studentHasPerm || isTeacher)) {
-      const isUpvoted = await this.upvotesService.isUpvotedBy(
-        post.postID,
-        this.user.userID
-      );
-      if (!isUpvoted) {
-        this.canvasService
-          .upvote(this.user.userID, post.postID)
-          .catch((e) => this.snackbarService.queueSnackbar(getErrorMessage(e)));
-      } else {
-        this.canvasService
-          .unupvote(this.user.userID, isUpvoted.postID)
-          .catch((e) => this.snackbarService.queueSnackbar(getErrorMessage(e)));
-      }
+
+    if (upvoteButton && this._votingAllowed()) {
+      this.canvasService
+        .upvote(this.user.userID, post.postID)
+        .catch((e) => this.snackbarService.queueSnackbar(getErrorMessage(e)));
+    }
+  };
+
+  handleDownvoteClick = async (e: fabric.IEvent) => {
+    var post: any = e.target;
+    var upvoteButton = e.subTargets?.find((o) => o.name == 'downvote');
+
+    if (upvoteButton && this._votingAllowed()) {
+      this.canvasService
+        .unupvote(this.user.userID, post.postID)
+        .catch((e) => this.snackbarService.queueSnackbar(getErrorMessage(e)));
     }
   };
 
@@ -534,12 +547,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const mouseUpHandler = (e: fabric.IEvent) => {
       var obj: any = e.target;
 
-      var upvotePress = e.subTargets?.find((o) => o.name == 'upvote');
+      var votePress = e.subTargets?.find(
+        (o) => o.name == 'upvote' || o.name == 'downvote'
+      );
       var isDragEnd = isDragging;
       isDragging = false;
       isMouseDown = false;
 
-      if (!isDragEnd && !upvotePress && obj?.name == 'post') {
+      if (!isDragEnd && !votePress && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this._openDialog(PostModalComponent, {
           user: this.user,
@@ -844,6 +859,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const allowStudentMovement = this.board.permissions.allowStudentMoveAny;
 
     return isTeacher || (isStudent && allowStudentMovement);
+  }
+
+  private _votingAllowed() {
+    let isStudent = this.user.role == Role.STUDENT;
+    let isTeacher = this.user.role == Role.TEACHER;
+    let allowStudent = isStudent && this.board.permissions.allowStudentUpvoting;
+
+    return allowStudent || isTeacher;
   }
 
   async ngOnDestroy() {

@@ -25,8 +25,11 @@
     </app-toolbar>
     <div class="canvas-area">
       <canvas id="canvas"></canvas>
-      <div class="nav">
+      <div class="top-nav">
         <a routerLink="{{'/project/'+projectID}}">Back to Project</a>
+      </div>
+      <div class="bottom-nav">
+        <a>{{ upvoteCounter }} upvotes remaining!</a>
       </div>
       <div class="toolSection">
           <div class="toolField">

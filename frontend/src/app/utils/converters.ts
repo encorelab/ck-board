@@ -27,7 +27,7 @@ export default class Converters {
       board: board,
       post: post,
       author: author!.username,
-      upvotes: upvotes.map((upvote) => upvote.voterID),
+      upvotes: upvotes,
       comments: comments.length,
       bucketOnly: post.type == PostType.BUCKET,
     };

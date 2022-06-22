@@ -127,7 +127,7 @@ class PostUpvoteAdd {
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 
@@ -141,7 +141,7 @@ class PostUpvoteRemove {
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 

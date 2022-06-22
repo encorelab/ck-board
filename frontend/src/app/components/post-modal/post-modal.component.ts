@@ -65,8 +65,10 @@ export class PostModalComponent {
   newComment: string;
   comments: Comment[] = [];
 
-  isUpvoted: Upvote | null;
   upvotes: Upvote[] = [];
+
+  expandedUpvotesView: boolean = false;
+  expandedUpvotes: any[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
@@ -111,7 +113,6 @@ export class PostModalComponent {
     });
     this.upvotesService.getUpvotesByPost(data.post.postID).then((data) => {
       data.forEach((upvote) => {
-        if (upvote.voterID == this.user.userID) this.isUpvoted = upvote;
         this.upvotes.push(upvote);
       });
     });
@@ -241,31 +242,63 @@ export class PostModalComponent {
   }
 
   async handleUpvoteClick() {
-    // if upvoting is locked just return (do nothing)
-    if (
-      this.user.role == Role.STUDENT &&
-      !this.data.board.permissions.allowStudentUpvoting
-    ) {
-      return;
-    }
+    if (this._votingLocked())
+      return this._setError(getErrorMessage('Voting is disabled!'));
 
-    if (this.isUpvoted) {
-      this.canvasService.unupvote(this.user.userID, this.post.postID);
-      this.isUpvoted = null;
-      this.upvotes = this.upvotes.filter(
-        (upvote) => upvote.voterID != this.user.userID
-      );
-    } else {
-      this.canvasService
-        .upvote(this.user.userID, this.post)
-        .then(
-          (upvote) => (this.isUpvoted = upvote) && this.upvotes.push(upvote)
-        )
-        .catch((e) => this.setError(getErrorMessage(e)));
-    }
+    this.canvasService
+      .upvote(this.user.userID, this.post)
+      .then((upvote) => this.upvotes.push(upvote))
+      .catch((e) => this._setError(getErrorMessage(e)));
   }
 
-  setError(error: string) {
+  async handleDownvoteClick() {
+    if (this._votingLocked())
+      return this._setError(getErrorMessage('Voting is disabled!'));
+
+    this.canvasService
+      .unupvote(this.user.userID, this.post.postID)
+      .then((upvote: Upvote) => {
+        this.upvotes = this.upvotes.filter(
+          (u) => u.upvoteID != upvote.upvoteID
+        );
+      })
+      .catch((e) => this._setError(getErrorMessage(e)));
+  }
+
+  isUpvoted(): Boolean {
+    return this.upvotes.some((u) => u.voterID === this.user.userID);
+  }
+
+  async gotoUpvotesView() {
+    this.expandedUpvotes = await this.upvotesService.getUpvotesByPost(
+      this.post.postID,
+      'grouped'
+    );
+
+    if (
+      !this.expandedUpvotes ||
+      Object.keys(this.expandedUpvotes).length == 0
+    ) {
+      return this._setError('No upvotes found!');
+    }
+
+    this.dialogRef.updateSize('30vw');
+    this.expandedUpvotesView = true;
+  }
+
+  gotoPostView() {
+    this.dialogRef.updateSize('95vw');
+    this.expandedUpvotesView = false;
+  }
+
+  private _votingLocked(): boolean {
+    return (
+      this.user.role == Role.STUDENT &&
+      !this.data.board.permissions.allowStudentUpvoting
+    );
+  }
+
+  private _setError(error: string) {
     this.error = error;
     setTimeout(() => (this.error = ''), 5000);
   }

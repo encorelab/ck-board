@@ -8,8 +8,21 @@ import Upvote from '../models/upvote';
 export class UpvotesService {
   constructor(private http: HttpClient) {}
 
-  getUpvotesByPost(postID: string): Promise<Upvote[]> {
-    return this.http.get<Upvote[]>('upvotes/posts/' + postID).toPromise();
+  getUpvotesByPost(
+    postID: string,
+    representation = 'default'
+  ): Promise<Upvote[]> {
+    return this.http
+      .get<Upvote[]>(
+        'upvotes/posts/' + postID + '?representation=' + representation
+      )
+      .toPromise();
+  }
+
+  getByBoardAndUser(boardID: string, userID: string): Promise<Upvote[]> {
+    return this.http
+      .get<Upvote[]>('upvotes/boards/' + boardID + '/users/' + userID)
+      .toPromise();
   }
 
   isUpvotedBy(postID: string, voterID: string): Promise<Upvote | null> {

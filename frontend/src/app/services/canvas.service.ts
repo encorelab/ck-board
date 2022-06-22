@@ -72,12 +72,6 @@ export class CanvasService {
 
     const result = await this.upvotesService.add(upvote);
 
-    if (post.type == PostType.BOARD) {
-      let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
-      existing = this.fabricUtils.setUpvoteCount(existing, result.count);
-      this.fabricUtils._canvas.requestRenderAll();
-    }
-
     this.socketService.emit(SocketEvent.POST_UPVOTE_ADD, upvote);
 
     if (post.userID !== userID) {
@@ -90,20 +84,16 @@ export class CanvasService {
     return result.upvote;
   }
 
-  async unupvote(userID: string, post: string | Post) {
+  async unupvote(userID: string, post: string | Post): Promise<Upvote> {
     if (typeof post === 'string') {
       post = await this.postService.get(post);
     }
 
     const result = await this.upvotesService.remove(userID, post.postID);
 
-    if (post.type == PostType.BOARD) {
-      let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
-      existing = this.fabricUtils.setUpvoteCount(existing, result.count);
-      this.fabricUtils._canvas.requestRenderAll();
-    }
-
     this.socketService.emit(SocketEvent.POST_UPVOTE_REMOVE, result.upvote);
+
+    return result.upvote;
   }
 
   async comment(comment: Comment) {

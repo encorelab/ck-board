@@ -59,13 +59,13 @@ export class ListModalComponent implements OnInit, OnDestroy {
     });
     this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result: any) => {
       let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
-      if (found) found.upvotes.push(result.upvote.voterID);
+      if (found) found.upvotes.push(result.upvote);
     });
     this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result: any) => {
       let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
       if (found)
         found.upvotes = found.upvotes.filter(
-          (upvote) => upvote != result.upvote.voterID
+          (upvote) => upvote.upvoteID != result.upvote.upvoteID
         );
     });
     this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {

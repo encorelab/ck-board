@@ -8,6 +8,7 @@ import {
   POST_DEFAULT_BORDER_THICKNESS,
   POST_DEFAULT_OPACITY,
 } from './constants';
+import { numDigits } from './Utils';
 
 export interface ImageSettings {
   top: number;
@@ -280,25 +281,42 @@ export class FabricUtils {
     return fabricPost;
   }
 
+  /** 
+  Sets the number of upvotes on a fabric post.
+
+	When going from n-digit -> (n+1)-digit upvotes, the 
+  button position will be adjusted to accomodate for extra space. 
+
+	@param fabricObject the post
+  @param amount new amount of upvotes
+	@returns updated fabric post
+	*/
   setUpvoteCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    var upvoteCount: any = fabricObject
-      .getObjects()
-      .find((obj) => obj.name == 'upvoteCount');
+    var upvoteCount: any = this.getChildFromGroup(fabricObject, 'upvoteCount');
+    var downvote: any = this.getChildFromGroup(fabricObject, 'downvote');
+
+    let prevAmountDigits = upvoteCount.text.length;
+    let amountDigits = numDigits(amount);
+    let left = downvote.left + (amountDigits - prevAmountDigits) * 9;
 
     upvoteCount.set({ text: amount.toString(), dirty: true });
+    downvote.set({ left, dirty: true });
 
     fabricObject.dirty = true;
     fabricObject.addWithUpdate();
     return fabricObject;
   }
 
-  setCommentCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    var comment: any = fabricObject
-      .getObjects()
-      .find((obj) => obj.name == 'comment');
-    var commentCount: any = fabricObject
-      .getObjects()
-      .find((obj) => obj.name == 'commentCount');
+  /** 
+  Sets the number of comments on a fabric post.
+
+	@param fabricObj the post
+  @param amount new amount of comments
+	@returns updated fabric post
+	*/
+  setCommentCount(fabricObj: fabric.Group, amount: number): fabric.Group {
+    var comment: any = this.getChildFromGroup(fabricObj, 'comment');
+    var commentCount: any = this.getChildFromGroup(fabricObj, 'commentCount');
 
     commentCount.set({ text: amount.toString(), dirty: true });
 
@@ -307,9 +325,9 @@ export class FabricUtils {
       comment.set({ opacity: 1, dirty: true });
     }
 
-    fabricObject.dirty = true;
-    fabricObject.addWithUpdate();
-    return fabricObject;
+    fabricObj.dirty = true;
+    fabricObj.addWithUpdate();
+    return fabricObj;
   }
 
   createImageSettings(image: fabric.Image): ImageSettings {

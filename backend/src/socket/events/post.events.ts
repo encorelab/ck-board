@@ -6,11 +6,9 @@ import {
   POST_MOVING_OPACITY,
   SocketEvent,
 } from "../../constants";
-import { BucketModel } from "../../models/Bucket";
 import { CommentModel } from "../../models/Comment";
 import { UpvoteModel } from "../../models/Upvote";
 import { PostModel } from "../../models/Post";
-import dalBucket from "../../repository/dalBucket";
 import dalComment from "../../repository/dalComment";
 import dalPost from "../../repository/dalPost";
 import postTrace from "../trace/post.trace";
@@ -56,21 +54,12 @@ class PostDelete {
   static type: SocketEvent = SocketEvent.POST_DELETE;
 
   static async handleEvent(input: SocketPayload<PostModel>): Promise<string> {
-    const postID = input.eventData.postID;
-
-    await dalPost.remove(postID);
-
-    const buckets: BucketModel[] = await dalBucket.getByPostId(postID);
-    for (let i = 0; i < buckets.length; i++) {
-      await dalBucket.removePost(buckets[i].bucketID, [postID]);
-    }
     await postTrace.remove(input, this.type);
-
     return input.eventData.postID;
   }
 
   static async handleResult(io: Server, socket: Socket, result: string) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 

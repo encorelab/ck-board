@@ -43,6 +43,12 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
   }
 
+  async removePost(post: Post) {
+    await this.postService.remove(post.postID);
+
+    this.socketService.emit(SocketEvent.POST_DELETE, post);
+  }
+
   async createBucketPost(bucketID: string, post: Post): Promise<Post> {
     const savedPost = await this.postService.create(post);
     await this.bucketService.add(bucketID, post.postID);

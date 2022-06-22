@@ -192,14 +192,8 @@ export class PostModalComponent {
       data: {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this post?',
-        handleConfirm: () => {
-          this.socketService.emit(SocketEvent.POST_DELETE, this.post);
-
-          var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-          if (obj && obj.type == 'group') {
-            this.fabricUtils._canvas.remove(obj);
-            this.fabricUtils._canvas.renderAll();
-          }
+        handleConfirm: async () => {
+          await this.canvasService.removePost(this.post);
           this.dialogRef.close(DELETE);
         },
       },

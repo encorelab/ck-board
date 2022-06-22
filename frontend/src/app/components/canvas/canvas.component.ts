@@ -172,17 +172,24 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   handlePostUpdateEvent = (post: Post) => {
     let existing = this.fabricUtils.getObjectFromId(post.postID);
-    existing = this.fabricUtils.updatePostTitleDesc(
-      existing,
-      post.title,
-      post.desc
-    );
-    this.canvas.requestRenderAll();
+
+    if (existing) {
+      existing = this.fabricUtils.updatePostTitleDesc(
+        existing,
+        post.title,
+        post.desc
+      );
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostDeleteEvent = (id: string) => {
     const obj = this.fabricUtils.getObjectFromId(id);
-    this.canvas.remove(obj);
+    if (obj) {
+      this.canvas.remove(obj);
+    }
+
+    this._calcUpvoteCounter();
   };
 
   handlePostStartMoveEvent = (post: Post) => {
@@ -226,24 +233,30 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (result.upvote.voterID == this.user.userID) this.upvoteCounter += 1;
 
     let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
-    existing = this.fabricUtils.setUpvoteCount(existing, result.amount);
-    this.canvas.requestRenderAll();
+    if (existing) {
+      existing = this.fabricUtils.setUpvoteCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostCommentAddEvent = (result: any) => {
     let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
-    existing = this.fabricUtils.setCommentCount(existing, result.amount);
-    this.canvas.requestRenderAll();
+    if (existing) {
+      existing = this.fabricUtils.setCommentCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostTagAddEvent = ({ post, tag }) => {
     let existing = this.fabricUtils.getObjectFromId(post.postID);
-    this.fabricUtils.applyTagFeatures(existing, tag);
+    if (existing) {
+      this.fabricUtils.applyTagFeatures(existing, tag);
+    }
   };
 
   handlePostTagRemoveEvent = ({ post, tag }) => {
-    if (post.specialAttributes) {
-      let existing = this.fabricUtils.getObjectFromId(post.postID);
+    let existing = this.fabricUtils.getObjectFromId(post.postID);
+    if (post.specialAttributes && existing) {
       this.fabricUtils.resetTagFeatures(existing);
     }
   };
@@ -324,11 +337,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.boardService.get(this.boardID).then((board) => {
         if (board) {
           this.board = board;
-          this.upvotesService
-            .getByBoardAndUser(this.boardID, this.user.userID)
-            .then((votes) => {
-              this.upvoteCounter = this.board.upvoteLimit - votes.length;
-            });
+          this._calcUpvoteCounter();
           this.configureZoom();
           this.fabricUtils.setBackgroundImage(
             board.bgImage?.url,
@@ -849,6 +858,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: data,
     });
+  }
+
+  private _calcUpvoteCounter() {
+    this.upvotesService
+      .getByBoardAndUser(this.boardID, this.user.userID)
+      .then((votes) => {
+        this.upvoteCounter = this.board.upvoteLimit - votes.length;
+      });
   }
 
   private _postsMovementAllowed() {

@@ -1,10 +1,7 @@
 import { Router } from 'express';
 import { BucketModel } from '../models/Bucket';
 import dalBucket from '../repository/dalBucket';
-import {
-  convertBucket,
-  convertBuckets
-} from '../utils/converter';
+import { convertBucket, convertBuckets } from '../utils/converter';
 
 const router = Router();
 

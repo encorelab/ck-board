@@ -12,7 +12,7 @@ import {
 import dalBucket from '../repository/dalBucket';
 import dalPost from '../repository/dalPost';
 import dalWorkflow from '../repository/dalWorkflow';
-import { convertBucket, convertPostsFromID } from '../utils/converter';
+import { convertPostsFromID } from '../utils/converter';
 import {
   isDistribution,
   cloneManyToBoard,

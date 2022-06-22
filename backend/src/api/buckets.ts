@@ -3,8 +3,7 @@ import { BucketModel } from '../models/Bucket';
 import dalBucket from '../repository/dalBucket';
 import {
   convertBucket,
-  convertBuckets,
-  convertPostsFromID,
+  convertBuckets
 } from '../utils/converter';
 
 const router = Router();

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Post, { DisplayAttributes, PostModel } from '../models/Post';
+import Post, { PostModel } from '../models/Post';
 
 export const getById = async (id: string) => {
   try {

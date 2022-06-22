@@ -1,4 +1,4 @@
-import Tag, { TagModel } from '../models/Tag';
+import Tag from '../models/Tag';
 
 export const removeByBoard = async (boardID: string) => {
   try {

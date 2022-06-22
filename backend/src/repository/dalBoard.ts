@@ -59,7 +59,7 @@ export const update = async (id: string, board: Partial<BoardModel>) => {
 
 export const remove = async (id: string) => {
   const session = await mongoose.startSession();
-  session.startTransaction()
+  session.startTransaction();
   try {
     const deletedBoard = await Board.findOneAndDelete({ boardID: id });
     if (deletedBoard) {
@@ -77,7 +77,7 @@ export const remove = async (id: string) => {
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   } finally {
-    await session.endSession()
+    await session.endSession();
   }
 };
 

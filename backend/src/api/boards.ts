@@ -1,15 +1,6 @@
 import { Router } from 'express';
 import { BoardModel } from '../models/Board';
 import dalBoard from '../repository/dalBoard';
-import dalTrace from '../repository/dalTrace';
-import dalPost from '../repository/dalPost';
-import dalLike from '../repository/dalLike';
-import dalComment from '../repository/dalComment';
-import dalWorkflow from '../repository/dalWorkflow';
-import dalNotification from '../repository/dalNotification';
-import dalBucket from '../repository/dalBucket';
-import dalProject from '../repository/dalProject';
-import dalTag from '../repository/dalTag';
 
 const router = Router();
 

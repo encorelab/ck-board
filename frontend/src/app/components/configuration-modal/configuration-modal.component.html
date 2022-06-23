@@ -9,15 +9,13 @@
           Board Name is required.
         </mat-error>
       </mat-form-field>
-      <div style="display: flex; flex-direction: row">
-        <div>
-          <mat-label style="font-weight: bold;">Initial Zoom: {{initialZoom}}%</mat-label>
-          <mat-slider class="slider"  min="0" max="200" step="5" [(ngModel)]="initialZoom" thumbLabel ></mat-slider>
-        </div>
-        <div>
-          <mat-label style="font-weight: bold;">Upvotes Per Student: {{upvoteLimit}}</mat-label>
-          <mat-slider class="slider"  min="0" max="200" step="1" [(ngModel)]="upvoteLimit" thumbLabel ></mat-slider>
-        </div>
+      <div>
+        <mat-label style="font-weight: bold;">Initial Zoom: {{initialZoom}}%</mat-label>
+        <mat-slider class="slider"  min="0" max="200" step="5" [(ngModel)]="initialZoom" thumbLabel ></mat-slider>
+      </div>
+      <div>
+        <mat-label style="font-weight: bold;">Maximum Upvotes Per Student: {{upvoteLimit}}</mat-label>
+        <mat-slider class="slider"  min="0" max="10" step="1" [(ngModel)]="upvoteLimit" thumbLabel></mat-slider>
       </div>
       <div class="image-form">
         <mat-chip (click)="compressFile()" color="primary" selected>

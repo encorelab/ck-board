@@ -296,18 +296,26 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   showBucketsModal() {
-    this._openDialog(BucketsModalComponent, {
-      board: this.board,
-      user: this.user,
-      centerX: this.canvas.getCenter().left,
-      centerY: this.canvas.getCenter().top,
-    });
+    this._openDialog(
+      BucketsModalComponent,
+      {
+        board: this.board,
+        user: this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top,
+      },
+      '95vw'
+    );
   }
 
   showListModal() {
-    this._openDialog(ListModalComponent, {
-      board: this.board,
-    });
+    this._openDialog(
+      ListModalComponent,
+      {
+        board: this.board,
+      },
+      '95vw'
+    );
   }
 
   configureBoard() {
@@ -856,10 +864,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
   }
 
-  private _openDialog(component: ComponentType<unknown>, data: any) {
+  private _openDialog(
+    component: ComponentType<unknown>,
+    data: any,
+    width = '700px'
+  ) {
     this.dialog.open(component, {
       maxWidth: 1280,
-      width: '95vw',
+      width: width,
       autoFocus: false,
       data: data,
     });

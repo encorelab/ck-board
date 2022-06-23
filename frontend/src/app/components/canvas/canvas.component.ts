@@ -1,8 +1,14 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  TemplateRef,
+} from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import Post, { PostType } from '../../models/post';
 
@@ -53,6 +59,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   boardID: string;
   projectID: string;
   canvas: Canvas;
+  @ViewChild('confirmation') confirmationDialog: TemplateRef<any>;
 
   user: AuthUser;
   board: Board;
@@ -90,6 +97,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public snackbarService: SnackbarService,
     public dialog: MatDialog,
     public fileUploadService: FileUploadService,
@@ -349,6 +357,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
       board: this.board,
       project: this.project,
     });
+  }
+
+  openConfirmation() {
+    this.confirmationRef = this.dialog.open(this.confirmationDialog, {
+      width: '500px',
+    });
+  }
+
+  closeConfirmation() {
+    this.confirmationRef.close()
   }
 
   // open dialog to get message for a new post
@@ -830,7 +848,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private _openDialog(component: ComponentType<unknown>, data: any) {
-    this.dialog.open(component, {
+    return this.dialog.open(component, {
       maxWidth: 1280,
       width: '95vw',
       autoFocus: false,

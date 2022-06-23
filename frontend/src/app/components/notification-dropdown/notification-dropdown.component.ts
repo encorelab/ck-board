@@ -41,7 +41,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   }
 
   initGroupEventsListener() {
-    let unsub = this.socketService.listen(
+    const unsub = this.socketService.listen(
       SocketEvent.NOTIFICATION_CREATE,
       this.handleAdd
     );
@@ -54,7 +54,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
 
   async openPost(notification: Notification) {
     if (notification.postID) {
-      let post = await this.postService.get(notification.postID);
+      const post = await this.postService.get(notification.postID);
       this.dialog.open(PostModalComponent, {
         minWidth: '700px',
         width: 'auto',

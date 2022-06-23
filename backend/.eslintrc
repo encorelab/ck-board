@@ -10,6 +10,12 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "rules": { 
-    
+    "@typescript-eslint/quotes": [
+      "error",
+      "single",
+      {
+        "allowTemplateLiterals": true
+      }
+    ]
   }
 }

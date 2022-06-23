@@ -35,8 +35,8 @@ export class AddPostComponent {
   user: User;
   board: Board;
 
-  title: string = '';
-  message: string = '';
+  title = '';
+  message = '';
 
   tags: Tag[] = [];
   tagOptions: Tag[] = [];

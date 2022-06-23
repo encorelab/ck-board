@@ -1,13 +1,13 @@
-import { CommentModel } from "../../models/Comment";
-import { UpvoteModel } from "../../models/Upvote";
-import { PostModel } from "../../models/Post";
-import dalTrace from "../../repository/dalTrace";
+import { CommentModel } from '../../models/Comment';
+import { UpvoteModel } from '../../models/Upvote';
+import { PostModel } from '../../models/Post';
+import dalTrace from '../../repository/dalTrace';
 import {
   PostStopMoveEventInput,
   PostTagEventInput,
   SocketPayload,
-} from "../types/event.types";
-import { createTrace } from "./base.trace";
+} from '../types/event.types';
+import { createTrace } from './base.trace';
 
 /**
  * Creates a trace for post creation
@@ -34,7 +34,7 @@ const create = async (input: SocketPayload<PostModel>, eventType: string) => {
  * @returns
  */
 const update = async (
-  input: SocketPayload<Partial<PostModel> & Pick<PostModel, "postID">>,
+  input: SocketPayload<Partial<PostModel> & Pick<PostModel, 'postID'>>,
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);

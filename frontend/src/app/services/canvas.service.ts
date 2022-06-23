@@ -129,17 +129,21 @@ export class CanvasService {
 
   async tag(post: Post, tag: Tag): Promise<Post> {
     const tags = [...post.tags, tag];
+    const update: Partial<Post> = { tags };
 
-    let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
+    const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
     if (!fabricObject) {
       return await this.postService.update(post.postID, { tags: tags });
     }
 
     if (tag.specialAttributes) {
-      fabricObject = this.fabricUtils.applyTagFeatures(fabricObject, tag);
+      update.displayAttributes = this.fabricUtils.applyTagFeatures(
+        fabricObject,
+        tag
+      );
     }
 
-    const savedPost = await this.postService.update(post.postID, { tags });
+    const savedPost = await this.postService.update(post.postID, update);
 
     this.socketService.emit(SocketEvent.POST_TAG_ADD, { tag, post: savedPost });
 
@@ -155,19 +159,19 @@ export class CanvasService {
 
   async untag(post: Post, tag: Tag): Promise<Post> {
     post.tags = post.tags.filter((t) => t.name != tag.name);
+    const update: Partial<Post> = { tags: post.tags };
 
-    let fabricObject = this.fabricUtils.getObjectFromId(post.postID);
+    const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
     if (!fabricObject) {
-      return await this.postService.update(post.postID, { tags: post.tags });
+      return await this.postService.update(post.postID, update);
     }
 
     if (tag.specialAttributes) {
-      fabricObject = this.fabricUtils.resetTagFeatures(fabricObject);
+      update.displayAttributes =
+        this.fabricUtils.resetTagFeatures(fabricObject);
     }
 
-    const savedPost = await this.postService.update(post.postID, {
-      tags: post.tags,
-    });
+    const savedPost = await this.postService.update(post.postID, update);
 
     this.socketService.emit(SocketEvent.POST_TAG_REMOVE, {
       tag,

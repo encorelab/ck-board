@@ -32,8 +32,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   workflows: any[] = [];
   tags: string[];
 
-  bucketName: string = '';
-  workflowName: string = '';
+  bucketName = '';
+  workflowName = '';
 
   sourceOptions: any[] = [];
   destOptions: any[] = [];
@@ -193,7 +193,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   _assembleWorkflow() {
     let workflowID: string = generateUniqueID();
 
-    let workflow: DistributionWorkflow = {
+    const workflow: DistributionWorkflow = {
       workflowID: workflowID,
       boardID: this.board.boardID,
       active: false,

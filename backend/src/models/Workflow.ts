@@ -3,15 +3,15 @@ import {
   getModelForClass,
   modelOptions,
   getDiscriminatorModelForClass,
-} from "@typegoose/typegoose";
+} from '@typegoose/typegoose';
 
 export enum WorkflowType {
-  DISTRIBUTION = "DISTRIBUTION",
+  DISTRIBUTION = 'DISTRIBUTION',
 }
 
 export enum ContainerType {
-  BOARD = "BOARD",
-  BUCKET = "BUCKET",
+  BOARD = 'BOARD',
+  BUCKET = 'BUCKET',
 }
 
 export class Container {
@@ -25,7 +25,7 @@ export class Container {
   public name!: string;
 }
 
-@modelOptions({ schemaOptions: { collection: "workflows", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: 'workflows', timestamps: true } })
 export class WorkflowModel {
   @prop({ required: true })
   public workflowID!: string;

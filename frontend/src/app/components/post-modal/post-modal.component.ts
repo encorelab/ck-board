@@ -45,13 +45,13 @@ export class PostModalComponent {
   editingTitle: string;
   desc: string;
   editingDesc: string;
-  isEditing: boolean = false;
+  isEditing = false;
   canEditDelete: boolean;
   canStudentComment: boolean;
   canStudentTag: boolean;
   postColor: string;
-  showComments: boolean = false;
-  showEditDelete: boolean = false;
+  showComments = false;
+  showEditDelete = false;
   showAuthorName: boolean;
 
   error: string = '';
@@ -128,8 +128,8 @@ export class PostModalComponent {
         });
       });
 
-    let isStudent = this.user.role == Role.STUDENT;
-    let isTeacher = this.user.role == Role.TEACHER;
+    const isStudent = this.user.role == Role.STUDENT;
+    const isTeacher = this.user.role == Role.TEACHER;
     this.showEditDelete =
       (isStudent && data.board.permissions.allowStudentEditAddDeletePost) ||
       isTeacher;
@@ -176,7 +176,7 @@ export class PostModalComponent {
     this.editingTitle = this.title;
     this.editingDesc = this.desc;
 
-    var update: Partial<Post> = {
+    const update: Partial<Post> = {
       postID: this.post.postID,
       title: this.title,
       desc: this.desc,

@@ -48,7 +48,7 @@ export class HtmlPostComponent implements OnInit {
   @Input() post: HTMLPost;
   @Output() movePostToBoardEvent = new EventEmitter<string>();
 
-  exists: boolean = true;
+  exists = true;
 
   user: AuthUser;
 

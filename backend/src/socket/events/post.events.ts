@@ -1,23 +1,23 @@
-import { Server, Socket } from "socket.io";
+import { Server, Socket } from 'socket.io';
 import {
   POST_COLOR,
   POST_DEFAULT_OPACITY,
   POST_MOVING_FILL,
   POST_MOVING_OPACITY,
   SocketEvent,
-} from "../../constants";
-import { CommentModel } from "../../models/Comment";
-import { UpvoteModel } from "../../models/Upvote";
-import { PostModel } from "../../models/Post";
-import dalComment from "../../repository/dalComment";
-import dalPost from "../../repository/dalPost";
-import postTrace from "../trace/post.trace";
+} from '../../constants';
+import { CommentModel } from '../../models/Comment';
+import { UpvoteModel } from '../../models/Upvote';
+import { PostModel } from '../../models/Post';
+import dalComment from '../../repository/dalComment';
+import dalPost from '../../repository/dalPost';
+import postTrace from '../trace/post.trace';
 import {
   PostStopMoveEventInput,
   PostTagEventInput,
   SocketPayload,
-} from "../types/event.types";
-import dalVote from "../../repository/dalVote";
+} from '../types/event.types';
+import dalVote from '../../repository/dalVote';
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
@@ -38,7 +38,7 @@ class PostUpdate {
   static type: SocketEvent = SocketEvent.POST_UPDATE;
 
   static async handleEvent(
-    input: SocketPayload<Partial<PostModel> & Pick<PostModel, "postID">>
+    input: SocketPayload<Partial<PostModel> & Pick<PostModel, 'postID'>>
   ): Promise<PostModel | null> {
     const post = await dalPost.update(input.eventData.postID, input.eventData);
     await postTrace.update(input, this.type);
@@ -46,7 +46,7 @@ class PostUpdate {
   }
 
   static async handleResult(io: Server, socket: Socket, result: PostModel) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 

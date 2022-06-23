@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
+import { DisplayAttributes } from '../models/post';
 import { Tag } from '../models/tag';
 import {
   DEFAULT_TAGS,
@@ -56,9 +57,9 @@ export class FabricUtils {
   }
 
   getObjectFromId(postID: string) {
-    var currentObjects: any = this._canvas?.getObjects();
+    const currentObjects: any = this._canvas?.getObjects();
 
-    for (var i = currentObjects.length - 1; i >= 0; i--) {
+    for (let i = currentObjects.length - 1; i >= 0; i--) {
       if (currentObjects[i].postID == postID) return currentObjects[i];
     }
     return null;
@@ -146,17 +147,21 @@ export class FabricUtils {
     var upvoteCountObj: any = children
       .filter((obj) => obj.name == 'upvoteCount')
       .pop();
-    var commentObj: any = children.filter((obj) => obj.name == 'comment').pop();
-    var commentCountObj: any = children
+    const commentObj: any = children
+      .filter((obj) => obj.name == 'comment')
+      .pop();
+    const commentCountObj: any = children
       .filter((obj) => obj.name == 'commentCount')
       .pop();
-    var contentObj: any = children.filter((obj) => obj.name == 'content').pop();
+    const contentObj: any = children
+      .filter((obj) => obj.name == 'content')
+      .pop();
 
-    var oldAuthorHeight = authorObj.height;
+    const oldAuthorHeight = authorObj.height;
 
     authorObj.set({ text: author, dirty: true });
 
-    var authorDelta = authorObj.height - oldAuthorHeight;
+    const authorDelta = authorObj.height - oldAuthorHeight;
 
     descObj.set({ top: descObj.top + authorDelta, dirty: true });
     upvoteObj.set({ top: upvoteObj.top + authorDelta, dirty: true });
@@ -182,15 +187,19 @@ export class FabricUtils {
     var upvoteCountObj: any = children
       .filter((obj) => obj.name == 'upvoteCount')
       .pop();
-    var commentObj: any = children.filter((obj) => obj.name == 'comment').pop();
-    var commentCountObj: any = children
+    const commentObj: any = children
+      .filter((obj) => obj.name == 'comment')
+      .pop();
+    const commentCountObj: any = children
       .filter((obj) => obj.name == 'commentCount')
       .pop();
-    var contentObj: any = children.filter((obj) => obj.name == 'content').pop();
+    const contentObj: any = children
+      .filter((obj) => obj.name == 'content')
+      .pop();
 
-    var oldTitleHeight = titleObj.height;
-    var oldDescHeight = descObj.height;
-    var oldAuthorHeight = authorObj.height;
+    const oldTitleHeight = titleObj.height;
+    const oldDescHeight = descObj.height;
+    const oldAuthorHeight = authorObj.height;
 
     titleObj.set({ text: title, dirty: true });
     descObj.set({
@@ -198,9 +207,9 @@ export class FabricUtils {
       dirty: true,
     });
 
-    var titleDelta = titleObj.height - oldTitleHeight;
-    var authorDelta = authorObj.height - oldAuthorHeight;
-    var descDelta = descObj.height - oldDescHeight;
+    const titleDelta = titleObj.height - oldTitleHeight;
+    const authorDelta = authorObj.height - oldAuthorHeight;
+    const descDelta = descObj.height - oldDescHeight;
 
     authorObj.set({ top: authorObj.top + titleDelta, dirty: true });
     descObj.set({ top: descObj.top + titleDelta + authorDelta, dirty: true });
@@ -241,22 +250,30 @@ export class FabricUtils {
 
 	@param fabricPost the post being tagged
 	@param tag the tag being attached
-	@returns updated post with new attributes
+	@returns display attributes for post
 	*/
-  applyTagFeatures(fabricPost: any, tag: Tag) {
-    const attributes = tag.specialAttributes;
-
-    if (attributes == null) {
-      return fabricPost;
+  applyTagFeatures(fabricPost: any, tag: Tag): DisplayAttributes {
+    if (tag.specialAttributes == null) {
+      return {};
     }
 
-    fabricPost = this.setBorderColor(fabricPost, attributes.borderColor);
-    fabricPost = this.setBorderThickness(fabricPost, attributes.borderWidth);
-    fabricPost = this.setFillColor(fabricPost, attributes.fillColor);
-    fabricPost = this.setOpacity(fabricPost, attributes.opacity);
+    const { borderColor, borderWidth, fillColor, opacity } =
+      tag.specialAttributes;
+
+    fabricPost = this.setBorderColor(fabricPost, borderColor);
+    fabricPost = this.setBorderThickness(fabricPost, borderWidth);
+    fabricPost = this.setFillColor(fabricPost, fillColor);
+    fabricPost = this.setOpacity(fabricPost, opacity);
 
     this._canvas.requestRenderAll();
-    return fabricPost;
+
+    return Object.assign(
+      {},
+      borderColor === null ? null : { borderColor },
+      borderWidth === null ? null : { borderWidth },
+      fillColor === null ? null : { fillColor },
+      opacity === null ? null : { opacity }
+    );
   }
 
   /** 
@@ -266,9 +283,9 @@ export class FabricUtils {
   border color,  post color, etc. 
 
 	@param fabricPost the post being tagged
-	@returns updated post with default attributes
+	@returns display attributes for post
 	*/
-  resetTagFeatures(fabricPost: any) {
+  resetTagFeatures(fabricPost: any): DisplayAttributes {
     fabricPost = this.setBorderColor(fabricPost, POST_DEFAULT_BORDER);
     fabricPost = this.setBorderThickness(
       fabricPost,
@@ -278,7 +295,13 @@ export class FabricUtils {
     fabricPost = this.setOpacity(fabricPost, POST_DEFAULT_OPACITY);
 
     this._canvas.requestRenderAll();
-    return fabricPost;
+
+    return {
+      borderColor: POST_DEFAULT_BORDER,
+      borderWidth: POST_DEFAULT_BORDER_THICKNESS,
+      fillColor: POST_COLOR,
+      opacity: POST_DEFAULT_OPACITY,
+    };
   }
 
   /** 
@@ -331,9 +354,9 @@ export class FabricUtils {
   }
 
   createImageSettings(image: fabric.Image): ImageSettings {
-    let dimensions = this._calcCanvasDimensions();
-    let scale = this._scaleImage(image, dimensions);
-    let offset = this._calcImageOffsets(image, scale, dimensions);
+    const dimensions = this._calcCanvasDimensions();
+    const scale = this._scaleImage(image, dimensions);
+    const offset = this._calcImageOffsets(image, scale, dimensions);
 
     return {
       top: offset.offsetY,
@@ -388,7 +411,7 @@ export class FabricUtils {
       return { width: window.innerWidth, height: window.innerHeight - 64 };
     }
 
-    let vptCoords = this._canvas.vptCoords!;
+    const vptCoords = this._canvas.vptCoords!;
     let width = this._canvas.getWidth();
     let height = this._canvas.getHeight();
 
@@ -444,13 +467,13 @@ export class FabricUtils {
     scale: ImageScale,
     dimensions: CanvasDimensions
   ): ImageOffset {
-    let offsetX = Math.floor(
+    const offsetX = Math.floor(
       (dimensions.width - scale.scaleX * image.width!) / 2
     );
-    let offsetY = Math.floor(
+    const offsetY = Math.floor(
       (dimensions.height - scale.scaleY * image.height!) / 2
     );
-    let vptCoords = this._canvas.vptCoords;
+    const vptCoords = this._canvas.vptCoords;
 
     if (vptCoords) {
       return {

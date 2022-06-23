@@ -60,22 +60,22 @@ export class CanvasComponent implements OnInit, OnDestroy {
   groupEventToHandler: Map<SocketEvent, Function>;
 
   Math: Math = Math;
-  initialClientX: number = 0;
-  initialClientY: number = 0;
-  finalClientX: number = 0;
-  finalClientY: number = 0;
+  initialClientX = 0;
+  initialClientY = 0;
+  finalClientX = 0;
+  finalClientY = 0;
 
-  zoom: number = 1;
+  zoom = 1;
 
   mode: Mode = Mode.EDIT;
   modeType = Mode;
   Role: typeof Role = Role;
 
-  showList: boolean = false;
-  showBuckets: boolean = false;
+  showList = false;
+  showBuckets = false;
 
-  showAddPost: boolean = true;
-  lockArrowKeys: boolean = false;
+  showAddPost = true;
+  lockArrowKeys = false;
 
   upvoteCounter: number = 0;
 
@@ -161,7 +161,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initGroupEventsListener() {
     for (const [k, v] of this.groupEventToHandler) {
-      let unsub = this.socketService.listen(k, v);
+      const unsub = this.socketService.listen(k, v);
       this.unsubListeners.push(unsub);
     }
   }
@@ -372,7 +372,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   configureZoom() {
     if (this.board.initialZoom) {
-      let zoom = this.board.initialZoom / 100;
+      const zoom = this.board.initialZoom / 100;
       this.zoom = parseFloat(zoom.toPrecision(2));
       this.handleZoom('setZoom');
     } else {
@@ -426,7 +426,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._openDialog(ConfigurationModalComponent, {
       board: this.board,
       update: (board: Board) => {
-        let previousBoard = this.board;
+        const previousBoard = this.board;
         this.board = board;
 
         if (previousBoard.initialZoom !== board.initialZoom) {
@@ -451,7 +451,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   updateAuthorNames(postID: string, username: string) {
-    let obj = this.fabricUtils.getObjectFromId(postID);
+    const obj = this.fabricUtils.getObjectFromId(postID);
     if (obj) {
       this.fabricUtils.updateAuthor(obj, username);
       this.canvas.renderAll();
@@ -462,10 +462,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!this.board) {
       return;
     }
-    let isStudentAndVisible =
+    const isStudentAndVisible =
       this.user.role == Role.STUDENT &&
       this.board.permissions.showAuthorNameStudent;
-    let IsTeacherAndVisisble =
+    const IsTeacherAndVisisble =
       this.user.role == Role.TEACHER &&
       this.board.permissions.showAuthorNameTeacher;
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
@@ -487,8 +487,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   updateShowAddPost(permissions: BoardPermissions) {
-    let isStudent = this.user.role == Role.STUDENT;
-    let isTeacher = this.user.role == Role.TEACHER;
+    const isStudent = this.user.role == Role.STUDENT;
+    const isTeacher = this.user.role == Role.TEACHER;
     this.showAddPost =
       (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher;
   }
@@ -555,8 +555,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   initPostClickListener() {
-    var isDragging = false;
-    var isMouseDown = false;
+    let isDragging = false;
+    let isMouseDown = false;
 
     const postClickHandler = (e: fabric.IEvent) => {
       if (e.target?.name == 'post') isMouseDown = true;
@@ -567,7 +567,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
 
     const mouseUpHandler = (e: fabric.IEvent) => {
-      var obj: any = e.target;
+      const obj: any = e.target;
 
       var votePress = e.subTargets?.find(
         (o) => o.name == 'upvote' || o.name == 'downvote'
@@ -603,7 +603,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const handleFirstMove = (e: any) => {
       if (e.target && !isMovingPost) {
-        var obj = e.target;
+        let obj = e.target;
         isMovingPost = true;
 
         obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
@@ -619,7 +619,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const handleDroppedPost = (e) => {
       if (!isMovingPost) return;
 
-      var obj = e.target;
+      let obj = e.target;
       isMovingPost = false;
 
       obj = this.fabricUtils.setFillColor(obj, POST_COLOR);
@@ -644,7 +644,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initZoomListener() {
     const handleZoomEvent = (opt) => {
-      var options = opt.e as unknown as WheelEvent;
+      const options = opt.e as unknown as WheelEvent;
 
       // Condition for pinch gesture on trackpad:
       // 1. delta Y is an integer or delta X is 0
@@ -663,7 +663,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         !options.ctrlKey;
 
       if (trackpad_pinch || mousewheel) {
-        var delta = options.deltaY;
+        const delta = options.deltaY;
 
         if (mousewheel) {
           this.zoom *= 0.999 ** delta;
@@ -690,7 +690,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initPanListener() {
-    var isPanning = false;
+    let isPanning = false;
 
     const mouseDown = (opt) => {
       if (this.mode == Mode.PAN) {
@@ -711,9 +711,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
 
     const handlePan = (opt) => {
-      var options = opt.e as unknown as WheelEvent;
+      const options = opt.e as unknown as WheelEvent;
       if (isPanning && options) {
-        let delta = new fabric.Point(options.movementX, options.movementY);
+        const delta = new fabric.Point(options.movementX, options.movementY);
         this.canvas.relativePan(delta);
         this.finalClientX = options.clientX;
         this.finalClientY = options.clientY;
@@ -733,7 +733,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initPanSwipeListener() {
     const handlePanSwipe = (opt) => {
-      let options = opt.e as unknown as WheelEvent;
+      const options = opt.e as unknown as WheelEvent;
 
       // Condition for two-finger swipe on trackpad:
       // 1. delta Y is an integer,
@@ -745,7 +745,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         !options.ctrlKey;
 
       if (trackpad_twofinger) {
-        let vpt = this.canvas.viewportTransform;
+        const vpt = this.canvas.viewportTransform;
         if (!vpt) return;
         vpt[4] -= options.deltaX;
         vpt[5] -= options.deltaY;
@@ -808,7 +808,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handleZoom(event) {
-    let center = this.canvas.getCenter();
+    const center = this.canvas.getCenter();
     let centerX = center.left + (this.finalClientX - this.initialClientX);
     let centerY = center.top + (this.finalClientY - this.initialClientY);
     this.initialClientX = this.finalClientX;
@@ -821,7 +821,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else if (event === 'reset') {
       this.zoom = 1;
     } else if (event === 'setZoom') {
-      this.zoom = this.zoom;
+      // this.zoom = this.zoom;
       centerX = center.left;
       centerY = center.top;
     }

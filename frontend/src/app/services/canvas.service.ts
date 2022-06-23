@@ -57,7 +57,13 @@ export class CanvasService {
   }
 
   async createBoardPostFromBucket(post: Post) {
-    const fabricPost = new FabricPostComponent(post);
+    const upvotes = await this.upvotesService.getUpvotesByPost(post.postID);
+    const comments = await this.commentService.getCommentsByPost(post.postID);
+
+    const fabricPost = new FabricPostComponent(post, {
+      upvotes: upvotes.length,
+      comments: comments.length,
+    });
     post = await this.postService.update(post.postID, post);
 
     this.fabricUtils._canvas.add(fabricPost);

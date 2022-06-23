@@ -243,6 +243,18 @@ export class CanvasService {
     return board;
   }
 
+  async updateBoardUpvotes(
+    boardID: string,
+    upvoteLimit: number
+  ): Promise<Board> {
+    const board: Board = await this.boardService.update(boardID, {
+      upvoteLimit,
+    });
+    this.socketService.emit(SocketEvent.BOARD_UPVOTE_UPDATE, board);
+
+    return board;
+  }
+
   async runDistributionWorkflow(workflow: DistributionWorkflow) {
     this.socketService.emit(SocketEvent.WORKFLOW_RUN_DISTRIBUTION, workflow);
   }

@@ -109,9 +109,12 @@ export class ConfigurationModalComponent {
       this.permissions
     );
     board = await this.canvasService.updateBoardTags(this.boardID, this.tags);
+    board = await this.canvasService.updateBoardUpvotes(
+      this.boardID,
+      this.upvoteLimit
+    );
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,
-      upvoteLimit: this.upvoteLimit,
     });
     this.data.update(board);
     this.dialogRef.close();

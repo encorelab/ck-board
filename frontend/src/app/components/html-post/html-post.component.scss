@@ -14,7 +14,7 @@
 
   display: -webkit-box;
   -webkit-line-clamp: 4; /* number of lines to show */
-          line-clamp: 4; 
+  line-clamp: 4;
   -webkit-box-orient: vertical;
 }
 
@@ -23,7 +23,7 @@ mat-chip {
   font-size: 12px;
 }
 
-.titleRow{
+.titleRow {
   display: flex;
   justify-content: space-between;
 }

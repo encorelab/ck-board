@@ -1,53 +1,61 @@
 <div class="app">
-    <app-toolbar [user]="user">
-        <span *ngIf="project">{{project.name}}</span>
-        <span style="flex: 1 1 auto"></span>
-        <button 
-            mat-icon-button 
-            [matMenuTriggerFor]="addMenu"
-            *ngIf="user && user.role == Role.TEACHER"
-            matTooltip="Create Board">
-                <mat-icon>add</mat-icon>
-        </button>
-        <mat-menu #addMenu="matMenu" >
-            <button 
-                mat-menu-item
-                (click) ="openCreateBoardDialog()">
-                    Create Board
-            </button>
-        </mat-menu>
-        <app-csv-download-button
-            [projectID] ="this.projectID"
-            *ngIf="user && user.role == Role.TEACHER && boards.length > 0">
-        </app-csv-download-button>
-        <button 
-            *ngIf="user && user.role == Role.TEACHER" 
-            mat-icon-button (click)="openSettingsDialog()" 
-            matTooltip="Adjust Settings">
-                <mat-icon>settings</mat-icon>
-        </button>
-    </app-toolbar>
-    <div class="content">
-        <div class="heading">
-            <button mat-icon-button routerLink="/dashboard" aria-label="Return to Dashboard">
-                <mat-icon>arrow_back</mat-icon>
-            </button>
-            <h3 class="mat-title" *ngIf="project">Boards for {{ project.name }}</h3>
-        </div>
-        <div class="cards">
-            <ng-container *ngFor="let board of boards">
-                <mat-card class="card"
-                    (click)="handleBoardClick(board.boardID)"
-                    (keyup.enter)="handleBoardClick(board.boardID)"
-                    role="button"
-                    tabindex="0"
-                    [attr.aria-label]="'View ' + board.name">
-                    <mat-card-title class="title accent">
-                        <mat-icon color="accent">picture_in_picture</mat-icon>
-                        <span>{{ board.name }}</span>
-                    </mat-card-title>
-                </mat-card>
-            </ng-container>
-        </div>
+  <app-toolbar [user]="user">
+    <span *ngIf="project">{{ project.name }}</span>
+    <span style="flex: 1 1 auto"></span>
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="addMenu"
+      *ngIf="user && user.role == Role.TEACHER"
+      matTooltip="Create Board"
+    >
+      <mat-icon>add</mat-icon>
+    </button>
+    <mat-menu #addMenu="matMenu">
+      <button mat-menu-item (click)="openCreateBoardDialog()">
+        Create Board
+      </button>
+    </mat-menu>
+    <app-csv-download-button
+      [projectID]="this.projectID"
+      *ngIf="user && user.role == Role.TEACHER && boards.length > 0"
+    >
+    </app-csv-download-button>
+    <button
+      *ngIf="user && user.role == Role.TEACHER"
+      mat-icon-button
+      (click)="openSettingsDialog()"
+      matTooltip="Adjust Settings"
+    >
+      <mat-icon>settings</mat-icon>
+    </button>
+  </app-toolbar>
+  <div class="content">
+    <div class="heading">
+      <button
+        mat-icon-button
+        routerLink="/dashboard"
+        aria-label="Return to Dashboard"
+      >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h3 class="mat-title" *ngIf="project">Boards for {{ project.name }}</h3>
     </div>
+    <div class="cards">
+      <ng-container *ngFor="let board of boards">
+        <mat-card
+          class="card"
+          (click)="handleBoardClick(board.boardID)"
+          (keyup.enter)="handleBoardClick(board.boardID)"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'View ' + board.name"
+        >
+          <mat-card-title class="title accent">
+            <mat-icon color="accent">picture_in_picture</mat-icon>
+            <span>{{ board.name }}</span>
+          </mat-card-title>
+        </mat-card>
+      </ng-container>
+    </div>
+  </div>
 </div>

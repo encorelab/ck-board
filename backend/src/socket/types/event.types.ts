@@ -6,6 +6,7 @@ export interface TraceContext {
   boardID: string;
   userID: string;
   clientTimestamp: number;
+  allowTracing: boolean;
 }
 export interface SocketPayload<T> {
   trace: TraceContext;

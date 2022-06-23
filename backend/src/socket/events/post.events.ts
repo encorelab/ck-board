@@ -27,7 +27,7 @@ class PostCreate {
   static async handleEvent(
     input: SocketPayload<PostModel>
   ): Promise<PostModel> {
-    await postTrace.create(input, this.type);
+    if (input.trace.allowTracing) await postTrace.create(input, this.type);
     return input.eventData;
   }
 
@@ -43,7 +43,7 @@ class PostUpdate {
     input: SocketPayload<Partial<PostModel> & Pick<PostModel, "postID">>
   ): Promise<PostModel | null> {
     const post = await dalPost.update(input.eventData.postID, input.eventData);
-    await postTrace.update(input, this.type);
+    if (input.trace.allowTracing) await postTrace.update(input, this.type);
     return post;
   }
 
@@ -64,7 +64,7 @@ class PostDelete {
     for (let i = 0; i < buckets.length; i++) {
       await dalBucket.removePost(buckets[i].bucketID, [postID]);
     }
-    await postTrace.remove(input, this.type);
+    if (input.trace.allowTracing) await postTrace.remove(input, this.type);
 
     return input.eventData.postID;
   }
@@ -107,7 +107,7 @@ class PostStopMove {
         opacity: POST_DEFAULT_OPACITY,
       },
     });
-    await postTrace.move(input, this.type);
+    if (input.trace.allowTracing) await postTrace.move(input, this.type);
     return post;
   }
 
@@ -121,7 +121,7 @@ class PostLikeAdd {
 
   static async handleEvent(input: SocketPayload<LikeModel>): Promise<object> {
     const likeAmount = await dalLike.getAmountByPost(input.eventData.postID);
-    await postTrace.likeAdd(input, this.type);
+    if (input.trace.allowTracing) await postTrace.likeAdd(input, this.type);
 
     return { like: input.eventData, amount: likeAmount };
   }
@@ -136,7 +136,7 @@ class PostLikeRemove {
 
   static async handleEvent(input: SocketPayload<LikeModel>): Promise<object> {
     const likeAmount = await dalLike.getAmountByPost(input.eventData.postID);
-    await postTrace.likeRemove(input, this.type);
+    if (input.trace.allowTracing) await postTrace.likeRemove(input, this.type);
     return { like: input.eventData, amount: likeAmount };
   }
 
@@ -154,7 +154,7 @@ class PostCommentAdd {
     const commentAmount = await dalComment.getAmountByPost(
       input.eventData.postID
     );
-    await postTrace.commentAdd(input, this.type);
+    if (input.trace.allowTracing) await postTrace.commentAdd(input, this.type);
 
     return { comment: input.eventData, amount: commentAmount };
   }
@@ -170,7 +170,7 @@ class PostTagAdd {
   static async handleEvent(
     input: SocketPayload<PostTagEventInput>
   ): Promise<PostTagEventInput> {
-    await postTrace.tagAdd(input, this.type);
+    if (input.trace.allowTracing) await postTrace.tagAdd(input, this.type);
     return input.eventData;
   }
 
@@ -189,7 +189,7 @@ class PostTagRemove {
   static async handleEvent(
     input: SocketPayload<PostTagEventInput>
   ): Promise<PostTagEventInput> {
-    await postTrace.tagRemove(input, this.type);
+    if (input.trace.allowTracing) await postTrace.tagRemove(input, this.type);
     return input.eventData;
   }
 
@@ -206,7 +206,7 @@ class PostRead {
   static type: SocketEvent = SocketEvent.POST_READ;
 
   static async handleEvent(input: SocketPayload<string>): Promise<string> {
-    await postTrace.read(input, this.type);
+    if (input.trace.allowTracing) await postTrace.read(input, this.type);
     return input.eventData;
   }
 

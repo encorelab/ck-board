@@ -15,7 +15,7 @@ export const findByUserIDs = async (userIDs: string[]) => {
     const users: UserModel[] = await User.find({ userID: { $in: userIDs } });
     return users;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 

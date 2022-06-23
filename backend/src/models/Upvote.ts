@@ -1,6 +1,6 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 
-@modelOptions({ schemaOptions: { collection: "upvotes", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: 'upvotes', timestamps: true } })
 export class UpvoteModel {
   @prop({ required: true })
   public upvoteID!: string;

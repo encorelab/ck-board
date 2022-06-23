@@ -1,12 +1,12 @@
-import { Router } from "express";
-import { BoardModel } from "../models/Board";
-import { UpvoteModel } from "../models/Upvote";
-import dalBoard from "../repository/dalBoard";
-import dalVote from "../repository/dalVote";
+import { Router } from 'express';
+import { BoardModel } from '../models/Board';
+import { UpvoteModel } from '../models/Upvote';
+import dalBoard from '../repository/dalBoard';
+import dalVote from '../repository/dalVote';
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   const upvote: UpvoteModel = req.body.upvote;
 
   const usersUpvotes = await dalVote.getByBoardAndUser(
@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
   );
   const board: BoardModel | null = await dalBoard.getById(upvote.boardID);
   if (board && usersUpvotes.length >= board.upvoteLimit) {
-    return res.status(406).end("You have already surpassed the upvote limit!");
+    return res.status(406).end('You have already surpassed the upvote limit!');
   }
 
   const savedUpvote = await dalVote.create(upvote);
@@ -27,7 +27,7 @@ router.post("/", async (req, res) => {
   });
 });
 
-router.get("/posts/:id", async (req, res) => {
+router.get('/posts/:id', async (req, res) => {
   const id = req.params.id;
   const representation = req.query.representation as string;
 
@@ -35,21 +35,21 @@ router.get("/posts/:id", async (req, res) => {
   res.json(upvotes);
 });
 
-router.get("/posts/:postID/users/:userID", async (req, res) => {
+router.get('/posts/:postID/users/:userID', async (req, res) => {
   const { postID, userID } = req.params;
 
   const upvotes = await dalVote.getByPostAndUser(postID, userID);
   res.json(upvotes);
 });
 
-router.get("/boards/:boardID/users/:userID", async (req, res) => {
+router.get('/boards/:boardID/users/:userID', async (req, res) => {
   const { boardID, userID } = req.params;
 
   const upvotes = await dalVote.getByBoardAndUser(boardID, userID);
   res.json(upvotes);
 });
 
-router.delete("/", async (req, res) => {
+router.delete('/', async (req, res) => {
   const postID = req.query.post as string;
   const userID = req.query.user as string;
 
@@ -64,10 +64,10 @@ router.delete("/", async (req, res) => {
       const amount = await dalVote.getAmountByPost(upvoteRemoved.postID);
       return res.json({ upvote: upvoteRemoved, count: amount });
     } else {
-      return res.status(404).end("No upvotes to remove!");
+      return res.status(404).end('No upvotes to remove!');
     }
   } catch (e) {
-    return res.status(500).end("Unable to remove upvote!");
+    return res.status(500).end('Unable to remove upvote!');
   }
 });
 

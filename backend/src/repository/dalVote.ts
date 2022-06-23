@@ -1,6 +1,6 @@
-import Upvote, { UpvoteModel } from "../models/Upvote";
-import { UserModel } from "../models/User";
-import dalUser from "./dalUser";
+import Upvote, { UpvoteModel } from '../models/Upvote';
+import { UserModel } from '../models/User';
+import dalUser from './dalUser';
 
 interface ExpandedResult {
   upvote: UpvoteModel;
@@ -61,15 +61,15 @@ export const getByPost = async (id: string, representation?: string) => {
 
     if (!representation) {
       return upvotes;
-    } else if (representation == "expanded") {
+    } else if (representation == 'expanded') {
       return await expandUsers(upvotes);
-    } else if (representation == "grouped") {
+    } else if (representation == 'grouped') {
       return groupByAmount(upvotes);
     } else {
       return upvotes;
     }
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -78,7 +78,7 @@ export const getAmountByPost = async (id: string) => {
     const numUpvotes = await Upvote.countDocuments({ postID: id });
     return numUpvotes;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -87,7 +87,7 @@ export const getByBoardAndUser = async (boardID: string, voterID: string) => {
     const upvotes = await Upvote.find({ boardID, voterID });
     return upvotes;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -96,7 +96,7 @@ export const getByPostAndUser = async (postID: string, voterID: string) => {
     const upvotes = await Upvote.find({ postID, voterID });
     return upvotes;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -105,7 +105,7 @@ export const create = async (upvote: UpvoteModel) => {
     const savedUpvote = await Upvote.create(upvote);
     return savedUpvote;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -113,7 +113,7 @@ export const remove = async (userID: string, postID: string) => {
   try {
     return await Upvote.findOneAndDelete({ voterID: userID, postID });
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -121,7 +121,7 @@ export const removeByPost = async (postID: string) => {
   try {
     return await Upvote.deleteMany({ postID });
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 

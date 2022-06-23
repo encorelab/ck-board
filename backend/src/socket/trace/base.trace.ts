@@ -1,8 +1,8 @@
-import { TraceModel } from "../../models/trace";
-import dalBoard from "../../repository/dalBoard";
-import dalProject from "../../repository/dalProject";
-import dalUser from "../../repository/dalUser";
-import { TraceContext } from "../types/event.types";
+import { TraceModel } from '../../models/Trace';
+import dalBoard from '../../repository/dalBoard';
+import dalProject from '../../repository/dalProject';
+import dalUser from '../../repository/dalUser';
+import { TraceContext } from '../types/event.types';
 
 /**
  * Creates base TraceModel using traceContext
@@ -20,7 +20,7 @@ export const createTrace = async (
     user?.userID === undefined ||
     board?.boardID === undefined
   ) {
-    throw new Error("Invalid board project or user in Trace Context");
+    throw new Error('Invalid board project or user in Trace Context');
   } else {
     const trace: TraceModel = {
       projectID: project?.projectID,
@@ -30,7 +30,7 @@ export const createTrace = async (
       agentUserID: user.userID,
       agentUserName: user.username,
       clientTimestamp: new Date(traceContext.clientTimestamp),
-      eventType: "",
+      eventType: '',
       event: {},
     };
     return trace;

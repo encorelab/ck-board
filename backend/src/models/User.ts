@@ -1,11 +1,11 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 
 export enum Role {
-  TEACHER = "TEACHER",
-  STUDENT = "STUDENT",
+  TEACHER = 'TEACHER',
+  STUDENT = 'STUDENT',
 }
 
-@modelOptions({ schemaOptions: { collection: "users", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: 'users', timestamps: true } })
 export class UserModel {
   @prop({ required: true })
   public userID!: string;

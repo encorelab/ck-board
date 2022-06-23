@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Project } from '../models/project';
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProjectService {
   constructor(private http: HttpClient) {}
@@ -24,6 +24,8 @@ export class ProjectService {
   }
 
   update(projectID: string, project: Partial<Project>): Promise<Project> {
-    return this.http.post<Project>('projects/' + projectID, project).toPromise();
+    return this.http
+      .post<Project>('projects/' + projectID, project)
+      .toPromise();
   }
 }

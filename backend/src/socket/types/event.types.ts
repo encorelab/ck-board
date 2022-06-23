@@ -1,5 +1,5 @@
-import { PostModel } from "../../models/Post";
-import { TagModel } from "../../models/Tag";
+import { PostModel } from '../../models/Post';
+import { TagModel } from '../../models/Tag';
 
 export interface TraceContext {
   projectID: string;

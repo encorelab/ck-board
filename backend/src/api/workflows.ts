@@ -1,13 +1,13 @@
-import { Router } from "express";
-import { DistributionWorkflowModel, WorkflowType } from "../models/Workflow";
-import dalWorkflow from "../repository/dalWorkflow";
+import { Router } from 'express';
+import { DistributionWorkflowModel, WorkflowType } from '../models/Workflow';
+import dalWorkflow from '../repository/dalWorkflow';
 
 const router = Router();
 
 /**
  * Create a new distribution workflow.
  */
-router.post("/distribution", async (req, res) => {
+router.post('/distribution', async (req, res) => {
   const workflow: DistributionWorkflowModel = req.body;
 
   const savedWorkflow = await dalWorkflow.create(
@@ -20,7 +20,7 @@ router.post("/distribution", async (req, res) => {
 /**
  * Update an existing distribution workflow.
  */
-router.post("/distribution/:id", async (req, res) => {
+router.post('/distribution/:id', async (req, res) => {
   const id = req.params.id;
   const { name, active, source, destinations, postsPerDestination } = req.body;
 
@@ -44,7 +44,7 @@ router.post("/distribution/:id", async (req, res) => {
 /**
  * Get all workflows for a board.
  */
-router.get("/boards/:id", async (req, res) => {
+router.get('/boards/:id', async (req, res) => {
   const id = req.params.id;
 
   const workflows = await dalWorkflow.getAllByBoardId(id);
@@ -54,7 +54,7 @@ router.get("/boards/:id", async (req, res) => {
 /**
  * Get all distribution workflows for a board.
  */
-router.get("/distribution/boards/:id", async (req, res) => {
+router.get('/distribution/boards/:id', async (req, res) => {
   const id = req.params.id;
 
   const workflows = await dalWorkflow.getByBoardId(
@@ -67,7 +67,7 @@ router.get("/distribution/boards/:id", async (req, res) => {
 /**
  * Delete an existing distribution workflow.
  */
-router.delete("/distribution/:id", async (req, res) => {
+router.delete('/distribution/:id', async (req, res) => {
   const id = req.params.id;
 
   await dalWorkflow.remove(WorkflowType.DISTRIBUTION, id);

@@ -1,12 +1,12 @@
-import mongoose from "mongoose";
-import Post, { DisplayAttributes, PostModel } from "../models/Post";
+import mongoose from 'mongoose';
+import Post, { DisplayAttributes, PostModel } from '../models/Post';
 
 export const getById = async (id: string) => {
   try {
     const post = await Post.findOne({ postID: id });
     return post;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -15,7 +15,7 @@ export const getByBoard = async (boardID: string) => {
     const posts = await Post.find({ boardID });
     return posts;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -24,7 +24,7 @@ export const create = async (post: PostModel) => {
     const savedPost = await Post.create(post);
     return savedPost;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -32,7 +32,7 @@ export const remove = async (id: string) => {
   try {
     await Post.findOneAndDelete({ postID: id });
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -51,7 +51,7 @@ export const update = async (id: string, post: Partial<PostModel>) => {
     );
     return updatedPost;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -62,7 +62,7 @@ export const createMany = async (posts: PostModel[]) => {
     const savedPosts = await Post.insertMany(posts);
     return savedPosts;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   } finally {
     await session.endSession();
   }

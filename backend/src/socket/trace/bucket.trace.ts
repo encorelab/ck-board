@@ -1,4 +1,3 @@
-import { BucketModel } from '../../models/Bucket';
 import dalBucket from '../../repository/dalBucket';
 import dalTrace from '../../repository/dalTrace';
 import { BucketEventInput, SocketPayload } from '../types/event.types';

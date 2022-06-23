@@ -4,7 +4,6 @@ import dalBucket from '../repository/dalBucket';
 import {
   convertBucket,
   convertBuckets,
-  convertPostsFromID,
 } from '../utils/converter';
 
 const router = Router();

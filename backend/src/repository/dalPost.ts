@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
-import { BucketModel } from "../models/Bucket";
-import Post, { PostModel } from "../models/Post";
-import dalBucket from "./dalBucket";
-import dalComment from "./dalComment";
-import dalVote from "./dalVote";
+import mongoose from 'mongoose';
+import { BucketModel } from '../models/Bucket';
+import Post, { PostModel } from '../models/Post';
+import dalBucket from './dalBucket';
+import dalComment from './dalComment';
+import dalVote from './dalVote';
 
 export const getById = async (id: string) => {
   try {
@@ -41,13 +41,9 @@ export const remove = async (id: string) => {
     await dalComment.removeByPost(id);
     await deleteFromBuckets(id);
   } catch (err) {
-<<<<<<< HEAD
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   } finally {
     await session.endSession();
-=======
-    throw new Error(JSON.stringify(err, null, ' '));
->>>>>>> a905ff08bfa42f41888c1065d8f88cec337b00fe
   }
 };
 
@@ -83,13 +79,13 @@ export const createMany = async (posts: PostModel[]) => {
   }
 };
 
-<<<<<<< HEAD
 const deleteFromBuckets = async (id: string) => {
   const buckets: BucketModel[] = await dalBucket.getByPostId(id);
   for (let i = 0; i < buckets.length; i++) {
     await dalBucket.removePost(buckets[i].bucketID, [id]);
   }
-=======
+};
+
 const formatAttributes = (post: Partial<PostModel>) => {
   if (!post.displayAttributes) return {};
 
@@ -103,7 +99,6 @@ const formatAttributes = (post: Partial<PostModel>) => {
   }
 
   return update;
->>>>>>> a905ff08bfa42f41888c1065d8f88cec337b00fe
 };
 
 const dalPost = {

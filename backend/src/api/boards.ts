@@ -38,6 +38,13 @@ router.post('/:id', async (req, res) => {
   res.status(200).json(updatedBoard);
 });
 
+router.delete('/clear/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const posts = await dalBoard.clearBoard(id);
+  res.status(200).json(posts)
+})
+
 router.get('/:id', async (req, res) => {
   const id = req.params.id;
 

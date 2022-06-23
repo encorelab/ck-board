@@ -81,6 +81,20 @@ export const remove = async (id: string) => {
   }
 };
 
+export const clearBoard = async (id: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const posts = await dalPost.removeByBoard(id);
+    await dalBucket.clearBuckets(id);
+    return posts
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  } finally {
+    await session.endSession();
+  }
+}
+
 const dalBoard = {
   getById,
   getMultipleByIds,
@@ -88,6 +102,7 @@ const dalBoard = {
   create,
   update,
   remove,
+  clearBoard,
 };
 
 export default dalBoard;

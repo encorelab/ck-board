@@ -31,4 +31,8 @@ export class BoardService {
   remove(id: string) {
     return this.http.delete<Board>('boards/' + id).toPromise();
   }
+
+  clear(id: string) {
+    return this.http.delete<Board>('boards/clear' + id).toPromise();
+  }
 }

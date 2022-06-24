@@ -139,11 +139,20 @@ export class FabricUtils {
     return existing;
   }
 
+  /** 
+  Updates the position and formatting of a fabric post
+  after the author name is changed.
+
+	@param obj the fabric post being updated
+  @param author new author name 
+	@returns updated fabric post
+	*/
   updateAuthor(obj: any, author: string) {
     var children: fabric.Object[] = obj.getObjects();
     var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
     var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
     var upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
+    var downvoteObj: any = children.filter((obj) => obj.name == 'downvote').pop();
     var upvoteCountObj: any = children
       .filter((obj) => obj.name == 'upvoteCount')
       .pop();
@@ -165,6 +174,7 @@ export class FabricUtils {
 
     descObj.set({ top: descObj.top + authorDelta, dirty: true });
     upvoteObj.set({ top: upvoteObj.top + authorDelta, dirty: true });
+    downvoteObj.set({ top: downvoteObj.top + authorDelta, dirty: true });
     upvoteCountObj.set({ top: upvoteCountObj.top + authorDelta, dirty: true });
     commentObj.set({ top: commentObj.top + authorDelta, dirty: true });
     commentCountObj.set({
@@ -178,12 +188,22 @@ export class FabricUtils {
     return obj;
   }
 
+  /** 
+  Updates the position and formatting of a fabric post
+  after the title or description is changed.
+
+	@param obj the fabric post being updated
+  @param title new title 
+  @param desc new desc
+	@returns updated fabric post
+	*/
   updatePostTitleDesc(obj: any, title: string, desc: string) {
     var children: fabric.Object[] = obj.getObjects();
     var titleObj: any = children.filter((obj) => obj.name == 'title').pop();
     var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
     var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
     var upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
+    var downvoteObj: any = children.filter((obj) => obj.name == 'downvote').pop();
     var upvoteCountObj: any = children
       .filter((obj) => obj.name == 'upvoteCount')
       .pop();
@@ -215,6 +235,10 @@ export class FabricUtils {
     descObj.set({ top: descObj.top + titleDelta + authorDelta, dirty: true });
     upvoteObj.set({
       top: upvoteObj.top + titleDelta + authorDelta + descDelta,
+      dirty: true,
+    });
+    downvoteObj.set({
+      top: downvoteObj.top + titleDelta + authorDelta + descDelta,
       dirty: true,
     });
     upvoteCountObj.set({

@@ -22,7 +22,7 @@ export class PermissionsModel {
   public allowStudentMoveAny!: boolean;
 
   @prop({ required: true })
-  public allowStudentLiking!: boolean;
+  public allowStudentUpvoting!: boolean;
 
   @prop({ required: true })
   public allowStudentEditAddDeletePost!: boolean;
@@ -74,6 +74,9 @@ export class BoardModel {
 
   @prop({ required: true })
   public initialZoom!: number;
+
+  @prop({ required: true })
+  public upvoteLimit!: number;
 }
 
 export default getModelForClass(BoardModel);

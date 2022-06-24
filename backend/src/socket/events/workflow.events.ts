@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io';
-import { run, runDistributionWorkflow } from '../../agents/workflow.agent';
+import { runDistributionWorkflow } from '../../agents/workflow.agent';
 import { SocketEvent } from '../../constants';
 import { DistributionWorkflowModel, WorkflowType } from '../../models/Workflow';
 import dalWorkflow from '../../repository/dalWorkflow';

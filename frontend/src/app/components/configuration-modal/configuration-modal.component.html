@@ -17,15 +17,32 @@
           Board Name is required.
         </mat-error>
       </mat-form-field>
-      <mat-label>Initial zoom: {{ initialZoom }}%</mat-label>
-      <mat-slider
-        class="slider"
-        min="0"
-        max="200"
-        step="5"
-        [(ngModel)]="initialZoom"
-        thumbLabel
-      ></mat-slider>
+      <div>
+        <mat-label style="font-weight: bold"
+          >Initial Zoom: {{ initialZoom }}%</mat-label
+        >
+        <mat-slider
+          class="slider"
+          min="0"
+          max="200"
+          step="5"
+          [(ngModel)]="initialZoom"
+          thumbLabel
+        ></mat-slider>
+      </div>
+      <div>
+        <mat-label style="font-weight: bold"
+          >Maximum Upvotes Per Student: {{ upvoteLimit }}</mat-label
+        >
+        <mat-slider
+          class="slider"
+          min="0"
+          max="10"
+          step="1"
+          [(ngModel)]="upvoteLimit"
+          thumbLabel
+        ></mat-slider>
+      </div>
       <div class="image-form">
         <mat-chip (click)="compressFile()" color="primary" selected>
           <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
@@ -73,23 +90,21 @@
       <h2 style="margin-top: 20px">Tracing</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowTracing"
-          >Allow tracing of board activity</mat-checkbox
-        >
-      </p>
+          >Allow tracing of board activity</mat-checkbox>
       <h2 style="margin-top: 20px">Post Features</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny"
-          >Allow students to move any post</mat-checkbox
-        >
+          >Allow students to move any post</mat-checkbox>
       </p>
+      <h2 style="margin-top: 20px">Post Features</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentEditAddDeletePost"
           >Allow students to create, edit, and delete posts</mat-checkbox
         >
       </p>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.allowStudentLiking"
-          >Allow students to like posts</mat-checkbox
+        <mat-checkbox [(ngModel)]="permissions.allowStudentUpvoting"
+          >Allow students to upvote posts</mat-checkbox
         >
       </p>
       <p>

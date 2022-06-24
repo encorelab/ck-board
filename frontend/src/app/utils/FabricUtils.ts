@@ -152,7 +152,9 @@ export class FabricUtils {
     var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
     var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
     var upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
-    var downvoteObj: any = children.filter((obj) => obj.name == 'downvote').pop();
+    var downvoteObj: any = children
+      .filter((obj) => obj.name == 'downvote')
+      .pop();
     var upvoteCountObj: any = children
       .filter((obj) => obj.name == 'upvoteCount')
       .pop();
@@ -203,7 +205,9 @@ export class FabricUtils {
     var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
     var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
     var upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
-    var downvoteObj: any = children.filter((obj) => obj.name == 'downvote').pop();
+    var downvoteObj: any = children
+      .filter((obj) => obj.name == 'downvote')
+      .pop();
     var upvoteCountObj: any = children
       .filter((obj) => obj.name == 'upvoteCount')
       .pop();

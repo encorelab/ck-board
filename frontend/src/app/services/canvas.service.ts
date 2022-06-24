@@ -239,19 +239,23 @@ export class CanvasService {
     permissions: BoardPermissions
   ): Promise<Board> {
     const oldBoard = await this.boardService.get(boardID);
-    if(oldBoard.permissions.allowTracing!== permissions.allowTracing){
-      if(permissions.allowTracing){
-        this.socketService.emit(SocketEvent.TRACING_ENABLED, permissions.allowTracing);
-      }
-      else{
-        this.socketService.emit(SocketEvent.TRACING_DISABLED, permissions.allowTracing);
+    if (oldBoard.permissions.allowTracing !== permissions.allowTracing) {
+      if (permissions.allowTracing) {
+        this.socketService.emit(
+          SocketEvent.TRACING_ENABLED,
+          permissions.allowTracing
+        );
+      } else {
+        this.socketService.emit(
+          SocketEvent.TRACING_DISABLED,
+          permissions.allowTracing
+        );
       }
     }
     const board: Board = await this.boardService.update(boardID, {
       permissions,
     });
     this.socketService.emit(SocketEvent.BOARD_PERMISSIONS_UPDATE, board);
-    
 
     return board;
   }

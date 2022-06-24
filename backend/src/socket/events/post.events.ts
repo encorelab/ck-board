@@ -125,7 +125,8 @@ class PostUpvoteRemove {
 
   static async handleEvent(input: SocketPayload<UpvoteModel>): Promise<object> {
     const upvoteAmount = await dalVote.getAmountByPost(input.eventData.postID);
-    if (input.trace.allowTracing) await postTrace.upvoteRemove(input, this.type);
+    if (input.trace.allowTracing)
+      await postTrace.upvoteRemove(input, this.type);
     return { upvote: input.eventData, amount: upvoteAmount };
   }
 

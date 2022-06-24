@@ -4,10 +4,10 @@ import { createTrace } from './base.trace';
 
 /**
  * Creates trace for Tracing Enabled
- * 
+ *
  * input.eventData = permissions.allowTracing. this is unused for now
- * @param input 
- * @param eventType 
+ * @param input
+ * @param eventType
  */
 const tracingEnabled = async (
   input: SocketPayload<boolean>,
@@ -15,17 +15,17 @@ const tracingEnabled = async (
 ) => {
   const trace = await createTrace(input.trace);
   trace.eventType = eventType;
-  trace.event={};
- 
+  trace.event = {};
+
   await dalTrace.create(trace);
 };
 
 /**
  * Creates trace for Tracing Enabled
- * 
+ *
  * input.eventData = permissions.allowTracing. this is unused for now
- * @param input 
- * @param eventType 
+ * @param input
+ * @param eventType
  */
 const tracingDisabled = async (
   input: SocketPayload<boolean>,
@@ -33,14 +33,14 @@ const tracingDisabled = async (
 ) => {
   const trace = await createTrace(input.trace);
   trace.eventType = eventType;
-  trace.event={};
- 
+  trace.event = {};
+
   await dalTrace.create(trace);
 };
 
-const boardTrace ={
+const boardTrace = {
   tracingEnabled,
-  tracingDisabled
-}
+  tracingDisabled,
+};
 
 export default boardTrace;

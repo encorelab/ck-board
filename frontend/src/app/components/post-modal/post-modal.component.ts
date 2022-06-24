@@ -54,7 +54,7 @@ export class PostModalComponent {
   showEditDelete = false;
   showAuthorName: boolean;
 
-  error: string = '';
+  error = '';
   titleControl = new FormControl('', [
     Validators.required,
     Validators.maxLength(50),
@@ -67,7 +67,7 @@ export class PostModalComponent {
 
   upvotes: Upvote[] = [];
 
-  expandedUpvotesView: boolean = false;
+  expandedUpvotesView = false;
   expandedUpvotes: any[] = [];
 
   constructor(

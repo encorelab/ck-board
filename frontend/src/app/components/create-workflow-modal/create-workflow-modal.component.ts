@@ -191,7 +191,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   _assembleWorkflow() {
-    let workflowID: string = generateUniqueID();
+    const workflowID: string = generateUniqueID();
 
     const workflow: DistributionWorkflow = {
       workflowID: workflowID,

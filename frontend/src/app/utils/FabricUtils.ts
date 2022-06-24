@@ -148,14 +148,14 @@ export class FabricUtils {
 	@returns updated fabric post
 	*/
   updateAuthor(obj: any, author: string) {
-    var children: fabric.Object[] = obj.getObjects();
-    var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
-    var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
-    var upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
-    var downvoteObj: any = children
+    const children: fabric.Object[] = obj.getObjects();
+    const authorObj: any = children.filter((obj) => obj.name == 'author').pop();
+    const descObj: any = children.filter((obj) => obj.name == 'desc').pop();
+    const upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
+    const downvoteObj: any = children
       .filter((obj) => obj.name == 'downvote')
       .pop();
-    var upvoteCountObj: any = children
+    const upvoteCountObj: any = children
       .filter((obj) => obj.name == 'upvoteCount')
       .pop();
     const commentObj: any = children
@@ -200,15 +200,15 @@ export class FabricUtils {
 	@returns updated fabric post
 	*/
   updatePostTitleDesc(obj: any, title: string, desc: string) {
-    var children: fabric.Object[] = obj.getObjects();
-    var titleObj: any = children.filter((obj) => obj.name == 'title').pop();
-    var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
-    var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
-    var upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
-    var downvoteObj: any = children
+    const children: fabric.Object[] = obj.getObjects();
+    const titleObj: any = children.filter((obj) => obj.name == 'title').pop();
+    const authorObj: any = children.filter((obj) => obj.name == 'author').pop();
+    const descObj: any = children.filter((obj) => obj.name == 'desc').pop();
+    const upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
+    const downvoteObj: any = children
       .filter((obj) => obj.name == 'downvote')
       .pop();
-    var upvoteCountObj: any = children
+    const upvoteCountObj: any = children
       .filter((obj) => obj.name == 'upvoteCount')
       .pop();
     const commentObj: any = children
@@ -343,12 +343,12 @@ export class FabricUtils {
 	@returns updated fabric post
 	*/
   setUpvoteCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    var upvoteCount: any = this.getChildFromGroup(fabricObject, 'upvoteCount');
-    var downvote: any = this.getChildFromGroup(fabricObject, 'downvote');
+    const upvoteCount: any = this.getChildFromGroup(fabricObject, 'upvoteCount');
+    const downvote: any = this.getChildFromGroup(fabricObject, 'downvote');
 
-    let prevAmountDigits = upvoteCount.text.length;
-    let amountDigits = numDigits(amount);
-    let left = downvote.left + (amountDigits - prevAmountDigits) * 9;
+    const prevAmountDigits = upvoteCount.text.length;
+    const amountDigits = numDigits(amount);
+    const left = downvote.left + (amountDigits - prevAmountDigits) * 9;
 
     upvoteCount.set({ text: amount.toString(), dirty: true });
     downvote.set({ left, dirty: true });
@@ -366,8 +366,8 @@ export class FabricUtils {
 	@returns updated fabric post
 	*/
   setCommentCount(fabricObj: fabric.Group, amount: number): fabric.Group {
-    var comment: any = this.getChildFromGroup(fabricObj, 'comment');
-    var commentCount: any = this.getChildFromGroup(fabricObj, 'commentCount');
+    const comment: any = this.getChildFromGroup(fabricObj, 'comment');
+    const commentCount: any = this.getChildFromGroup(fabricObj, 'commentCount');
 
     commentCount.set({ text: amount.toString(), dirty: true });
 

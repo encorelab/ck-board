@@ -31,6 +31,6 @@ export class Board {
   permissions: BoardPermissions;
   members: string[];
   tags: Tag[];
-  initialZoom: number = 100;
-  upvoteLimit: number = 5;
+  initialZoom = 100;
+  upvoteLimit = 5;
 }

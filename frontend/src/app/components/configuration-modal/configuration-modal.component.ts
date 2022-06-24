@@ -31,8 +31,8 @@ export class ConfigurationModalComponent {
   newTagText = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
 
-  initialZoom: number = 100;
-  upvoteLimit: number = 5;
+  initialZoom = 100;
+  upvoteLimit = 5;
 
   members: string[] = [];
 

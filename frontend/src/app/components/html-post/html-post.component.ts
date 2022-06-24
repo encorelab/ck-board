@@ -54,9 +54,9 @@ export class HtmlPostComponent implements OnInit {
 
   postColor: string = POST_COLOR;
 
-  showUsername: boolean = false;
+  showUsername = false;
 
-  error: string = '';
+  error = '';
 
   constructor(
     public commentService: CommentService,

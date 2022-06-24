@@ -77,7 +77,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   showAddPost = true;
   lockArrowKeys = false;
 
-  upvoteCounter: number = 0;
+  upvoteCounter = 0;
 
   unsubListeners: Subscription[] = [];
 
@@ -249,14 +249,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handlePostTagAddEvent = ({ post, tag }) => {
-    let existing = this.fabricUtils.getObjectFromId(post.postID);
+    const existing = this.fabricUtils.getObjectFromId(post.postID);
     if (existing) {
       this.fabricUtils.applyTagFeatures(existing, tag);
     }
   };
 
   handlePostTagRemoveEvent = ({ post, tag }) => {
-    let existing = this.fabricUtils.getObjectFromId(post.postID);
+    const existing = this.fabricUtils.getObjectFromId(post.postID);
     if (post.specialAttributes && existing) {
       this.fabricUtils.resetTagFeatures(existing);
     }
@@ -533,8 +533,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handleUpvoteClick = async (e: fabric.IEvent) => {
-    var post: any = e.target;
-    var upvoteButton = e.subTargets?.find((o) => o.name == 'upvote');
+    const post: any = e.target;
+    const upvoteButton = e.subTargets?.find((o) => o.name == 'upvote');
 
     if (upvoteButton && this._votingAllowed()) {
       this.canvasService
@@ -544,8 +544,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handleDownvoteClick = async (e: fabric.IEvent) => {
-    var post: any = e.target;
-    var upvoteButton = e.subTargets?.find((o) => o.name == 'downvote');
+    const post: any = e.target;
+    const upvoteButton = e.subTargets?.find((o) => o.name == 'downvote');
 
     if (upvoteButton && this._votingAllowed()) {
       this.canvasService
@@ -569,10 +569,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const mouseUpHandler = (e: fabric.IEvent) => {
       const obj: any = e.target;
 
-      var votePress = e.subTargets?.find(
+      const votePress = e.subTargets?.find(
         (o) => o.name == 'upvote' || o.name == 'downvote'
       );
-      var isDragEnd = isDragging;
+      const isDragEnd = isDragging;
       isDragging = false;
       isMouseDown = false;
 
@@ -896,9 +896,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private _votingAllowed() {
-    let isStudent = this.user.role == Role.STUDENT;
-    let isTeacher = this.user.role == Role.TEACHER;
-    let allowStudent = isStudent && this.board.permissions.allowStudentUpvoting;
+    const isStudent = this.user.role == Role.STUDENT;
+    const isTeacher = this.user.role == Role.TEACHER;
+    const allowStudent = isStudent && this.board.permissions.allowStudentUpvoting;
 
     return allowStudent || isTeacher;
   }

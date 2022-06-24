@@ -84,11 +84,11 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       }
     });
     this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
+      const found = this.posts.find((p) => p.post.postID == result.upvote.postID);
       if (found) found.upvotes.push(result.upvote);
     });
     this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
+      const found = this.posts.find((p) => p.post.postID == result.upvote.postID);
       if (found)
         found.upvotes = found.upvotes.filter(
           (upvote) => upvote.upvoteID != result.upvote.upvoteID

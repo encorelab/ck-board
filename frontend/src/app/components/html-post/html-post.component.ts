@@ -1,29 +1,20 @@
 import { DELETE } from '@angular/cdk/keycodes';
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PostModalComponent } from 'src/app/components/post-modal/post-modal.component';
 import { Board } from 'src/app/models/board';
-import Like from 'src/app/models/like';
 import Post from 'src/app/models/post';
-import { Tag } from 'src/app/models/tag';
 import { AuthUser } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { CommentService } from 'src/app/services/comment.service';
-import { LikesService } from 'src/app/services/likes.service';
+import { UpvotesService } from 'src/app/services/upvotes.service';
 import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
-import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
-import Utils from 'src/app/utils/Utils';
+import { getErrorMessage } from 'src/app/utils/Utils';
+import Upvote from 'src/app/models/upvote';
 
 export interface HTMLPost {
   /* Board which contains this post */
@@ -35,8 +26,8 @@ export interface HTMLPost {
   /* Author name */
   author: string;
 
-  /* Array of user IDs who've liked the post */
-  likes: string[];
+  /* Array of post's upvotes */
+  upvotes: Upvote[];
 
   /* Number of comments */
   comments: number;
@@ -63,12 +54,13 @@ export class HtmlPostComponent implements OnInit {
 
   postColor: string = POST_COLOR;
 
-  isLiked = false;
   showUsername = false;
+
+  error = '';
 
   constructor(
     public commentService: CommentService,
-    public likesService: LikesService,
+    public upvotesService: UpvotesService,
     public postService: PostService,
     public userService: UserService,
     public socketService: SocketService,
@@ -79,7 +71,6 @@ export class HtmlPostComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.userService.user!;
-    this.isLiked = this.post.likes.includes(this.user.userID);
   }
 
   openPostDialog() {
@@ -104,29 +95,32 @@ export class HtmlPostComponent implements OnInit {
     this.canvasService.readPost(this.post.post.postID);
   }
 
-  handleLike(event) {
+  async handleUpvote(event) {
     event.stopPropagation();
 
-    if (this.isLiked) {
-      this.canvasService.unlike(this.user.userID, this.post.post.postID);
-      this.isLiked = false;
-      this.post.likes = this.post.likes.filter(
-        (like) => like !== this.user.userID
-      );
-    } else {
-      const like: Like = {
-        likeID: Utils.generateUniqueID(),
-        likerID: this.user.userID,
-        postID: this.post.post.postID,
-        boardID: this.post.board.boardID,
-      };
-      this.canvasService.like(like);
-      this.isLiked = true;
-      this.post.likes.push(this.user.userID);
-    }
+    this.canvasService
+      .upvote(this.user.userID, this.post.post)
+      .catch((e) => this.setError(getErrorMessage(e)));
+  }
+
+  async handleDownvote(event) {
+    event.stopPropagation();
+
+    this.canvasService
+      .unupvote(this.user.userID, this.post.post)
+      .catch((e) => this.setError(getErrorMessage(e)));
   }
 
   movePostToBoard(postID: string) {
     this.movePostToBoardEvent.next(postID);
+  }
+
+  isUpvoted(): Boolean {
+    return this.post.upvotes.some((u) => u.voterID == this.user.userID);
+  }
+
+  setError(error: string) {
+    this.error = error;
+    setTimeout(() => (this.error = ''), 5000);
   }
 }

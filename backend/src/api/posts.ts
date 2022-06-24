@@ -42,4 +42,15 @@ router.post('/:id', async (req, res) => {
   res.json(updatedPost);
 });
 
+router.delete('/:id', async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const post = await dalPost.remove(id);
+    res.status(200).json(post);
+  } catch (e) {
+    res.status(500).end(e);
+  }
+});
+
 export default router;

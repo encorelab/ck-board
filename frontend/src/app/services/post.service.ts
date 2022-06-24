@@ -37,4 +37,8 @@ export class PostService {
   update(postID: string, value: Partial<Post>): Promise<Post> {
     return this.http.post<Post>('posts/' + postID, value).toPromise();
   }
+
+  remove(id: string): Promise<Post> {
+    return this.http.delete<Post>('posts/' + id).toPromise();
+  }
 }

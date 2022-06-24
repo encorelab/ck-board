@@ -27,10 +27,19 @@ export const create = async (comment: CommentModel) => {
   }
 };
 
+export const removeByPost = async (postID: string) => {
+  try {
+    await Comment.deleteMany({ postID });
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 const dalComment = {
   getByPost,
   getAmountByPost,
   create,
+  removeByPost,
 };
 
 export default dalComment;

@@ -8,17 +8,18 @@
     min-height: 110px;
 }
 
-.comment-delete {
-    position: absolute; 
-    right: 0; 
-    top: 5.5px
-}
-
 .comment-box {
     overflow-y: auto;
     word-wrap: break-word;
     max-height: 300px;
     margin-bottom: 3px;
+}
+
+.comment-delete {
+    position: absolute; 
+    right: 0; 
+    top: 5.5px;
+    display: none;
 }
 
 .comment-toggler {
@@ -28,6 +29,10 @@
 .comment {
     background-color: #F5F5F5;
     border-radius: 0%;
+}
+
+.comment:hover .comment-delete {
+    display: block;
 }
 
 .add-comment {

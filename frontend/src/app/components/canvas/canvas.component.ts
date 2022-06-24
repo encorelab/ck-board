@@ -898,7 +898,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private _votingAllowed() {
     const isStudent = this.user.role == Role.STUDENT;
     const isTeacher = this.user.role == Role.TEACHER;
-    const allowStudent = isStudent && this.board.permissions.allowStudentUpvoting;
+    const allowStudent =
+      isStudent && this.board.permissions.allowStudentUpvoting;
 
     return allowStudent || isTeacher;
   }

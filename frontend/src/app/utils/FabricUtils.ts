@@ -343,7 +343,10 @@ export class FabricUtils {
 	@returns updated fabric post
 	*/
   setUpvoteCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    const upvoteCount: any = this.getChildFromGroup(fabricObject, 'upvoteCount');
+    const upvoteCount: any = this.getChildFromGroup(
+      fabricObject,
+      'upvoteCount'
+    );
     const downvote: any = this.getChildFromGroup(fabricObject, 'downvote');
 
     const prevAmountDigits = upvoteCount.text.length;

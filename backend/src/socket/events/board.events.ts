@@ -97,7 +97,6 @@ class BoardEnableTracing {
    */
   static async handleEvent(input: SocketPayload<boolean>): Promise<boolean> {
     await boardTrace.tracingEnabled(input, this.type); // always need to trace this
-    console.log(this.type);
     return input.eventData;
   }
 
@@ -115,7 +114,6 @@ class BoardDisableTracing {
    */
   static async handleEvent(input: SocketPayload<boolean>): Promise<boolean> {
     await boardTrace.tracingDisabled(input, this.type); // always need to trace this
-    console.log(this.type);
     return input.eventData;
   }
 

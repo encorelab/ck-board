@@ -41,7 +41,6 @@ export class SocketService {
    * @returns void
    */
   emit(event: SocketEvent, value: any): void {
-    console.log(event);
     const trace = this.traceService.getTraceContext();
     const socketPayload: SocketPayload = {
       trace,

@@ -241,16 +241,15 @@ export class PostModalComponent {
       data: {
         title: 'Confirmation',
         message: 'Are you sure you want to delete this comment?',
-         handleConfirm: () => {
-          this.canvasService.deleteComment(comment.commentID, comment.postID)
-          let ind = this.comments.indexOf(comment)
-          if (ind != -1){
-            this.comments.splice(ind, 1)
+        handleConfirm: () => {
+          this.canvasService.deleteComment(comment.commentID, comment.postID);
+          let ind = this.comments.indexOf(comment);
+          if (ind != -1) {
+            this.comments.splice(ind, 1);
           }
         },
       },
     });
-   
   }
 
   async handleUpvoteClick() {

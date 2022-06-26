@@ -5,7 +5,7 @@ export const getById = async (id: string) => {
     const comment = await Comment.findOne({ commentID: id });
     return comment;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -49,7 +49,7 @@ export const remove = async (id: string) => {
     const deletedComment = await Comment.findOneAndDelete({ commentID: id });
     return deletedComment;
   } catch (err) {
-    throw new Error(JSON.stringify(err, null, " "));
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 

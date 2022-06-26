@@ -153,7 +153,6 @@ const commentRemove = async (
   return dalTrace.create(trace);
 };
 
-
 /**
  * Creates trace for adding a tag to a post
  * @param input

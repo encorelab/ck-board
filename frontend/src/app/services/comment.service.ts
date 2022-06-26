@@ -19,4 +19,4 @@ export class CommentService {
   remove(id: string): any {
     return this.http.delete('comments/' + id).toPromise();
   }
-} 
+}

@@ -1,5 +1,5 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
-import { TagModel } from "./Tag";
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { TagModel } from './Tag';
 
 export class TaskModel {
   @prop({ required: false })
@@ -22,7 +22,7 @@ export class PermissionsModel {
   public allowStudentMoveAny!: boolean;
 
   @prop({ required: true })
-  public allowStudentLiking!: boolean;
+  public allowStudentUpvoting!: boolean;
 
   @prop({ required: true })
   public allowStudentEditAddDeletePost!: boolean;
@@ -43,7 +43,7 @@ export class PermissionsModel {
   public showBucketStudent!: boolean;
 }
 
-@modelOptions({ schemaOptions: { collection: "boards", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })
 export class BoardModel {
   @prop({ required: true })
   public boardID!: string;
@@ -71,6 +71,9 @@ export class BoardModel {
 
   @prop({ required: true })
   public initialZoom!: number;
+
+  @prop({ required: true })
+  public upvoteLimit!: number;
 }
 
 export default getModelForClass(BoardModel);

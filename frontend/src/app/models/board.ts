@@ -13,7 +13,7 @@ export class BoardTask {
 
 export class BoardPermissions {
   allowStudentMoveAny: boolean;
-  allowStudentLiking: boolean;
+  allowStudentUpvoting: boolean;
   allowStudentEditAddDeletePost: boolean;
   allowStudentCommenting: boolean;
   allowStudentTagging: boolean;
@@ -31,5 +31,6 @@ export class Board {
   permissions: BoardPermissions;
   members: string[];
   tags: Tag[];
-  initialZoom: number = 100;
+  initialZoom = 100;
+  upvoteLimit = 5;
 }

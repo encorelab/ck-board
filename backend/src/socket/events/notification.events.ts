@@ -1,9 +1,9 @@
-import { Server, Socket } from "socket.io";
-import { SocketEvent } from "../../constants";
-import { NotificationModel } from "../../models/Notification";
-import dalNotification from "../../repository/dalNotification";
-import SocketManager from "../socketManager";
-import { SocketPayload } from "../types/event.types";
+import { Server, Socket } from 'socket.io';
+import { SocketEvent } from '../../constants';
+import { NotificationModel } from '../../models/Notification';
+import dalNotification from '../../repository/dalNotification';
+import SocketManager from '../socketManager';
+import { SocketPayload } from '../types/event.types';
 
 class NotificationCreate {
   static type: SocketEvent = SocketEvent.NOTIFICATION_CREATE;

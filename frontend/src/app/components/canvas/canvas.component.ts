@@ -25,8 +25,7 @@ import { Board, BoardPermissions } from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
-import { LikesService } from 'src/app/services/likes.service';
-import Like from 'src/app/models/like';
+import { UpvotesService } from 'src/app/services/upvotes.service';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
@@ -39,7 +38,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { ComponentType } from '@angular/cdk/portal';
-import Utils from 'src/app/utils/Utils';
+import { getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
@@ -61,22 +60,24 @@ export class CanvasComponent implements OnInit, OnDestroy {
   groupEventToHandler: Map<SocketEvent, Function>;
 
   Math: Math = Math;
-  initialClientX: number = 0;
-  initialClientY: number = 0;
-  finalClientX: number = 0;
-  finalClientY: number = 0;
+  initialClientX = 0;
+  initialClientY = 0;
+  finalClientX = 0;
+  finalClientY = 0;
 
-  zoom: number = 1;
+  zoom = 1;
 
   mode: Mode = Mode.EDIT;
   modeType = Mode;
   Role: typeof Role = Role;
 
-  showList: boolean = false;
-  showBuckets: boolean = false;
+  showList = false;
+  showBuckets = false;
 
-  showAddPost: boolean = true;
-  lockArrowKeys: boolean = false;
+  showAddPost = true;
+  lockArrowKeys = false;
+
+  upvoteCounter = 0;
 
   unsubListeners: Subscription[] = [];
 
@@ -85,7 +86,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     public boardService: BoardService,
     public userService: UserService,
     public commentService: CommentService,
-    public likesService: LikesService,
+    public upvotesService: UpvotesService,
     public projectService: ProjectService,
     protected fabricUtils: FabricUtils,
     private router: Router,
@@ -103,8 +104,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.POST_DELETE, this.handlePostDeleteEvent],
       [SocketEvent.POST_START_MOVE, this.handlePostStartMoveEvent],
       [SocketEvent.POST_STOP_MOVE, this.handlePostStopMoveEvent],
-      [SocketEvent.POST_LIKE_ADD, this.handlePostLikeAddEvent],
-      [SocketEvent.POST_LIKE_REMOVE, this.handlePostLikeRemoveEvent],
+      [SocketEvent.POST_UPVOTE_ADD, this.handlePostUpvoteAddEvent],
+      [SocketEvent.POST_UPVOTE_REMOVE, this.handlePostUpvoteRemoveEvent],
       [SocketEvent.POST_COMMENT_ADD, this.handlePostCommentAddEvent],
       [SocketEvent.POST_COMMENT_REMOVE, this.handlePostCommentRemoveEvent],
       [SocketEvent.POST_TAG_ADD, this.handlePostTagAddEvent],
@@ -114,6 +115,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.BOARD_PERMISSIONS_UPDATE, this.handleBoardPermsUpdateEvent],
       [SocketEvent.BOARD_TAGS_UPDATE, this.handleBoardTagsUpdateEvent],
       [SocketEvent.BOARD_TASK_UPDATE, this.handleBoardTaskUpdateEvent],
+      [SocketEvent.BOARD_UPVOTE_UPDATE, this.handleBoardUpvoteUpdateEvent],
     ]);
   }
 
@@ -135,7 +137,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   initCanvasEventsListener() {
     const unsubMoving = this.initMovingPostListener();
     const unsubExpand = this.initPostClickListener();
-    const unsubLike = this.initLikeClickListener();
+    const unsubUpvote = this.initUpvoteClickListener();
     const unsubZoom = this.initZoomListener();
     const unsubPan = this.initPanListener();
     const unsubSwipePan = this.initPanSwipeListener();
@@ -145,7 +147,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const unsubArrowKeyUnlock = this.unlockArrowKeysWhenModalClose();
 
     return [
-      unsubLike,
+      unsubUpvote,
       unsubExpand,
       unsubModal,
       unsubMoving,
@@ -160,7 +162,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initGroupEventsListener() {
     for (const [k, v] of this.groupEventToHandler) {
-      let unsub = this.socketService.listen(k, v);
+      const unsub = this.socketService.listen(k, v);
       this.unsubListeners.push(unsub);
     }
   }
@@ -172,17 +174,24 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   handlePostUpdateEvent = (post: Post) => {
     let existing = this.fabricUtils.getObjectFromId(post.postID);
-    existing = this.fabricUtils.updatePostTitleDesc(
-      existing,
-      post.title,
-      post.desc
-    );
-    this.canvas.requestRenderAll();
+
+    if (existing) {
+      existing = this.fabricUtils.updatePostTitleDesc(
+        existing,
+        post.title,
+        post.desc
+      );
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostDeleteEvent = (id: string) => {
     const obj = this.fabricUtils.getObjectFromId(id);
-    this.canvas.remove(obj);
+    if (obj) {
+      this.canvas.remove(obj);
+    }
+
+    this._calcUpvoteCounter();
   };
 
   handlePostStartMoveEvent = (post: Post) => {
@@ -212,22 +221,32 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   };
 
-  handlePostLikeAddEvent = (result: any) => {
-    let existing = this.fabricUtils.getObjectFromId(result.like.postID);
-    existing = this.fabricUtils.setLikeCount(existing, result.amount);
-    this.canvas.requestRenderAll();
+  handlePostUpvoteAddEvent = (result: any) => {
+    if (result.upvote.voterID == this.user.userID) this.upvoteCounter -= 1;
+
+    let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
+    if (existing) {
+      existing = this.fabricUtils.setUpvoteCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    }
   };
 
-  handlePostLikeRemoveEvent = (result: any) => {
-    let existing = this.fabricUtils.getObjectFromId(result.like.postID);
-    existing = this.fabricUtils.setLikeCount(existing, result.amount);
-    this.canvas.requestRenderAll();
+  handlePostUpvoteRemoveEvent = (result: any) => {
+    if (result.upvote.voterID == this.user.userID) this.upvoteCounter += 1;
+
+    let existing = this.fabricUtils.getObjectFromId(result.upvote.postID);
+    if (existing) {
+      existing = this.fabricUtils.setUpvoteCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostCommentAddEvent = (result: any) => {
     let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
-    existing = this.fabricUtils.setCommentCount(existing, result.amount);
-    this.canvas.requestRenderAll();
+    if (existing) {
+      existing = this.fabricUtils.setCommentCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostCommentRemoveEvent = (result: any) => {
@@ -237,13 +256,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handlePostTagAddEvent = ({ post, tag }) => {
-    let existing = this.fabricUtils.getObjectFromId(post.postID);
-    this.fabricUtils.applyTagFeatures(existing, tag);
+    const existing = this.fabricUtils.getObjectFromId(post.postID);
+    if (existing) {
+      this.fabricUtils.applyTagFeatures(existing, tag);
+    }
   };
 
   handlePostTagRemoveEvent = ({ post, tag }) => {
-    if (post.specialAttributes) {
-      let existing = this.fabricUtils.getObjectFromId(post.postID);
+    const existing = this.fabricUtils.getObjectFromId(post.postID);
+    if (post.specialAttributes && existing) {
       this.fabricUtils.resetTagFeatures(existing);
     }
   };
@@ -277,19 +298,31 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.board = board;
   };
 
+  handleBoardUpvoteUpdateEvent = (_board: Board) => {
+    this._calcUpvoteCounter();
+  };
+
   showBucketsModal() {
-    this._openDialog(BucketsModalComponent, {
-      board: this.board,
-      user: this.user,
-      centerX: this.canvas.getCenter().left,
-      centerY: this.canvas.getCenter().top,
-    });
+    this._openDialog(
+      BucketsModalComponent,
+      {
+        board: this.board,
+        user: this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top,
+      },
+      '95vw'
+    );
   }
 
   showListModal() {
-    this._openDialog(ListModalComponent, {
-      board: this.board,
-    });
+    this._openDialog(
+      ListModalComponent,
+      {
+        board: this.board,
+      },
+      '95vw'
+    );
   }
 
   configureBoard() {
@@ -307,13 +340,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.postService.getAllByBoard(this.boardID).then((data) => {
       data.forEach(async (post) => {
         if (post.type == PostType.BOARD) {
-          const likes = await this.likesService.getLikesByPost(post.postID);
+          const upvotes = await this.upvotesService.getUpvotesByPost(
+            post.postID
+          );
           const comments = await this.commentService.getCommentsByPost(
             post.postID
           );
           this.canvas.add(
             new FabricPostComponent(post, {
-              likes: likes.length,
+              upvotes: upvotes.length,
               comments: comments.length,
             })
           );
@@ -322,6 +357,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.boardService.get(this.boardID).then((board) => {
         if (board) {
           this.board = board;
+          this._calcUpvoteCounter();
           this.configureZoom();
           this.fabricUtils.setBackgroundImage(
             board.bgImage?.url,
@@ -343,7 +379,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   configureZoom() {
     if (this.board.initialZoom) {
-      let zoom = this.board.initialZoom / 100;
+      const zoom = this.board.initialZoom / 100;
       this.zoom = parseFloat(zoom.toPrecision(2));
       this.handleZoom('setZoom');
     } else {
@@ -397,7 +433,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._openDialog(ConfigurationModalComponent, {
       board: this.board,
       update: (board: Board) => {
-        let previousBoard = this.board;
+        const previousBoard = this.board;
         this.board = board;
 
         if (previousBoard.initialZoom !== board.initialZoom) {
@@ -422,7 +458,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   updateAuthorNames(postID: string, username: string) {
-    let obj = this.fabricUtils.getObjectFromId(postID);
+    const obj = this.fabricUtils.getObjectFromId(postID);
     if (obj) {
       this.fabricUtils.updateAuthor(obj, username);
       this.canvas.renderAll();
@@ -433,10 +469,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!this.board) {
       return;
     }
-    let isStudentAndVisible =
+    const isStudentAndVisible =
       this.user.role == Role.STUDENT &&
       this.board.permissions.showAuthorNameStudent;
-    let IsTeacherAndVisisble =
+    const IsTeacherAndVisisble =
       this.user.role == Role.TEACHER &&
       this.board.permissions.showAuthorNameTeacher;
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
@@ -458,8 +494,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   updateShowAddPost(permissions: BoardPermissions) {
-    let isStudent = this.user.role == Role.STUDENT;
-    let isTeacher = this.user.role == Role.TEACHER;
+    const isStudent = this.user.role == Role.STUDENT;
+    const isTeacher = this.user.role == Role.TEACHER;
     this.showAddPost =
       (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher;
   }
@@ -493,42 +529,41 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  initLikeClickListener() {
-    this.canvas.on('mouse:down', this.handleLikeClick);
+  initUpvoteClickListener() {
+    this.canvas.on('mouse:down', this.handleUpvoteClick);
+    this.canvas.on('mouse:down', this.handleDownvoteClick);
 
     return () => {
-      this.canvas.off('mouse:down', this.handleLikeClick);
+      this.canvas.off('mouse:down', this.handleUpvoteClick);
+      this.canvas.off('mouse:down', this.handleDownvoteClick);
     };
   }
 
-  handleLikeClick = async (e: fabric.IEvent) => {
-    var post: any = e.target;
-    var likeButton = e.subTargets?.find((o) => o.name == 'like');
-    let isStudent = this.user.role == Role.STUDENT;
-    let isTeacher = this.user.role == Role.TEACHER;
-    let studentHasPerm = isStudent && this.board.permissions.allowStudentLiking;
-    if (likeButton && (studentHasPerm || isTeacher)) {
-      const isLiked = await this.likesService.isLikedBy(
-        post.postID,
-        this.user.userID
-      );
-      if (!isLiked) {
-        const like: Like = {
-          likeID: Utils.generateUniqueID(),
-          likerID: this.user.userID,
-          postID: post.postID,
-          boardID: this.board.boardID,
-        };
-        await this.canvasService.like(like);
-      } else {
-        await this.canvasService.unlike(this.user.userID, isLiked.postID);
-      }
+  handleUpvoteClick = async (e: fabric.IEvent) => {
+    const post: any = e.target;
+    const upvoteButton = e.subTargets?.find((o) => o.name == 'upvote');
+
+    if (upvoteButton && this._votingAllowed()) {
+      this.canvasService
+        .upvote(this.user.userID, post.postID)
+        .catch((e) => this.snackbarService.queueSnackbar(getErrorMessage(e)));
+    }
+  };
+
+  handleDownvoteClick = async (e: fabric.IEvent) => {
+    const post: any = e.target;
+    const upvoteButton = e.subTargets?.find((o) => o.name == 'downvote');
+
+    if (upvoteButton && this._votingAllowed()) {
+      this.canvasService
+        .unupvote(this.user.userID, post.postID)
+        .catch((e) => this.snackbarService.queueSnackbar(getErrorMessage(e)));
     }
   };
 
   initPostClickListener() {
-    var isDragging = false;
-    var isMouseDown = false;
+    let isDragging = false;
+    let isMouseDown = false;
 
     const postClickHandler = (e: fabric.IEvent) => {
       if (e.target?.name == 'post') isMouseDown = true;
@@ -539,14 +574,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
 
     const mouseUpHandler = (e: fabric.IEvent) => {
-      var obj: any = e.target;
+      const obj: any = e.target;
 
-      var likePress = e.subTargets?.find((o) => o.name == 'like');
-      var isDragEnd = isDragging;
+      const votePress = e.subTargets?.find(
+        (o) => o.name == 'upvote' || o.name == 'downvote'
+      );
+      const isDragEnd = isDragging;
       isDragging = false;
       isMouseDown = false;
 
-      if (!isDragEnd && !likePress && obj?.name == 'post') {
+      if (!isDragEnd && !votePress && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
         this._openDialog(PostModalComponent, {
           user: this.user,
@@ -573,7 +610,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const handleFirstMove = (e: any) => {
       if (e.target && !isMovingPost) {
-        var obj = e.target;
+        let obj = e.target;
         isMovingPost = true;
 
         obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
@@ -589,7 +626,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const handleDroppedPost = (e) => {
       if (!isMovingPost) return;
 
-      var obj = e.target;
+      let obj = e.target;
       isMovingPost = false;
 
       obj = this.fabricUtils.setFillColor(obj, POST_COLOR);
@@ -614,7 +651,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initZoomListener() {
     const handleZoomEvent = (opt) => {
-      var options = opt.e as unknown as WheelEvent;
+      const options = opt.e as unknown as WheelEvent;
 
       // Condition for pinch gesture on trackpad:
       // 1. delta Y is an integer or delta X is 0
@@ -633,7 +670,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         !options.ctrlKey;
 
       if (trackpad_pinch || mousewheel) {
-        var delta = options.deltaY;
+        const delta = options.deltaY;
 
         if (mousewheel) {
           this.zoom *= 0.999 ** delta;
@@ -660,7 +697,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initPanListener() {
-    var isPanning = false;
+    let isPanning = false;
 
     const mouseDown = (opt) => {
       if (this.mode == Mode.PAN) {
@@ -681,9 +718,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
 
     const handlePan = (opt) => {
-      var options = opt.e as unknown as WheelEvent;
+      const options = opt.e as unknown as WheelEvent;
       if (isPanning && options) {
-        let delta = new fabric.Point(options.movementX, options.movementY);
+        const delta = new fabric.Point(options.movementX, options.movementY);
         this.canvas.relativePan(delta);
         this.finalClientX = options.clientX;
         this.finalClientY = options.clientY;
@@ -703,7 +740,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initPanSwipeListener() {
     const handlePanSwipe = (opt) => {
-      let options = opt.e as unknown as WheelEvent;
+      const options = opt.e as unknown as WheelEvent;
 
       // Condition for two-finger swipe on trackpad:
       // 1. delta Y is an integer,
@@ -715,7 +752,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         !options.ctrlKey;
 
       if (trackpad_twofinger) {
-        let vpt = this.canvas.viewportTransform;
+        const vpt = this.canvas.viewportTransform;
         if (!vpt) return;
         vpt[4] -= options.deltaX;
         vpt[5] -= options.deltaY;
@@ -778,7 +815,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handleZoom(event) {
-    let center = this.canvas.getCenter();
+    const center = this.canvas.getCenter();
     let centerX = center.left + (this.finalClientX - this.initialClientX);
     let centerY = center.top + (this.finalClientY - this.initialClientY);
     this.initialClientX = this.finalClientX;
@@ -791,7 +828,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else if (event === 'reset') {
       this.zoom = 1;
     } else if (event === 'setZoom') {
-      this.zoom = this.zoom;
+      // this.zoom = this.zoom;
       centerX = center.left;
       centerY = center.top;
     }
@@ -834,13 +871,25 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
   }
 
-  private _openDialog(component: ComponentType<unknown>, data: any) {
+  private _openDialog(
+    component: ComponentType<unknown>,
+    data: any,
+    width = '700px'
+  ) {
     this.dialog.open(component, {
       maxWidth: 1280,
-      width: '95vw',
+      width: width,
       autoFocus: false,
       data: data,
     });
+  }
+
+  private _calcUpvoteCounter() {
+    this.upvotesService
+      .getByBoardAndUser(this.boardID, this.user.userID)
+      .then((votes) => {
+        this.upvoteCounter = this.board.upvoteLimit - votes.length;
+      });
   }
 
   private _postsMovementAllowed() {
@@ -851,6 +900,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const allowStudentMovement = this.board.permissions.allowStudentMoveAny;
 
     return isTeacher || (isStudent && allowStudentMovement);
+  }
+
+  private _votingAllowed() {
+    const isStudent = this.user.role == Role.STUDENT;
+    const isTeacher = this.user.role == Role.TEACHER;
+    const allowStudent =
+      isStudent && this.board.permissions.allowStudentUpvoting;
+
+    return allowStudent || isTeacher;
   }
 
   async ngOnDestroy() {

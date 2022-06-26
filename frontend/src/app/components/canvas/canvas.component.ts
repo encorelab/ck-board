@@ -106,6 +106,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.POST_LIKE_ADD, this.handlePostLikeAddEvent],
       [SocketEvent.POST_LIKE_REMOVE, this.handlePostLikeRemoveEvent],
       [SocketEvent.POST_COMMENT_ADD, this.handlePostCommentAddEvent],
+      [SocketEvent.POST_COMMENT_REMOVE, this.handlePostCommentRemoveEvent],
       [SocketEvent.POST_TAG_ADD, this.handlePostTagAddEvent],
       [SocketEvent.POST_TAG_REMOVE, this.handlePostTagRemoveEvent],
       [SocketEvent.BOARD_NAME_UPDATE, this.handleBoardNameUpdateEvent],
@@ -224,6 +225,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handlePostCommentAddEvent = (result: any) => {
+    let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
+    existing = this.fabricUtils.setCommentCount(existing, result.amount);
+    this.canvas.requestRenderAll();
+  };
+
+  handlePostCommentRemoveEvent = (result: any) => {
     let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
     existing = this.fabricUtils.setCommentCount(existing, result.amount);
     this.canvas.requestRenderAll();

@@ -246,7 +246,6 @@ export class PostModalComponent {
         title: 'Confirmation',
         message: 'Are you sure you want to delete this comment?',
          handleConfirm: () => {
-          // this.socketService.emit(SocketEvent.COMMENT_DELETE, commentID);
           this.canvasService.deleteComment(comment.commentID, comment.postID)
           let ind = this.comments.indexOf(comment)
           if (ind != -1){

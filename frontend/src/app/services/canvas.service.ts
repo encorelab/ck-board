@@ -107,6 +107,7 @@ export class CanvasService {
 
   async deleteComment(commentID: string, postID: string){
     const result = await this.commentService.remove(commentID)
+    this.socketService.emit(SocketEvent.POST_COMMENT_REMOVE, result.comment);
     if (parseInt(result.count) != -1) {
       let existing = this.fabricUtils.getObjectFromId(postID);
       existing = this.fabricUtils.setCommentCount(existing, result.count);

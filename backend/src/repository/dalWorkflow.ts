@@ -4,8 +4,7 @@ import {
   WorkflowType,
   DistributionWorkflow,
   TaskWorkflow,
-} from "../models/Workflow";
-
+} from '../models/Workflow';
 
 export const getAllByBoardId = async (id: string) => {
   try {
@@ -20,9 +19,8 @@ export const getByBoardId = async (type: WorkflowType, id: string) => {
   try {
     if (type == WorkflowType.DISTRIBUTION) {
       return await DistributionWorkflow.find({ boardID: id });
-    }
-    else if (type == WorkflowType.TASK) {
-      return await TaskWorkflow.find({ boardID: id })
+    } else if (type == WorkflowType.TASK) {
+      return await TaskWorkflow.find({ boardID: id });
     }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -33,8 +31,7 @@ export const create = async (type: WorkflowType, workflow: WorkflowModel) => {
   try {
     if (type == WorkflowType.DISTRIBUTION) {
       return await DistributionWorkflow.create(workflow);
-    }
-    else if (type == WorkflowType.TASK) {
+    } else if (type == WorkflowType.TASK) {
       return await TaskWorkflow.create(workflow);
     }
   } catch (err) {
@@ -47,15 +44,13 @@ export const updateDistribution = async (
   update: Partial<WorkflowModel>
 ) => {
   try {
-  
-      return await DistributionWorkflow.findOneAndUpdate(
-        { workflowID: id },
-        update,
-        { new: true }
-      );
-  
+    return await DistributionWorkflow.findOneAndUpdate(
+      { workflowID: id },
+      update,
+      { new: true }
+    );
   } catch (err) {
-    throw new Error("500");
+    throw new Error('500');
   }
 };
 
@@ -64,11 +59,9 @@ export const updateTask = async (
   update: Partial<WorkflowModel>
 ) => {
   try {
-      return await TaskWorkflow.findOneAndUpdate(
-        { workflowID: id },
-        update,
-        { new: true }
-      );
+    return await TaskWorkflow.findOneAndUpdate({ workflowID: id }, update, {
+      new: true,
+    });
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -78,8 +71,7 @@ export const remove = async (type: WorkflowType, id: string) => {
   try {
     if (type == WorkflowType.DISTRIBUTION) {
       return await DistributionWorkflow.findOneAndDelete({ workflowID: id });
-    }
-    else if (type == WorkflowType.TASK) {
+    } else if (type == WorkflowType.TASK) {
       return await TaskWorkflow.findOneAndDelete({ workflowID: id });
     }
   } catch (err) {

@@ -20,6 +20,7 @@ export class BoardPermissions {
   showAuthorNameStudent: boolean;
   showAuthorNameTeacher: boolean;
   showBucketStudent: boolean;
+  allowTracing: boolean;
 }
 
 export class Board {

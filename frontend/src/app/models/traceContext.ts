@@ -3,4 +3,5 @@ export class TraceContext {
   projectID: string;
   userID: string;
   clientTimestamp: number;
+  allowTracing: boolean;
 }

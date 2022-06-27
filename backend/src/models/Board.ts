@@ -41,6 +41,9 @@ export class PermissionsModel {
 
   @prop({ required: true })
   public showBucketStudent!: boolean;
+
+  @prop({ required: true })
+  public allowTracing!: boolean;
 }
 
 @modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })

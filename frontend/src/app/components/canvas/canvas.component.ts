@@ -281,6 +281,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       !board.permissions.allowStudentMoveAny && this.user.role == Role.STUDENT
     );
     this.setAuthorVisibilityAll();
+    this.traceService.setTraceContext(this.projectID, this.boardID);
   };
 
   handleBoardTagsUpdateEvent = (board: Board) => {

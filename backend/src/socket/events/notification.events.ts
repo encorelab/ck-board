@@ -1,16 +1,17 @@
-import { Server, Socket } from "socket.io";
-import { SocketEvent } from "../../constants";
-import { NotificationModel } from "../../models/Notification";
-import dalNotification from "../../repository/dalNotification";
-import SocketManager from "../socketManager";
+import { Server, Socket } from 'socket.io';
+import { SocketEvent } from '../../constants';
+import { NotificationModel } from '../../models/Notification';
+import dalNotification from '../../repository/dalNotification';
+import SocketManager from '../socketManager';
+import { SocketPayload } from '../types/event.types';
 
 class NotificationCreate {
   static type: SocketEvent = SocketEvent.NOTIFICATION_CREATE;
 
   static async handleEvent(
-    eventData: NotificationModel
+    input: SocketPayload<NotificationModel>
   ): Promise<NotificationModel> {
-    const notification = await dalNotification.create(eventData);
+    const notification = await dalNotification.create(input.eventData);
     return notification;
   }
 

@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { Board } from 'src/app/models/board';
 import Notification from 'src/app/models/notification';
 import User, { AuthUser } from 'src/app/models/user';
+import { CanvasService } from 'src/app/services/canvas.service';
 import { NotificationService } from 'src/app/services/notification.service';
 import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
@@ -26,7 +27,8 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private postService: PostService,
     private socketService: SocketService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private canvasService: CanvasService
   ) {}
 
   ngOnInit(): void {
@@ -39,7 +41,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
   }
 
   initGroupEventsListener() {
-    let unsub = this.socketService.listen(
+    const unsub = this.socketService.listen(
       SocketEvent.NOTIFICATION_CREATE,
       this.handleAdd
     );
@@ -52,7 +54,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
 
   async openPost(notification: Notification) {
     if (notification.postID) {
-      let post = await this.postService.get(notification.postID);
+      const post = await this.postService.get(notification.postID);
       this.dialog.open(PostModalComponent, {
         minWidth: '700px',
         width: 'auto',
@@ -62,7 +64,7 @@ export class NotificationDropdownComponent implements OnInit, OnDestroy {
           board: this.board,
         },
       });
-
+      await this.canvasService.readPost(post.postID);
       await this.notificationService.markAsRead(notification.notificationID);
       this.deleteNotification(notification);
     }

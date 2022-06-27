@@ -3,10 +3,9 @@ import { Injectable } from '@angular/core';
 import Comment from '../models/comment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CommentService {
-
   constructor(private http: HttpClient) {}
 
   getCommentsByPost(postID: string): Promise<Comment[]> {
@@ -14,6 +13,6 @@ export class CommentService {
   }
 
   add(comment: Comment): any {
-    return this.http.post('comments/', {comment}).toPromise();
+    return this.http.post('comments/', { comment }).toPromise();
   }
-} 
+}

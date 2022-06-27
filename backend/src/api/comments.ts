@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import { CommentModel } from '../models/Comment';
 import dalComment from '../repository/dalComment';
 
@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
 
   res.json({
     comment: savedComment,
-    count: amount
+    count: amount,
   });
 });
 

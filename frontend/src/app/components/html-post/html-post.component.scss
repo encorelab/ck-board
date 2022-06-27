@@ -14,7 +14,7 @@
 
   display: -webkit-box;
   -webkit-line-clamp: 4; /* number of lines to show */
-          line-clamp: 4; 
+  line-clamp: 4;
   -webkit-box-orient: vertical;
 }
 
@@ -22,7 +22,8 @@ mat-chip {
   padding: 2px 8px !important;
   font-size: 12px;
 }
-.titleRow{
+
+.titleRow {
   display: flex;
   justify-content: space-between;
 }
@@ -30,4 +31,12 @@ mat-chip {
 .mat-title {
   line-height: 1.2;
   margin-bottom: 10px;
+}
+
+.upvote-button {
+  font-size: 18px;
+}
+
+.upvote-icon {
+  font-size: 32px;
 }

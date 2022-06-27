@@ -3,7 +3,7 @@ import {
   getModelForClass,
   modelOptions,
   getDiscriminatorModelForClass,
-} from "@typegoose/typegoose";
+} from '@typegoose/typegoose';
 
 import { GroupModel } from "./Group";
 
@@ -14,8 +14,8 @@ export enum WorkflowType {
 }
 
 export enum ContainerType {
-  BOARD = "BOARD",
-  BUCKET = "BUCKET",
+  BOARD = 'BOARD',
+  BUCKET = 'BUCKET',
 }
 
 export enum TaskActionType {

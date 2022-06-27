@@ -1,9 +1,9 @@
-import { isDocument } from "@typegoose/typegoose";
-import { DocumentType } from "@typegoose/typegoose";
-import { KeyStringAny } from "@typegoose/typegoose/lib/types";
-import { Document, mongo } from "mongoose";
-import { PostModel } from "../models/Post";
-import { WorkflowModel, WorkflowType } from "../models/Workflow";
+import { isDocument } from '@typegoose/typegoose';
+import { DocumentType } from '@typegoose/typegoose';
+import { KeyStringAny } from '@typegoose/typegoose/lib/types';
+import { Document, mongo } from 'mongoose';
+import { PostModel } from '../models/Post';
+import { WorkflowModel, WorkflowType } from '../models/Workflow';
 
 export const isDistribution = <T extends WorkflowModel>(
   doc: Document & KeyStringAny
@@ -36,20 +36,13 @@ export const distribute = async <T>(items: T[], n: number): Promise<T[][]> => {
 
 export const cloneToBoard = (board: string, post: PostModel) => {
   if (!isDocument(post)) {
-    throw new Error("Not a document!");
+    throw new Error('Not a document!');
   }
 
   const newID = new mongo.ObjectId();
   post._id = newID;
   post.postID = newID.toString();
   post.boardID = board;
-
-  if (post.fabricObject) {
-    const rawObj = JSON.parse(post.fabricObject);
-    rawObj.boardID = board;
-    rawObj.postID = newID;
-    post.fabricObject = JSON.stringify(rawObj);
-  }
 
   return post;
 };

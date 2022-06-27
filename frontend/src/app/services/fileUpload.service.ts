@@ -6,7 +6,7 @@ import { NgxImageCompressService } from 'ngx-image-compress';
   providedIn: 'root',
 })
 export class FileUploadService {
-  filePath: string = '/images/';
+  filePath = '/images/';
 
   constructor(
     private storage: AngularFireStorage,
@@ -63,7 +63,7 @@ export class FileUploadService {
     return this.imageCompress
       .uploadFile()
       .then(({ image, orientation }) => {
-        let compressAmount = Math.min(
+        const compressAmount = Math.min(
           (MAX_BYTE / this.imageCompress.byteCount(image)) * 100,
           100
         );

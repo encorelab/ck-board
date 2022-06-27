@@ -25,7 +25,13 @@ export class LoginComponent {
       .login(this.email, this.password)
       .then(() => {
         this.invalidCredentials = false;
-        this.router.navigate(['dashboard']);
+        let redirectUrl = this.userService.redirectUrl;
+        this.userService.redirectUrl = null
+        if (redirectUrl) {
+          this.router.navigate([redirectUrl]);
+        } else {
+          this.router.navigate(['dashboard']);
+        }
       })
       .catch(() => {
         this.invalidCredentials = true;

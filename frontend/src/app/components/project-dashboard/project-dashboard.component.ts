@@ -2,11 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Board } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 
-
-
-
-
-
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';

@@ -2,13 +2,12 @@ import mongoose from 'mongoose';
 import Board, { BoardModel } from '../models/Board';
 import dalTrace from './dalTrace';
 import dalPost from './dalPost';
-import dalLike from './dalLike';
-import dalComment from './dalComment';
 import dalWorkflow from './dalWorkflow';
 import dalNotification from './dalNotification';
 import dalBucket from './dalBucket';
 import dalProject from './dalProject';
 import dalTag from './dalTag';
+import dalComment from './dalComment';
 
 export const getById = async (id: string) => {
   try {
@@ -64,7 +63,6 @@ export const remove = async (id: string) => {
     const deletedBoard = await Board.findOneAndDelete({ boardID: id });
     if (deletedBoard) {
       await dalPost.removeByBoard(id);
-      await dalLike.removeByBoard(id);
       await dalComment.removeByBoard(id);
       await dalBucket.removeByBoard(id);
       await dalNotification.removeByBoard(id);

@@ -18,8 +18,8 @@
     "build": "tsc",
     "dev": "ts-node-dev --respawn ./src/server.ts",
     "style:linter": "eslint . --fix --ext .ts",
-    "style:formatter": "prettier --check '**/*.{js,jsx,ts,tsx}'",
-    "style": "prettier --write '**/*.{js,jsx,ts,tsx}'"
+    "style:formatter": "prettier --check \"**/*.{js,jsx,ts,tsx}\"",
+    "style": "prettier --write \"**/*.{js,jsx,ts,tsx}\""
   },
   "name": "backend",
   "version": "1.0.0",

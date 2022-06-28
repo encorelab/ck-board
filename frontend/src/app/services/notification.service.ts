@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import Notification from '../models/notification';
 import Post from '../models/post';
-import Utils from '../utils/Utils';
+import { generateUniqueID } from '../utils/Utils';
 import { UserService } from './user.service';
 
 @Injectable({
@@ -35,10 +35,10 @@ export class NotificationService {
       .toPromise();
   }
 
-  buildLikeNotification(post: Post): Notification {
+  buildUpvoteNotification(post: Post): Notification {
     return {
-      notificationID: Utils.generateUniqueID(),
-      text: this.userService.user?.username + ' liked "' + post.title + '"',
+      notificationID: generateUniqueID(),
+      text: this.userService.user?.username + ' upvoted "' + post.title + '"',
       viewed: false,
       userID: post.userID,
       postID: post.postID,
@@ -48,7 +48,7 @@ export class NotificationService {
 
   buildCommentNotification(post: Post): Notification {
     return {
-      notificationID: Utils.generateUniqueID(),
+      notificationID: generateUniqueID(),
       text:
         this.userService.user?.username + ' commented on "' + post.title + '"',
       viewed: false,
@@ -60,7 +60,7 @@ export class NotificationService {
 
   buildTagNotification(post: Post): Notification {
     return {
-      notificationID: Utils.generateUniqueID(),
+      notificationID: generateUniqueID(),
       text: this.userService.user?.username + ' tagged "' + post.title + '"',
       viewed: false,
       userID: post.userID,

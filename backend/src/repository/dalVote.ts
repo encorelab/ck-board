@@ -131,7 +131,7 @@ export const removeByBoard = async (boardID: string) => {
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
-}
+};
 
 const dalVote = {
   getByPost,

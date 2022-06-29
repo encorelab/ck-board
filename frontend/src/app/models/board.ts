@@ -24,6 +24,7 @@ export class BoardPermissions {
 }
 
 export class Board {
+  projectID: string;
   boardID: string;
   teacherID: string;
   name: string;

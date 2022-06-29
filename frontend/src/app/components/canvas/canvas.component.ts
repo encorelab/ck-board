@@ -425,6 +425,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   openSettingsDialog() {
     this._openDialog(ConfigurationModalComponent, {
+      projectID: this.projectID,
       board: this.board,
       update: (board: Board) => {
         const previousBoard = this.board;

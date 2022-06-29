@@ -1,4 +1,14 @@
+import mongoose from 'mongoose';
 import Board, { BoardModel } from '../models/Board';
+import dalTrace from './dalTrace';
+import dalPost from './dalPost';
+import dalWorkflow from './dalWorkflow';
+import dalNotification from './dalNotification';
+import dalBucket from './dalBucket';
+import dalProject from './dalProject';
+import dalTag from './dalTag';
+import dalComment from './dalComment';
+import dalVote from './dalVote';
 
 export const getById = async (id: string) => {
   try {
@@ -47,12 +57,37 @@ export const update = async (id: string, board: Partial<BoardModel>) => {
   }
 };
 
+export const remove = async (id: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const deletedBoard = await Board.findOneAndDelete({ boardID: id });
+    if (deletedBoard) {
+      await dalPost.removeByBoard(id);
+      await dalComment.removeByBoard(id);
+      await dalBucket.removeByBoard(id);
+      await dalNotification.removeByBoard(id);
+      await dalTag.removeByBoard(id);
+      await dalTrace.removeByBoard(id);
+      await dalWorkflow.removeByBoard(id);
+      await dalVote.removeByBoard(id);
+      await dalProject.removeBoard(deletedBoard?.projectID, id);
+    }
+    return deletedBoard;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  } finally {
+    await session.endSession();
+  }
+};
+
 const dalBoard = {
   getById,
   getMultipleByIds,
   getByUserId,
   create,
   update,
+  remove,
 };
 
 export default dalBoard;

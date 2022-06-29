@@ -94,6 +94,7 @@ export class AddBoardModalComponent implements OnInit {
   handleDialogSubmit() {
     this.data.createBoard(
       {
+        projectID: this.selectedProject,
         boardID: this.boardID,
         teacherID: this.data.user.userID,
         name: this.boardName,

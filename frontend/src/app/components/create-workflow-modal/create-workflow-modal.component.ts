@@ -6,7 +6,11 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialog,
+} from '@angular/material/dialog';
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
 import { Board } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
@@ -36,7 +40,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   bucketName = '';
   workflowName = '';
-  showDelete: boolean = false;
+  showDelete = false;
 
   sourceOptions: any[] = [];
   destOptions: any[] = [];
@@ -126,7 +130,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   toggleDeleteBoard() {
     this.showDelete = !this.showDelete;
-  };
+  }
 
   deleteBucket(bucket: Bucket) {
     this.dialog.open(ConfirmModalComponent, {
@@ -140,7 +144,7 @@ export class CreateWorkflowModalComponent implements OnInit {
             this.openSnackBar(
               'Bucket: ' + bucket.name + ' deleted succesfully!'
             );
-          });;
+          });
         },
       },
     });

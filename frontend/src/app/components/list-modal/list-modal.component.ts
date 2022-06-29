@@ -198,7 +198,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
         ? POST_TAGGED_BORDER_THICKNESS
         : undefined,
     };
-    console.log(this.user)
+    console.log(this.user);
 
     const post: Post = {
       postID: postID,

@@ -288,6 +288,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       !board.permissions.allowStudentMoveAny && this.user.role == Role.STUDENT
     );
     this.setAuthorVisibilityAll();
+    this.traceService.setTraceContext(this.projectID, this.boardID);
   };
 
   handleBoardTagsUpdateEvent = (board: Board) => {
@@ -431,6 +432,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   openSettingsDialog() {
     this._openDialog(ConfigurationModalComponent, {
+      projectID: this.projectID,
       board: this.board,
       update: (board: Board) => {
         const previousBoard = this.board;

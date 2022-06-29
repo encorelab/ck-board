@@ -13,7 +13,7 @@ class WorkflowRunDistribution {
   ): Promise<DistributionWorkflowModel | null> {
     const id = input.eventData.workflowID;
 
-    const workflow = await dalWorkflow.update(WorkflowType.DISTRIBUTION, id, {
+    const workflow = await dalWorkflow.updateDistribution(id, {
       active: true,
     });
 

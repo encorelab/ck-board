@@ -205,7 +205,6 @@ const move = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
-
   trace.event = {
     postID: input.eventData.postID,
     postModifiedLocationX: input.eventData.left,

@@ -36,6 +36,15 @@ export const create = async (comment: CommentModel) => {
   }
 };
 
+export const removeByBoard = async (boardID: string) => {
+  try {
+    const deletedComments = await Comment.deleteMany({ boardID: boardID });
+    return deletedComments;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const removeByPost = async (postID: string) => {
   try {
     await Comment.deleteMany({ postID });
@@ -59,6 +68,7 @@ const dalComment = {
   getAmountByPost,
   create,
   remove,
+  removeByBoard,
   removeByPost,
 };
 

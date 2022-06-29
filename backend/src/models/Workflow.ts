@@ -5,13 +5,22 @@ import {
   getDiscriminatorModelForClass,
 } from '@typegoose/typegoose';
 
+import { GroupModel } from './Group';
+
 export enum WorkflowType {
   DISTRIBUTION = 'DISTRIBUTION',
+  TASK = 'TASK',
 }
 
 export enum ContainerType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
+}
+
+export enum TaskActionType {
+  LIKE = 'LIKE',
+  COMMENT = 'COMMENT',
+  TAG = 'TAG',
 }
 
 export class Container {
@@ -23,6 +32,14 @@ export class Container {
 
   @prop({ required: true })
   public name!: string;
+}
+
+export class TaskAction {
+  @prop({ enum: TaskActionType, type: String, required: true })
+  public type!: TaskActionType;
+
+  @prop({ required: true })
+  public amountRequired!: number;
 }
 
 @modelOptions({ schemaOptions: { collection: 'workflows', timestamps: true } })
@@ -51,9 +68,28 @@ export class DistributionWorkflowModel extends WorkflowModel {
   public postsPerDestination!: number;
 }
 
+export class TaskWorkflowModel extends WorkflowModel {
+  @prop({ required: true })
+  public prompt!: string;
+
+  @prop({ required: true, type: () => [TaskAction] })
+  public requiredActions!: TaskAction[];
+
+  @prop({ required: true, type: () => [GroupModel] })
+  public assignedGroups!: GroupModel[];
+
+  @prop({ required: true })
+  public postsPerGroup!: number;
+}
+
 export const Workflow = getModelForClass(WorkflowModel);
 export const DistributionWorkflow = getDiscriminatorModelForClass(
   Workflow,
   DistributionWorkflowModel,
   WorkflowType.DISTRIBUTION
+);
+export const TaskWorkflow = getDiscriminatorModelForClass(
+  Workflow,
+  TaskWorkflowModel,
+  WorkflowType.TASK
 );

@@ -58,6 +58,15 @@ export const remove = async (id: string) => {
   }
 };
 
+export const removeByBoard = async (boardID: string) => {
+  try {
+    const deletedBuckets = await Bucket.deleteMany({ boardID: boardID });
+    return deletedBuckets;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const addPost = async (id: string, posts: string[]) => {
   try {
     const updatedBucket = await Bucket.findOneAndUpdate(
@@ -90,6 +99,7 @@ const dalBucket = {
   getByPostId,
   create,
   remove,
+  removeByBoard,
   update,
   addPost,
   removePost,

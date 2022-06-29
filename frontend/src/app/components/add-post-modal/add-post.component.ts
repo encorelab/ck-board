@@ -14,7 +14,7 @@ import {
 } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Utils from 'src/app/utils/Utils';
+import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 
 export interface AddPostDialog {
@@ -35,8 +35,8 @@ export class AddPostComponent {
   user: User;
   board: Board;
 
-  title: string = '';
-  message: string = '';
+  title = '';
+  message = '';
 
   tags: Tag[] = [];
   tagOptions: Tag[] = [];
@@ -94,7 +94,7 @@ export class AddPostComponent {
     };
 
     const post: Post = {
-      postID: Utils.generateUniqueID(),
+      postID: generateUniqueID(),
       userID: this.user.userID,
       boardID: this.board.boardID,
       type: PostType.BOARD,
@@ -112,7 +112,7 @@ export class AddPostComponent {
   async addBucketPost() {
     const boardID: string = this.data.bucket!.bucketID;
     const post: Post = {
-      postID: Utils.generateUniqueID(),
+      postID: generateUniqueID(),
       userID: this.user.userID,
       boardID: this.board.boardID,
       author: this.user.username,

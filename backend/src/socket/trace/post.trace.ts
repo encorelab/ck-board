@@ -1,13 +1,14 @@
-import { CommentModel } from "../../models/Comment";
-import { LikeModel } from "../../models/Like";
-import { PostModel } from "../../models/Post";
-import dalTrace from "../../repository/dalTrace";
+import { CommentModel } from '../../models/Comment';
+import { UpvoteModel } from '../../models/Upvote';
+import { PostModel } from '../../models/Post';
+import dalTrace from '../../repository/dalTrace';
 import {
   PostStopMoveEventInput,
   PostTagEventInput,
   SocketPayload,
-} from "../types/event.types";
-import { createTrace } from "./base.trace";
+} from '../types/event.types';
+import { createTrace } from './base.trace';
+
 /**
  * Creates a trace for post creation
  * @param input
@@ -25,6 +26,7 @@ const create = async (input: SocketPayload<PostModel>, eventType: string) => {
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
  * Creates a trace for post update
  * @param input partial PostModel where all properties except postID are optional
@@ -32,7 +34,7 @@ const create = async (input: SocketPayload<PostModel>, eventType: string) => {
  * @returns
  */
 const update = async (
-  input: SocketPayload<Partial<PostModel> & Pick<PostModel, "postID">>,
+  input: SocketPayload<Partial<PostModel> & Pick<PostModel, 'postID'>>,
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
@@ -57,6 +59,7 @@ const update = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
  * Creates a trace for post deletion
  * @param input
@@ -73,41 +76,47 @@ const remove = async (input: SocketPayload<PostModel>, eventType: string) => {
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
- * Creates trace for liking a post
+ * Creates trace for upvoting a post
  * @param input
  * @param eventType the associated SocketEvent
  * @returns
  */
-const likeAdd = async (input: SocketPayload<LikeModel>, eventType: string) => {
+const upvoteAdd = async (
+  input: SocketPayload<UpvoteModel>,
+  eventType: string
+) => {
   const trace = await createTrace(input.trace);
-  const like = input.eventData;
+  const upvote = input.eventData;
   trace.event = {
-    postID: like.postID,
+    postID: upvote.postID,
     postModifiedUpvote: 1,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
- * Creates trace for unliking a post
+ * Creates trace for removing an upvote from a post
  * @param input
  * @param eventType the associated SocketEvent
  * @returns
  */
-const likeRemove = async (
-  input: SocketPayload<LikeModel>,
+const upvoteRemove = async (
+  input: SocketPayload<UpvoteModel>,
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
-  const like = input.eventData;
+  const upvote = input.eventData;
   trace.event = {
-    postID: like.postID,
+    postID: upvote.postID,
     postModifiedUpvote: -1,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
  * Creates trace for adding a comment to a post
  * @param input
@@ -128,6 +137,7 @@ const commentAdd = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
  * Creates trace for adding a tag to a post
  * @param input
@@ -148,6 +158,7 @@ const tagAdd = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
  * Creates trace for removing a tag from a post
  * @param input
@@ -168,6 +179,7 @@ const tagRemove = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
  * Creates trace for moving a post on the canvas
  * @param input
@@ -179,7 +191,6 @@ const move = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
-
   trace.event = {
     postID: input.eventData.postID,
     postModifiedLocationX: input.eventData.left,
@@ -188,6 +199,7 @@ const move = async (
   trace.eventType = eventType;
   return dalTrace.create(trace);
 };
+
 /**
  * Creates trace for when a user reads a post.
  * Occurs when they open the post modal
@@ -210,8 +222,8 @@ const postTrace = {
   create,
   update,
   remove,
-  likeAdd,
-  likeRemove,
+  upvoteAdd,
+  upvoteRemove,
   commentAdd,
   tagAdd,
   tagRemove,

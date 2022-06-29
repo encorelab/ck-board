@@ -13,11 +13,9 @@ import {
   AddPostDialog,
 } from 'src/app/components/add-post-modal/add-post.component';
 import Post, { PostType, DisplayAttributes } from 'src/app/models/post';
-import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import {
   NEEDS_ATTENTION_TAG,
-  POST_COLOR,
   POST_TAGGED_BORDER_THICKNESS,
   SocketEvent,
 } from 'src/app/utils/constants';
@@ -40,7 +38,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
 
   posts: HTMLPost[];
 
-  loading: boolean = true;
+  loading = true;
 
   movePostActivated: boolean;
 
@@ -76,38 +74,44 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     //   this.posts.push(await this.converters.toHTMLPost(post));
     // });
     this.socketService.listen(SocketEvent.POST_UPDATE, (post: Post) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) found.post = post;
     });
     this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
-      let found = this.posts.find((p) => p.post.postID == id);
+      const found = this.posts.find((p) => p.post.postID == id);
       if (found) {
         this.posts = this.posts.filter((post) => post.post.postID != id);
       }
     });
-    this.socketService.listen(SocketEvent.POST_LIKE_ADD, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.like.postID);
-      if (found) found.likes.push(result.like.likerID);
+    this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result: any) => {
+      const found = this.posts.find(
+        (p) => p.post.postID == result.upvote.postID
+      );
+      if (found) found.upvotes.push(result.upvote);
     });
-    this.socketService.listen(SocketEvent.POST_LIKE_REMOVE, (result: any) => {
-      let found = this.posts.find((p) => p.post.postID == result.like.postID);
+    this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result: any) => {
+      const found = this.posts.find(
+        (p) => p.post.postID == result.upvote.postID
+      );
       if (found)
-        found.likes = found.likes.filter((like) => like != result.like.likerID);
+        found.upvotes = found.upvotes.filter(
+          (upvote) => upvote.upvoteID != result.upvote.upvoteID
+        );
     });
     this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
-      let found = this.posts.find(
+      const found = this.posts.find(
         (p) => p.post.postID == result.comment.postID
       );
       if (found) found.comments += 1;
     });
     this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) {
         found.post = post;
       }
     });
     this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post, _tag }) => {
-      let found = this.posts.find((p) => p.post.postID == post.postID);
+      const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) {
         found.post = post;
       }

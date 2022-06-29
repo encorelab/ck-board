@@ -9,8 +9,7 @@ import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import Comment from 'src/app/models/comment';
 import { CommentService } from 'src/app/services/comment.service';
 import User, { Role } from 'src/app/models/user';
-import { LikesService } from 'src/app/services/likes.service';
-import Like from 'src/app/models/like';
+import { UpvotesService } from 'src/app/services/upvotes.service';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
@@ -22,8 +21,9 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { UserService } from 'src/app/services/user.service';
-import Utils from 'src/app/utils/Utils';
+import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
+import Upvote from 'src/app/models/upvote';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -45,15 +45,16 @@ export class PostModalComponent {
   editingTitle: string;
   desc: string;
   editingDesc: string;
-  isEditing: boolean = false;
+  isEditing = false;
   canEditDelete: boolean;
   canStudentComment: boolean;
   canStudentTag: boolean;
   postColor: string;
-  showComments: boolean = false;
-  showEditDelete: boolean = false;
+  showComments = false;
+  showEditDelete = false;
   showAuthorName: boolean;
 
+  error = '';
   titleControl = new FormControl('', [
     Validators.required,
     Validators.maxLength(50),
@@ -64,14 +65,16 @@ export class PostModalComponent {
   newComment: string;
   comments: Comment[] = [];
 
-  isLiked: Like | null;
-  likes: Like[] = [];
+  upvotes: Upvote[] = [];
+
+  expandedUpvotesView = false;
+  expandedUpvotes: any[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
     public dialog: MatDialog,
     public commentService: CommentService,
-    public likesService: LikesService,
+    public upvotesService: UpvotesService,
     public postService: PostService,
     public bucketService: BucketService,
     public socketService: SocketService,
@@ -108,10 +111,9 @@ export class PostModalComponent {
         this.comments.push(comment);
       });
     });
-    this.likesService.getLikesByPost(data.post.postID).then((data) => {
-      data.forEach((like) => {
-        if (like.likerID == this.user.userID) this.isLiked = like;
-        this.likes.push(like);
+    this.upvotesService.getUpvotesByPost(data.post.postID).then((data) => {
+      data.forEach((upvote) => {
+        this.upvotes.push(upvote);
       });
     });
     this.bucketService
@@ -126,8 +128,8 @@ export class PostModalComponent {
         });
       });
 
-    let isStudent = this.user.role == Role.STUDENT;
-    let isTeacher = this.user.role == Role.TEACHER;
+    const isStudent = this.user.role == Role.STUDENT;
+    const isTeacher = this.user.role == Role.TEACHER;
     this.showEditDelete =
       (isStudent && data.board.permissions.allowStudentEditAddDeletePost) ||
       isTeacher;
@@ -174,7 +176,7 @@ export class PostModalComponent {
     this.editingTitle = this.title;
     this.editingDesc = this.desc;
 
-    var update: Partial<Post> = {
+    const update: Partial<Post> = {
       postID: this.post.postID,
       title: this.title,
       desc: this.desc,
@@ -190,14 +192,8 @@ export class PostModalComponent {
       data: {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this post?',
-        handleConfirm: () => {
-          this.socketService.emit(SocketEvent.POST_DELETE, this.post);
-
-          var obj = this.fabricUtils.getObjectFromId(this.post.postID);
-          if (obj && obj.type == 'group') {
-            this.fabricUtils._canvas.remove(obj);
-            this.fabricUtils._canvas.renderAll();
-          }
+        handleConfirm: async () => {
+          await this.canvasService.removePost(this.post);
           this.dialogRef.close(DELETE);
         },
       },
@@ -227,7 +223,7 @@ export class PostModalComponent {
   addComment() {
     const comment: Comment = {
       comment: this.newComment,
-      commentID: Utils.generateUniqueID(),
+      commentID: generateUniqueID(),
       userID: this.data.user.userID,
       postID: this.post.postID,
       boardID: this.data.board.boardID,
@@ -239,31 +235,65 @@ export class PostModalComponent {
     this.comments.push(comment);
   }
 
-  handleLikeClick() {
-    // if liking is locked just return (do nothing)
+  async handleUpvoteClick() {
+    if (this._votingLocked())
+      return this._setError(getErrorMessage('Voting is disabled!'));
+
+    this.canvasService
+      .upvote(this.user.userID, this.post)
+      .then((upvote) => this.upvotes.push(upvote))
+      .catch((e) => this._setError(getErrorMessage(e)));
+  }
+
+  async handleDownvoteClick() {
+    if (this._votingLocked())
+      return this._setError(getErrorMessage('Voting is disabled!'));
+
+    this.canvasService
+      .unupvote(this.user.userID, this.post.postID)
+      .then((upvote: Upvote) => {
+        this.upvotes = this.upvotes.filter(
+          (u) => u.upvoteID != upvote.upvoteID
+        );
+      })
+      .catch((e) => this._setError(getErrorMessage(e)));
+  }
+
+  isUpvoted(): Boolean {
+    return this.upvotes.some((u) => u.voterID === this.user.userID);
+  }
+
+  async gotoUpvotesView() {
+    this.expandedUpvotes = await this.upvotesService.getUpvotesByPost(
+      this.post.postID,
+      'grouped'
+    );
+
     if (
-      this.user.role == Role.STUDENT &&
-      !this.data.board.permissions.allowStudentLiking
+      !this.expandedUpvotes ||
+      Object.keys(this.expandedUpvotes).length == 0
     ) {
-      return;
+      return this._setError('No upvotes found!');
     }
 
-    if (this.isLiked) {
-      this.canvasService.unlike(this.user.userID, this.post.postID);
-      this.isLiked = null;
-      this.likes = this.likes.filter(
-        (like) => like.likerID != this.user.userID
-      );
-    } else {
-      const like: Like = {
-        likeID: Utils.generateUniqueID(),
-        likerID: this.user.userID,
-        postID: this.post.postID,
-        boardID: this.data.board.boardID,
-      };
-      this.canvasService.like(like);
-      this.isLiked = like;
-      this.likes.push(like);
-    }
+    this.dialogRef.updateSize('30vw');
+    this.expandedUpvotesView = true;
+  }
+
+  gotoPostView() {
+    this.dialogRef.updateSize('95vw');
+    this.expandedUpvotesView = false;
+  }
+
+  private _votingLocked(): boolean {
+    return (
+      this.user.role == Role.STUDENT &&
+      !this.data.board.permissions.allowStudentUpvoting
+    );
+  }
+
+  private _setError(error: string) {
+    this.error = error;
+    setTimeout(() => (this.error = ''), 5000);
   }
 }

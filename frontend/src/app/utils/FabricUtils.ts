@@ -9,6 +9,7 @@ import {
   POST_DEFAULT_BORDER_THICKNESS,
   POST_DEFAULT_OPACITY,
 } from './constants';
+import { numDigits } from './Utils';
 
 export interface ImageSettings {
   top: number;
@@ -56,9 +57,9 @@ export class FabricUtils {
   }
 
   getObjectFromId(postID: string) {
-    var currentObjects: any = this._canvas?.getObjects();
+    const currentObjects: any = this._canvas?.getObjects();
 
-    for (var i = currentObjects.length - 1; i >= 0; i--) {
+    for (let i = currentObjects.length - 1; i >= 0; i--) {
       if (currentObjects[i].postID == postID) return currentObjects[i];
     }
     return null;
@@ -138,29 +139,45 @@ export class FabricUtils {
     return existing;
   }
 
+  /** 
+  Updates the position and formatting of a fabric post
+  after the author name is changed.
+
+	@param obj the fabric post being updated
+  @param author new author name 
+	@returns updated fabric post
+	*/
   updateAuthor(obj: any, author: string) {
-    var children: fabric.Object[] = obj.getObjects();
-    var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
-    var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
-    var likeObj: any = children.filter((obj) => obj.name == 'like').pop();
-    var likeCountObj: any = children
-      .filter((obj) => obj.name == 'likeCount')
+    const children: fabric.Object[] = obj.getObjects();
+    const authorObj: any = children.filter((obj) => obj.name == 'author').pop();
+    const descObj: any = children.filter((obj) => obj.name == 'desc').pop();
+    const upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
+    const downvoteObj: any = children
+      .filter((obj) => obj.name == 'downvote')
       .pop();
-    var commentObj: any = children.filter((obj) => obj.name == 'comment').pop();
-    var commentCountObj: any = children
+    const upvoteCountObj: any = children
+      .filter((obj) => obj.name == 'upvoteCount')
+      .pop();
+    const commentObj: any = children
+      .filter((obj) => obj.name == 'comment')
+      .pop();
+    const commentCountObj: any = children
       .filter((obj) => obj.name == 'commentCount')
       .pop();
-    var contentObj: any = children.filter((obj) => obj.name == 'content').pop();
+    const contentObj: any = children
+      .filter((obj) => obj.name == 'content')
+      .pop();
 
-    var oldAuthorHeight = authorObj.height;
+    const oldAuthorHeight = authorObj.height;
 
     authorObj.set({ text: author, dirty: true });
 
-    var authorDelta = authorObj.height - oldAuthorHeight;
+    const authorDelta = authorObj.height - oldAuthorHeight;
 
     descObj.set({ top: descObj.top + authorDelta, dirty: true });
-    likeObj.set({ top: likeObj.top + authorDelta, dirty: true });
-    likeCountObj.set({ top: likeCountObj.top + authorDelta, dirty: true });
+    upvoteObj.set({ top: upvoteObj.top + authorDelta, dirty: true });
+    downvoteObj.set({ top: downvoteObj.top + authorDelta, dirty: true });
+    upvoteCountObj.set({ top: upvoteCountObj.top + authorDelta, dirty: true });
     commentObj.set({ top: commentObj.top + authorDelta, dirty: true });
     commentCountObj.set({
       top: commentCountObj.top + authorDelta,
@@ -173,24 +190,40 @@ export class FabricUtils {
     return obj;
   }
 
+  /** 
+  Updates the position and formatting of a fabric post
+  after the title or description is changed.
+
+	@param obj the fabric post being updated
+  @param title new title 
+  @param desc new desc
+	@returns updated fabric post
+	*/
   updatePostTitleDesc(obj: any, title: string, desc: string) {
-    var children: fabric.Object[] = obj.getObjects();
-    var titleObj: any = children.filter((obj) => obj.name == 'title').pop();
-    var authorObj: any = children.filter((obj) => obj.name == 'author').pop();
-    var descObj: any = children.filter((obj) => obj.name == 'desc').pop();
-    var likeObj: any = children.filter((obj) => obj.name == 'like').pop();
-    var likeCountObj: any = children
-      .filter((obj) => obj.name == 'likeCount')
+    const children: fabric.Object[] = obj.getObjects();
+    const titleObj: any = children.filter((obj) => obj.name == 'title').pop();
+    const authorObj: any = children.filter((obj) => obj.name == 'author').pop();
+    const descObj: any = children.filter((obj) => obj.name == 'desc').pop();
+    const upvoteObj: any = children.filter((obj) => obj.name == 'upvote').pop();
+    const downvoteObj: any = children
+      .filter((obj) => obj.name == 'downvote')
       .pop();
-    var commentObj: any = children.filter((obj) => obj.name == 'comment').pop();
-    var commentCountObj: any = children
+    const upvoteCountObj: any = children
+      .filter((obj) => obj.name == 'upvoteCount')
+      .pop();
+    const commentObj: any = children
+      .filter((obj) => obj.name == 'comment')
+      .pop();
+    const commentCountObj: any = children
       .filter((obj) => obj.name == 'commentCount')
       .pop();
-    var contentObj: any = children.filter((obj) => obj.name == 'content').pop();
+    const contentObj: any = children
+      .filter((obj) => obj.name == 'content')
+      .pop();
 
-    var oldTitleHeight = titleObj.height;
-    var oldDescHeight = descObj.height;
-    var oldAuthorHeight = authorObj.height;
+    const oldTitleHeight = titleObj.height;
+    const oldDescHeight = descObj.height;
+    const oldAuthorHeight = authorObj.height;
 
     titleObj.set({ text: title, dirty: true });
     descObj.set({
@@ -198,18 +231,22 @@ export class FabricUtils {
       dirty: true,
     });
 
-    var titleDelta = titleObj.height - oldTitleHeight;
-    var authorDelta = authorObj.height - oldAuthorHeight;
-    var descDelta = descObj.height - oldDescHeight;
+    const titleDelta = titleObj.height - oldTitleHeight;
+    const authorDelta = authorObj.height - oldAuthorHeight;
+    const descDelta = descObj.height - oldDescHeight;
 
     authorObj.set({ top: authorObj.top + titleDelta, dirty: true });
     descObj.set({ top: descObj.top + titleDelta + authorDelta, dirty: true });
-    likeObj.set({
-      top: likeObj.top + titleDelta + authorDelta + descDelta,
+    upvoteObj.set({
+      top: upvoteObj.top + titleDelta + authorDelta + descDelta,
       dirty: true,
     });
-    likeCountObj.set({
-      top: likeCountObj.top + titleDelta + authorDelta + descDelta,
+    downvoteObj.set({
+      top: downvoteObj.top + titleDelta + authorDelta + descDelta,
+      dirty: true,
+    });
+    upvoteCountObj.set({
+      top: upvoteCountObj.top + titleDelta + authorDelta + descDelta,
       dirty: true,
     });
     commentObj.set({
@@ -295,25 +332,45 @@ export class FabricUtils {
     };
   }
 
-  setLikeCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    var likeCount: any = fabricObject
-      .getObjects()
-      .find((obj) => obj.name == 'likeCount');
+  /** 
+  Sets the number of upvotes on a fabric post.
 
-    likeCount.set({ text: amount.toString(), dirty: true });
+	When going from n-digit -> (n+1)-digit upvotes, the 
+  button position will be adjusted to accomodate for extra space. 
+
+	@param fabricObject the post
+  @param amount new amount of upvotes
+	@returns updated fabric post
+	*/
+  setUpvoteCount(fabricObject: fabric.Group, amount: number): fabric.Group {
+    const upvoteCount: any = this.getChildFromGroup(
+      fabricObject,
+      'upvoteCount'
+    );
+    const downvote: any = this.getChildFromGroup(fabricObject, 'downvote');
+
+    const prevAmountDigits = upvoteCount.text.length;
+    const amountDigits = numDigits(amount);
+    const left = downvote.left + (amountDigits - prevAmountDigits) * 9;
+
+    upvoteCount.set({ text: amount.toString(), dirty: true });
+    downvote.set({ left, dirty: true });
 
     fabricObject.dirty = true;
     fabricObject.addWithUpdate();
     return fabricObject;
   }
 
-  setCommentCount(fabricObject: fabric.Group, amount: number): fabric.Group {
-    var comment: any = fabricObject
-      .getObjects()
-      .find((obj) => obj.name == 'comment');
-    var commentCount: any = fabricObject
-      .getObjects()
-      .find((obj) => obj.name == 'commentCount');
+  /** 
+  Sets the number of comments on a fabric post.
+
+	@param fabricObj the post
+  @param amount new amount of comments
+	@returns updated fabric post
+	*/
+  setCommentCount(fabricObj: fabric.Group, amount: number): fabric.Group {
+    const comment: any = this.getChildFromGroup(fabricObj, 'comment');
+    const commentCount: any = this.getChildFromGroup(fabricObj, 'commentCount');
 
     commentCount.set({ text: amount.toString(), dirty: true });
 
@@ -322,15 +379,15 @@ export class FabricUtils {
       comment.set({ opacity: 1, dirty: true });
     }
 
-    fabricObject.dirty = true;
-    fabricObject.addWithUpdate();
-    return fabricObject;
+    fabricObj.dirty = true;
+    fabricObj.addWithUpdate();
+    return fabricObj;
   }
 
   createImageSettings(image: fabric.Image): ImageSettings {
-    let dimensions = this._calcCanvasDimensions();
-    let scale = this._scaleImage(image, dimensions);
-    let offset = this._calcImageOffsets(image, scale, dimensions);
+    const dimensions = this._calcCanvasDimensions();
+    const scale = this._scaleImage(image, dimensions);
+    const offset = this._calcImageOffsets(image, scale, dimensions);
 
     return {
       top: offset.offsetY,
@@ -385,7 +442,7 @@ export class FabricUtils {
       return { width: window.innerWidth, height: window.innerHeight - 64 };
     }
 
-    let vptCoords = this._canvas.vptCoords!;
+    const vptCoords = this._canvas.vptCoords!;
     let width = this._canvas.getWidth();
     let height = this._canvas.getHeight();
 
@@ -441,13 +498,13 @@ export class FabricUtils {
     scale: ImageScale,
     dimensions: CanvasDimensions
   ): ImageOffset {
-    let offsetX = Math.floor(
+    const offsetX = Math.floor(
       (dimensions.width - scale.scaleX * image.width!) / 2
     );
-    let offsetY = Math.floor(
+    const offsetY = Math.floor(
       (dimensions.height - scale.scaleY * image.height!) / 2
     );
-    let vptCoords = this._canvas.vptCoords;
+    const vptCoords = this._canvas.vptCoords;
 
     if (vptCoords) {
       return {

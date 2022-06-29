@@ -1,29 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BeAnObject } from "@typegoose/typegoose/lib/types";
-import { Document } from "mongoose";
-import { BucketModel } from "../models/Bucket";
-import { PostModel } from "../models/Post";
-import { GroupTaskModel } from "../models/GroupTask";
+import { BeAnObject } from '@typegoose/typegoose/lib/types';
+import { Document } from 'mongoose';
+import { BucketModel } from '../models/Bucket';
+import { PostModel } from '../models/Post';
+import { GroupTaskModel } from '../models/GroupTask';
 import {
   ContainerType,
   DistributionWorkflowModel,
   TaskWorkflowModel,
   WorkflowModel,
   WorkflowType,
-} from "../models/Workflow";
-import dalBucket from "../repository/dalBucket";
-import dalPost from "../repository/dalPost";
-import dalWorkflow from "../repository/dalWorkflow";
-import dalGroupTask from "../repository/dalGroupTask";
-import { convertBucket, convertPostsFromID } from "../utils/converter";
+} from '../models/Workflow';
+import dalBucket from '../repository/dalBucket';
+import dalPost from '../repository/dalPost';
+import dalWorkflow from '../repository/dalWorkflow';
+import dalGroupTask from '../repository/dalGroupTask';
+import { convertBucket, convertPostsFromID } from '../utils/converter';
 import {
   isDistribution,
   cloneManyToBoard,
   distribute,
   shuffle,
-} from "../utils/workflow.helpers";
-import { mongo } from "mongoose";
-
+} from '../utils/workflow.helpers';
+import { mongo } from 'mongoose';
 
 export const run = async (
   workflow: Document<any, BeAnObject, any> & WorkflowModel
@@ -70,9 +69,7 @@ export const runDistributionWorkflow = async (
   });
 };
 
-export const runTaskWorkflow = async (
-  taskWorkflow: TaskWorkflowModel
-) => {
+export const runTaskWorkflow = async (taskWorkflow: TaskWorkflowModel) => {
   const { source, destinations, assignedGroups } = taskWorkflow;
   let sourcePosts;
 
@@ -92,21 +89,21 @@ export const runTaskWorkflow = async (
   if (assignedGroups.length > 0) {
     for (let i = 0; i < assignedGroups.length; i++) {
       const assignedGroup = assignedGroups[i];
-      const posts = split[i]
+      const posts = split[i];
 
       const newID = new mongo.ObjectId();
-      let groupTask = new GroupTaskModel;
+      let groupTask = new GroupTaskModel();
       // groupTask._id = newID;
       groupTask.groupTaskID = newID.toString();
       groupTask.groupID = assignedGroup.groupID;
       groupTask.workflowID = taskWorkflow.workflowID;
-      groupTask.posts = []
-      
-      for (let j = 0; j < posts.length; j++){
-        groupTask.posts.push({postID: posts[j], complete: false})
+      groupTask.posts = [];
+
+      for (let j = 0; j < posts.length; j++) {
+        groupTask.posts.push({ postID: posts[j], complete: false });
       }
       dalGroupTask.create(groupTask);
-      assignedGroup.groupTasks.push(groupTask.groupTaskID)
+      assignedGroup.groupTasks.push(groupTask.groupTaskID);
     }
   }
 

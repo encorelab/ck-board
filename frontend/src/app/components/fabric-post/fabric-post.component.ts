@@ -6,13 +6,14 @@ import {
   POST_DEFAULT_BORDER,
   POST_DEFAULT_BORDER_THICKNESS,
 } from 'src/app/utils/constants';
+import { numDigits } from 'src/app/utils/Utils';
 
 const AUTHOR_OFFSET = 65;
 const DESC_OFFSET = 80;
 const CONTENT_EXTRA_HEIGHT = 55;
 
 export interface PostOptions {
-  likes: number;
+  upvotes: number;
   comments: number;
 }
 
@@ -26,7 +27,7 @@ export class FabricPostComponent extends fabric.Group {
     @Inject(Object) post: Post,
     @Inject(Object) options?: PostOptions
   ) {
-    var title = new fabric.Textbox(post.title, {
+    const title = new fabric.Textbox(post.title, {
       name: 'title',
       width: 280,
       left: 18,
@@ -38,7 +39,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var author = new fabric.Textbox(post.author, {
+    const author = new fabric.Textbox(post.author, {
       name: 'author',
       width: 300,
       left: 18,
@@ -49,7 +50,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    var desc = new fabric.Textbox(
+    const desc = new fabric.Textbox(
       post.desc.length > 200 ? post.desc.substr(0, 200) + '...' : post.desc,
       {
         name: 'desc',
@@ -63,7 +64,52 @@ export class FabricPostComponent extends fabric.Group {
       }
     );
 
-    var commentButton = new fabric.Textbox('💬', {
+    const upvoteButton = new fabric.Textbox('⇧', {
+      name: 'upvote',
+      width: 55,
+      top:
+        title.getScaledHeight() +
+        author.getScaledHeight() +
+        desc.getScaledHeight() +
+        90,
+      left: 18,
+      fontSize: 22,
+      fontFamily: 'Helvetica',
+      splitByGrapheme: true,
+    });
+
+    const upvoteCount = new fabric.Textbox(options?.upvotes.toString() ?? '0', {
+      name: 'upvoteCount',
+      width: 55,
+      top:
+        title.getScaledHeight() +
+        author.getScaledHeight() +
+        desc.getScaledHeight() +
+        90,
+      left: (upvoteButton.left ?? 0) + 28,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#555555',
+      splitByGrapheme: true,
+    });
+
+    const upvoteDigits = options ? numDigits(options.upvotes) : 1;
+    const downvoteButton = new fabric.Textbox('⇩', {
+      name: 'downvote',
+      width: 55,
+      top:
+        title.getScaledHeight() +
+        author.getScaledHeight() +
+        desc.getScaledHeight() +
+        91,
+      left: (upvoteCount.left ?? 0) + 9 + 9 * upvoteDigits,
+      fontSize: 20,
+      fontFamily: 'Helvetica',
+      fill: '#000000',
+      splitByGrapheme: true,
+    });
+
+    const commentButton = new fabric.Textbox('💬', {
       name: 'comment',
       width: 55,
       top:
@@ -71,7 +117,7 @@ export class FabricPostComponent extends fabric.Group {
         author.getScaledHeight() +
         desc.getScaledHeight() +
         90,
-      left: 170,
+      left: 250,
       fontSize: 20,
       fontFamily: 'Helvetica',
       fill: '#000000',
@@ -79,55 +125,28 @@ export class FabricPostComponent extends fabric.Group {
       opacity: options && options.comments > 0 ? 1 : 0,
     });
 
-    var commentCount = new fabric.Textbox(options?.comments.toString() ?? '0', {
-      name: 'commentCount',
-      width: 55,
-      top:
-        title.getScaledHeight() +
-        author.getScaledHeight() +
-        desc.getScaledHeight() +
-        90,
-      left: (commentButton.left ?? 0) + 28,
-      fontSize: 20,
-      fontFamily: 'Helvetica',
-      fill: '#555555',
-      splitByGrapheme: true,
-      opacity: options && options.comments > 0 ? 1 : 0,
-    });
-
-    var likeButton = new fabric.Textbox('👍🏼', {
-      name: 'like',
-      width: 55,
-      top:
-        title.getScaledHeight() +
-        author.getScaledHeight() +
-        desc.getScaledHeight() +
-        90,
-      left: (commentCount.left ?? 0) + 45,
-      fontSize: 20,
-      fontFamily: 'Helvetica',
-      fill: '#000000',
-      splitByGrapheme: true,
-    });
-
-    var likeCount = new fabric.Textbox(options?.likes.toString() ?? '0', {
-      name: 'likeCount',
-      width: 55,
-      top:
-        title.getScaledHeight() +
-        author.getScaledHeight() +
-        desc.getScaledHeight() +
-        90,
-      left: (likeButton.left ?? 0) + 28,
-      fontSize: 20,
-      fontFamily: 'Helvetica',
-      fill: '#555555',
-      splitByGrapheme: true,
-    });
+    const commentCount = new fabric.Textbox(
+      options?.comments.toString() ?? '0',
+      {
+        name: 'commentCount',
+        width: 55,
+        top:
+          title.getScaledHeight() +
+          author.getScaledHeight() +
+          desc.getScaledHeight() +
+          90,
+        left: (commentButton.left ?? 0) + 28,
+        fontSize: 20,
+        fontFamily: 'Helvetica',
+        fill: '#555555',
+        splitByGrapheme: true,
+        opacity: options && options.comments > 0 ? 1 : 0,
+      }
+    );
 
     const { borderWidth, borderColor, fillColor } = post.displayAttributes!;
 
-    var content = new fabric.Rect({
+    const content = new fabric.Rect({
       name: 'content',
       top: 40,
       width: 330,
@@ -172,8 +191,9 @@ export class FabricPostComponent extends fabric.Group {
         title,
         author,
         desc,
-        likeButton,
-        likeCount,
+        upvoteButton,
+        upvoteCount,
+        downvoteButton,
         commentButton,
         commentCount,
       ],

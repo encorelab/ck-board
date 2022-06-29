@@ -1,13 +1,17 @@
-import { Router } from "express";
-import { DistributionWorkflowModel, TaskWorkflowModel, WorkflowType } from "../models/Workflow";
-import dalWorkflow from "../repository/dalWorkflow";
+import { Router } from 'express';
+import {
+  DistributionWorkflowModel,
+  TaskWorkflowModel,
+  WorkflowType,
+} from '../models/Workflow';
+import dalWorkflow from '../repository/dalWorkflow';
 
 const router = Router();
 
 /**
  * Create a new distribution workflow.
  */
-router.post("/distribution", async (req, res) => {
+router.post('/distribution', async (req, res) => {
   const workflow: DistributionWorkflowModel = req.body;
 
   const savedWorkflow = await dalWorkflow.create(
@@ -20,7 +24,7 @@ router.post("/distribution", async (req, res) => {
 /**
  * Update an existing distribution workflow.
  */
-router.post("/distribution/:id", async (req, res) => {
+router.post('/distribution/:id', async (req, res) => {
   const id = req.params.id;
   const { name, active, source, destinations, postsPerDestination } = req.body;
 
@@ -33,17 +37,14 @@ router.post("/distribution/:id", async (req, res) => {
     postsPerDestination === null ? null : { postsPerDestination }
   );
 
-  const updatedWorkflow = await dalWorkflow.updateDistribution(
-    id,
-    workflow
-  );
+  const updatedWorkflow = await dalWorkflow.updateDistribution(id, workflow);
   res.status(200).json(updatedWorkflow);
 });
 
 /**
  * Get all workflows for a board.
  */
-router.get("/boards/:id", async (req, res) => {
+router.get('/boards/:id', async (req, res) => {
   const id = req.params.id;
 
   const workflows = await dalWorkflow.getAllByBoardId(id);
@@ -53,7 +54,7 @@ router.get("/boards/:id", async (req, res) => {
 /**
  * Get all distribution workflows for a board.
  */
-router.get("/distribution/boards/:id", async (req, res) => {
+router.get('/distribution/boards/:id', async (req, res) => {
   const id = req.params.id;
 
   const workflows = await dalWorkflow.getByBoardId(
@@ -66,7 +67,7 @@ router.get("/distribution/boards/:id", async (req, res) => {
 /**
  * Delete an existing distribution workflow.
  */
-router.delete("/distribution/:id", async (req, res) => {
+router.delete('/distribution/:id', async (req, res) => {
   const id = req.params.id;
 
   await dalWorkflow.remove(WorkflowType.DISTRIBUTION, id);
@@ -77,23 +78,29 @@ router.delete("/distribution/:id", async (req, res) => {
 /**
  * Create a new task workflow.
  */
- router.post("/task", async (req, res) => {
+router.post('/task', async (req, res) => {
   const workflow: TaskWorkflowModel = req.body;
 
-  const savedWorkflow = await dalWorkflow.create(
-    WorkflowType.TASK,
-    workflow
-  );
+  const savedWorkflow = await dalWorkflow.create(WorkflowType.TASK, workflow);
   res.status(200).json(savedWorkflow);
 });
 
 /**
  * Update an existing task workflow.
  */
-router.post("/task/:id", async (req, res) => {
+router.post('/task/:id', async (req, res) => {
   const id = req.params.id;
-  const { name, active, source, destinations, prompt, 
-    requiredActions, optionalActions, assignedGroups, postsPerGroup } = req.body;
+  const {
+    name,
+    active,
+    source,
+    destinations,
+    prompt,
+    requiredActions,
+    optionalActions,
+    assignedGroups,
+    postsPerGroup,
+  } = req.body;
 
   const workflow: Partial<TaskWorkflowModel> = Object.assign(
     {},
@@ -105,41 +112,32 @@ router.post("/task/:id", async (req, res) => {
     requiredActions === null ? null : { requiredActions },
     optionalActions === null ? null : { optionalActions },
     assignedGroups === null ? null : { assignedGroups },
-    postsPerGroup === null ? null : { postsPerGroup },
-
+    postsPerGroup === null ? null : { postsPerGroup }
   );
 
-  const updatedWorkflow = await dalWorkflow.updateTask(
-    id,
-    workflow
-  );
+  const updatedWorkflow = await dalWorkflow.updateTask(id, workflow);
   res.status(200).json(updatedWorkflow);
 });
-
 
 /**
  * Get all task workflows for a board.
  */
-router.get("/task/boards/:id", async (req, res) => {
+router.get('/task/boards/:id', async (req, res) => {
   const id = req.params.id;
 
-  const workflows = await dalWorkflow.getByBoardId(
-    WorkflowType.TASK,
-    id
-  );
+  const workflows = await dalWorkflow.getByBoardId(WorkflowType.TASK, id);
   res.status(200).json(workflows);
 });
 
 /**
  * Delete an existing task workflow.
  */
-router.delete("/task/:id", async (req, res) => {
+router.delete('/task/:id', async (req, res) => {
   const id = req.params.id;
 
   await dalWorkflow.remove(WorkflowType.TASK, id);
 
   res.status(200).end();
 });
-
 
 export default router;

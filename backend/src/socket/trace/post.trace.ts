@@ -145,9 +145,8 @@ const commentRemove = async (
   const trace = await createTrace(input.trace);
   const comment = input.eventData;
   trace.event = {
-    postID: comment.postID,
     commentID: comment.commentID,
-    commentModifiedText: comment.comment,
+    commentDeleted: 1,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);

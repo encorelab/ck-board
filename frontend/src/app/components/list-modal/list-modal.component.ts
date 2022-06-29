@@ -1,11 +1,17 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import Post from 'src/app/models/post';
+import User from 'src/app/models/user';
+import Post, { PostType, DisplayAttributes } from 'src/app/models/post';
+import { CanvasService } from 'src/app/services/canvas.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
-import { SocketEvent } from 'src/app/utils/constants';
+import {
+  SocketEvent,
+  NEEDS_ATTENTION_TAG,
+  POST_TAGGED_BORDER_THICKNESS,
+} from 'src/app/utils/constants';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from '../../utils/converters';
 import { Tag } from 'src/app/models/tag';
@@ -17,6 +23,7 @@ import { Tag } from 'src/app/models/tag';
 })
 export class ListModalComponent implements OnInit, OnDestroy {
   board: Board;
+  user: User;
 
   loading = true;
   loadingMore = false;
@@ -29,15 +36,22 @@ export class ListModalComponent implements OnInit, OnDestroy {
   filteredPosts: any[];
   unsubListeners: Function[] = [];
 
+  Yoffset: number;
+  Xoffset: number;
+
   constructor(
     public dialogRef: MatDialogRef<ListModalComponent>,
     public bucketService: BucketService,
     public postService: PostService,
+    public canvasService: CanvasService,
     public socketService: SocketService,
     public converters: Converters,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.board = data.board;
+    this.user = data.user;
+    this.Xoffset = data.centerX;
+    this.Yoffset = data.centerY;
   }
 
   ngOnInit(): void {
@@ -160,6 +174,48 @@ export class ListModalComponent implements OnInit, OnDestroy {
     } else {
       this.filteredPosts = this.posts;
     }
+  }
+
+  async movePostToBoard(postID: string) {
+    const htmlPost = this.posts.find((p) => p.post.postID == postID);
+    console.log('h');
+    if (!htmlPost) return;
+
+    console.log('fsdh');
+    const containsAttentionTag = htmlPost.post.tags.find(
+      (tag) => tag.name == NEEDS_ATTENTION_TAG.name
+    );
+
+    console.log('fsdfsgdh');
+    const renderAttr: DisplayAttributes = {
+      position: {
+        left: this.Xoffset,
+        top: this.Yoffset,
+      },
+      lock: !this.board.permissions.allowStudentMoveAny,
+      borderColor: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : undefined,
+      borderWidth: containsAttentionTag
+        ? POST_TAGGED_BORDER_THICKNESS
+        : undefined,
+    };
+    console.log(this.user)
+
+    const post: Post = {
+      postID: postID,
+      userID: this.user.userID,
+      boardID: this.board.boardID,
+      type: PostType.BOARD,
+      title: htmlPost.post.title,
+      author: this.user.username,
+      desc: htmlPost.post.desc,
+      tags: htmlPost.post.tags ?? [],
+      displayAttributes: renderAttr,
+    };
+
+    await this.canvasService.createBoardPostFromBucket(post);
+    htmlPost.bucketOnly = false;
+
+    this.Yoffset += 50;
   }
 
   ngOnDestroy(): void {

@@ -36,6 +36,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   bucketName = '';
   workflowName = '';
+  showDelete: boolean = false;
 
   sourceOptions: any[] = [];
   destOptions: any[] = [];
@@ -90,7 +91,6 @@ export class CreateWorkflowModalComponent implements OnInit {
         this.sourceOptions = this.sourceOptions.concat(buckets);
         this.destOptions = this.destOptions.concat(buckets);
         this.boardBuckets = this.boardBuckets.concat(buckets);
-        console.log(this.boardBuckets);
         this.sourceOptions.push(this.board);
       });
     this.boardService.getMultiple(this.data.project.boards).then((data) => {
@@ -124,6 +124,10 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  toggleDeleteBoard() {
+    this.showDelete = !this.showDelete;
+  };
+
   deleteBucket(bucket: Bucket) {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
@@ -131,7 +135,12 @@ export class CreateWorkflowModalComponent implements OnInit {
         title: 'Confirmation',
         message: 'Are you sure you want to delete this bucket?',
         handleConfirm: () => {
-          this.bucketService.delete(bucket.bucketID)
+          this.bucketService.delete(bucket.bucketID).then(() => {
+            this.loadBucketsBoards();
+            this.openSnackBar(
+              'Bucket: ' + bucket.name + ' deleted succesfully!'
+            );
+          });;
         },
       },
     });

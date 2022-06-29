@@ -49,12 +49,12 @@ export const remove = async (id: string) => {
 
 export const update = async (id: string, post: Partial<PostModel>) => {
   try {
-    const attrUpdate = formatAttributes(post);
+    post = Object.assign({}, post, formatAttributes(post));
     const updatedPost = await Post.findOneAndUpdate(
       { postID: id },
       {
-        ...post,
-        $set: attrUpdate,
+        post,
+        // $set: attrUpdate,
       },
       {
         new: true,

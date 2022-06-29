@@ -61,4 +61,11 @@ router.get('/users/:id', async (req, res) => {
   res.status(200).json(boards);
 });
 
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const deletedBoard = await dalBoard.remove(id);
+  res.status(200).json(deletedBoard);
+});
+
 export default router;

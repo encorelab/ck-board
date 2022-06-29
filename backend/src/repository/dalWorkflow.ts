@@ -79,6 +79,14 @@ export const remove = async (type: WorkflowType, id: string) => {
   }
 };
 
+export const removeByBoard = async (boardID: string) => {
+  try {
+    return await DistributionWorkflow.deleteMany({ boardID: boardID });
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 const dalWorkflow = {
   getAllByBoardId,
   getByBoardId,
@@ -86,6 +94,7 @@ const dalWorkflow = {
   updateDistribution,
   updateTask,
   remove,
+  removeByBoard,
 };
 
 export default dalWorkflow;

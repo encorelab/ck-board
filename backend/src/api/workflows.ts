@@ -97,7 +97,6 @@ router.post('/task/:id', async (req, res) => {
     destinations,
     prompt,
     requiredActions,
-    optionalActions,
     assignedGroups,
     postsPerGroup,
   } = req.body;
@@ -110,7 +109,6 @@ router.post('/task/:id', async (req, res) => {
     destinations === null ? null : { destinations },
     prompt === null ? null : { prompt },
     requiredActions === null ? null : { requiredActions },
-    optionalActions === null ? null : { optionalActions },
     assignedGroups === null ? null : { assignedGroups },
     postsPerGroup === null ? null : { postsPerGroup }
   );

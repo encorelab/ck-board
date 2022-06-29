@@ -158,7 +158,13 @@
       <mat-card class="comment" *ngFor="let comment of comments">
         <mat-card-title style="font-size: small">{{
           comment.author
-        }}</mat-card-title>
+        }}
+        <button mat-icon-button class="comment-delete" 
+        *ngIf="(showEditDelete && canEditDelete) || comment.userID === user.userID" 
+        (click)="deleteComment(comment)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-title>
         <mat-card-content>
           {{ comment.comment }}
         </mat-card-content>

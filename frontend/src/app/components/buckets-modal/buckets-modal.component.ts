@@ -104,6 +104,15 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       );
       if (found) found.comments += 1;
     });
+    this.socketService.listen(
+      SocketEvent.POST_COMMENT_REMOVE,
+      (result: any) => {
+        let found = this.posts.find(
+          (p) => p.post.postID == result.comment.postID
+        );
+        if (found) found.comments -= 1;
+      }
+    );
     this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
       const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) {

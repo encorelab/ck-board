@@ -138,6 +138,20 @@ const commentAdd = async (
   return dalTrace.create(trace);
 };
 
+const commentRemove = async (
+  input: SocketPayload<CommentModel>,
+  eventType: string
+) => {
+  const trace = await createTrace(input.trace);
+  const comment = input.eventData;
+  trace.event = {
+    commentID: comment.commentID,
+    commentDeleted: 1,
+  };
+  trace.eventType = eventType;
+  return dalTrace.create(trace);
+};
+
 /**
  * Creates trace for adding a tag to a post
  * @param input
@@ -225,6 +239,7 @@ const postTrace = {
   upvoteAdd,
   upvoteRemove,
   commentAdd,
+  commentRemove,
   tagAdd,
   tagRemove,
   move,

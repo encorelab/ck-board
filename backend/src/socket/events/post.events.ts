@@ -154,6 +154,25 @@ class PostCommentAdd {
   }
 }
 
+class PostCommentRemove {
+  static type: SocketEvent = SocketEvent.POST_COMMENT_REMOVE;
+
+  static async handleEvent(
+    input: SocketPayload<CommentModel>
+  ): Promise<object> {
+    const commentAmount = await dalComment.getAmountByPost(
+      input.eventData.postID
+    );
+    await postTrace.commentRemove(input, this.type);
+
+    return { comment: input.eventData, amount: commentAmount };
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: object) {
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
+
 class PostTagAdd {
   static type: SocketEvent = SocketEvent.POST_TAG_ADD;
 
@@ -218,6 +237,7 @@ const postEvents = [
   PostUpvoteAdd,
   PostUpvoteRemove,
   PostCommentAdd,
+  PostCommentRemove,
   PostTagAdd,
   PostTagRemove,
   PostRead,

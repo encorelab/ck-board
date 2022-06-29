@@ -18,6 +18,7 @@ import dalGroupTask from '../repository/dalGroupTask';
 import { convertBucket, convertPostsFromID } from '../utils/converter';
 import {
   isDistribution,
+  isTask,
   cloneManyToBoard,
   distribute,
   shuffle,
@@ -29,6 +30,8 @@ export const run = async (
 ) => {
   if (isDistribution<DistributionWorkflowModel>(workflow)) {
     runDistributionWorkflow(workflow);
+  } else if (isTask<TaskWorkflowModel>(workflow)) {
+    runTaskWorkflow(workflow);
   }
 };
 
@@ -122,7 +125,7 @@ export const runTaskWorkflow = async (taskWorkflow: TaskWorkflowModel) => {
   //   }
   // }
 
-  await dalWorkflow.updateDistribution(taskWorkflow.workflowID, {
+  await dalWorkflow.updateTask(taskWorkflow.workflowID, {
     active: false,
   });
 };
@@ -130,6 +133,7 @@ export const runTaskWorkflow = async (taskWorkflow: TaskWorkflowModel) => {
 const workflowAgent = {
   run,
   runDistributionWorkflow,
+  runTaskWorkflow,
 };
 
 export default workflowAgent;

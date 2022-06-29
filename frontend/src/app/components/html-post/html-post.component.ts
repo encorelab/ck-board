@@ -11,8 +11,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { PostModalComponent } from 'src/app/components/post-modal/post-modal.component';
 import { Board } from 'src/app/models/board';
 import Like from 'src/app/models/like';
-import Post, { Tag } from 'src/app/models/post';
-import User, { AuthUser } from 'src/app/models/user';
+import Post from 'src/app/models/post';
+import { Tag } from 'src/app/models/tag';
+import { AuthUser } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { CommentService } from 'src/app/services/comment.service';
@@ -100,6 +101,7 @@ export class HtmlPostComponent implements OnInit {
           this.post.post = await this.postService.get(this.post.post.postID);
         }
       });
+    this.canvasService.readPost(this.post.post.postID);
   }
 
   handleLike(event) {

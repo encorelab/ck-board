@@ -44,13 +44,6 @@ export const cloneToBoard = (board: string, post: PostModel) => {
   post.postID = newID.toString();
   post.boardID = board;
 
-  if (post.fabricObject) {
-    const rawObj = JSON.parse(post.fabricObject);
-    rawObj.boardID = board;
-    rawObj.postID = newID;
-    post.fabricObject = JSON.stringify(rawObj);
-  }
-
   return post;
 };
 

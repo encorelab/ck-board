@@ -41,6 +41,8 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { ComponentType } from '@angular/cdk/portal';
 import Utils from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
+import { FabricPostComponent } from '../fabric-post/fabric-post.component';
+import { TraceService } from 'src/app/services/trace.service';
 
 @Component({
   selector: 'app-canvas',
@@ -92,7 +94,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     public fileUploadService: FileUploadService,
     private socketService: SocketService,
-    private canvasService: CanvasService
+    private canvasService: CanvasService,
+    private traceService: TraceService
   ) {
     this.groupEventToHandler = new Map<SocketEvent, Function>([
       [SocketEvent.POST_CREATE, this.handlePostCreateEvent],
@@ -162,8 +165,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handlePostCreateEvent = (post: Post) => {
-    const obj = JSON.parse(post.fabricObject ?? '{}');
-    this.fabricUtils.fromJSON(obj);
+    const fabricPost = new FabricPostComponent(post);
+    this.canvas.add(fabricPost);
   };
 
   handlePostUpdateEvent = (post: Post) => {
@@ -190,17 +193,19 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handlePostStopMoveEvent = (post: Post) => {
-    const next = JSON.parse(post.fabricObject || '{}');
+    if (!post.displayAttributes?.position) return;
+
     let existing = this.fabricUtils.getObjectFromId(post.postID);
 
-    this.fabricUtils.animateToPosition(existing, next.left, next.top, () => {
+    const { left, top } = post.displayAttributes.position;
+
+    this.fabricUtils.animateToPosition(existing, left, top, () => {
       existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
       existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
       existing = this.fabricUtils.setPostMovement(
         existing,
         !this._postsMovementAllowed()
       );
-      existing.set(next);
       existing.setCoords();
       this.canvas.renderAll();
     });
@@ -287,15 +292,24 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      this.traceService.setTraceContext(this.projectID, this.boardID);
     } else {
       this.router.navigate(['error']);
     }
 
     this.postService.getAllByBoard(this.boardID).then((data) => {
-      data.forEach((post) => {
-        if (post.fabricObject) {
-          let obj = JSON.parse(post.fabricObject);
-          this.fabricUtils.fromJSON(obj);
+      data.forEach(async (post) => {
+        if (post.type == PostType.BOARD) {
+          const likes = await this.likesService.getLikesByPost(post.postID);
+          const comments = await this.commentService.getCommentsByPost(
+            post.postID
+          );
+          this.canvas.add(
+            new FabricPostComponent(post, {
+              likes: likes.length,
+              comments: comments.length,
+            })
+          );
         }
       });
       this.boardService.get(this.boardID).then((board) => {
@@ -532,6 +546,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
           post: obj,
           board: this.board,
         });
+        this.canvasService.readPost(obj.postID);
       }
     };
 
@@ -558,10 +573,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
         obj = this.fabricUtils.setOpacity(obj, POST_MOVING_OPACITY);
         this.canvas.renderAll();
 
-        this.socketService.emit(
-          SocketEvent.POST_START_MOVE,
-          this.fabricUtils.fromFabricPost(obj)
-        );
+        this.socketService.emit(SocketEvent.POST_START_MOVE, {
+          postID: obj.postID,
+        });
       }
     };
 
@@ -575,10 +589,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       obj = this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
       this.canvas.renderAll();
 
-      this.socketService.emit(
-        SocketEvent.POST_STOP_MOVE,
-        this.fabricUtils.fromFabricPost(obj)
-      );
+      this.socketService.emit(SocketEvent.POST_STOP_MOVE, {
+        postID: obj.postID,
+        left: obj.left,
+        top: obj.top,
+      });
     };
 
     this.canvas.on('object:moving', handleFirstMove);

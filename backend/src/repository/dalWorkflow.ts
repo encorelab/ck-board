@@ -12,7 +12,7 @@ export const getAllByBoardId = async (id: string) => {
     const workflows = await Workflow.find({ boardID: id });
     return workflows;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -25,7 +25,7 @@ export const getByBoardId = async (type: WorkflowType, id: string) => {
       return await TaskWorkflow.find({ boardID: id })
     }
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -38,7 +38,7 @@ export const create = async (type: WorkflowType, workflow: WorkflowModel) => {
       return await TaskWorkflow.create(workflow);
     }
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -70,7 +70,7 @@ export const updateTask = async (
         { new: true }
       );
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 
@@ -83,7 +83,7 @@ export const remove = async (type: WorkflowType, id: string) => {
       return await TaskWorkflow.findOneAndDelete({ workflowID: id });
     }
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, " "));
   }
 };
 

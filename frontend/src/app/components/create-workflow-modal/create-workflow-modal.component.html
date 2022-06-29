@@ -6,10 +6,31 @@
     [selectedIndex]="selected.value"
     (selectedIndexChange)="selected.setValue($event)"
   >
-    <mat-tab label="Create Bucket">
+  
+  <mat-tab label="Manage Buckets">
+      <h2 style="margin-top: 20px">Delete Buckets</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr;">
+        <mat-card *ngFor="let bucket of boardBuckets" style="display:flex;margin: 10px;
+            padding: 10px;">
+          <mat-card-title style="font-size: small;">
+            {{ bucket.name }}
+          </mat-card-title>
+          <button 
+            mat-icon-button
+            (click)="deleteBucket(bucket)"
+            class="bucket-action-delete"
+          >
+            <mat-icon >
+              delete
+            </mat-icon>
+          </button>
+        </mat-card>
+      </div>
+
+      <h2 style="margin-top: 20px">Create New Bucket</h2>
       <mat-form-field
         appearance="outline"
-        style="width: 100%; margin-top: 20px"
+        style="width: 100%"
       >
         <mat-label>Bucket Name</mat-label>
         <input

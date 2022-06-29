@@ -141,6 +141,7 @@ const dalVote = {
   create,
   remove,
   removeByPost,
+  removeByBoard,
 };
 
 export default dalVote;

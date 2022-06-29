@@ -8,6 +8,7 @@ import dalBucket from './dalBucket';
 import dalProject from './dalProject';
 import dalTag from './dalTag';
 import dalComment from './dalComment';
+import dalVote from './dalVote';
 
 export const getById = async (id: string) => {
   try {
@@ -69,6 +70,7 @@ export const remove = async (id: string) => {
       await dalTag.removeByBoard(id);
       await dalTrace.removeByBoard(id);
       await dalWorkflow.removeByBoard(id);
+      await dalVote.removeByBoard(id);
       await dalProject.removeBoard(deletedBoard?.projectID, id);
     }
     return deletedBoard;

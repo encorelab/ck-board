@@ -53,6 +53,7 @@ export class PostModalComponent {
   showComments = false;
   showEditDelete = false;
   showAuthorName: boolean;
+  commentPress: boolean;
 
   error = '';
   titleControl = new FormControl('', [
@@ -85,6 +86,8 @@ export class PostModalComponent {
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
+    this.showComments = data.commentPress ? true : false;
+    this.commentPress = data.commentPress;
     this.postService.get(data.post.postID).then(async (p: Post) => {
       this.post = p;
       this.title = p.title;
@@ -243,7 +246,7 @@ export class PostModalComponent {
         message: 'Are you sure you want to delete this comment?',
         handleConfirm: () => {
           this.canvasService.deleteComment(comment.commentID, comment.postID);
-          let ind = this.comments.indexOf(comment);
+          const ind = this.comments.indexOf(comment);
           if (ind != -1) {
             this.comments.splice(ind, 1);
           }

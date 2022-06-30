@@ -5,6 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JwtModule } from '@auth0/angular-jwt';
+import { A11yModule } from '@angular/cdk/a11y';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -42,6 +43,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
 import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
+import { AutofocusDirective } from './autofocus.directive';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -76,6 +78,7 @@ export function tokenGetter() {
     ConfirmModalComponent,
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
+    AutofocusDirective,
   ],
   imports: [
     BrowserModule,
@@ -85,6 +88,7 @@ export function tokenGetter() {
     AngularFirestoreModule,
     AngularFireAuthModule,
     FormsModule,
+    A11yModule,
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,

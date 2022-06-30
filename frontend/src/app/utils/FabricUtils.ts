@@ -69,6 +69,7 @@ export class FabricUtils {
     return DEFAULT_TAGS.map((tag) => {
       const fullTag: Tag = {
         boardID,
+        tagID: tag?.tagID,
         name: tag.name!,
         color: tag.color!,
         specialAttributes: tag.specialAttributes,

@@ -19,6 +19,9 @@ export class TagModel {
   @prop({ required: false })
   public boardID!: string;
 
+  @prop({ required: false })
+  public tagID!: string;
+
   @prop({ required: true })
   public name!: string;
 

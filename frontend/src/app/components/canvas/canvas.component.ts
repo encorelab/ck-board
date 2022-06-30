@@ -502,6 +502,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
       (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher;
   }
 
+  openWorkspace() {
+    this.router.navigate([
+      `/project/${this.projectID}/board/${this.boardID}/workspace`,
+    ]);
+  }
+
   openTaskDialog() {
     const title = this.board.task.title
       ? this.board.task.title

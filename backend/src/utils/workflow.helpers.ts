@@ -11,6 +11,12 @@ export const isDistribution = <T extends WorkflowModel>(
   return doc?.__t === WorkflowType.DISTRIBUTION;
 };
 
+export const isTask = <T extends WorkflowModel>(
+  doc: Document & KeyStringAny
+): doc is DocumentType<T> => {
+  return doc?.__t === WorkflowType.TASK;
+};
+
 export const shuffle = <T>(array: T[]) => {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

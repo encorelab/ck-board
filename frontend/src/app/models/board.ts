@@ -17,7 +17,6 @@ export class BoardPermissions {
   allowStudentEditAddDeletePost: boolean;
   allowStudentCommenting: boolean;
   allowStudentTagging: boolean;
-  allowStudentClearBoard: boolean;
   showAuthorNameStudent: boolean;
   showAuthorNameTeacher: boolean;
   showBucketStudent: boolean;

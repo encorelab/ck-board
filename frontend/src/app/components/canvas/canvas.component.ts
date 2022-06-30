@@ -59,7 +59,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   boardID: string;
   projectID: string;
   canvas: Canvas;
-  @ViewChild('confirmation') confirmationDialog: TemplateRef<any>;
 
   user: AuthUser;
   board: Board;
@@ -357,16 +356,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       board: this.board,
       project: this.project,
     });
-  }
-
-  openConfirmation() {
-    this.confirmationRef = this.dialog.open(this.confirmationDialog, {
-      width: '500px',
-    });
-  }
-
-  closeConfirmation() {
-    this.confirmationRef.close()
   }
 
   // open dialog to get message for a new post

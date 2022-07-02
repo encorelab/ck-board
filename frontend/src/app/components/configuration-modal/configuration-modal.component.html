@@ -57,6 +57,11 @@
           <mat-icon class="chip-icon">cancel</mat-icon>
           Remove Current Background Image
         </mat-chip>
+        <mat-chip mat-raised-button color="accent" (click)="copyToClipboard()" style="text-align: center" selected>
+          <span style="width: 100%;text-align: center;">
+            Copy Embeddable Board URL
+          </span>
+        </mat-chip>
         <mat-chip mat-raised-button color="warn" (click)="openConfirmation()" style="text-align: center" selected>
           <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
           <span style="width: 100%;text-align: center;">

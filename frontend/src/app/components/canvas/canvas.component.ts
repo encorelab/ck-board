@@ -122,7 +122,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     ]);
 
     this.boardType = this.activatedRoute.snapshot.params.boardType;
-    if (this.boardType == "embedded-board") {
+    if (this.boardType == 'embedded-board') {
       this.embedded = true;
     }
   }

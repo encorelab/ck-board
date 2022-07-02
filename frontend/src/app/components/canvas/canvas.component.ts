@@ -52,6 +52,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   boardID: string;
   projectID: string;
   canvas: Canvas;
+  boardType: string;
 
   user: AuthUser;
   board: Board;
@@ -64,6 +65,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   initialClientY = 0;
   finalClientX = 0;
   finalClientY = 0;
+
+  embedded = false;
 
   zoom = 1;
 
@@ -117,6 +120,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.BOARD_TASK_UPDATE, this.handleBoardTaskUpdateEvent],
       [SocketEvent.BOARD_UPVOTE_UPDATE, this.handleBoardUpvoteUpdateEvent],
     ]);
+
+    this.boardType = this.activatedRoute.snapshot.params.boardType;
+    if (this.boardType == "embedded-board") {
+      this.embedded = true;
+    }
   }
 
   ngOnInit() {

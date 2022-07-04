@@ -1,5 +1,14 @@
 import Comment, { CommentModel } from '../models/Comment';
 
+export const getById = async (id: string) => {
+  try {
+    const comment = await Comment.findOne({ commentID: id });
+    return comment;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const getByPost = async (id: string) => {
   try {
     const comments = await Comment.find({ postID: id });
@@ -27,6 +36,15 @@ export const create = async (comment: CommentModel) => {
   }
 };
 
+export const removeByBoard = async (boardID: string) => {
+  try {
+    const deletedComments = await Comment.deleteMany({ boardID: boardID });
+    return deletedComments;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const removeByPost = async (postID: string) => {
   try {
     await Comment.deleteMany({ postID });
@@ -35,10 +53,22 @@ export const removeByPost = async (postID: string) => {
   }
 };
 
+export const remove = async (id: string) => {
+  try {
+    const deletedComment = await Comment.findOneAndDelete({ commentID: id });
+    return deletedComment;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 const dalComment = {
+  getById,
   getByPost,
   getAmountByPost,
   create,
+  remove,
+  removeByBoard,
   removeByPost,
 };
 

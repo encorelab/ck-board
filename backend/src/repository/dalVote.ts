@@ -125,6 +125,14 @@ export const removeByPost = async (postID: string) => {
   }
 };
 
+export const removeByBoard = async (boardID: string) => {
+  try {
+    return await Upvote.deleteMany({ boardID });
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 const dalVote = {
   getByPost,
   getAmountByPost,
@@ -133,6 +141,7 @@ const dalVote = {
   create,
   remove,
   removeByPost,
+  removeByBoard,
 };
 
 export default dalVote;

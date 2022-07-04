@@ -47,6 +47,15 @@ export const remove = async (id: string) => {
   }
 };
 
+export const removeByBoard = async (boardID: string) => {
+  try {
+    const deletedPosts = await Post.deleteMany({ boardID: boardID });
+    return deletedPosts;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const update = async (id: string, post: Partial<PostModel>) => {
   try {
     post = Object.assign({}, post, formatAttributes(post));
@@ -107,6 +116,7 @@ const dalPost = {
   create,
   createMany,
   remove,
+  removeByBoard,
   update,
 };
 

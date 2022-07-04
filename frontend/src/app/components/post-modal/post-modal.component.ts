@@ -235,6 +235,23 @@ export class PostModalComponent {
     this.comments.push(comment);
   }
 
+  async deleteComment(comment: Comment) {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to delete this comment?',
+        handleConfirm: () => {
+          this.canvasService.deleteComment(comment.commentID, comment.postID);
+          const ind = this.comments.indexOf(comment);
+          if (ind != -1) {
+            this.comments.splice(ind, 1);
+          }
+        },
+      },
+    });
+  }
+
   async handleUpvoteClick() {
     if (this._votingLocked())
       return this._setError(getErrorMessage('Voting is disabled!'));

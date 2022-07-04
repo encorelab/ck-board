@@ -92,6 +92,15 @@ export class ListModalComponent implements OnInit, OnDestroy {
       );
       if (found) found.comments += 1;
     });
+    this.socketService.listen(
+      SocketEvent.POST_COMMENT_REMOVE,
+      (result: any) => {
+        const found = this.posts.find(
+          (p) => p.post.postID == result.comment.postID
+        );
+        if (found) found.comments -= 1;
+      }
+    );
     this.socketService.listen(SocketEvent.POST_DELETE, (id: string) => {
       const found = this.posts.find((p) => p.post.postID == id);
       if (found) {

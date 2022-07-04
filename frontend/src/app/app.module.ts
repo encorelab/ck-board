@@ -42,6 +42,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
 import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -103,6 +104,10 @@ export function tokenGetter() {
       provide: HTTP_INTERCEPTORS,
       useClass: APIInterceptor,
       multi: true,
+    },
+    {
+      provide: MatDialogRef,
+      useValue: {},
     },
   ],
   bootstrap: [AppComponent],

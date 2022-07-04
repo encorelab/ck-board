@@ -20,7 +20,13 @@
           <mat-icon class="chip-icon">cancel</mat-icon>
           Remove Current Background Image
         </mat-chip>
-        <mat-chip mat-raised-button color="warn" (click)="openConfirmation()" style="text-align: center" selected>
+        <mat-chip mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
+          <span style="width: 100%;text-align: center;">
+          Clear Board
+          </span>
+        </mat-chip>
+        <mat-chip mat-raised-button color="warn" (click)="handleDeleteBoard()" style="text-align: center" selected>
           <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
           <span style="width: 100%;text-align: center;">
           Delete Board
@@ -57,9 +63,6 @@
       </p>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentTagging" >Allow students to tag posts</mat-checkbox>
-      </p>
-      <p>
-        <mat-checkbox [(ngModel)]="permissions.allowStudentClearBoard" >Allow students to clear board posts</mat-checkbox>
       </p>
       <h2>Anonymization</h2>
       <p>

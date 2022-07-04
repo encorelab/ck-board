@@ -33,8 +33,8 @@ export class PermissionsModel {
   @prop({ required: true })
   public allowStudentTagging!: boolean;
 
-  @prop({ required: true })
-  public allowStudentClearBoard!: boolean;
+  // @prop({ required: true })
+  // public allowStudentClearBoard!: boolean;
 
   @prop({ required: true })
   public showAuthorNameStudent!: boolean;

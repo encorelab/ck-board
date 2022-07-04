@@ -55,7 +55,7 @@ export class AddBoardModalComponent implements OnInit {
       allowStudentEditAddDeletePost: true,
       allowStudentCommenting: true,
       allowStudentTagging: true,
-      allowStudentClearBoard: true,
+      // allowStudentClearBoard: true,
       showAuthorNameStudent: true,
       showAuthorNameTeacher: true,
       showBucketStudent: true,

@@ -2,9 +2,6 @@
   <div style="position: absolute;">
     <app-toolbar *ngIf="user && board" [user]="user">
       <span *ngIf="board && board.name">{{ board.name }}</span>
-      <button mat-icon-button *ngIf="user && (user.role == Role.TEACHER || board.permissions.allowStudentClearBoard)" (click)="openConfirmation()" matTooltip="Clear Board">
-        <mat-icon>clear_all</mat-icon>
-      </button>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="Read Task">
         <mat-icon>task</mat-icon>
       </button>

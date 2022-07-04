@@ -4,7 +4,9 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
+import { PostType } from '../../models/post';
 import { BoardService } from 'src/app/services/board.service';
+import { PostService } from '../../services/post.service';
 import { UserService } from 'src/app/services/user.service';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { Tag } from 'src/app/models/tag';
@@ -12,6 +14,7 @@ import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { Board, BoardPermissions } from 'src/app/models/board';
 import { Router } from '@angular/router';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -47,6 +50,7 @@ export class ConfigurationModalComponent {
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
     private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public dialog: MatDialog,
+    public postService: PostService,
     public boardService: BoardService,
     public userService: UserService,
     public canvasService: CanvasService,
@@ -134,6 +138,45 @@ export class ConfigurationModalComponent {
 
   closeConfirmation() {
     this.confirmationRef.close();
+  }
+
+  async handleClearBoard() {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to clear posts from this board?',
+        handleConfirm: () => {
+          this.postService.getAllByBoard(this.boardID).then((data) => {
+            data.forEach(async (post) => {
+              if (post.type == PostType.BOARD) {
+                const p = await this.postService.update(post.postID, { type: PostType.BOARD })
+                console.log(p)
+              }
+            });
+          })
+        },
+      },
+    });
+  }
+
+  async handleDeleteBoard() {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message:
+          'This will permanently delete the board and all related content. Are you sure you want to do this?',
+        handleConfirm: async () => {
+          const board = await this.boardService.remove(this.boardID);
+          if (board) {
+            this.confirmationRef.close();
+            this.dialogRef.close();
+            this.router.navigate(['project/' + this.projectID]);
+          }
+        },
+      },
+    });
   }
 
   async deleteBoard() {

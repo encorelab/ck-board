@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
+import { BucketModel } from '../models/Bucket';
 import Post, { PostModel } from '../models/Post';
+import dalBucket from './dalBucket';
+import dalComment from './dalComment';
+import dalVote from './dalVote';
 
 export const getById = async (id: string) => {
   try {
@@ -29,10 +33,17 @@ export const create = async (post: PostModel) => {
 };
 
 export const remove = async (id: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     await Post.findOneAndDelete({ postID: id });
+    await dalVote.removeByPost(id);
+    await dalComment.removeByPost(id);
+    await deleteFromBuckets(id);
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
+  } finally {
+    await session.endSession();
   }
 };
 
@@ -74,6 +85,13 @@ export const createMany = async (posts: PostModel[]) => {
     throw new Error(JSON.stringify(err, null, ' '));
   } finally {
     await session.endSession();
+  }
+};
+
+const deleteFromBuckets = async (id: string) => {
+  const buckets: BucketModel[] = await dalBucket.getByPostId(id);
+  for (let i = 0; i < buckets.length; i++) {
+    await dalBucket.removePost(buckets[i].bucketID, [id]);
   }
 };
 

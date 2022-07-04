@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UserService } from 'src/app/services/user.service';
-import Utils from 'src/app/utils/Utils';
+import Utils, { generateCode, generateUniqueID } from 'src/app/utils/Utils';
 
 @Component({
   selector: 'app-add-project-modal',
@@ -20,14 +20,14 @@ export class AddProjectModalComponent implements OnInit {
   ngOnInit(): void {}
 
   handleDialogSubmit() {
-    const projectID = Utils.generateUniqueID();
+    const projectID = generateUniqueID();
     this.data.createProject({
       projectID: projectID,
       teacherID: this.data.user.userID,
       name: this.name,
       members: [this.data.user.userID],
       boards: [],
-      joinCode: Utils.generateCode(5).toString(),
+      joinCode: generateCode(5).toString(),
     });
     this.dialogRef.close();
   }

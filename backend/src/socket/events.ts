@@ -9,7 +9,6 @@ const events = [
   ...boardEvents,
   ...workflowEvents,
   ...notificationEvents,
-  ...boardEvents,
   ...bucketEvents,
 ];
 

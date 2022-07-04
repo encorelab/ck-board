@@ -2,13 +2,13 @@ import mongoose from 'mongoose';
 import Board, { BoardModel } from '../models/Board';
 import dalTrace from './dalTrace';
 import dalPost from './dalPost';
-import dalLike from './dalLike';
-import dalComment from './dalComment';
 import dalWorkflow from './dalWorkflow';
 import dalNotification from './dalNotification';
 import dalBucket from './dalBucket';
 import dalProject from './dalProject';
 import dalTag from './dalTag';
+import dalComment from './dalComment';
+import dalVote from './dalVote';
 
 export const getById = async (id: string) => {
   try {
@@ -64,13 +64,13 @@ export const remove = async (id: string) => {
     const deletedBoard = await Board.findOneAndDelete({ boardID: id });
     if (deletedBoard) {
       await dalPost.removeByBoard(id);
-      await dalLike.removeByBoard(id);
       await dalComment.removeByBoard(id);
       await dalBucket.removeByBoard(id);
       await dalNotification.removeByBoard(id);
       await dalTag.removeByBoard(id);
       await dalTrace.removeByBoard(id);
       await dalWorkflow.removeByBoard(id);
+      await dalVote.removeByBoard(id);
       await dalProject.removeBoard(deletedBoard?.projectID, id);
     }
     return deletedBoard;
@@ -87,13 +87,13 @@ export const clearBoard = async (id: string) => {
   try {
     const posts = await dalPost.removeByBoard(id);
     await dalBucket.clearBuckets(id);
-    return posts
+    return posts;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   } finally {
     await session.endSession();
   }
-}
+};
 
 const dalBoard = {
   getById,

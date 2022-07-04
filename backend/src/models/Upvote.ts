@@ -1,9 +1,9 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 
-@modelOptions({ schemaOptions: { collection: 'likes', timestamps: true } })
-export class LikeModel {
+@modelOptions({ schemaOptions: { collection: 'upvotes', timestamps: true } })
+export class UpvoteModel {
   @prop({ required: true })
-  public likeID!: string;
+  public upvoteID!: string;
 
   @prop({ required: true })
   public postID!: string;
@@ -12,7 +12,7 @@ export class LikeModel {
   public boardID!: string;
 
   @prop({ required: true })
-  public likerID!: string;
+  public voterID!: string;
 }
 
-export default getModelForClass(LikeModel);
+export default getModelForClass(UpvoteModel);

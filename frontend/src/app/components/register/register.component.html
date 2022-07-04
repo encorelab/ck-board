@@ -1,57 +1,117 @@
 <div class="wrapper">
-    <div class="container">
-        <div class="form-image-wrapper">
-            <img class="form-image" src="../../assets/register.png" alt="CK Board register picture" />
-        </div>
-        <div class="form-container">
-            <form class="form" (ngSubmit)="onRegister()">
-                <h1 class="header">Join Us Today!</h1>
-                <div *ngIf="step == 0">
-                    <h2>Which one are you?</h2>
-                    <div class="select-container">
-                        <div class="select-box" [ngClass]="role == Role.STUDENT ? 'active' : ''" (click)="role = Role.STUDENT" (keyup.enter)="role = Role.STUDENT" role="button" tabindex="0">
-                            <h1 class="title">Student</h1>
-                            <div class="graphic">
-                                <img src="../../assets/student.png" />
-                            </div>
-                        </div>
-                        <div class="select-box" [ngClass]="role == Role.TEACHER ? 'active' : ''" (click)="role = Role.TEACHER" (keyup.enter)="role = Role.TEACHER" role="button" tabindex="0">
-                            <h1 class="title">Teacher</h1>
-                            <div class="graphic">
-                                <img src="../../assets/teacher.png" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div *ngIf="step == 1" class="credentials-container">
-                    <mat-form-field appearance="fill">
-                        <mat-label>Display Name</mat-label>
-                        <input [formControl]="usernameControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="username"/>
-                        <mat-hint *ngIf="!username || username.length < 1 || username.length > 25">Display Name is required (1-25 characters)</mat-hint>
-                    </mat-form-field>
-                    <mat-form-field appearance="fill">
-                        <mat-label>Email</mat-label>
-                        <input autocomplete="username" type="email" [formControl]="emailControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="email" name="username"/>
-                        <mat-hint *ngIf="!email">Valid email is required</mat-hint>
-                    </mat-form-field>
-                    <mat-form-field appearance="fill">
-                        <mat-label>Password</mat-label>
-                        <input autocomplete="new-password" type="password" [formControl]="passwordControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="password" name="password"/>
-                        <mat-hint *ngIf="!password || password.length < 12 || password.length > 30">Password is required (12-30 characters)</mat-hint>
-                    </mat-form-field>
-                    <p *ngIf="invalidCredentials" class="invalid-pass">Unable to register account!</p>
-                </div>
-                <div *ngIf="step == 0" class="next" (click)="step = 1">
-                    <button class="enabled" mat-button>Next</button>
-                </div>
-                <div *ngIf="step == 1" class="next" >
-                    <button type="submit" [ngClass]="!usernameControl.valid || !passwordControl.valid ? 'disabled' : 'enabled'" [disabled]="!usernameControl.valid || !passwordControl.valid" mat-button>Register</button>
-                </div>
-                <div *ngIf="step == 1" class="next">
-                    <button class="enabled" mat-button (click)="step = 0">Back</button>
-                </div>
-                <p class="alternate"><a routerLink="/login">Already have an account?</a></p>
-            </form>
-        </div>
+  <div class="container">
+    <div class="form-image-wrapper">
+      <img
+        class="form-image"
+        src="../../assets/register.png"
+        alt="CK Board register picture"
+      />
     </div>
+    <div class="form-container">
+      <form class="form" (ngSubmit)="onRegister()">
+        <h1 class="header">Join Us Today!</h1>
+        <div *ngIf="step == 0">
+          <h2>Which one are you?</h2>
+          <div class="select-container">
+            <div
+              class="select-box"
+              [ngClass]="role == Role.STUDENT ? 'active' : ''"
+              (click)="role = Role.STUDENT"
+              (keyup.enter)="role = Role.STUDENT"
+              role="button"
+              tabindex="0"
+            >
+              <h1 class="title">Student</h1>
+              <div class="graphic">
+                <img src="../../assets/student.png" />
+              </div>
+            </div>
+            <div
+              class="select-box"
+              [ngClass]="role == Role.TEACHER ? 'active' : ''"
+              (click)="role = Role.TEACHER"
+              (keyup.enter)="role = Role.TEACHER"
+              role="button"
+              tabindex="0"
+            >
+              <h1 class="title">Teacher</h1>
+              <div class="graphic">
+                <img src="../../assets/teacher.png" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="step == 1" class="credentials-container">
+          <mat-form-field appearance="fill">
+            <mat-label>Display Name</mat-label>
+            <input
+              [formControl]="usernameControl"
+              [errorStateMatcher]="matcher"
+              matInput
+              [(ngModel)]="username"
+            />
+            <mat-hint
+              *ngIf="!username || username.length < 1 || username.length > 25"
+              >Display Name is required (1-25 characters)</mat-hint
+            >
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input
+              autocomplete="username"
+              type="email"
+              [formControl]="emailControl"
+              [errorStateMatcher]="matcher"
+              matInput
+              [(ngModel)]="email"
+              name="username"
+            />
+            <mat-hint *ngIf="!email">Valid email is required</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Password</mat-label>
+            <input
+              autocomplete="new-password"
+              type="password"
+              [formControl]="passwordControl"
+              [errorStateMatcher]="matcher"
+              matInput
+              [(ngModel)]="password"
+              name="password"
+            />
+            <mat-hint
+              *ngIf="!password || password.length < 12 || password.length > 30"
+              >Password is required (12-30 characters)</mat-hint
+            >
+          </mat-form-field>
+          <p *ngIf="invalidCredentials" class="invalid-pass">
+            Unable to register account!
+          </p>
+        </div>
+        <div *ngIf="step == 0" class="next" (click)="step = 1">
+          <button class="enabled" mat-button>Next</button>
+        </div>
+        <div *ngIf="step == 1" class="next">
+          <button
+            type="submit"
+            [ngClass]="
+              !usernameControl.valid || !passwordControl.valid
+                ? 'disabled'
+                : 'enabled'
+            "
+            [disabled]="!usernameControl.valid || !passwordControl.valid"
+            mat-button
+          >
+            Register
+          </button>
+        </div>
+        <div *ngIf="step == 1" class="next">
+          <button class="enabled" mat-button (click)="step = 0">Back</button>
+        </div>
+        <p class="alternate">
+          <a routerLink="/login">Already have an account?</a>
+        </p>
+      </form>
+    </div>
+  </div>
 </div>

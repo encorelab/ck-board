@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { SocketEvent } from '../../constants';
 import { BoardModel } from '../../models/Board';
+import boardTrace from '../trace/board.trace';
 import { SocketPayload } from '../types/event.types';
 
 class BoardNameUpdate {
@@ -12,7 +13,7 @@ class BoardNameUpdate {
     return input.eventData;
   }
 
-  static async handleResult(io: Server, socket: Socket, result: number) {
+  static async handleResult(io: Server, socket: Socket, result: BoardModel) {
     io.to(socket.data.room).emit(this.type, result);
   }
 }
@@ -26,7 +27,7 @@ class BoardPermissionsUpdate {
     return input.eventData;
   }
 
-  static async handleResult(io: Server, socket: Socket, result: number) {
+  static async handleResult(io: Server, socket: Socket, result: BoardModel) {
     io.to(socket.data.room).emit(this.type, result);
   }
 }
@@ -40,7 +41,7 @@ class BoardImageUpdate {
     return input.eventData;
   }
 
-  static async handleResult(io: Server, socket: Socket, result: number) {
+  static async handleResult(io: Server, socket: Socket, result: BoardModel) {
     io.to(socket.data.room).emit(this.type, result);
   }
 }
@@ -54,7 +55,7 @@ class BoardTaskUpdate {
     return input.eventData;
   }
 
-  static async handleResult(io: Server, socket: Socket, result: number) {
+  static async handleResult(io: Server, socket: Socket, result: BoardModel) {
     io.to(socket.data.room).emit(this.type, result);
   }
 }
@@ -68,7 +69,55 @@ class BoardTagsUpdate {
     return input.eventData;
   }
 
-  static async handleResult(io: Server, socket: Socket, result: number) {
+  static async handleResult(io: Server, socket: Socket, result: BoardModel) {
+    io.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+class BoardUpvoteUpdate {
+  static type: SocketEvent = SocketEvent.BOARD_UPVOTE_UPDATE;
+
+  static async handleEvent(
+    input: SocketPayload<BoardModel>
+  ): Promise<BoardModel> {
+    return input.eventData;
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: BoardModel) {
+    io.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+class BoardEnableTracing {
+  static type: SocketEvent = SocketEvent.TRACING_ENABLED;
+  /**
+   *
+   * @param input eventData = permissions.allowTracing
+   * @returns
+   */
+  static async handleEvent(input: SocketPayload<boolean>): Promise<boolean> {
+    await boardTrace.tracingEnabled(input, this.type); // always need to trace this
+    return input.eventData;
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: BoardModel) {
+    io.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+class BoardDisableTracing {
+  static type: SocketEvent = SocketEvent.TRACING_DISABLED;
+  /**
+   *
+   * @param input eventData = permissions.allowTracing
+   * @returns
+   */
+  static async handleEvent(input: SocketPayload<boolean>): Promise<boolean> {
+    await boardTrace.tracingDisabled(input, this.type); // always need to trace this
+    return input.eventData;
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: BoardModel) {
     io.to(socket.data.room).emit(this.type, result);
   }
 }
@@ -79,6 +128,9 @@ const boardEvents = [
   BoardImageUpdate,
   BoardTaskUpdate,
   BoardTagsUpdate,
+  BoardUpvoteUpdate,
+  BoardEnableTracing,
+  BoardDisableTracing,
 ];
 
 export default boardEvents;

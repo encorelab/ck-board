@@ -4,6 +4,11 @@ import dalProject from '../../repository/dalProject';
 import dalUser from '../../repository/dalUser';
 import { TraceContext } from '../types/event.types';
 
+/**
+ * Creates base TraceModel using traceContext
+ * @param traceContext
+ * @returns TraceModel or null if tracing is disabled
+ */
 export const createTrace = async (
   traceContext: TraceContext
 ): Promise<TraceModel> => {

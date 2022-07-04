@@ -9,7 +9,8 @@ class BucketAddPost {
   static async handleEvent(
     input: SocketPayload<BucketEventInput>
   ): Promise<BucketEventInput> {
-    bucketTrace.movePostToBucket(input, this.type);
+    if (input.trace.allowTracing)
+      bucketTrace.movePostToBucket(input, this.type);
     return input.eventData;
   }
 
@@ -24,7 +25,8 @@ class BucketRemovePost {
   static async handleEvent(
     input: SocketPayload<BucketEventInput>
   ): Promise<BucketEventInput> {
-    bucketTrace.removePostFromBucket(input, this.type);
+    if (input.trace.allowTracing)
+      bucketTrace.removePostFromBucket(input, this.type);
     return input.eventData;
   }
 

@@ -95,11 +95,11 @@ export const removePost = async (id: string, posts: string[]) => {
 
 export const clearBuckets = async (boardID: string) => {
   try {
-    await Bucket.updateMany({ boardID: boardID }, { posts: [] })
+    await Bucket.updateMany({ boardID: boardID }, { posts: [] });
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
-}
+};
 
 const dalBucket = {
   getById,

@@ -10,6 +10,15 @@ export const findByUserID = async (userID: string) => {
   }
 };
 
+export const findByUserIDs = async (userIDs: string[]) => {
+  try {
+    const users: UserModel[] = await User.find({ userID: { $in: userIDs } });
+    return users;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const findByUsername = async (username: string) => {
   try {
     const user: UserModel | null = await User.findOne({ username });
@@ -54,6 +63,7 @@ export const update = async (id: string, user: Partial<UserModel>) => {
 
 const dalUser = {
   findByUserID,
+  findByUserIDs,
   findByUsername,
   findByEmail,
   create,

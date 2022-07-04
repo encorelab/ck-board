@@ -1,10 +1,4 @@
-import {
-  Component,
-  AfterViewInit,
-  Inject,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
@@ -18,7 +12,6 @@ import {
   POST_COLOR,
   POST_TAGGED_BORDER_THICKNESS,
 } from 'src/app/utils/constants';
-import { FocusOrigin } from '@angular/cdk/a11y';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Utils, { generateUniqueID } from 'src/app/utils/Utils';
@@ -39,8 +32,6 @@ export interface AddPostDialog {
   styleUrls: ['./add-post.component.scss'],
 })
 export class AddPostComponent {
-  @ViewChild('titleInput', { static: true })
-  titleInputElement!: ElementRef<HTMLInputElement>;
   user: User;
   board: Board;
 
@@ -69,10 +60,6 @@ export class AddPostComponent {
       (n) => !this.tags.map((b) => b.name).includes(n.name)
     );
   }
-
-  // ngAfterViewInit(): void {
-  //   // this.titleInputElement.nativeElement.focus();
-  // }
 
   addTag(event, tagOption): void {
     event.stopPropagation();

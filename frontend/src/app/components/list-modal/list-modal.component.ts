@@ -178,15 +178,12 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   async movePostToBoard(postID: string) {
     const htmlPost = this.posts.find((p) => p.post.postID == postID);
-    console.log('h');
     if (!htmlPost) return;
 
-    console.log('fsdh');
     const containsAttentionTag = htmlPost.post.tags.find(
       (tag) => tag.name == NEEDS_ATTENTION_TAG.name
     );
 
-    console.log('fsdfsgdh');
     const renderAttr: DisplayAttributes = {
       position: {
         left: this.Xoffset,
@@ -198,7 +195,6 @@ export class ListModalComponent implements OnInit, OnDestroy {
         ? POST_TAGGED_BORDER_THICKNESS
         : undefined,
     };
-    console.log(this.user);
 
     const post: Post = {
       postID: postID,

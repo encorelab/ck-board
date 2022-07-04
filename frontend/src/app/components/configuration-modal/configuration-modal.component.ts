@@ -11,6 +11,7 @@ import { Tag } from 'src/app/models/tag';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { Board, BoardPermissions } from 'src/app/models/board';
+import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 
 @Component({
@@ -76,6 +77,7 @@ export class ConfigurationModalComponent {
 
   addTag() {
     this.tags.push({
+      tagID: generateUniqueID(),
       boardID: this.boardID,
       name: this.newTagText,
       color: this.newTagColor,

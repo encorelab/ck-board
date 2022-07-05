@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
   );
   const board: BoardModel | null = await dalBoard.getById(upvote.boardID);
   if (board && usersUpvotes.length >= board.upvoteLimit) {
-    return res.status(406).end('You have already surpassed the upvote limit!');
+    return res.status(406).end('You have reached the upvote limit!');
   }
 
   const savedUpvote = await dalVote.create(upvote);

@@ -299,7 +299,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.board = board;
   };
 
-  handleBoardUpvoteUpdateEvent = (_board: Board) => {
+  handleBoardUpvoteUpdateEvent = (board: Board) => {
+    this.board = board;
     this._calcUpvoteCounter();
   };
 

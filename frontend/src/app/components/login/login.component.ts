@@ -25,7 +25,7 @@ export class LoginComponent {
       .login(this.email, this.password)
       .then(() => {
         this.invalidCredentials = false;
-        let redirectUrl = this.userService.redirectUrl;
+        const redirectUrl = this.userService.redirectUrl;
         this.userService.redirectUrl = null;
         if (redirectUrl) {
           this.router.navigate([redirectUrl]);

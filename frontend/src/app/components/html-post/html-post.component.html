@@ -49,7 +49,7 @@
     <button mat-icon-button (click)="handleDownvote($event)">
       <mat-icon>arrow_downward</mat-icon>
     </button>
-    <button mat-button style="margin-left: auto">
+    <button mat-button style="margin-left: auto" (click)="openPostDialog(true); $event.stopPropagation()">
       <mat-icon>comment</mat-icon>
       {{ post.comments }}
     </button>

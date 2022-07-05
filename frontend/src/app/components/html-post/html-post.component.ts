@@ -73,7 +73,7 @@ export class HtmlPostComponent implements OnInit {
     this.user = this.userService.user!;
   }
 
-  openPostDialog() {
+  openPostDialog(commentPress = false) {
     this.dialog
       .open(PostModalComponent, {
         minWidth: '700px',
@@ -82,6 +82,7 @@ export class HtmlPostComponent implements OnInit {
           user: this.user,
           post: this.post.post,
           board: this.post.board,
+          commentPress: commentPress,
         },
       })
       .afterClosed()

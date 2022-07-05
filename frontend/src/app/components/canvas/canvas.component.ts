@@ -582,16 +582,19 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const votePress = e.subTargets?.find(
         (o) => o.name == 'upvote' || o.name == 'downvote'
       );
+      const commentPress = e.subTargets?.find((o) => o.name == 'comment');
       const isDragEnd = isDragging;
       isDragging = false;
       isMouseDown = false;
 
       if (!isDragEnd && !votePress && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
+
         this._openDialog(PostModalComponent, {
           user: this.user,
           post: obj,
           board: this.board,
+          commentPress: commentPress,
         });
         this.canvasService.readPost(obj.postID);
       }

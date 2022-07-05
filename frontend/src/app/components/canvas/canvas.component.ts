@@ -52,7 +52,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   boardID: string;
   projectID: string;
   canvas: Canvas;
-  boardType: string;
 
   user: AuthUser;
   board: Board;
@@ -124,12 +123,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.activatedRoute.queryParams.subscribe((params) => {
-      this.boardType = params.embedded;
+      if (params.embedded == 'true') {
+        this.embedded = true;
+      }
     });
-
-    if (this.boardType == 'true') {
-      this.embedded = true;
-    }
 
     this.user = this.userService.user!;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);

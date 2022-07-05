@@ -42,6 +42,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
 import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
+import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -76,6 +77,7 @@ export function tokenGetter() {
     ConfirmModalComponent,
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
+    ManageGroupModalComponent,
   ],
   imports: [
     BrowserModule,

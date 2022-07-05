@@ -160,7 +160,7 @@ export class ConfigurationModalComponent {
   }
 
   copyToClipboard() {
-    const url = window.location.href.replace('/board/', '/embedded-board/');
+    const url = window.location.href + '?embedded=true';
     navigator.clipboard.writeText(url);
   }
 }

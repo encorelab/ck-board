@@ -43,6 +43,7 @@ import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { AutofocusDirective } from './autofocus.directive';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -77,6 +78,7 @@ export function tokenGetter() {
     ConfirmModalComponent,
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
+    AutofocusDirective,
   ],
   imports: [
     BrowserModule,

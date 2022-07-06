@@ -71,6 +71,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   finalClientX = 0;
   finalClientY = 0;
 
+  embedded = false;
+
   zoom = 1;
 
   mode: Mode = Mode.EDIT;
@@ -128,6 +130,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params.embedded == 'true') {
+        this.embedded = true;
+      }
+    });
+
     this.user = this.userService.user!;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas;
@@ -307,7 +315,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.board = board;
   };
 
-  handleBoardUpvoteUpdateEvent = (_board: Board) => {
+  handleBoardUpvoteUpdateEvent = (board: Board) => {
+    this.board = board;
     this._calcUpvoteCounter();
   };
 
@@ -595,16 +604,19 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const votePress = e.subTargets?.find(
         (o) => o.name == 'upvote' || o.name == 'downvote'
       );
+      const commentPress = e.subTargets?.find((o) => o.name == 'comment');
       const isDragEnd = isDragging;
       isDragging = false;
       isMouseDown = false;
 
       if (!isDragEnd && !votePress && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
+
         this._openDialog(PostModalComponent, {
           user: this.user,
           post: obj,
           board: this.board,
+          commentPress: commentPress,
         });
         this.canvasService.readPost(obj.postID);
       }

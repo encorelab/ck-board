@@ -73,6 +73,7 @@ export class AddBoardModalComponent implements OnInit {
 
   addTag() {
     this.tags.push({
+      tagID: generateUniqueID(),
       boardID: this.boardID,
       name: this.newTagText,
       color: this.newTagColor,

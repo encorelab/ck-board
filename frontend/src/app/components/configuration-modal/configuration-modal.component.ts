@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, TemplateRef } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   MatDialog,
   MatDialogRef,
@@ -13,6 +13,7 @@ import { Tag } from 'src/app/models/tag';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { Board, BoardPermissions } from 'src/app/models/board';
+import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
@@ -22,8 +23,6 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
   styleUrls: ['./configuration-modal.component.scss'],
 })
 export class ConfigurationModalComponent {
-  @ViewChild('confirmation') confirmationDialog: TemplateRef<any>;
-
   readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
   boardID: string;
@@ -49,7 +48,6 @@ export class ConfigurationModalComponent {
 
   constructor(
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
-    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public dialog: MatDialog,
     public postService: PostService,
     public boardService: BoardService,
@@ -80,6 +78,7 @@ export class ConfigurationModalComponent {
 
   addTag() {
     this.tags.push({
+      tagID: generateUniqueID(),
       boardID: this.boardID,
       name: this.newTagText,
       color: this.newTagColor,
@@ -136,16 +135,6 @@ export class ConfigurationModalComponent {
     this.dialogRef.close();
   }
 
-  openConfirmation() {
-    this.confirmationRef = this.dialog.open(this.confirmationDialog, {
-      width: '550px',
-    });
-  }
-
-  closeConfirmation() {
-    this.confirmationRef.close();
-  }
-
   async handleClearBoard() {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
@@ -171,7 +160,6 @@ export class ConfigurationModalComponent {
         handleConfirm: async () => {
           const board = await this.boardService.remove(this.boardID);
           if (board) {
-            this.confirmationRef.close();
             this.dialogRef.close();
             this.router.navigate(['project/' + this.projectID]);
           }
@@ -180,20 +168,16 @@ export class ConfigurationModalComponent {
     });
   }
 
-  async deleteBoard() {
-    const board = await this.boardService.remove(this.boardID);
-    if (board) {
-      this.confirmationRef.close();
-      this.dialogRef.close();
-      this.router.navigate(['project/' + this.projectID]);
-    }
-  }
-
   resetColor() {
     this.newTagColor = TAG_DEFAULT_COLOR;
   }
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  copyToClipboard() {
+    const url = window.location.href + '?embedded=true';
+    navigator.clipboard.writeText(url);
   }
 }

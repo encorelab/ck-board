@@ -379,6 +379,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
           );
           this.updateShowAddPost(this.board.permissions);
           this.setAuthorVisibilityAll();
+          if (this.board.permissions.showSnackBarStudent) {
+            this.openTaskDialog();
+          }
         }
       });
     });

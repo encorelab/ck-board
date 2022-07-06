@@ -8,6 +8,7 @@ import { GroupService } from "src/app/services/group.service";
 import { UserService } from "src/app/services/user.service";
 import { generateUniqueID } from 'src/app/utils/Utils';
 import User from "src/app/models/user";
+import { MatCheckboxChange } from "@angular/material/checkbox";
 
 @Component({
     selector: 'app-manage-group-modal',
@@ -17,6 +18,7 @@ import User from "src/app/models/user";
 export class ManageGroupModalComponent implements OnInit {
   groups: Group[] = [];
   members: User[] = [];
+  assigned: string[] = [];
   unassigned: User[] = [];
   groupNameControl = new FormControl('', [Validators.required]);
   matcher = new MyErrorStateMatcher();
@@ -49,16 +51,26 @@ export class ManageGroupModalComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  changeAssignment(event: MatCheckboxChange, user: string) {
+    if (event.checked) this.assigned.push(user);
+    else {
+      this.assigned.forEach((id, index) => {
+        if(id == user) this.assigned.splice(index, 1);
+      });
+    }
+  }
+
   async createGroup() {
     const group: Group = {
       groupID: generateUniqueID(),
       projectID: this.data.project.projectID,
       name: this.groupNameControl.value,
-      members: []
+      members: this.assigned
     }
     await this.groupService.create(group);
     this.groups.push(group);
     this.groupNameControl.reset();
+    this.assigned.length = 0;
   }
 
   async deleteGroup(group: Group) {

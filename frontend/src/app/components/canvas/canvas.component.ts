@@ -336,7 +336,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   configureBoard() {
-    console.log('configuring board');
     const map = this.activatedRoute.snapshot.paramMap;
 
     if (map.has('boardID') && map.has('projectID')) {

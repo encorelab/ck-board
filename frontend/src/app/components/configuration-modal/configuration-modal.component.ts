@@ -152,16 +152,9 @@ export class ConfigurationModalComponent {
       data: {
         title: 'Confirmation',
         message: 'Are you sure you want to clear posts from this board?',
-        handleConfirm: () => {
-          this.postService.getAllByBoard(this.boardID).then((data) => {
-            data.forEach(async (post) => {
-              if (post.type == PostType.BOARD) {
-                const p = await this.postService.update(post.postID, {
-                  type: PostType.BUCKET,
-                });
-                console.log(p);
-              }
-            });
+        handleConfirm: async () => {
+          this.postService.getAllByBoard(this.boardID).then(async (data) => {
+            await this.canvasService.clearPostsFromBoard(data);
           });
         },
       },

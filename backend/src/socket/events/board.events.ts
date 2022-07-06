@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { SocketEvent } from '../../constants';
 import { BoardModel } from '../../models/Board';
+import { PostModel } from '../../models/Post';
 import boardTrace from '../trace/board.trace';
 import { SocketPayload } from '../types/event.types';
 
@@ -122,6 +123,21 @@ class BoardDisableTracing {
   }
 }
 
+class BoardClear {
+  static type: SocketEvent = SocketEvent.BOARD_CLEAR;
+
+  static async handleEvent(
+    input: SocketPayload<PostModel[]>
+  ): Promise<string[]> {
+    if (input.trace.allowTracing) await boardTrace.clearBoard(input, this.type);
+    return input.eventData.map(({ postID }) => postID);
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: string[]) {
+    io.to(socket.data.room).emit(this.type, result);
+  }
+}
+
 const boardEvents = [
   BoardNameUpdate,
   BoardPermissionsUpdate,
@@ -131,6 +147,7 @@ const boardEvents = [
   BoardUpvoteUpdate,
   BoardEnableTracing,
   BoardDisableTracing,
+  BoardClear,
 ];
 
 export default boardEvents;

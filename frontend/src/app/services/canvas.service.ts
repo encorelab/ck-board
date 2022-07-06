@@ -70,8 +70,19 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.POST_CREATE, post);
   }
 
-  async clearPostFromBoard(post: Post) {
-    this.socketService.emit(SocketEvent.POST_CREATE, post);
+  async clearPostsFromBoard(posts: Post[]) {
+    const updatedPosts: Post[] = [];
+    for (const post of posts) {
+      if (post.type == PostType.BOARD) {
+        updatedPosts.push(
+          await this.postService.update(post.postID, {
+            type: PostType.BUCKET,
+          })
+        );
+      }
+    }
+
+    this.socketService.emit(SocketEvent.BOARD_CLEAR, updatedPosts);
   }
 
   async upvote(userID: string, post: string | Post) {

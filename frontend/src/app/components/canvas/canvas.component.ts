@@ -123,6 +123,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.BOARD_TAGS_UPDATE, this.handleBoardTagsUpdateEvent],
       [SocketEvent.BOARD_TASK_UPDATE, this.handleBoardTaskUpdateEvent],
       [SocketEvent.BOARD_UPVOTE_UPDATE, this.handleBoardUpvoteUpdateEvent],
+      [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
     ]);
   }
 
@@ -308,6 +309,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   handleBoardUpvoteUpdateEvent = (_board: Board) => {
     this._calcUpvoteCounter();
+  };
+
+  handleBoardClearEvent = (ids: string[]) => {
+    ids.forEach((id) => {
+      this.handlePostDeleteEvent(id);
+    });
   };
 
   showBucketsModal() {

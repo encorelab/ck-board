@@ -8,11 +8,13 @@ import { ProjectDashboardComponent } from './components/project-dashboard/projec
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ProjectGuard } from './guards/project.guard';
+import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'sso/login/:sso/:sig', component: SsoLoginComponent },
   {
     path: 'dashboard',
     component: DashboardComponent,

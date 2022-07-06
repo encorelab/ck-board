@@ -43,6 +43,7 @@ import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
 import { AutofocusDirective } from './autofocus.directive';
+import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -78,6 +79,7 @@ export function tokenGetter() {
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
     AutofocusDirective,
+    SsoLoginComponent,
   ],
   imports: [
     BrowserModule,

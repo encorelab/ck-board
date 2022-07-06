@@ -65,6 +65,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   finalClientX = 0;
   finalClientY = 0;
 
+  embedded = false;
+
   zoom = 1;
 
   mode: Mode = Mode.EDIT;
@@ -120,6 +122,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params.embedded == 'true') {
+        this.embedded = true;
+      }
+    });
+
     this.user = this.userService.user!;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas;

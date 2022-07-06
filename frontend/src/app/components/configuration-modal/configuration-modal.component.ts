@@ -160,4 +160,9 @@ export class ConfigurationModalComponent {
   onNoClick(): void {
     this.dialogRef.close();
   }
+
+  copyToClipboard() {
+    const url = window.location.href + '?embedded=true';
+    navigator.clipboard.writeText(url);
+  }
 }

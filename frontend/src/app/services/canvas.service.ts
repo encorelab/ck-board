@@ -41,6 +41,12 @@ export class CanvasService {
 
     this.fabricUtils._canvas.add(fabricPost);
     this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
+    for (const tag of post.tags) {
+      this.socketService.emit(SocketEvent.POST_TAG_ADD, {
+        tag,
+        post: savedPost,
+      });
+    }
   }
 
   async removePost(post: Post) {

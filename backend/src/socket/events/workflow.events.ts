@@ -1,7 +1,14 @@
 import { Server, Socket } from 'socket.io';
-import { runDistributionWorkflow } from '../../agents/workflow.agent';
+import {
+  runDistributionWorkflow,
+  runTaskWorkflow,
+} from '../../agents/workflow.agent';
 import { SocketEvent } from '../../constants';
-import { DistributionWorkflowModel, WorkflowType } from '../../models/Workflow';
+import {
+  DistributionWorkflowModel,
+  TaskWorkflowModel,
+  WorkflowType,
+} from '../../models/Workflow';
 import dalWorkflow from '../../repository/dalWorkflow';
 import { SocketPayload } from '../types/event.types';
 
@@ -32,6 +39,33 @@ class WorkflowRunDistribution {
   }
 }
 
-const workflowEvents = [WorkflowRunDistribution];
+class WorkflowRunTask {
+  static type: SocketEvent = SocketEvent.WORKFLOW_RUN_TASK;
+
+  static async handleEvent(
+    input: SocketPayload<TaskWorkflowModel>
+  ): Promise<TaskWorkflowModel | null> {
+    const id = input.eventData.workflowID;
+
+    const workflow = await dalWorkflow.updateTask(id, {
+      active: true,
+    });
+
+    if (!workflow) return null;
+
+    await runTaskWorkflow(workflow);
+    return workflow;
+  }
+
+  static async handleResult(
+    io: Server,
+    socket: Socket,
+    result: TaskWorkflowModel | null
+  ) {
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+const workflowEvents = [WorkflowRunDistribution, WorkflowRunTask];
 
 export default workflowEvents;

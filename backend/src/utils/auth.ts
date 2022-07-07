@@ -113,21 +113,17 @@ export const getParamMap = (params: string): Map<string, string> => {
   return paramMap;
 };
 
-export const getUser = async (
+export const getOrCreateUser = async (
   paramMap: Map<string, string>
 ): Promise<UserModel | null> => {
-  let email = '';
-  const role = getRole(paramMap.get('role'));
-  if (role === Role.STUDENT) {
-    const workgroupId = paramMap.get('workgroup-id');
-    email = `workgroup-${workgroupId}@score.oise.utoronto.ca`;
-  } else if (role === Role.TEACHER) {
-    email = paramMap.get('email') ?? '';
-  }
+  const userId = paramMap.get('user-id');
+  const email = `user-${userId}@score.oise.utoronto.ca`;
   const username = paramMap.get('username') ?? '';
+  const role = getRole(paramMap.get('role'));
   try {
     return await createUserIfNecessary(email, username, role);
   } catch (err) {
+    console.log(err);
     return null;
   }
 };
@@ -204,7 +200,7 @@ export const signInUserWithSso = async (
 ) => {
   const nonce = paramMap.get('nonce') ?? '';
   await dalNonce.remove(nonce);
-  const userModel = await getUser(paramMap);
+  const userModel = await getOrCreateUser(paramMap);
   if (userModel == null) {
     return res.status(403).end('Error retrieving user. Please try again.');
   }

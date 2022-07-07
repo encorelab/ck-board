@@ -17,15 +17,9 @@ export class AuthGuard implements CanActivate {
     public ngZone: NgZone
   ) {}
 
-  async canActivate(
-    _next: ActivatedRouteSnapshot,
-    _state: RouterStateSnapshot
-  ) {
+  canActivate(_next: ActivatedRouteSnapshot, _state: RouterStateSnapshot) {
     if (this.userService.loggedIn) {
       return true;
-    }
-    if (await this.userService.isSsoEnabled()) {
-      return this.userService.trySsoLogin(_state.url);
     }
     this.userService.redirectUrl = _state.url;
 

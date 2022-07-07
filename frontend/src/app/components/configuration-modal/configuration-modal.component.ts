@@ -147,6 +147,7 @@ export class ConfigurationModalComponent {
   async deleteBoard() {
     const board = await this.boardService.remove(this.boardID);
     if (board) {
+      this.data.update(board, true);
       this.confirmationRef.close();
       this.dialogRef.close();
       this.router.navigate(['project/' + this.projectID]);

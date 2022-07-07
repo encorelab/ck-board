@@ -72,7 +72,6 @@ export const generateSsoPayload = async (): Promise<string> => {
   const value = uuidv4();
   const nonce: NonceModel = {
     value: value,
-    expiration: new Date(Date.now() + 5 * 60 * 1000),
   };
   const savedNonce = await dalNonce.create(nonce);
   const payload = `nonce=${savedNonce.value}`;
@@ -100,7 +99,7 @@ export const isCorrectHashedSsoPayload = (
 
 export const isValidNonce = async (nonce: string): Promise<boolean> => {
   const foundNonce = await dalNonce.findByValue(nonce);
-  return foundNonce != null && Date.now() < foundNonce.expiration.getTime();
+  return foundNonce != null;
 };
 
 export const getParamMap = (params: string): Map<string, string> => {

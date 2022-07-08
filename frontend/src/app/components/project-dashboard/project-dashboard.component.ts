@@ -88,9 +88,9 @@ export class ProjectDashboardComponent implements OnInit {
     }
   };
 
-  updateProjectName = (name) => {
+  updateProjectName = (projectID: string, name: string) => {
     this.project.name = name;
-    this.projectService.update(this.projectID, { name: name });
+    this.projectService.update(projectID, { name: name });
   };
 
   openSettingsDialog() {

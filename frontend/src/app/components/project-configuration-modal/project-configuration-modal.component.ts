@@ -10,6 +10,7 @@ import { UserService } from 'src/app/services/user.service';
 })
 export class ProjectConfigurationModalComponent implements OnInit {
   projectName: string;
+  projectID: string;
   members: string[] = [];
 
   constructor(
@@ -19,6 +20,7 @@ export class ProjectConfigurationModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.projectName = data.project.name;
+    this.projectID = data.project.projectID;
     data.project.members.map((id) => {
       userService.getOneById(id).then((user) => {
         if (user) {
@@ -28,7 +30,7 @@ export class ProjectConfigurationModalComponent implements OnInit {
     });
   }
   handleDialogSubmit() {
-    this.data.updateProjectName(this.projectName);
+    this.data.updateProjectName(this.projectID, this.projectName);
     this.dialogRef.close();
   }
   onNoClick(): void {

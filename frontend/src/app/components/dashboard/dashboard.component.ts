@@ -10,6 +10,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { Project } from 'src/app/models/project';
 import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
 import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
+import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -42,7 +43,7 @@ export class DashboardComponent implements OnInit {
 
   getUsersProjects(id) {
     return this.projectService.getByUserID(id).then((projects) => {
-      this.yourProjects = this.yourProjects.concat(projects);
+      this.yourProjects = projects;
     });
   }
 
@@ -76,6 +77,22 @@ export class DashboardComponent implements OnInit {
       width: '700px',
       data: {
         user: this.user,
+      },
+    });
+  }
+
+  updateProjectName = (projectID: string, name: string) => {
+    this.projectService.update(projectID, { name: name });
+    this.getUsersProjects(this.user.userID).then(
+      () => (this.isLoading = false)
+    );
+  };
+
+  openProjectConfigDialog(project: Project) {
+    this.dialog.open(ProjectConfigurationModalComponent, {
+      data: {
+        project: project,
+        updateProjectName: this.updateProjectName,
       },
     });
   }

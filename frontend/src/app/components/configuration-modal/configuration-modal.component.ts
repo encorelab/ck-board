@@ -140,7 +140,8 @@ export class ConfigurationModalComponent {
       width: '500px',
       data: {
         title: 'Confirmation',
-        message: 'Are you sure you want to clear posts from this board?',
+        message:
+          'Are you sure you want to clear posts from this board? NOTE: Posts will be cleared from the board but remain in the the list view and any assigned buckets.',
         handleConfirm: async () => {
           this.postService.getAllByBoard(this.boardID).then(async (data) => {
             await this.canvasService.clearPostsFromBoard(data);

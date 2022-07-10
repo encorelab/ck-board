@@ -12,6 +12,11 @@ export class UserService {
     return this.http.get<User>('auth/' + id).toPromise();
   }
 
+  getMultipleByIds(ids: string[]) {
+    console.log(ids)
+    return this.http.post<User[]>('auth/multiple', ids).toPromise();
+  }
+
   async register(user: User) {
     return this.http
       .post<TokenResponse>('auth/register', user)

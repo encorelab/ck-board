@@ -30,6 +30,12 @@ export class GroupService {
     return this.http.delete<Group>('groups/' + groupID).toPromise();
   }
 
+  update(groupID: string, group: Partial<Group>) {
+    console.log(groupID);
+    console.log(group);
+    return this.http.post<Group>('groups/' + groupID, group).toPromise();
+  }
+
   addUsers(groupID: string, ...users: string[]): Promise<Group> {
     return this.http
       .post<Group>('groups/' + groupID + '/users/add/', users)

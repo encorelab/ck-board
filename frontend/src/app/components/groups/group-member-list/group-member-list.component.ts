@@ -25,9 +25,6 @@ export class GroupMemberListComponent implements OnInit {
     ) {}
 
   ngOnInit(): void {
-    this.userService.getOneById(this.firstMembers[0]).then((user) => {
-    })
-
     this.userService.getMultipleByIds(this.firstMembers).then((users) => {
       if (users) this.firstGroup.push(...users);
     });

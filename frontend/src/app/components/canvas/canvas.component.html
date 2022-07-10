@@ -1,7 +1,7 @@
 <div>
-  <div style="position: absolute">
+  <div>
     <app-toolbar *ngIf="user && board" [user]="user" [embedded]="embedded">
-      <span *ngIf="board && board.name">{{ board.name }}</span>
+      <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="Read Task">
         <mat-icon>task</mat-icon>
       </button>
@@ -43,7 +43,7 @@
       </div>
     </app-toolbar>
     <div class="canvas-area">
-      <canvas id="canvas"></canvas>
+      <canvas id="canvas" (window:resize)="onResize($event)"></canvas>
       <div class="top-nav" *ngIf="!embedded">
         <a routerLink="{{ '/project/' + projectID }}">Back to Project</a>
       </div>

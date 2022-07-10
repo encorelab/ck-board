@@ -469,15 +469,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     // Resize all objects inside the canvas
     for (var i in objects) {
-      objects[i].scaleX = (objects[i].getObjectScaling().scaleX) * scaleY;
-      objects[i].scaleY = (objects[i].getObjectScaling().scaleY) * scaleY;
+      objects[i].scaleX = objects[i].getObjectScaling().scaleX * scaleY;
+      objects[i].scaleY = objects[i].getObjectScaling().scaleY * scaleY;
       objects[i].left = (objects[i].left || 0) * scaleX;
       objects[i].top = (objects[i].top || 0) * scaleY;
       objects[i].setCoords();
     }
 
     this.canvas.setWidth(event.target.innerWidth);
-    // Without toolbar height 
+    // Without toolbar height
     this.canvas.setHeight(event.target.innerHeight - 64);
 
     this.canvas.renderAll();

@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from "@angular/core";
 import { FormControl, Validators } from '@angular/forms';
 import { ConfirmModalComponent } from '../../confirm-modal/confirm-modal.component';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import Group from "src/app/models/group";
 import { GroupService } from "src/app/services/group.service";
@@ -20,7 +20,10 @@ export class ManageGroupModalComponent implements OnInit {
   members: User[] = [];
   assigned: string[] = [];
   unassigned: User[] = [];
+  showEdit: boolean = false;
+  editGroup: Group;
   groupNameControl = new FormControl('', [Validators.required]);
+  editNameControl = new FormControl('', [Validators.required]);
   matcher = new MyErrorStateMatcher();
   
   constructor(
@@ -29,27 +32,27 @@ export class ManageGroupModalComponent implements OnInit {
       public dialog: MatDialog,
       @Inject(MAT_DIALOG_DATA) public data: any
     ) {
-
-      data.project.members.map((id) => {
-        userService.getOneById(id).then((user) => {
-          if (user) {
-            this.members.push(user);
-          }
-          return user;
-        }).then((user) => {
-          groupService.getByUserId(user.userID).then((groups) => {
-            if (groups.every((group) => group.projectID != data.project.projectID))
-              this.unassigned.push(user);
-          });
-        });
-      });
-
-      groupService.getByProjectId(data.project.projectID).then((groups) => {
-        if (groups) this.groups.push(...groups);
-      })
     }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.data.project.members.map((id) => {
+      this.userService.getOneById(id).then((user) => {
+        if (user) {
+          this.members.push(user);
+        }
+        return user;
+      }).then((user) => {
+        this.groupService.getByUserId(user.userID).then((groups) => {
+          if (groups.every((group) => group.projectID != this.data.project.projectID))
+            this.unassigned.push(user);
+        });
+      });
+    });
+
+    this.groupService.getByProjectId(this.data.project.projectID).then((groups) => {
+      if (groups) this.groups.push(...groups);
+    })
+  }
 
   changeAssignment(event: MatCheckboxChange, user: string) {
     if (event.checked) this.assigned.push(user);
@@ -58,6 +61,25 @@ export class ManageGroupModalComponent implements OnInit {
         if(id == user) this.assigned.splice(index, 1);
       });
     }
+  }
+
+  getUnassignedMembers() {
+    let members: string[] = this.unassigned.map(user => user.userID);
+    return members;
+  }
+
+  openEdit(group: Group) {
+    this.showEdit = true;
+    this.editGroup = group;
+  }
+
+  closeEdit() {
+    this.showEdit = false;
+  }
+
+  async updateGroup() { 
+    await this.groupService.update(this.editGroup.groupID, this.editGroup);
+    this.closeEdit();
   }
 
   async createGroup() {

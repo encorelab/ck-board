@@ -2,7 +2,51 @@
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Groups">
-      <mat-list>
+      <div
+        *ngIf="showEdit"
+        style="margin-top: 20px"
+      >
+        <button 
+          mat-icon-button
+          matTooltip="Back"
+          (click)="closeEdit()"
+        >
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <mat-form-field
+          appearance="outline"
+          style="width: 100%; margin-top: 20px"
+        >
+          <mat-label>Group Name</mat-label>
+          <input
+            name="editName"
+            [formControl]="editNameControl"
+            [errorStateMatcher]="matcher"
+            [(ngModel)]="editGroup.name"
+            matInput
+            autocomplete="off"
+            cdkFocusInitial
+          />
+          <mat-error *ngIf="!editNameControl.value">Group Name is <strong>required</strong></mat-error>
+        </mat-form-field>
+        <app-group-member-list
+          [firstMembers]="editGroup.members"
+          [fstGroupName]="'Current'"
+          [secondMembers]="getUnassignedMembers()"
+          [sndGroupName]="'Unassigned'"
+        >
+        </app-group-member-list>
+        <button
+          type="submit"
+          [disabled]="!editNameControl.valid"
+          mat-button
+          cdkFocusInitial
+          (click)="updateGroup()"
+        >
+          Update
+        </button>
+      </div>
+      <mat-list *ngIf="!showEdit">
         <div mat-subheader>Groups: {{ groups.length }}</div>
         <mat-list-item *ngFor="let group of groups">
           <mat-icon mat-list-icon>group</mat-icon>
@@ -10,7 +54,7 @@
           <button 
             mat-icon-button
             matTooltip="Edit Group"
-            (click)="deleteGroup(group)"
+            (click)="openEdit(group)"
           >
             <mat-icon>edit</mat-icon>
           </button>
@@ -22,7 +66,6 @@
             <mat-icon>delete</mat-icon>
           </button>
         </mat-list-item>
-        <mat-divider></mat-divider>
       </mat-list>
     </mat-tab>
     <mat-tab label="Create">
@@ -39,7 +82,7 @@
           autocomplete="off"
           cdkFocusInitial
         />
-        <mat-error *ngIf="!groupNameControl.value"> Group Name is <strong>required</strong> </mat-error>
+        <mat-error *ngIf="!groupNameControl.value">Group Name is <strong>required</strong></mat-error>
       </mat-form-field>
       <mat-list>
         <div mat-subheader>Assign members to group</div>
@@ -62,13 +105,6 @@
       </button>
     </mat-tab>
     <mat-tab label="Assign">
-
     </mat-tab>
   </mat-tab-group>
-</div>
-<div mat-dialog-actions>
-  <button mat-button>Cancel</button>
-  <button mat-button cdkFocusInitial>
-    Update Configuration!
-  </button>
 </div>

@@ -1,0 +1,27 @@
+<div class="group-member-list">
+  <div class="title-container">
+    <mat-label class="title">{{fstGroupName}}</mat-label>
+    <mat-label class="title">{{sndGroupName}}</mat-label>
+  </div>
+  <div class="list-container">
+    <div
+      cdkDropList
+      #first="cdkDropList"
+      class="member-list"
+      [cdkDropListData]="firstGroup"
+      [cdkDropListConnectedTo]="[second]"
+      (cdkDropListDropped)="drop($event)">
+      <div class="member-box" *ngFor="let user of firstGroup" cdkDrag>{{user.username}}</div>
+    </div>
+    <div
+      cdkDropList
+      #second="cdkDropList"
+      class="member-list"
+      [cdkDropListData]="secondGroup"
+      [cdkDropListConnectedTo]="[first]"
+      (cdkDropListDropped)="drop($event)">
+      
+      <div class="member-box" *ngFor="let user of secondGroup" cdkDrag>{{user.username}}</div>
+    </div>
+  </div>
+</div>

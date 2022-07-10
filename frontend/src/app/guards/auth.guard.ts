@@ -21,8 +21,9 @@ export class AuthGuard implements CanActivate {
     if (this.userService.loggedIn) {
       return true;
     }
+    this.userService.redirectUrl = _state.url;
 
-    this.router.navigate(['/error'], {
+    this.router.navigate(['/login'], {
       state: { code: 403, message: 'Forbidden! Please sign in' },
     });
     return false;

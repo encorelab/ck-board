@@ -53,7 +53,7 @@ export class SnackbarService implements OnDestroy {
 
   queueSnackbar(
     title: string,
-    description: string = '',
+    description = '',
     configParams: SnackbarConfig = {}
   ) {
     this.snackBarQueue.next(
@@ -71,7 +71,7 @@ export class SnackbarService implements OnDestroy {
   }
 
   private openSnackbar(item: SnackBarQueueItem) {
-    let config = item.configParams.matSnackbarConfig ?? {};
+    const config = item.configParams.matSnackbarConfig ?? {};
     config.data = {
       title: item.title,
       description: item.description,

@@ -1,101 +1,209 @@
-<mat-card class="details" *ngIf="!isEditing">
-  <mat-card-header>
-    <div mat-card-avatar class="avatar"></div>
-    <mat-card-title [innerHTML]="editingTitle">{{ editingTitle }}</mat-card-title>
-    <span class="fill-remaining-space"></span>
-    <mat-card-subtitle *ngIf="showAuthorName && author; else elseBlock">{{ author.username }}</mat-card-subtitle>
-    <ng-template #elseBlock>
-      <mat-card-subtitle >Anonymous</mat-card-subtitle>
-    </ng-template>
-    <button mat-icon-button [matMenuTriggerFor]="bucketMenu">
-      <mat-icon>library_add</mat-icon>
-    </button>
-    <mat-menu #bucketMenu="matMenu">
-      <div mat-menu-item *ngIf="buckets && buckets.length == 0">
-        No buckets available.
-      </div>
-      <div mat-menu-item (click)="$event.stopPropagation();" *ngFor="let bucket of buckets">
-        <mat-checkbox id={{bucket.bucketID}} [checked]="bucket.includesPost" (change)="updateBucket($event)">{{ bucket.name }}</mat-checkbox>
-      </div>
-    </mat-menu>
-    <button mat-icon-button *ngIf="!isEditing && showEditDelete && canEditDelete" (click)="toggleEdit()">
-      <mat-icon>edit</mat-icon>
-    </button>
-    <button mat-icon-button *ngIf="showEditDelete && canEditDelete" (click)="onDelete()">
-      <mat-icon>delete</mat-icon>
-    </button>
-  </mat-card-header>
-  <mat-card-content>
-    <p style="overflow-wrap: break-word;" [innerHTML]="editingDesc"> {{ editingDesc }} </p>
-  </mat-card-content>
-  <mat-card-actions align="end" style="margin-bottom: -1.25em">
-    <button mat-button (click)="handleLikeClick()">
-      <mat-icon *ngIf="isLiked">thumb_up</mat-icon>
-      <i class="material-icons-outlined" *ngIf="!isLiked">thumb_up</i>
-      {{ likes.length }}
-    </button>
-  </mat-card-actions>
-  <mat-card-actions style="margin-bottom: -1.25em" >
-    <mat-form-field class="tag-form" appearance="standard">
-      <mat-chip-list #chipList>
-        <mat-chip style="background-color: #78C2C0" [matMenuTriggerFor]="menu1" *ngIf="canStudentTag">
-          Add Tag 
-          <mat-icon>add</mat-icon>
-        </mat-chip>
-        <mat-chip [ngStyle]="{'background-color': tag.color}" *ngFor="let tag of tags">
-          {{ tag.name }}
-          <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
-        </mat-chip>
-        <mat-menu #menu1="matMenu">
-          <div mat-menu-item *ngIf="tagOptions && tagOptions.length == 0">No tags available.</div>
-          <div mat-menu-item (click)="addTag($event, tagOption)" *ngFor="let tagOption of tagOptions">{{ tagOption.name }}</div>
-        </mat-menu>
-      </mat-chip-list>
-    </mat-form-field>
-  </mat-card-actions>
-</mat-card>
-<mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%; margin-top: 20px;">
-  <mat-label>Title</mat-label>
-  <input [formControl]="titleControl" [errorStateMatcher]="matcher" matInput [(ngModel)]="title">
-  <mat-error *ngIf="!title">
-    Title is <strong>required</strong>
-  </mat-error>
-  <mat-error *ngIf="title && title.length > 50">
-    Title is <strong>too long!</strong>
-  </mat-error>
-</mat-form-field>
-<mat-form-field *ngIf="isEditing" appearance="outline" style="width:100%">
-  <mat-label>Description</mat-label>
-  <textarea [formControl]="descControl" [errorStateMatcher]="matcher" matInput rows="5" cols="40" [(ngModel)]='desc'></textarea>
-  <mat-error *ngIf="desc && desc.length > 1000">
-    Description is <strong>too long!</strong>
-  </mat-error>
-</mat-form-field>
-<div mat-dialog-actions>
-  <button *ngIf="isEditing" [disabled]="!titleControl.valid || !descControl.valid" mat-button (click)="onUpdate()">Update</button>
-  <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
-</div>
-<div class="comment-area" *ngIf="!isEditing">
-  <div class="comments-header">
-    <button class="comment-toggler" mat-button (click)="toggleComments()">
-      Comments ({{ comments.length }})
-      <mat-icon>{{ showComments ? "expand_less" : "expand_more"}}</mat-icon>
-    </button>
-  </div>
-  <div class="comment-box" *ngIf="showComments">
-    <mat-card class="comment" *ngFor="let comment of comments">
-      <mat-card-title style="font-size: small;">{{ comment.author }}</mat-card-title>
-      <mat-card-content>
-          {{ comment.comment }}
-      </mat-card-content>
-    </mat-card>
-  </div>
-  <mat-form-field class="add-comment" appearance="outline" *ngIf="showComments && canStudentComment">
-    <mat-label>Add Comment</mat-label>
-    <input matInput [(ngModel)]='newComment' (keyup.enter)="addComment()">
-    <button color="primary" matSuffix mat-button (click)="addComment()">Comment!</button>
+<div *ngIf="!expandedUpvotesView">
+  <mat-card class="details" *ngIf="!isEditing">
+    <mat-card-header>
+      <div mat-card-avatar class="avatar"></div>
+      <mat-card-title [innerHTML]="editingTitle">{{
+        editingTitle
+      }}</mat-card-title>
+      <span class="fill-remaining-space"></span>
+      <mat-card-subtitle *ngIf="showAuthorName && author; else elseBlock">{{
+        author.username
+      }}</mat-card-subtitle>
+      <ng-template #elseBlock>
+        <mat-card-subtitle>Anonymous</mat-card-subtitle>
+      </ng-template>
+      <button mat-icon-button [matMenuTriggerFor]="bucketMenu">
+        <mat-icon>library_add</mat-icon>
+      </button>
+      <mat-menu #bucketMenu="matMenu">
+        <div mat-menu-item *ngIf="buckets && buckets.length == 0">
+          No buckets available.
+        </div>
+        <div
+          mat-menu-item
+          (click)="$event.stopPropagation()"
+          *ngFor="let bucket of buckets"
+        >
+          <mat-checkbox
+            id="{{ bucket.bucketID }}"
+            [checked]="bucket.includesPost"
+            (change)="updateBucket($event)"
+            >{{ bucket.name }}</mat-checkbox
+          >
+        </div>
+      </mat-menu>
+      <button
+        mat-icon-button
+        *ngIf="!isEditing && showEditDelete && canEditDelete"
+        (click)="toggleEdit()"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        *ngIf="showEditDelete && canEditDelete"
+        (click)="onDelete()"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <p style="overflow-wrap: break-word" [innerHTML]="editingDesc">
+        {{ editingDesc }}
+      </p>
+    </mat-card-content>
+    <mat-card-actions align="end" style="margin-bottom: -1.25em">
+      <button
+        mat-icon-button
+        [ngStyle]="isUpvoted() && { color: '#4f47ff' }"
+        (click)="handleUpvoteClick()"
+      >
+        <mat-icon style="transform: scale(2);">arrow_drop_up</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        [ngStyle]="isUpvoted() && { color: '#4f47ff' }"
+        (click)="gotoUpvotesView()"
+      >
+        {{ upvotes.length }}
+      </button>
+      <button mat-icon-button (click)="handleDownvoteClick()">
+        <mat-icon style="transform: scale(2);">arrow_drop_down</mat-icon>
+      </button>
+    </mat-card-actions>
+    <mat-card-actions style="margin-bottom: -1.25em">
+      <mat-form-field class="tag-form" appearance="standard">
+        <mat-chip-list #chipList>
+          <mat-chip
+            style="background-color: #78c2c0"
+            [matMenuTriggerFor]="menu1"
+            *ngIf="canStudentTag"
+          >
+            Add Tag
+            <mat-icon>add</mat-icon>
+          </mat-chip>
+          <mat-chip
+            [ngStyle]="{ 'background-color': tag.color }"
+            *ngFor="let tag of tags"
+          >
+            {{ tag.name }}
+            <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
+          </mat-chip>
+          <mat-menu #menu1="matMenu">
+            <div mat-menu-item *ngIf="tagOptions && tagOptions.length == 0">
+              No tags available.
+            </div>
+            <div
+              mat-menu-item
+              (click)="addTag($event, tagOption)"
+              *ngFor="let tagOption of tagOptions"
+            >
+              {{ tagOption.name }}
+            </div>
+          </mat-menu>
+        </mat-chip-list>
+      </mat-form-field>
+    </mat-card-actions>
+  </mat-card>
+  <mat-form-field
+    *ngIf="isEditing"
+    appearance="outline"
+    style="width: 100%; margin-top: 20px"
+  >
+    <mat-label>Title</mat-label>
+    <input
+      [formControl]="titleControl"
+      [errorStateMatcher]="matcher"
+      matInput
+      [(ngModel)]="title"
+    />
+    <mat-error *ngIf="!title"> Title is <strong>required</strong> </mat-error>
+    <mat-error *ngIf="title && title.length > 50">
+      Title is <strong>too long!</strong>
+    </mat-error>
   </mat-form-field>
+  <mat-form-field *ngIf="isEditing" appearance="outline" style="width: 100%">
+    <mat-label>Description</mat-label>
+    <textarea
+      [formControl]="descControl"
+      [errorStateMatcher]="matcher"
+      matInput
+      rows="5"
+      cols="40"
+      [(ngModel)]="desc"
+    ></textarea>
+    <mat-error *ngIf="desc && desc.length > 1000">
+      Description is <strong>too long!</strong>
+    </mat-error>
+  </mat-form-field>
+  <div mat-dialog-actions>
+    <button
+      *ngIf="isEditing"
+      [disabled]="!titleControl.valid || !descControl.valid"
+      mat-button
+      (click)="onUpdate()"
+    >
+      Update
+    </button>
+    <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
+  </div>
+  <div class="comment-area" *ngIf="!isEditing">
+    <div class="comments-header">
+      <button class="comment-toggler" mat-button (click)="toggleComments()">
+        Comments ({{ comments.length }})
+        <mat-icon>{{ showComments ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </button>
+    </div>
+    <div class="comment-box" *ngIf="showComments">
+      <mat-card class="comment" *ngFor="let comment of comments">
+        <mat-card-title style="font-size: small">{{
+          comment.author
+        }}
+        <button mat-icon-button class="comment-delete" 
+        *ngIf="(showEditDelete && canEditDelete) || comment.userID === user.userID" 
+        (click)="deleteComment(comment)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-title>
+        <mat-card-content>
+          {{ comment.comment }}
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <mat-form-field
+      class="add-comment"
+      appearance="outline"
+      *ngIf="showComments && canStudentComment"
+    >
+      <mat-label>Add Comment</mat-label>
+      <input matInput [appAutofocus]="showComments" [(ngModel)]="newComment" (keyup.enter)="addComment()" />
+      <button color="primary" matSuffix mat-button (click)="addComment()">
+        Comment!
+      </button>
+    </mat-form-field>
+  </div>
 </div>
-<div mat-dialog-actions align="end">
+<div *ngIf="expandedUpvotesView">
+  <mat-list>
+    <mat-list-item
+      style="justify-content: space-between"
+      *ngFor="let upvote of expandedUpvotes | keyvalue"
+    >
+      <div mat-card-avatar class="avatar" style="margin-right: 20px"></div>
+      <div>{{ upvote.value.user.username }}</div>
+      <span style="flex: 1 1 auto"></span>
+      <div style="color: '#4f47ff'; margin-right: 5px">
+        {{ upvote.value.amount }}
+      </div>
+      <mat-icon mat-icon style="color: '#4f47ff'">arrow_upward</mat-icon>
+    </mat-list-item>
+  </mat-list>
+</div>
+<div mat-dialog-actions>
+  <mat-error *ngIf="error">{{ error }}</mat-error>
+  <span style="flex: 1 1 auto"></span>
+  <button *ngIf="expandedUpvotesView" mat-button (click)="gotoPostView()">
+    Back to Post
+  </button>
   <button *ngIf="!isEditing" mat-button (click)="close()">Close</button>
 </div>

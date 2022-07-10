@@ -1,7 +1,7 @@
-import * as socketIO from "socket.io";
-import { SocketEvent } from "../constants";
-import events from "./events";
-import SocketManager from "./socketManager";
+import * as socketIO from 'socket.io';
+import { SocketEvent } from '../constants';
+import events from './events';
+import SocketManager from './socketManager';
 
 class Socket {
   private static _instance: Socket;
@@ -28,22 +28,22 @@ class Socket {
   init() {
     const io = new socketIO.Server(8000, {
       cors: {
-        origin: ["http://localhost:4200", "http://localhost:4201"],
+        origin: ['http://localhost:4200', 'http://localhost:4201'],
       },
     });
 
-    console.log("Socket server running at " + 8000);
+    console.log('Socket server running at ' + 8000);
 
-    io.on("connection", (socket) => {
+    io.on('connection', (socket) => {
       this._socket = socket;
 
-      socket.on("join", (user: string, room: string) => {
+      socket.on('join', (user: string, room: string) => {
         socket.data.room = room;
         this._safeJoin(socket, user, room);
         this._listenForEvents(io, socket);
       });
 
-      socket.on("leave", (user: string, room: string) => {
+      socket.on('leave', (user: string, room: string) => {
         if (this._currentRoom && this._currentRoom == room) {
           socket.leave(this._currentRoom);
           console.log(`Socket ${socket.id} left room ${room}`);
@@ -55,7 +55,7 @@ class Socket {
         }
       });
 
-      socket.on("disconnect", () => {
+      socket.on('disconnect', () => {
         if (this._socket) {
           this._currentRoom = null;
           this._socketManager.removeBySocketId(this._socket.id);
@@ -73,9 +73,9 @@ class Socket {
    */
   emit(event: SocketEvent, eventData: unknown): void {
     if (this._socket == null) {
-      throw new Error("Socket not initialized. Please invoke init() first.");
+      throw new Error('Socket not initialized. Please invoke init() first.');
     } else if (this._currentRoom == null) {
-      throw new Error("Socket not connected to any rooms.");
+      throw new Error('Socket not connected to any rooms.');
     }
 
     this._socket.to(this._currentRoom).emit(event, eventData);

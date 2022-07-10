@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Board } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
+
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -43,14 +44,14 @@ export class ProjectDashboardComponent implements OnInit {
 
   async getBoards() {
     this.project = await this.projectService.get(this.projectID);
-    for (let boardID of this.project.boards) {
-      let board = await this.boardService.get(boardID);
+    for (const boardID of this.project.boards) {
+      const board = await this.boardService.get(boardID);
       this.boards.push(board);
     }
   }
 
   async getUsersProjects(id) {
-    let projects = await this.projectService.getByUserID(id);
+    const projects = await this.projectService.getByUserID(id);
     this.yourProjects = this.yourProjects.concat(projects);
   }
 
@@ -67,7 +68,7 @@ export class ProjectDashboardComponent implements OnInit {
   }
 
   createBoard = async (board: Board, selectedProjectID: string) => {
-    let projectBoards = this.yourProjects.find(
+    const projectBoards = this.yourProjects.find(
       (project) => project.projectID == selectedProjectID
     )?.boards;
 

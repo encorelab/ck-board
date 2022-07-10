@@ -15,6 +15,9 @@ export class CommentModel {
   public author!: string;
 
   @prop({ required: true })
+  public userID!: string;
+
+  @prop({ required: true })
   public comment!: string;
 }
 

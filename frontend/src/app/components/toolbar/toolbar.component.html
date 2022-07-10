@@ -1,14 +1,20 @@
 <mat-toolbar color="primary" role="toolbar" aria-label="Top Toolbar">
-  <a routerLink="/dashboard">
-    <img class="logo" src="/assets/encore-logo-white-sm.png" alt="Encore logo" />
+  <a routerLink="/dashboard" *ngIf="!embedded">
+    <img
+      class="logo"
+      src="/assets/encore-logo-white-sm.png"
+      alt="Encore logo"
+    />
   </a>
   <ng-content></ng-content>
-  <button 
-    style="margin-left: 1em" 
-    *ngIf="user && user.username" 
-    mat-button [matMenuTriggerFor]="menu"
-    matTooltip="Account">
-      {{ user.username }}
+  <button
+    style="margin-left: 1em"
+    *ngIf="user && user.username && !embedded"
+    mat-button
+    [matMenuTriggerFor]="menu"
+    matTooltip="Account"
+  >
+    {{ user.username }}
   </button>
   <mat-menu #menu="matMenu">
     <button mat-menu-item (click)="signOut()">Log Out</button>

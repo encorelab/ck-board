@@ -79,7 +79,15 @@ export default [
     default: '',
   },
   {
+    value: 'postTagIDAdded',
+    default: '',
+  },
+  {
     value: 'postTagNameRemoved',
+    default: '',
+  },
+  {
+    value: 'postTagIDRemoved',
     default: '',
   },
   {
@@ -100,6 +108,14 @@ export default [
   },
   {
     value: 'postMovedToBucketName',
+    default: '',
+  },
+  {
+    value: 'postRemovedFromBucketID',
+    default: '',
+  },
+  {
+    value: 'postRemovedFromBucketName',
     default: '',
   },
   {

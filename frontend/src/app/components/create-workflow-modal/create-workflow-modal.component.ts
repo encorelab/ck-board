@@ -17,7 +17,7 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import Utils from 'src/app/utils/Utils';
+import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 
 @Component({
   selector: 'app-create-workflow-modal',
@@ -32,8 +32,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   workflows: any[] = [];
   tags: string[];
 
-  bucketName: string = '';
-  workflowName: string = '';
+  bucketName = '';
+  workflowName = '';
 
   sourceOptions: any[] = [];
   destOptions: any[] = [];
@@ -105,7 +105,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   createBucket() {
     const bucket: Bucket = {
-      bucketID: Utils.generateUniqueID(),
+      bucketID: generateUniqueID(),
       boardID: this.data.board.boardID,
       name: this.bucketName,
       posts: [],
@@ -191,9 +191,9 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   _assembleWorkflow() {
-    let workflowID: string = Utils.generateUniqueID();
+    const workflowID: string = generateUniqueID();
 
-    let workflow: DistributionWorkflow = {
+    const workflow: DistributionWorkflow = {
       workflowID: workflowID,
       boardID: this.board.boardID,
       active: false,

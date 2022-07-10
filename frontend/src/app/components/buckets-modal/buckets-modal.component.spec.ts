@@ -8,9 +8,8 @@ describe('BucketsModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ BucketsModalComponent ]
-    })
-    .compileComponents();
+      declarations: [BucketsModalComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

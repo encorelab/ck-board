@@ -46,6 +46,7 @@ import { CsvDownloadButtonComponent } from './components/csv-download-button/csv
 import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
 import { GroupMemberListComponent } from './components/groups/group-member-list/group-member-list.component';
 
+import { AutofocusDirective } from './autofocus.directive';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -82,6 +83,7 @@ export function tokenGetter() {
     CsvDownloadButtonComponent,
     ManageGroupModalComponent,
     GroupMemberListComponent,
+    AutofocusDirective,
   ],
   imports: [
     BrowserModule,

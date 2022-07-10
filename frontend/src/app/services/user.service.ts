@@ -6,6 +6,8 @@ import User, { AuthUser, TokenResponse } from '../models/user';
   providedIn: 'root',
 })
 export class UserService {
+  redirectUrl: string | null = null;
+
   constructor(private http: HttpClient) {}
 
   getOneById(id: string): Promise<User> {

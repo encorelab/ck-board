@@ -9,7 +9,7 @@ import {
   POST_DEFAULT_BORDER_THICKNESS,
   POST_DEFAULT_OPACITY,
 } from './constants';
-import { numDigits } from './Utils';
+import { numDigits, generateUniqueID } from './Utils';
 
 export interface ImageSettings {
   top: number;
@@ -69,6 +69,7 @@ export class FabricUtils {
     return DEFAULT_TAGS.map((tag) => {
       const fullTag: Tag = {
         boardID,
+        tagID: generateUniqueID(),
         name: tag.name!,
         color: tag.color!,
         specialAttributes: tag.specialAttributes,
@@ -377,6 +378,9 @@ export class FabricUtils {
     if (amount >= 1) {
       commentCount.set({ opacity: 1, dirty: true });
       comment.set({ opacity: 1, dirty: true });
+    } else {
+      commentCount.set({ opacity: 0, dirty: true });
+      comment.set({ opacity: 0, dirty: true });
     }
 
     fabricObj.dirty = true;

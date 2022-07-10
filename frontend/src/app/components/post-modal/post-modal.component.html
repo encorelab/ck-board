@@ -58,7 +58,7 @@
         [ngStyle]="isUpvoted() && { color: '#4f47ff' }"
         (click)="handleUpvoteClick()"
       >
-        <mat-icon>arrow_upward</mat-icon>
+        <mat-icon style="transform: scale(2);">arrow_drop_up</mat-icon>
       </button>
       <button
         mat-icon-button
@@ -68,7 +68,7 @@
         {{ upvotes.length }}
       </button>
       <button mat-icon-button (click)="handleDownvoteClick()">
-        <mat-icon>arrow_downward</mat-icon>
+        <mat-icon style="transform: scale(2);">arrow_drop_down</mat-icon>
       </button>
     </mat-card-actions>
     <mat-card-actions style="margin-bottom: -1.25em">
@@ -158,7 +158,13 @@
       <mat-card class="comment" *ngFor="let comment of comments">
         <mat-card-title style="font-size: small">{{
           comment.author
-        }}</mat-card-title>
+        }}
+        <button mat-icon-button class="comment-delete" 
+        *ngIf="(showEditDelete && canEditDelete) || comment.userID === user.userID" 
+        (click)="deleteComment(comment)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-title>
         <mat-card-content>
           {{ comment.comment }}
         </mat-card-content>
@@ -170,7 +176,7 @@
       *ngIf="showComments && canStudentComment"
     >
       <mat-label>Add Comment</mat-label>
-      <input matInput [(ngModel)]="newComment" (keyup.enter)="addComment()" />
+      <input matInput [appAutofocus]="showComments" [(ngModel)]="newComment" (keyup.enter)="addComment()" />
       <button color="primary" matSuffix mat-button (click)="addComment()">
         Comment!
       </button>

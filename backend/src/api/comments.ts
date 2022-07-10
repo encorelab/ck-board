@@ -23,4 +23,20 @@ router.get('/posts/:id', async (req, res) => {
   res.json(comments);
 });
 
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  let amount = -1;
+  let comment = null;
+  try {
+    comment = await dalComment.remove(id);
+  } catch (err) {
+    res.status(500).end(err);
+  }
+  if (comment) {
+    amount = await dalComment.getAmountByPost(comment.postID);
+    console.log(amount);
+    res.status(200).json({ comment, count: amount });
+  }
+});
+
 export default router;

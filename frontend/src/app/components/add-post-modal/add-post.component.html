@@ -4,11 +4,11 @@
     <mat-label>Title</mat-label>
     <input
       name="title"
+      [appAutofocus]="true"
       [formControl]="titleControl"
       [errorStateMatcher]="matcher"
       matInput
       autocomplete="off"
-      cdkFocusInitial
       [(ngModel)]="title"
     />
     <mat-error *ngIf="!title"> Title is <strong>required</strong> </mat-error>

@@ -72,6 +72,7 @@ export class AddBoardModalComponent implements OnInit {
 
   addTag() {
     this.tags.push({
+      tagID: generateUniqueID(),
       boardID: this.boardID,
       name: this.newTagText,
       color: this.newTagColor,
@@ -94,6 +95,7 @@ export class AddBoardModalComponent implements OnInit {
   handleDialogSubmit() {
     this.data.createBoard(
       {
+        projectID: this.selectedProject,
         boardID: this.boardID,
         teacherID: this.data.user.userID,
         name: this.boardName,

@@ -79,7 +79,15 @@ export default [
     default: '',
   },
   {
+    value: 'postTagIDAdded',
+    default: '',
+  },
+  {
     value: 'postTagNameRemoved',
+    default: '',
+  },
+  {
+    value: 'postTagIDRemoved',
     default: '',
   },
   {

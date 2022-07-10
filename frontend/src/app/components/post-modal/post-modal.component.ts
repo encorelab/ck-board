@@ -85,6 +85,7 @@ export class PostModalComponent {
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
+    this.showComments = data?.commentPress ? true : false;
     this.postService.get(data.post.postID).then(async (p: Post) => {
       this.post = p;
       this.title = p.title;
@@ -233,6 +234,23 @@ export class PostModalComponent {
     this.canvasService.comment(comment);
     this.newComment = '';
     this.comments.push(comment);
+  }
+
+  async deleteComment(comment: Comment) {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to delete this comment?',
+        handleConfirm: () => {
+          this.canvasService.deleteComment(comment.commentID, comment.postID);
+          const ind = this.comments.indexOf(comment);
+          if (ind != -1) {
+            this.comments.splice(ind, 1);
+          }
+        },
+      },
+    });
   }
 
   async handleUpvoteClick() {

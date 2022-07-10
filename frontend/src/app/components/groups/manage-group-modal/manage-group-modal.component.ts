@@ -35,6 +35,9 @@ export class ManageGroupModalComponent implements OnInit {
     }
 
   ngOnInit(): void {
+    this.unassigned.length = 0;
+    this.groups.length = 0;
+    this.assigned.length = 0;
     this.data.project.members.map((id) => {
       this.userService.getOneById(id).then((user) => {
         if (user) {
@@ -63,6 +66,10 @@ export class ManageGroupModalComponent implements OnInit {
     }
   }
 
+  updateGroupMembers(members: string[]) {
+    this.editGroup.members = members;
+  }
+
   getUnassignedMembers() {
     let members: string[] = this.unassigned.map(user => user.userID);
     return members;
@@ -80,6 +87,7 @@ export class ManageGroupModalComponent implements OnInit {
   async updateGroup() { 
     await this.groupService.update(this.editGroup.groupID, this.editGroup);
     this.closeEdit();
+    this.ngOnInit();
   }
 
   async createGroup() {
@@ -90,9 +98,8 @@ export class ManageGroupModalComponent implements OnInit {
       members: this.assigned
     }
     await this.groupService.create(group);
-    this.groups.push(group);
     this.groupNameControl.reset();
-    this.assigned.length = 0;
+    this.ngOnInit();
   }
 
   async deleteGroup(group: Group) {
@@ -106,6 +113,7 @@ export class ManageGroupModalComponent implements OnInit {
           this.groups.forEach((obj, index) => {
             if(obj.groupID == group.groupID) this.groups.splice(index, 1);
           });
+          this.ngOnInit();
         },
       },
     });

@@ -13,7 +13,6 @@ export class UserService {
   }
 
   getMultipleByIds(ids: string[]) {
-    console.log(ids)
     return this.http.post<User[]>('auth/multiple', ids).toPromise();
   }
 

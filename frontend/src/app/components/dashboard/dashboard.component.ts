@@ -41,10 +41,9 @@ export class DashboardComponent implements OnInit {
     );
   }
 
-  getUsersProjects(id) {
-    return this.projectService.getByUserID(id).then((projects) => {
-      this.yourProjects = projects;
-    });
+  async getUsersProjects(id) {
+    const projects = await this.projectService.getByUserID(id);
+    this.yourProjects = projects;
   }
 
   handleProjectClick(projectID) {
@@ -81,11 +80,9 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  updateProjectName = (projectID: string, name: string) => {
+  updateProjectName = (project: Project, projectID: string, name: string) => {
     this.projectService.update(projectID, { name: name });
-    this.getUsersProjects(this.user.userID).then(
-      () => (this.isLoading = false)
-    );
+    project.name = name;
   };
 
   openProjectConfigDialog(project: Project) {

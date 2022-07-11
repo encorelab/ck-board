@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Project } from 'src/app/models/project';
 import { BoardService } from 'src/app/services/board.service';
 import { UserService } from 'src/app/services/user.service';
 
@@ -11,6 +12,7 @@ import { UserService } from 'src/app/services/user.service';
 export class ProjectConfigurationModalComponent implements OnInit {
   projectName: string;
   projectID: string;
+  project: Project;
   members: string[] = [];
 
   constructor(
@@ -19,6 +21,7 @@ export class ProjectConfigurationModalComponent implements OnInit {
     public userService: UserService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
+    this.project = data.project;
     this.projectName = data.project.name;
     this.projectID = data.project.projectID;
     data.project.members.map((id) => {
@@ -30,7 +33,7 @@ export class ProjectConfigurationModalComponent implements OnInit {
     });
   }
   handleDialogSubmit() {
-    this.data.updateProjectName(this.projectID, this.projectName);
+    this.data.updateProjectName(this.project, this.projectID, this.projectName);
     this.dialogRef.close();
   }
   onNoClick(): void {

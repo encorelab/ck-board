@@ -117,6 +117,9 @@ export class ProjectDashboardComponent implements OnInit {
           if (removed || updatedBoard.name !== board.name) {
             this.getBoards();
           }
+          if (updatedBoard.name !== board.name) {
+            board.name = updatedBoard.name;
+          }
         },
       },
     });

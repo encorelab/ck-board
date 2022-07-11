@@ -330,6 +330,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       ListModalComponent,
       {
         board: this.board,
+        user: this.user,
       },
       '95vw'
     );
@@ -462,13 +463,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   onResize(event) {
-    let scaleX = event.target.innerWidth / this.canvas.getWidth();
+    const scaleX = event.target.innerWidth / this.canvas.getWidth();
     // Without toolbar height
-    let scaleY = (event.target.innerHeight - 64) / this.canvas.getHeight();
-    let objects = this.canvas.getObjects();
+    const scaleY = (event.target.innerHeight - 64) / this.canvas.getHeight();
+    const objects = this.canvas.getObjects();
 
     // Resize all objects inside the canvas
-    for (var i in objects) {
+    for (const i in objects) {
       objects[i].scaleX = objects[i].getObjectScaling().scaleX * scaleY;
       objects[i].scaleY = objects[i].getObjectScaling().scaleY * scaleY;
       objects[i].left = (objects[i].left || 0) * scaleX;

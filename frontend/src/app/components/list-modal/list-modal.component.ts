@@ -1,7 +1,11 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import Post from 'src/app/models/post';
+import Post, { PostType } from 'src/app/models/post';
 import { BucketService } from 'src/app/services/bucket.service';
 import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
@@ -9,6 +13,11 @@ import { SocketEvent } from 'src/app/utils/constants';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from '../../utils/converters';
 import { Tag } from 'src/app/models/tag';
+import {
+  AddPostComponent,
+  AddPostDialog,
+} from 'src/app/components/add-post-modal/add-post.component';
+import User from 'src/app/models/user';
 
 @Component({
   selector: 'app-list-modal',
@@ -17,6 +26,7 @@ import { Tag } from 'src/app/models/tag';
 })
 export class ListModalComponent implements OnInit, OnDestroy {
   board: Board;
+  user: User;
 
   loading = true;
   loadingMore = false;
@@ -31,6 +41,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   constructor(
     public dialogRef: MatDialogRef<ListModalComponent>,
+    public dialog: MatDialog,
     public bucketService: BucketService,
     public postService: PostService,
     public socketService: SocketService,
@@ -38,6 +49,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.board = data.board;
+    this.user = data.user;
   }
 
   ngOnInit(): void {
@@ -169,6 +181,26 @@ export class ListModalComponent implements OnInit, OnDestroy {
     } else {
       this.filteredPosts = this.posts;
     }
+  }
+
+  openAddPostDialog() {
+    const dialogData: AddPostDialog = {
+      type: PostType.BUCKET,
+      spawnPosition: {
+        top: 150,
+        left: 150,
+      },
+      board: this.board,
+      user: this.user,
+      onComplete: async (post: Post) => {
+        const htmlPost = await this.converters.toHTMLPost(post);
+        this.posts.push(htmlPost);
+      },
+    };
+    this.dialog.open(AddPostComponent, {
+      width: '500px',
+      data: dialogData,
+    });
   }
 
   ngOnDestroy(): void {

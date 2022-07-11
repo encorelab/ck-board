@@ -110,7 +110,7 @@ export class AddPostComponent {
   }
 
   async addBucketPost() {
-    const boardID: string = this.data.bucket!.bucketID;
+    const bucketID: string = this.data.bucket!.bucketID;
     const post: Post = {
       postID: generateUniqueID(),
       userID: this.user.userID,
@@ -123,7 +123,7 @@ export class AddPostComponent {
       displayAttributes: null,
     };
 
-    return await this.canvasService.createBucketPost(boardID, post);
+    return await this.canvasService.createBucketPost(bucketID, post);
   }
 
   async handleDialogSubmit() {

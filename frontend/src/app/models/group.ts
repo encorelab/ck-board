@@ -1,7 +1,7 @@
 export default class Group {
-    groupID: string;
-    projectID: string;
+  groupID: string;
+  projectID: string;
 
-    name: string;
-    members: string[];
-  }
+  name: string;
+  members: string[];
+}

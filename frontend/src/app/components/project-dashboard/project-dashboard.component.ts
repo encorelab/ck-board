@@ -102,7 +102,7 @@ export class ProjectDashboardComponent implements OnInit {
   openGroupDialog() {
     this.dialog.open(ManageGroupModalComponent, {
       data: {
-        project: this.project
+        project: this.project,
       },
     });
   }

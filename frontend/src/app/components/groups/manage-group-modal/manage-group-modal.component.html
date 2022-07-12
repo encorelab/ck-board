@@ -48,6 +48,34 @@
         </button>
       </div>
       <mat-list *ngIf="!showEdit">
+        <div class="create-group-container">
+          <mat-form-field
+            appearance="outline"
+            class="create-group-form"
+          >
+            <mat-label>Group Name</mat-label>
+            <input
+              name="groupName"
+              [formControl]="groupNameControl"
+              [errorStateMatcher]="matcher"
+              matInput
+              autocomplete="off"
+              cdkFocusInitial
+            />
+            <mat-error *ngIf="!groupNameControl.value">Group Name is <strong>required</strong></mat-error>
+          </mat-form-field>
+          <button
+            type="submit"
+            [disabled]="!groupNameControl.valid"
+            mat-button
+            class="create-group-submit"
+            (click)="createGroup()"
+            cdkFocusInitial
+          >
+            Create
+          </button>
+        </div>
+        
         <div mat-subheader>Groups: {{ groups.length }}</div>
         <mat-list-item *ngFor="let group of groups">
           <mat-icon mat-list-icon>group</mat-icon>
@@ -69,43 +97,7 @@
         </mat-list-item>
       </mat-list>
     </mat-tab>
-    <mat-tab label="Create">
-      <mat-form-field
-        appearance="outline"
-        style="width: 100%; margin-top: 20px"
-      >
-        <mat-label>Group Name</mat-label>
-        <input
-          name="groupName"
-          [formControl]="groupNameControl"
-          [errorStateMatcher]="matcher"
-          matInput
-          autocomplete="off"
-          cdkFocusInitial
-        />
-        <mat-error *ngIf="!groupNameControl.value">Group Name is <strong>required</strong></mat-error>
-      </mat-form-field>
-      <mat-list>
-        <div mat-subheader>Assign members to group</div>
-        <mat-list-item *ngFor="let user of unassigned">
-          <mat-checkbox (change)="changeAssignment($event, user.userID)">{{user.username}}</mat-checkbox>
-        </mat-list-item>
-        <mat-list-item *ngIf="this.unassigned.length == 0">
-          <p>All members are in a group!</p>
-        </mat-list-item>
-      </mat-list>
-      
-      <button
-        type="submit"
-        [disabled]="!groupNameControl.valid"
-        mat-button
-        (click)="createGroup()"
-        cdkFocusInitial
-      >
-        Create
-      </button>
-    </mat-tab>
-    <mat-tab label="Assign">
+    <mat-tab label="Multi-Group Assign">
     </mat-tab>
   </mat-tab-group>
 </div>

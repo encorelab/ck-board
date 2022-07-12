@@ -47,7 +47,4 @@ export class GroupService {
       .post<Group>('groups/' + groupID + '/users/remove/', users)
       .toPromise();
   }
-
-
-
 }

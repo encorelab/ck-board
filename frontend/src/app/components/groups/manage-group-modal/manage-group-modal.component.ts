@@ -1,19 +1,19 @@
-import { Component, OnInit, Inject } from "@angular/core";
+import { Component, OnInit, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { ConfirmModalComponent } from '../../confirm-modal/confirm-modal.component';
 import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import Group from "src/app/models/group";
-import { GroupService } from "src/app/services/group.service";
-import { UserService } from "src/app/services/user.service";
+import Group from 'src/app/models/group';
+import { GroupService } from 'src/app/services/group.service';
+import { UserService } from 'src/app/services/user.service';
 import { generateUniqueID } from 'src/app/utils/Utils';
-import User from "src/app/models/user";
-import { MatCheckboxChange } from "@angular/material/checkbox";
+import User from 'src/app/models/user';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 
 @Component({
-    selector: 'app-manage-group-modal',
-    templateUrl: './manage-group-modal.component.html',
-    styleUrls: ['./manage-group-modal.component.scss'],
+  selector: 'app-manage-group-modal',
+  templateUrl: './manage-group-modal.component.html',
+  styleUrls: ['./manage-group-modal.component.scss'],
 })
 export class ManageGroupModalComponent implements OnInit {
   groups: Group[] = [];
@@ -25,43 +25,51 @@ export class ManageGroupModalComponent implements OnInit {
   groupNameControl = new FormControl('', [Validators.required]);
   editNameControl = new FormControl('', [Validators.required]);
   matcher = new MyErrorStateMatcher();
-  
+
   constructor(
-      public groupService: GroupService,
-      public userService: UserService,
-      public dialog: MatDialog,
-      @Inject(MAT_DIALOG_DATA) public data: any
-    ) {
-    }
+    public groupService: GroupService,
+    public userService: UserService,
+    public dialog: MatDialog,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
 
   ngOnInit(): void {
     this.unassigned.length = 0;
     this.groups.length = 0;
     this.assigned.length = 0;
     this.data.project.members.map((id) => {
-      this.userService.getOneById(id).then((user) => {
-        if (user) {
-          this.members.push(user);
-        }
-        return user;
-      }).then((user) => {
-        this.groupService.getByUserId(user.userID).then((groups) => {
-          if (groups.every((group) => group.projectID != this.data.project.projectID))
-            this.unassigned.push(user);
+      this.userService
+        .getOneById(id)
+        .then((user) => {
+          if (user) {
+            this.members.push(user);
+          }
+          return user;
+        })
+        .then((user) => {
+          this.groupService.getByUserId(user.userID).then((groups) => {
+            if (
+              groups.every(
+                (group) => group.projectID != this.data.project.projectID
+              )
+            )
+              this.unassigned.push(user);
+          });
         });
-      });
     });
 
-    this.groupService.getByProjectId(this.data.project.projectID).then((groups) => {
-      if (groups) this.groups.push(...groups);
-    })
+    this.groupService
+      .getByProjectId(this.data.project.projectID)
+      .then((groups) => {
+        if (groups) this.groups.push(...groups);
+      });
   }
 
   changeAssignment(event: MatCheckboxChange, user: string) {
     if (event.checked) this.assigned.push(user);
     else {
       this.assigned.forEach((id, index) => {
-        if(id == user) this.assigned.splice(index, 1);
+        if (id == user) this.assigned.splice(index, 1);
       });
     }
   }
@@ -71,7 +79,7 @@ export class ManageGroupModalComponent implements OnInit {
   }
 
   getUnassignedMembers() {
-    let members: string[] = this.unassigned.map(user => user.userID);
+    let members: string[] = this.unassigned.map((user) => user.userID);
     return members;
   }
 
@@ -84,7 +92,7 @@ export class ManageGroupModalComponent implements OnInit {
     this.showEdit = false;
   }
 
-  async updateGroup() { 
+  async updateGroup() {
     await this.groupService.update(this.editGroup.groupID, this.editGroup);
     this.closeEdit();
     this.ngOnInit();
@@ -95,8 +103,8 @@ export class ManageGroupModalComponent implements OnInit {
       groupID: generateUniqueID(),
       projectID: this.data.project.projectID,
       name: this.groupNameControl.value,
-      members: this.assigned
-    }
+      members: this.assigned,
+    };
     await this.groupService.create(group);
     this.groupNameControl.reset();
     this.ngOnInit();
@@ -111,13 +119,11 @@ export class ManageGroupModalComponent implements OnInit {
         handleConfirm: async () => {
           await this.groupService.delete(group.groupID);
           this.groups.forEach((obj, index) => {
-            if(obj.groupID == group.groupID) this.groups.splice(index, 1);
+            if (obj.groupID == group.groupID) this.groups.splice(index, 1);
           });
           this.ngOnInit();
         },
       },
     });
   }
-
-
 }

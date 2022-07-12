@@ -169,7 +169,7 @@ export class ConfigurationModalComponent {
       width: '500px',
       data: {
         title: 'Confirmation',
-        message: 'Are you sure you want to clear all upvotes from the board?',
+        message: 'Are you sure you want to clear all votes from the board?',
         handleConfirm: async () => {
           await this.upvoteService.removeByBoard(this.boardID);
         },

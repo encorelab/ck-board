@@ -6,6 +6,7 @@ import {
 } from '@angular/material/dialog';
 import { BoardService } from 'src/app/services/board.service';
 import { UserService } from 'src/app/services/user.service';
+import { UpvotesService } from 'src/app/services/upvotes.service';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { Tag } from 'src/app/models/tag';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
@@ -13,6 +14,7 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { Board, BoardPermissions } from 'src/app/models/board';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -51,6 +53,7 @@ export class ConfigurationModalComponent {
     public dialog: MatDialog,
     public boardService: BoardService,
     public userService: UserService,
+    public upvoteService: UpvotesService,
     public canvasService: CanvasService,
     public fileUploadService: FileUploadService,
     private router: Router,
@@ -159,6 +162,20 @@ export class ConfigurationModalComponent {
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  openVoteDeleteDialog() {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to clear all upvotes from the board?',
+        handleConfirm: async () => {
+          await this.upvoteService.removeByBoard(this.boardID);
+          // this.dialogRef.close(DELETE);
+        },
+      },
+    });
   }
 
   copyToClipboard() {

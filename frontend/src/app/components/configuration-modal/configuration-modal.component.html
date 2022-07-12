@@ -62,6 +62,12 @@
             Copy Embeddable Board URL
           </span>
         </mat-chip>
+        <mat-chip mat-raised-button color="warn" (click)="openVoteDeleteDialog()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
+          <span style="width: 100%;text-align: center;">
+          Clear Votes
+          </span>
+        </mat-chip>
         <mat-chip mat-raised-button color="warn" (click)="openConfirmation()" style="text-align: center" selected>
           <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
           <span style="width: 100%;text-align: center;">

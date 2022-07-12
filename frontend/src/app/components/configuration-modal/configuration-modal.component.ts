@@ -172,7 +172,6 @@ export class ConfigurationModalComponent {
         message: 'Are you sure you want to clear all upvotes from the board?',
         handleConfirm: async () => {
           await this.upvoteService.removeByBoard(this.boardID);
-          // this.dialogRef.close(DELETE);
         },
       },
     });

@@ -103,7 +103,7 @@ export class PostModalComponent {
         (n) => !this.tags.map((b) => b.name).includes(n.name)
       );
       this.canEditDelete =
-        this.data.post.authorID == this.user.userID ||
+        this.data.post.userID == this.user.userID ||
         this.user.role == Role.TEACHER;
       this.author = await this.userService.getOneById(p.userID);
     });

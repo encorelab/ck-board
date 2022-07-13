@@ -27,6 +27,7 @@ export class TraceModel {
   eventType!: string;
 
   @prop({ required: true })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   event!: any;
 }
 

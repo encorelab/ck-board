@@ -126,11 +126,29 @@ export class AddPostComponent {
     return await this.canvasService.createBucketPost(bucketID, post);
   }
 
+  async addListPost() {
+    const post: Post = {
+      postID: generateUniqueID(),
+      userID: this.user.userID,
+      boardID: this.board.boardID,
+      author: this.user.username,
+      type: PostType.BUCKET,
+      title: this.title,
+      desc: this.message,
+      tags: this.tags,
+      displayAttributes: null,
+    };
+
+    return await this.canvasService.createListPost(post);
+  }
+
   async handleDialogSubmit() {
     let post: Post;
 
     if (this.data.type == PostType.BUCKET && this.data.bucket) {
       post = await this.addBucketPost();
+    } else if (this.data.type == PostType.BUCKET) {
+      post = await this.addListPost();
     } else {
       post = await this.addPost();
     }

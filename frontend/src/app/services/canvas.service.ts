@@ -56,6 +56,12 @@ export class CanvasService {
     return savedPost;
   }
 
+  async createListPost(post: Post) {
+    const savedPost = await this.postService.create(post);
+
+    return savedPost;
+  }
+
   async createBoardPostFromBucket(post: Post) {
     const upvotes = await this.upvotesService.getUpvotesByPost(post.postID);
     const comments = await this.commentService.getCommentsByPost(post.postID);

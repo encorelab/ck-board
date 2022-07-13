@@ -1,8 +1,14 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  TemplateRef,
+} from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import Post, { PostType } from '../../models/post';
 
@@ -93,6 +99,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public snackbarService: SnackbarService,
     public dialog: MatDialog,
     public fileUploadService: FileUploadService,
@@ -118,6 +125,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.BOARD_TAGS_UPDATE, this.handleBoardTagsUpdateEvent],
       [SocketEvent.BOARD_TASK_UPDATE, this.handleBoardTaskUpdateEvent],
       [SocketEvent.BOARD_UPVOTE_UPDATE, this.handleBoardUpvoteUpdateEvent],
+      [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
     ]);
   }
 
@@ -310,6 +318,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   handleBoardUpvoteUpdateEvent = (board: Board) => {
     this.board = board;
     this._calcUpvoteCounter();
+  };
+
+  handleBoardClearEvent = (ids: string[]) => {
+    ids.forEach((id) => {
+      this.handlePostDeleteEvent(id);
+    });
   };
 
   showBucketsModal() {

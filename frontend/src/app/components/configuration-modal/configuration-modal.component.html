@@ -67,12 +67,18 @@
           <mat-icon class="chip-icon">cancel</mat-icon>
           Remove Current Background Image
         </mat-chip>
+        <mat-chip mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
+          <span style="width: 100%;text-align: center;">
+          Clear Board
+          </span>
+        </mat-chip>
         <mat-chip mat-raised-button color="accent" (click)="copyToClipboard()" style="text-align: center" selected>
           <span style="width: 100%;text-align: center;">
             Copy Embeddable Board URL
           </span>
         </mat-chip>
-        <mat-chip mat-raised-button color="warn" (click)="openConfirmation()" style="text-align: center" selected>
+        <mat-chip mat-raised-button color="warn" (click)="handleDeleteBoard()" style="text-align: center" selected>
           <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
           <span style="width: 100%;text-align: center;">
           Delete Board
@@ -192,16 +198,6 @@
     </mat-tab>
   </mat-tab-group>
 </div>
-<ng-template #confirmation>
-  <h2 mat-dialog-title>Delete Board</h2>
-  <div mat-dialog-content>
-    <h4>This will permanently delete the board and all related content. Are you sure you want to do this?</h4>
-  </div>
-  <div mat-dialog-actions>
-    <button mat-button (click)="closeConfirmation()">Cancel</button>
-    <button mat-button (click)="deleteBoard()">Ok</button>
-  </div>
-</ng-template>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
   <button

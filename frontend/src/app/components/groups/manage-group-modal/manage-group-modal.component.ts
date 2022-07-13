@@ -19,7 +19,7 @@ export class ManageGroupModalComponent implements OnInit {
   groups: Group[] = [];
   members: User[] = [];
   assigned: string[] = [];
-  unassigned: User[] = [];
+  unassigned: Group;
   showEdit: boolean = false;
   editGroup: Group;
   groupNameControl = new FormControl('', [Validators.required]);
@@ -34,29 +34,14 @@ export class ManageGroupModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.unassigned.length = 0;
+    this.unassigned = {
+      groupID: '0',
+      members: [],
+      name: 'unassigned',
+      projectID: this.data.project.projectID,
+    };
     this.groups.length = 0;
     this.assigned.length = 0;
-    this.data.project.members.map((id) => {
-      this.userService
-        .getOneById(id)
-        .then((user) => {
-          if (user) {
-            this.members.push(user);
-          }
-          return user;
-        })
-        .then((user) => {
-          this.groupService.getByUserId(user.userID).then((groups) => {
-            if (
-              groups.every(
-                (group) => group.projectID != this.data.project.projectID
-              )
-            )
-              this.unassigned.push(user);
-          });
-        });
-    });
 
     this.groupService
       .getByProjectId(this.data.project.projectID)
@@ -65,27 +50,18 @@ export class ManageGroupModalComponent implements OnInit {
       });
   }
 
-  changeAssignment(event: MatCheckboxChange, user: string) {
-    if (event.checked) this.assigned.push(user);
-    else {
-      this.assigned.forEach((id, index) => {
-        if (id == user) this.assigned.splice(index, 1);
-      });
-    }
-  }
-
   updateGroupMembers(members: string[]) {
     this.editGroup.members = members;
-  }
-
-  getUnassignedMembers() {
-    let members: string[] = this.unassigned.map((user) => user.userID);
-    return members;
   }
 
   openEdit(group: Group) {
     this.showEdit = true;
     this.editGroup = group;
+    this.data.project.members.forEach((member) => {
+      if (!group.members.includes(member)) {
+        this.unassigned.members.push(member);
+      }
+    });
   }
 
   closeEdit() {

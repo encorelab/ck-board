@@ -74,6 +74,12 @@ export class CanvasService {
 
     this.fabricUtils._canvas.add(fabricPost);
     this.socketService.emit(SocketEvent.POST_CREATE, post);
+    for (const tag of post.tags) {
+      this.socketService.emit(SocketEvent.POST_TAG_ADD, {
+        tag,
+        post: post,
+      });
+    }
   }
 
   async upvote(userID: string, post: string | Post) {

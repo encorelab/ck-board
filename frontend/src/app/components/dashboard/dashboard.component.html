@@ -45,17 +45,18 @@
           <mat-card-title class="title accent">
             <mat-icon color="accent">grid_view</mat-icon>
             <span>{{ project.name }}</span>
-          </mat-card-title>
-   
-          <button 
+            <button 
             mat-icon-button
-            style="float:right" 
+            style="margin-left:auto; color:black" 
             [matMenuTriggerFor]="projectDeleteMenu"
             *ngIf="user && user.role == Role.TEACHER"
             (click)="$event.stopPropagation();"
           >
             <mat-icon class="material-icons"> more_vert </mat-icon>
           </button>
+          </mat-card-title>
+   
+          
           <mat-menu #projectDeleteMenu="matMenu">
             <button mat-menu-item (click)="handleProjectDelete(project.projectID)">
               Delete Project

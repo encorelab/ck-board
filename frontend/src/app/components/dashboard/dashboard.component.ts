@@ -52,6 +52,7 @@ export class DashboardComponent implements OnInit {
 
   handleProjectDelete(projectID) {
     this.projectService.remove(projectID);
+    window.location.reload();
   }
 
   openCreateBoardDialog() {

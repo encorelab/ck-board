@@ -15,6 +15,7 @@ const CONTENT_EXTRA_HEIGHT = 55;
 export interface PostOptions {
   upvotes: number;
   comments: number;
+  author?: string;
 }
 
 @Component({
@@ -39,16 +40,19 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    const author = new fabric.Textbox(post.author, {
-      name: 'author',
-      width: 300,
-      left: 18,
-      top: title.getScaledHeight() + AUTHOR_OFFSET,
-      fontSize: 13,
-      fontFamily: 'Helvetica',
-      fill: '#555555',
-      splitByGrapheme: true,
-    });
+    const author = new fabric.Textbox(
+      options?.author?.toString() ?? post.author,
+      {
+        name: 'author',
+        width: 300,
+        left: 18,
+        top: title.getScaledHeight() + AUTHOR_OFFSET,
+        fontSize: 13,
+        fontFamily: 'Helvetica',
+        fill: '#555555',
+        splitByGrapheme: true,
+      }
+    );
 
     const desc = new fabric.Textbox(
       post.desc.length > 200 ? post.desc.substr(0, 200) + '...' : post.desc,

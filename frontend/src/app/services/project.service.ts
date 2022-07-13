@@ -28,4 +28,8 @@ export class ProjectService {
       .post<Project>('projects/' + projectID, project)
       .toPromise();
   }
+
+  remove(projectID: string) {
+    return this.http.delete<Project>('projects/' + projectID).toPromise();
+  }
 }

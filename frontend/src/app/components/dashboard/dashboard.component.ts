@@ -50,6 +50,10 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['project/' + projectID]);
   }
 
+  handleProjectDelete(projectID) {
+    this.projectService.remove(projectID);
+  }
+
   openCreateBoardDialog() {
     this.dialog.open(AddBoardModalComponent, {
       width: '700px',

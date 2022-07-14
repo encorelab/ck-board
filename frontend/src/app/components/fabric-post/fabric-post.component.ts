@@ -176,6 +176,7 @@ export class FabricPostComponent extends fabric.Group {
       name: 'post',
       postID: post.postID,
       left: position.left,
+      userID: post.userID,
       top: position.top,
       hasControls: false,
       transparentCorners: false,

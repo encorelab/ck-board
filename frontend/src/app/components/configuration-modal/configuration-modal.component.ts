@@ -1,10 +1,12 @@
-import { Component, Inject, ViewChild, TemplateRef } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   MatDialog,
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
+import { PostType } from '../../models/post';
 import { BoardService } from 'src/app/services/board.service';
+import { PostService } from '../../services/post.service';
 import { UserService } from 'src/app/services/user.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
@@ -22,8 +24,6 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
   styleUrls: ['./configuration-modal.component.scss'],
 })
 export class ConfigurationModalComponent {
-  @ViewChild('confirmation') confirmationDialog: TemplateRef<any>;
-
   readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
   boardID: string;
@@ -49,8 +49,8 @@ export class ConfigurationModalComponent {
 
   constructor(
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
-    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public dialog: MatDialog,
+    public postService: PostService,
     public boardService: BoardService,
     public userService: UserService,
     public upvoteService: UpvotesService,
@@ -137,23 +137,38 @@ export class ConfigurationModalComponent {
     this.dialogRef.close();
   }
 
-  openConfirmation() {
-    this.confirmationRef = this.dialog.open(this.confirmationDialog, {
-      width: '550px',
+  async handleClearBoard() {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message:
+          'Are you sure you want to clear posts from this board? NOTE: Posts will be cleared from the board but remain in the the list view and any assigned buckets.',
+        handleConfirm: async () => {
+          this.postService.getAllByBoard(this.boardID).then(async (data) => {
+            await this.canvasService.clearPostsFromBoard(data);
+          });
+        },
+      },
     });
   }
 
-  closeConfirmation() {
-    this.confirmationRef.close();
-  }
-
-  async deleteBoard() {
-    const board = await this.boardService.remove(this.boardID);
-    if (board) {
-      this.confirmationRef.close();
-      this.dialogRef.close();
-      this.router.navigate(['project/' + this.projectID]);
-    }
+  async handleDeleteBoard() {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message:
+          'This will permanently delete the board and all related content. Are you sure you want to do this?',
+        handleConfirm: async () => {
+          const board = await this.boardService.remove(this.boardID);
+          if (board) {
+            this.dialogRef.close();
+            this.router.navigate(['project/' + this.projectID]);
+          }
+        },
+      },
+    });
   }
 
   resetColor() {

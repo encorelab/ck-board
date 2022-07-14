@@ -43,6 +43,16 @@
           thumbLabel
         ></mat-slider>
       </div>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowTracing"
+          >Allow tracing of board activity
+        </mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent"
+          >Display task description when board is opened
+          </mat-checkbox>
+      </p>
       <div class="image-form">
         <mat-chip (click)="compressFile()" color="primary" selected>
           <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
@@ -62,13 +72,19 @@
             Copy Embeddable Board URL
           </span>
         </mat-chip>
+        <mat-chip mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
+          <span style="width: 100%;text-align: center;">
+          Clear Board
+          </span>
+        </mat-chip>
         <mat-chip mat-raised-button color="warn" (click)="openVoteDeleteDialog()" style="text-align: center" selected>
           <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
           <span style="width: 100%;text-align: center;">
           Clear Votes
           </span>
         </mat-chip>
-        <mat-chip mat-raised-button color="warn" (click)="openConfirmation()" style="text-align: center" selected>
+        <mat-chip mat-raised-button color="warn" (click)="handleDeleteBoard()" style="text-align: center" selected>
           <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
           <span style="width: 100%;text-align: center;">
           Delete Board
@@ -104,10 +120,6 @@
       </mat-form-field>
     </mat-tab>
     <mat-tab label="Permissions">
-      <h2 style="margin-top: 20px">Tracing</h2>
-      <p>
-        <mat-checkbox [(ngModel)]="permissions.allowTracing"
-          >Allow tracing of board activity</mat-checkbox>
       <h2 style="margin-top: 20px">Post Features</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny"
@@ -192,16 +204,6 @@
     </mat-tab>
   </mat-tab-group>
 </div>
-<ng-template #confirmation>
-  <h2 mat-dialog-title>Delete Board</h2>
-  <div mat-dialog-content>
-    <h4>This will permanently delete the board and all related content. Are you sure you want to do this?</h4>
-  </div>
-  <div mat-dialog-actions>
-    <button mat-button (click)="closeConfirmation()">Cancel</button>
-    <button mat-button (click)="deleteBoard()">Ok</button>
-  </div>
-</ng-template>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
   <button

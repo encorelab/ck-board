@@ -58,12 +58,10 @@ export const removeByBoard = async (boardID: string) => {
 
 export const update = async (id: string, post: Partial<PostModel>) => {
   try {
-    const attrUpdate = formatAttributes(post);
     const updatedPost = await Post.findOneAndUpdate(
       { postID: id },
       {
         ...post,
-        $set: attrUpdate,
       },
       {
         new: true,

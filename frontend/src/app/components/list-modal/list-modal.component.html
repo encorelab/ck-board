@@ -38,7 +38,7 @@
       mat-menu-item
       *ngFor="let tag of filterOptions"
       (click)="addFilter(tag)"
-    >
+    > 
       {{ tag.name }}
     </div>
   </mat-menu>
@@ -46,6 +46,7 @@
     <app-html-post
       [post]="post"
       *ngFor="let post of filteredPosts"
+      (movePostToBoardEvent)="movePostToBoard($event)"
     ></app-html-post>
   </div>
 </div>

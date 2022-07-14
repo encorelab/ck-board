@@ -1,4 +1,6 @@
 import Project, { ProjectModel } from '../models/Project';
+import mongoose from 'mongoose';
+import dalBoard from './dalBoard';
 
 export const getById = async (id: string) => {
   try {
@@ -62,6 +64,25 @@ export const removeBoard = async (id: string, boardID: string) => {
   }
 };
 
+export const remove = async (id: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const deletedProject = await Project.findOneAndDelete({ projectID: id });
+    if (deletedProject) {
+      const boards = deletedProject.toObject().boards;
+      for (const board in boards) {
+        await dalBoard.remove(board);
+      }
+    }
+    return deletedProject;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  } finally {
+    await session.endSession();
+  }
+};
+
 const dalProject = {
   getById,
   getByUserId,
@@ -69,6 +90,7 @@ const dalProject = {
   create,
   update,
   removeBoard,
+  remove,
 };
 
 export default dalProject;

@@ -1,8 +1,14 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  TemplateRef,
+} from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import Post, { PostType } from '../../models/post';
 
@@ -93,6 +99,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public snackbarService: SnackbarService,
     public dialog: MatDialog,
     public fileUploadService: FileUploadService,
@@ -118,6 +125,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.BOARD_TAGS_UPDATE, this.handleBoardTagsUpdateEvent],
       [SocketEvent.BOARD_TASK_UPDATE, this.handleBoardTaskUpdateEvent],
       [SocketEvent.BOARD_UPVOTE_UPDATE, this.handleBoardUpvoteUpdateEvent],
+      [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
     ]);
   }
 
@@ -312,6 +320,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._calcUpvoteCounter();
   };
 
+  handleBoardClearEvent = (ids: string[]) => {
+    ids.forEach((id) => {
+      this.handlePostDeleteEvent(id);
+    });
+  };
+
   showBucketsModal() {
     this._openDialog(
       BucketsModalComponent,
@@ -379,6 +393,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
           );
           this.updateShowAddPost(this.board.permissions);
           this.setAuthorVisibilityAll();
+          if (this.board.permissions.showSnackBarStudent) {
+            this.openTaskDialog();
+          }
         }
       });
     });
@@ -461,6 +478,29 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.canvas.renderAll();
   }
 
+  onResize(event) {
+    const scaleX = event.target.innerWidth / this.canvas.getWidth();
+    // Without toolbar height
+    const scaleY = (event.target.innerHeight - 64) / this.canvas.getHeight();
+    const objects = this.canvas.getObjects();
+
+    // Resize all objects inside the canvas
+    for (const i in objects) {
+      objects[i].scaleX = objects[i].getObjectScaling().scaleX * scaleY;
+      objects[i].scaleY = objects[i].getObjectScaling().scaleY * scaleY;
+      objects[i].left = (objects[i].left || 0) * scaleX;
+      objects[i].top = (objects[i].top || 0) * scaleY;
+      objects[i].setCoords();
+    }
+
+    this.canvas.setWidth(event.target.innerWidth);
+    // Without toolbar height
+    this.canvas.setHeight(event.target.innerHeight - 64);
+
+    this.canvas.renderAll();
+    this.canvas.calcOffset();
+  }
+
   hideAuthorNames() {
     this.canvas.getObjects().map((obj) => {
       this.fabricUtils.updateAuthor(obj, 'Anonymous');
@@ -531,7 +571,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
 
     this.snackbarService.queueSnackbar(title, message, {
-      action: { name: 'View Full Task!', run: openDialogCloseSnack },
+      action: { name: 'View Full Task', run: openDialogCloseSnack },
       matSnackbarConfig: {
         verticalPosition: 'bottom',
         horizontalPosition: 'center',

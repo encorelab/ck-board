@@ -56,6 +56,7 @@
             <span>{{ board.name }}</span>
           </mat-card-title>
           <button 
+          *ngIf="user.role === 'TEACHER'"
           mat-icon-button
           [matMenuTriggerFor]="boardOptions"
           style="margin:0; padding:0;line-height: inherit;height: inherit;right: 0;position: absolute;"

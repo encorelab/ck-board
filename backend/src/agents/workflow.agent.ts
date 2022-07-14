@@ -88,6 +88,7 @@ export const runDistributionWorkflow = async (
         });
       }
     }
+
     for (let i = 0; i < destinations.length; i++) {
       const destination = destinations[i];
       if (destination.type == ContainerType.BOARD) {
@@ -110,12 +111,14 @@ export const runDistributionWorkflow = async (
       const bucket: BucketModel | null = await dalBucket.getById(source.id);
       sourcePosts = bucket ? bucket.posts : [];
     }
-    sourcePosts.forEach(async (post) => {
-      const upvotes = await dalVote.getAmountByPost(post);
+
+    for (let i = 0; i < sourcePosts.length; i++) {
+      const upvotes = await dalVote.getAmountByPost(sourcePosts[i]);
       if (upvotes >= workflow.distributionWorkflowType.data) {
-        filteredPosts.push(post);
+        filteredPosts.push(sourcePosts[i]);
       }
-    });
+    }
+
     for (let i = 0; i < destinations.length; i++) {
       const destination = destinations[i];
       if (destination.type == ContainerType.BOARD) {

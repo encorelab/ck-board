@@ -335,8 +335,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
         }
       }
     }
-  }
-  
+  };
+
   handleBoardClearEvent = (ids: string[]) => {
     ids.forEach((id) => {
       this.handlePostDeleteEvent(id);

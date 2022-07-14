@@ -132,7 +132,7 @@ export class AddPostComponent {
       userID: this.user.userID,
       boardID: this.board.boardID,
       author: this.user.username,
-      type: PostType.BUCKET,
+      type: PostType.LIST,
       title: this.title,
       desc: this.message,
       tags: this.tags,
@@ -147,7 +147,7 @@ export class AddPostComponent {
 
     if (this.data.type == PostType.BUCKET && this.data.bucket) {
       post = await this.addBucketPost();
-    } else if (this.data.type == PostType.BUCKET) {
+    } else if (this.data.type == PostType.LIST) {
       post = await this.addListPost();
     } else {
       post = await this.addPost();

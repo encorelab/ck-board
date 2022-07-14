@@ -185,7 +185,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   openAddPostDialog() {
     const dialogData: AddPostDialog = {
-      type: PostType.BUCKET,
+      type: PostType.LIST,
       spawnPosition: {
         top: 150,
         left: 150,

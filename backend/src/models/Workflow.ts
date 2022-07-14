@@ -12,6 +12,12 @@ export enum WorkflowType {
   TASK = 'TASK',
 }
 
+export enum DistributionWorkflowType {
+  RANDOM = 'RANDOM',
+  TAG = 'TAG',
+  UPVOTES = 'UPVOTES',
+}
+
 export enum ContainerType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
@@ -21,6 +27,14 @@ export enum TaskActionType {
   LIKE = 'LIKE',
   COMMENT = 'COMMENT',
   TAG = 'TAG',
+}
+
+export class DistributionWorkflowTypeModel {
+  @prop({ enum: DistributionWorkflowType, type: String, required: true })
+  public type!: DistributionWorkflowType;
+
+  @prop({ required: true })
+  public data!: any;
 }
 
 export class Container {
@@ -64,8 +78,8 @@ export class WorkflowModel {
 }
 
 export class DistributionWorkflowModel extends WorkflowModel {
-  @prop({ required: true })
-  public postsPerDestination!: number;
+  @prop({ required: true, type: () => DistributionWorkflowTypeModel })
+  public distributionWorkflowType!: DistributionWorkflowTypeModel;
 }
 
 export class TaskWorkflowModel extends WorkflowModel {

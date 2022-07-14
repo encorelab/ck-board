@@ -81,18 +81,53 @@
           </mat-form-field>
         </div>
         <section>
-          <h4>
-            Posts Per Bucket/Board:
-            <input type="number" [(ngModel)]="postsPerBucket" />
-          </h4>
         </section>
         <section>
           <h4>Choose Distribution:</h4>
-          <p>
-            <mat-checkbox [checked]="true" disabled="true">
-              Random
-            </mat-checkbox>
-          </p>
+          <mat-radio-group [(ngModel)]="distributionWorkflowType">
+              <mat-radio-button value="RANDOM">Random</mat-radio-button>
+              <mat-radio-button value="TAG">Tag</mat-radio-button>
+              <mat-radio-button value="UPVOTES">Upvotes</mat-radio-button>
+          </mat-radio-group>
+          <div style="margin:20px 0">
+            <section *ngIf="distributionWorkflowType === 'RANDOM'">
+              <mat-form-field class="example-full-width" appearance="fill">
+                <mat-label>Posts Per Bucket/Board:</mat-label>
+                <input type="number" min="0" [(ngModel)]="postsPerBucket" matInput >
+              </mat-form-field>
+              <mat-error *ngIf="postsPerBucket <= 0">
+                Enter a Positive Number
+              </mat-error>
+            </section>
+            <section *ngIf="distributionWorkflowType === 'TAG'">
+              <mat-form-field appearance="fill">
+                <mat-label>Tags</mat-label>
+                <mat-select [(ngModel)]="selectedTag">
+                  <mat-option 
+                    *ngFor="let tag of tags" 
+                    [value]="tag" 
+                  >
+                    {{tag.name}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </section>
+            <section *ngIf="distributionWorkflowType === 'UPVOTES'">
+              <div>
+                <mat-label style="font-weight: bold"
+                  >Minimum Upvotes Per Post: {{ upvoteLimit }}</mat-label
+                >
+                <mat-slider
+                  class="slider"
+                  min="0"
+                  max={{board.upvoteLimit}}
+                  step="1"
+                  [(ngModel)]="upvoteLimit"
+                  thumbLabel
+                ></mat-slider>
+              </div>
+            </section>
+          </div>
         </section>
       </div>
     </mat-tab>
@@ -123,7 +158,7 @@
                 <mat-chip
                   color="primary"
                   selected
-                  *ngIf="workflow.postsPerDestination"
+                  *ngIf="workflow.distributionWorkflowType"
                   >Distribution</mat-chip
                 >
               </mat-chip-list>
@@ -159,8 +194,22 @@
               }}</mat-chip>
             </mat-chip-list>
           </div>
-          <div *ngIf="workflow.postsPerDestination">
-            <h4>Posts Per Bucket/Board: {{ workflow.postsPerDestination }}</h4>
+          <div *ngIf="workflow.distributionWorkflowType.type === 'RANDOM'">
+            <h4>Distribution Type: Random</h4>
+            <h4>Posts Per Bucket/Board: {{ workflow.distributionWorkflowType.data }}</h4>
+          </div>
+          <div *ngIf="workflow.distributionWorkflowType.type === 'TAG'">
+            <h4>Distribution Type: Tag</h4>
+            <h4>Selected Tag:<mat-chip
+              [ngStyle]="{ 'background-color': workflow.distributionWorkflowType.data.color }"
+              style="margin: 0 5px"
+              selected
+            >{{ workflow.distributionWorkflowType.data.name }}
+            </mat-chip></h4>
+          </div>
+          <div *ngIf="workflow.distributionWorkflowType.type === 'UPVOTES'">
+            <h4>Distribution Type: Upvotes</h4>
+            <h4>Minimum upvotes per post: {{ workflow.distributionWorkflowType.data }}</h4>
           </div>
         </mat-expansion-panel>
       </mat-accordion>

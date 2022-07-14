@@ -10,6 +10,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { Project } from 'src/app/models/project';
 import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
 import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
+import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -40,10 +41,9 @@ export class DashboardComponent implements OnInit {
     );
   }
 
-  getUsersProjects(id) {
-    return this.projectService.getByUserID(id).then((projects) => {
-      this.yourProjects = this.yourProjects.concat(projects);
-    });
+  async getUsersProjects(id) {
+    const projects = await this.projectService.getByUserID(id);
+    this.yourProjects = projects;
   }
 
   handleProjectClick(projectID) {
@@ -76,6 +76,20 @@ export class DashboardComponent implements OnInit {
       width: '700px',
       data: {
         user: this.user,
+      },
+    });
+  }
+
+  updateProjectName = (project: Project, projectID: string, name: string) => {
+    this.projectService.update(projectID, { name: name });
+    project.name = name;
+  };
+
+  openProjectConfigDialog(project: Project) {
+    this.dialog.open(ProjectConfigurationModalComponent, {
+      data: {
+        project: project,
+        updateProjectName: this.updateProjectName,
       },
     });
   }

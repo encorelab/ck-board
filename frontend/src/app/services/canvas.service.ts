@@ -58,6 +58,7 @@ export class CanvasService {
 
   async createListPost(post: Post) {
     const savedPost = await this.postService.create(post);
+    this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
 
     return savedPost;
   }
@@ -149,7 +150,14 @@ export class CanvasService {
 
     const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
     if (!fabricObject) {
-      return await this.postService.update(post.postID, { tags: tags });
+      const savedPost = await this.postService.update(post.postID, {
+        tags: tags,
+      });
+      this.socketService.emit(SocketEvent.POST_TAG_ADD, {
+        tag,
+        post: savedPost,
+      });
+      return savedPost;
     }
 
     if (tag.specialAttributes) {
@@ -158,7 +166,6 @@ export class CanvasService {
         tag
       );
     }
-
     const savedPost = await this.postService.update(post.postID, update);
 
     this.socketService.emit(SocketEvent.POST_TAG_ADD, { tag, post: savedPost });

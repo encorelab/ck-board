@@ -4,8 +4,15 @@ import bcrypt from 'bcrypt';
 import dalUser from '../repository/dalUser';
 import {
   addHours,
+  generateHashedSsoPayload,
+  generateSsoPayload,
   getJWTSecret,
+  getParamMap,
   isAuthenticated,
+  isCorrectHashedSsoPayload,
+  isSsoEnabled,
+  isValidNonce,
+  signInUserWithSso,
   userToToken,
 } from '../utils/auth';
 import { UserModel } from '../models/User';
@@ -49,6 +56,43 @@ router.post('/register', async (req, res) => {
   const expiresAt = addHours(2);
 
   res.status(200).send({ token, user, expiresAt });
+});
+
+router.get('/is-sso-enabled', async (req, res) => {
+  res.status(200).send({
+    isSsoEnabled: isSsoEnabled(),
+  });
+});
+
+router.get('/sso/handshake', async (req, res) => {
+  const scoreSsoEndpoint = process.env.SCORE_SSO_ENDPOINT;
+  const payload = await generateSsoPayload();
+  const hashedPayload = generateHashedSsoPayload(payload);
+  if (!scoreSsoEndpoint) {
+    throw new Error('No SCORE SSO endpoint environment variable defined!');
+  }
+  res.status(200).send({
+    scoreSsoEndpoint: scoreSsoEndpoint,
+    sig: hashedPayload,
+    sso: payload,
+  });
+});
+
+router.get('/sso/login/:sso/:sig', async (req, res) => {
+  const sso = req.params.sso;
+  const sig = req.params.sig;
+  if (isCorrectHashedSsoPayload(sso, sig)) {
+    const payload = Buffer.from(sso, 'base64').toString('ascii');
+    const paramMap: Map<string, string> = getParamMap(payload);
+    const nonce = paramMap.get('nonce');
+    if (nonce != null && (await isValidNonce(nonce))) {
+      return signInUserWithSso(paramMap, res);
+    } else {
+      return res.status(403).end('Invalid nonce. Please try again.');
+    }
+  } else {
+    return res.status(403).end('Invalid hash. Please try again.');
+  }
 });
 
 router.post('/:id', isAuthenticated, async (req, res) => {

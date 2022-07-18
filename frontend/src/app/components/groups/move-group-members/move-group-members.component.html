@@ -1,0 +1,38 @@
+<div class="group-member-list">
+  <div cdkDropListGroup>
+    <div *ngFor="let group of groupMembers">
+      <span>{{ group.groupName }}</span>
+      <div
+        cdkDropList
+        [cdkDropListData]="group.members"
+        (cdkDropListDropped)="drop($event)"
+        class="member-list"
+      >
+        <div
+          cdkDrag
+          *ngFor="let member of group.members"
+          class="member-box"
+        >
+          {{ member.username }}
+        </div>
+      </div>
+    </div>
+    <div>
+      <span>Unassigned</span>
+      <div
+        cdkDropList
+        [cdkDropListData]="unassigned"
+        (cdkDropListDropped)="drop($event)"
+        class="member-list"
+      >
+        <div
+          cdkDrag
+          *ngFor="let member of unassigned"
+          class="member-box"
+        >
+          {{ member.username }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

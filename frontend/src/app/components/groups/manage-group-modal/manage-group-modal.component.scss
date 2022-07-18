@@ -12,3 +12,18 @@
 .create-group-submit {
     margin-bottom: 20px;
 }
+
+.select-groups-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.select-group {
+    overflow: hidden;
+    min-width: 0;
+    max-width: 100px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

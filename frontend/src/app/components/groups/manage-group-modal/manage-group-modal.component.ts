@@ -8,7 +8,8 @@ import { GroupService } from 'src/app/services/group.service';
 import { UserService } from 'src/app/services/user.service';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import User from 'src/app/models/user';
-import { MatCheckboxChange } from '@angular/material/checkbox';
+import { GroupMembers } from 'src/app/models/groupMembers';
+import { MatOptionSelectionChange } from '@angular/material/core';
 
 @Component({
   selector: 'app-manage-group-modal',
@@ -17,11 +18,12 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 })
 export class ManageGroupModalComponent implements OnInit {
   groups: Group[] = [];
+  selectedGroups: Group[] = [];
+  updatedGroups: Group[] = [];
   members: User[] = [];
-  assigned: string[] = [];
-  unassigned: Group;
   showEdit: boolean = false;
   editGroup: Group;
+
   groupNameControl = new FormControl('', [Validators.required]);
   editNameControl = new FormControl('', [Validators.required]);
   matcher = new MyErrorStateMatcher();
@@ -34,14 +36,7 @@ export class ManageGroupModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.unassigned = {
-      groupID: '0',
-      members: [],
-      name: 'unassigned',
-      projectID: this.data.project.projectID,
-    };
     this.groups.length = 0;
-    this.assigned.length = 0;
 
     this.groupService
       .getByProjectId(this.data.project.projectID)
@@ -50,28 +45,33 @@ export class ManageGroupModalComponent implements OnInit {
       });
   }
 
-  updateGroupMembers(members: string[]) {
-    this.editGroup.members = members;
-  }
-
-  openEdit(group: Group) {
-    this.showEdit = true;
-    this.editGroup = group;
-    this.data.project.members.forEach((member) => {
-      if (!group.members.includes(member)) {
-        this.unassigned.members.push(member);
-      }
-    });
-  }
-
-  closeEdit() {
-    this.showEdit = false;
-  }
-
-  async updateGroup() {
-    await this.groupService.update(this.editGroup.groupID, this.editGroup);
+  async updateGroup(group: Group) {
+    await this.groupService.update(group.groupID, group);
     this.closeEdit();
     this.ngOnInit();
+  }
+
+  updateEditGroupMembers(group: Group) {
+    this.editGroup.members = group.members;
+  }
+
+  async updateGroups(groups: Group[]) {
+    this.updatedGroups.length = 0;
+    this.updatedGroups.push(...groups);
+  }
+
+  saveGroups() {
+    this.updatedGroups.forEach((group) => {
+      this.groupService.update(group.groupID, group);
+    })
+  }
+
+  selectGroup(event: MatOptionSelectionChange) {
+    if (event.source.selected) {
+      this.selectedGroups = [...this.selectedGroups, event.source.value]
+    } else {
+      this.selectedGroups = this.selectedGroups.filter(group => group.groupID != event.source.value.groupID);
+    }
   }
 
   async createGroup() {
@@ -79,7 +79,7 @@ export class ManageGroupModalComponent implements OnInit {
       groupID: generateUniqueID(),
       projectID: this.data.project.projectID,
       name: this.groupNameControl.value,
-      members: this.assigned,
+      members: [],
     };
     await this.groupService.create(group);
     this.groupNameControl.reset();
@@ -101,5 +101,14 @@ export class ManageGroupModalComponent implements OnInit {
         },
       },
     });
+  }
+
+  openEdit(group: Group) {
+    this.showEdit = true;
+    this.editGroup = group;
+  }
+
+  closeEdit() {
+    this.showEdit = false;
   }
 }

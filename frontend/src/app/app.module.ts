@@ -44,7 +44,7 @@ import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
 import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
-import { GroupMemberListComponent } from './components/groups/group-member-list/group-member-list.component';
+import { MoveGroupMembersComponent } from './components/groups/move-group-members/move-group-members.component';
 
 import { AutofocusDirective } from './autofocus.directive';
 
@@ -82,7 +82,7 @@ export function tokenGetter() {
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
     ManageGroupModalComponent,
-    GroupMemberListComponent,
+    MoveGroupMembersComponent,
     AutofocusDirective,
   ],
   imports: [

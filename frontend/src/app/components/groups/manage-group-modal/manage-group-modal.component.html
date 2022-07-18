@@ -29,20 +29,21 @@
           />
           <mat-error *ngIf="!editNameControl.value">Group Name is <strong>required</strong></mat-error>
         </mat-form-field>
-        <app-group-member-list
-          [firstMembers]="editGroup.members"
-          [fstGroupName]="'Current'"
-          [secondMembers]="unassigned.members"
-          [sndGroupName]="'Unassigned'"
-          (updateFirstGroup)="updateGroupMembers($event)"
+        <app-move-group-members
+          [projectID]="data.project.projectID"
+          [groups]="[editGroup]"
+          (updateGroups)="updateEditGroupMembers($event[0])"
         >
-        </app-group-member-list>
+
+        </app-move-group-members>
+        <mat-divider></mat-divider>
         <button
           type="submit"
           [disabled]="!editNameControl.valid"
           mat-button
           cdkFocusInitial
-          (click)="updateGroup()"
+          (click)="updateGroup(this.editGroup)"
+          style="margin-top: 10px"
         >
           Update
         </button>
@@ -98,6 +99,32 @@
       </mat-list>
     </mat-tab>
     <mat-tab label="Multi-Group Assign">
+      <mat-form-field appearance="fill">
+        <mat-label>Select Groups...</mat-label>
+        <mat-select multiple>
+          <mat-option
+            *ngFor="let group of groups"
+            [value]="group"
+            (onSelectionChange)="selectGroup($event)"
+          >
+            ({{ group.members.length }}) {{ group.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <app-move-group-members
+        [groups]="selectedGroups"
+        [projectID]="data.project.projectID"
+        (updateGroups)="updateGroups($event)"
+      >
+      </app-move-group-members>
+      <mat-divider></mat-divider>
+      <button
+        mat-button
+        style="margin-top: 10px"
+        (click)="saveGroups()"
+      >
+        Save Groups
+      </button>
     </mat-tab>
   </mat-tab-group>
 </div>

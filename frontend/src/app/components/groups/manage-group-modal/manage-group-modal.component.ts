@@ -39,7 +39,6 @@ export class ManageGroupModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.groups.length = 0;
-
     this.groupService
       .getByProjectId(this.data.project.projectID)
       .then((groups) => {
@@ -69,6 +68,7 @@ export class ManageGroupModalComponent implements OnInit {
         this.editGroup = group;
     });
     this.select.options.forEach((item: MatOption) => item.deselect());
+    this.ngOnInit();
   }
 
   async createGroup() {

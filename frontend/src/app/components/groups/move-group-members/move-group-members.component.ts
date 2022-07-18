@@ -1,4 +1,12 @@
-import { Component, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import {
   CdkDragDrop,
   moveItemInArray,
@@ -19,25 +27,24 @@ export class MoveGroupMembersComponent implements OnInit {
   @Input() groups: Group[];
   @Input() projectID: string;
   @Output() updateGroups: EventEmitter<Group[]> = new EventEmitter<Group[]>();
-  
+
   groupMembers: GroupMembers[] = [];
-  projectMembers: string[] = []
-  unassigned: User[] = []
+  projectMembers: string[] = [];
+  unassigned: User[] = [];
 
   constructor(
-    private userService: UserService, 
+    private userService: UserService,
     private projectService: ProjectService
   ) {}
 
   ngOnInit(): void {
-    this.projectService.get(this.projectID)
-      .then((project) => {
-        if (project) this.projectMembers = project.members;
-        this.setUnassignedMembers(this.groups);
-      });
+    this.projectService.get(this.projectID).then((project) => {
+      if (project) this.projectMembers = project.members;
+      this.setUnassignedMembers(this.groups);
+    });
   }
 
-  ngOnChanges (changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges) {
     this.groupMembers.length = 0;
     this.groups.forEach((group) => {
       this.userService.getMultipleByIds(group.members).then((users) => {
@@ -45,14 +52,13 @@ export class MoveGroupMembersComponent implements OnInit {
           const groupMembers: GroupMembers = {
             groupID: group.groupID,
             groupName: group.name,
-            members: users
-          }
+            members: users,
+          };
           this.groupMembers.push(groupMembers);
         }
       });
     });
-    if(!changes.groups.firstChange)
-      this.setUnassignedMembers(this.groups);
+    if (!changes.groups.firstChange) this.setUnassignedMembers(this.groups);
   }
 
   setUnassignedMembers(groups: Group[]) {
@@ -64,7 +70,7 @@ export class MoveGroupMembersComponent implements OnInit {
     });
     this.userService.getMultipleByIds(memberIDs).then((users) => {
       if (users) this.unassigned.push(...users);
-    })
+    });
   }
 
   getGroups(): Group[] {
@@ -75,7 +81,7 @@ export class MoveGroupMembersComponent implements OnInit {
         projectID: this.projectID,
         name: gm.groupName,
         members: gm.members.map((member) => member.userID),
-      }
+      };
       groups.push(updatedGroup);
     });
     return groups;

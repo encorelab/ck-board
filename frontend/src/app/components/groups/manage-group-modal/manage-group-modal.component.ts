@@ -1,15 +1,15 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { ConfirmModalComponent } from '../../confirm-modal/confirm-modal.component';
 import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import Group from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
 import { UserService } from 'src/app/services/user.service';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import User from 'src/app/models/user';
-import { GroupMembers } from 'src/app/models/groupMembers';
-import { MatOptionSelectionChange } from '@angular/material/core';
 
 @Component({
   selector: 'app-manage-group-modal',
@@ -17,6 +17,8 @@ import { MatOptionSelectionChange } from '@angular/material/core';
   styleUrls: ['./manage-group-modal.component.scss'],
 })
 export class ManageGroupModalComponent implements OnInit {
+  @ViewChild('selectGroups') select: MatSelect;
+
   groups: Group[] = [];
   selectedGroups: Group[] = [];
   updatedGroups: Group[] = [];
@@ -63,15 +65,10 @@ export class ManageGroupModalComponent implements OnInit {
   saveGroups() {
     this.updatedGroups.forEach((group) => {
       this.groupService.update(group.groupID, group);
-    })
-  }
-
-  selectGroup(event: MatOptionSelectionChange) {
-    if (event.source.selected) {
-      this.selectedGroups = [...this.selectedGroups, event.source.value]
-    } else {
-      this.selectedGroups = this.selectedGroups.filter(group => group.groupID != event.source.value.groupID);
-    }
+      if (this.editGroup && this.editGroup.groupID === group.groupID)
+        this.editGroup = group;
+    });
+    this.select.options.forEach((item: MatOption) => item.deselect());
   }
 
   async createGroup() {

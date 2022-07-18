@@ -101,11 +101,14 @@
     <mat-tab label="Multi-Group Assign">
       <mat-form-field appearance="fill">
         <mat-label>Select Groups...</mat-label>
-        <mat-select multiple>
+        <mat-select
+          #selectGroups
+          [(ngModel)]="selectedGroups"
+          multiple
+        >
           <mat-option
             *ngFor="let group of groups"
             [value]="group"
-            (onSelectionChange)="selectGroup($event)"
           >
             ({{ group.members.length }}) {{ group.name }}
           </mat-option>

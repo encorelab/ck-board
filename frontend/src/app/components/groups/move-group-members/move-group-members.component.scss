@@ -3,23 +3,18 @@
     flex-direction: column;
 }
 
-.title-container {
-    display: flex;
-    justify-content: space-between;
-}
-
-.title {
+.member-list-container {
     width: 45%;
 }
 
-.list-container {
+.member-list-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .member-list {
     border: solid 1px #ccc;
-    width: 45%;
     min-height: 60px;
     background: white;
     border-radius: 4px;

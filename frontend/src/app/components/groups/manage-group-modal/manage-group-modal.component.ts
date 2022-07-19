@@ -54,9 +54,10 @@ export class ManageGroupModalComponent implements OnInit {
     this.editGroup.members = group.members;
   }
 
-  async updateGroups(groups: Group[]) {
+  updateGroups(groups: Group[]) {
     this.updatedGroups.length = 0;
     this.updatedGroups.push(...groups);
+    console.log(groups);
   }
 
   saveGroups() {
@@ -66,7 +67,7 @@ export class ManageGroupModalComponent implements OnInit {
         this.editGroup = group;
     });
     this.select.options.forEach((item: MatOption) => item.deselect());
-    this.initializeGroups();
+    this.groups = this.updatedGroups;
   }
 
   openEdit(group: Group) {

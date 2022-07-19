@@ -106,6 +106,13 @@ export class MoveGroupMembersComponent implements OnInit {
 
   removeMember(groupIndex: number, memberIndex: number) {
     this.groupMembers[groupIndex].members.splice(memberIndex, 1);
+    this.updateGroups.emit(this.getGroups());
+    this.updateUnassignedMembers();
+  }
+
+  removeAllMembers(groupIndex: number) {
+    this.groupMembers[groupIndex].members.length = 0;
+    this.updateGroups.emit(this.getGroups());
     this.updateUnassignedMembers();
   }
 

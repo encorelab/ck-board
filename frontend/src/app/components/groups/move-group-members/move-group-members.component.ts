@@ -116,6 +116,44 @@ export class MoveGroupMembersComponent implements OnInit {
     this.updateUnassignedMembers();
   }
 
+  shuffleBetweenGroups(): void {
+    if (this.groupMembers.length == 0) return;
+
+    const members = this.removeDuplicates(this.getAllMembersInSelectedGroups());
+    const shuffledMembers = this.shuffleArray(members);
+
+    this.clearUnassignedMembers();
+    this.clearAllGroupMembers();
+
+    shuffledMembers.forEach((member, index) => {
+      this.groupMembers[index % this.groupMembers.length].members.push(member);
+    });
+    this.updateGroups.emit(this.getGroups());
+  }
+
+  private clearUnassignedMembers(): void {
+    this.unassigned.length = 0;
+  }
+
+  private clearAllGroupMembers(): void {
+    this.groupMembers.forEach((group) => (group.members.length = 0));
+  }
+
+  private getAllMembersInSelectedGroups(): User[] {
+    const members: User[] = [];
+    this.groupMembers.forEach((group) => {
+      members.push(...group.members);
+    });
+    members.push(...this.unassigned);
+    return members;
+  }
+
+  private removeDuplicates(array: any[]): any[] {
+    const set = new Set();
+    array.forEach((elem) => set.add(elem));
+    return Array.from(set);
+  }
+
   drop(event: CdkDragDrop<User[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(
@@ -132,5 +170,21 @@ export class MoveGroupMembersComponent implements OnInit {
       );
       this.updateGroups.emit(this.getGroups());
     }
+  }
+
+  // https://stackoverflow.com/a/2450976/4970939
+  // Uses Fisher-Yates shuffle https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+  private shuffleArray(array: any[]): any[] {
+    let currentIndex = array.length,
+      randomIndex;
+    while (currentIndex != 0) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex],
+        array[currentIndex],
+      ];
+    }
+    return array;
   }
 }

@@ -121,13 +121,21 @@
       >
       </app-move-group-members>
       <mat-divider></mat-divider>
-      <button
-        mat-button
-        style="margin-top: 10px"
-        (click)="saveGroups()"
-      >
-        Save Groups
-      </button>
+      <div class="multi-group-actions">
+        <button
+          mat-icon-button
+          matTooltip="Shuffle members between selected groups"
+          (click)="child.shuffleBetweenGroups()"
+        >
+          Shuffle <mat-icon>shuffle</mat-icon>
+        </button>
+        <button
+          mat-button
+          (click)="saveGroups()"
+        >
+          Save Groups
+        </button>
+      </div>
     </mat-tab>
   </mat-tab-group>
 </div>

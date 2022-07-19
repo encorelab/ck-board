@@ -20,6 +20,12 @@
     width: 100%;
 }
 
+.multi-group-actions {
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
 .select-group {
     overflow: hidden;
     min-width: 0;

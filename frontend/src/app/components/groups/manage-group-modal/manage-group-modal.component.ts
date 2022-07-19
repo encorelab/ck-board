@@ -10,6 +10,7 @@ import { GroupService } from 'src/app/services/group.service';
 import { UserService } from 'src/app/services/user.service';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import User from 'src/app/models/user';
+import { MoveGroupMembersComponent } from '../move-group-members/move-group-members.component';
 
 @Component({
   selector: 'app-manage-group-modal',
@@ -18,6 +19,7 @@ import User from 'src/app/models/user';
 })
 export class ManageGroupModalComponent implements OnInit {
   @ViewChild('selectGroups') select: MatSelect;
+  @ViewChild(MoveGroupMembersComponent) child: MoveGroupMembersComponent;
 
   groups: Group[] = [];
   selectedGroups: Group[] = [];
@@ -57,7 +59,6 @@ export class ManageGroupModalComponent implements OnInit {
   updateGroups(groups: Group[]) {
     this.updatedGroups.length = 0;
     this.updatedGroups.push(...groups);
-    console.log(groups);
   }
 
   saveGroups() {

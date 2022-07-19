@@ -1,6 +1,6 @@
 <div class="group-member-list">
   <div cdkDropListGroup>
-    <div *ngFor="let group of groupMembers">
+    <div *ngFor="let group of groupMembers; let i = index">
       <span>{{ group.groupName }}</span>
       <div
         cdkDropList
@@ -10,10 +10,17 @@
       >
         <div
           cdkDrag
-          *ngFor="let member of group.members"
+          *ngFor="let member of group.members; let j = index"
           class="member-box"
         >
           {{ member.username }}
+          <button 
+            mat-icon-button
+            matTooltip="Remove from group"
+            (click)="removeMember(i, j)"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
       </div>
     </div>
@@ -30,7 +37,7 @@
           *ngFor="let member of unassigned"
           class="member-box"
         >
-          {{ member.username }}
+          <span>{{ member.username }}</span>
         </div>
       </div>
     </div>

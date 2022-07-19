@@ -37,36 +37,53 @@ export class MoveGroupMembersComponent implements OnInit {
     private projectService: ProjectService
   ) {}
 
-  ngOnInit(): void {
-    this.projectService.get(this.projectID).then((project) => {
-      if (project) this.projectMembers = project.members;
-      this.setUnassignedMembers(this.groups);
+  ngOnInit(): void {}
+
+  async ngOnChanges(changes: SimpleChanges) {
+    let promises: Promise<any>[] = [];
+    if (changes.groups.firstChange) promises.push(this.updateProjectMembers());
+
+    promises.push(...this.updateGroupMembers());
+
+    Promise.all(promises).then(() => {
+      this.updateUnassignedMembers();
     });
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  updateGroupMembers() {
     this.groupMembers.length = 0;
+    let promises: Promise<any>[] = [];
     this.groups.forEach((group) => {
-      this.userService.getMultipleByIds(group.members).then((users) => {
-        if (users) {
-          const groupMembers: GroupMembers = {
-            groupID: group.groupID,
-            groupName: group.name,
-            members: users,
-          };
-          this.groupMembers.push(groupMembers);
-        }
-      });
+      promises.push(
+        this.userService.getMultipleByIds(group.members).then((users) => {
+          if (users) {
+            const groupMembers: GroupMembers = {
+              groupID: group.groupID,
+              groupName: group.name,
+              members: users,
+            };
+            this.groupMembers.push(groupMembers);
+          }
+        })
+      );
     });
-    if (!changes.groups.firstChange) this.setUnassignedMembers(this.groups);
+    return promises;
   }
 
-  setUnassignedMembers(groups: Group[]) {
+  updateProjectMembers() {
+    return this.projectService.get(this.projectID).then((project) => {
+      if (project) this.projectMembers = project.members;
+    });
+  }
+
+  updateUnassignedMembers() {
     this.unassigned.length = 0;
     let memberIDs: string[] = [];
     this.projectMembers.forEach((member) => {
-      if (!groups.some((group) => group.members.includes(member)))
-        memberIDs.push(member);
+      const isUnassigned = !this.groupMembers.some((group) => {
+        return group.members.map((gm) => gm.userID).includes(member);
+      });
+      if (isUnassigned) memberIDs.push(member);
     });
     this.userService.getMultipleByIds(memberIDs).then((users) => {
       if (users) this.unassigned.push(...users);
@@ -85,6 +102,11 @@ export class MoveGroupMembersComponent implements OnInit {
       groups.push(updatedGroup);
     });
     return groups;
+  }
+
+  removeMember(groupIndex: number, memberIndex: number) {
+    this.groupMembers[groupIndex].members.splice(memberIndex, 1);
+    this.updateUnassignedMembers();
   }
 
   drop(event: CdkDragDrop<User[]>) {

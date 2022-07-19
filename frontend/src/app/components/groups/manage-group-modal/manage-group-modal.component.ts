@@ -38,18 +38,16 @@ export class ManageGroupModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.initializeGroups();
+  }
+
+  initializeGroups() {
     this.groups.length = 0;
     this.groupService
       .getByProjectId(this.data.project.projectID)
       .then((groups) => {
         if (groups) this.groups.push(...groups);
       });
-  }
-
-  async updateGroup(group: Group) {
-    await this.groupService.update(group.groupID, group);
-    this.closeEdit();
-    this.ngOnInit();
   }
 
   updateEditGroupMembers(group: Group) {
@@ -68,7 +66,24 @@ export class ManageGroupModalComponent implements OnInit {
         this.editGroup = group;
     });
     this.select.options.forEach((item: MatOption) => item.deselect());
-    this.ngOnInit();
+    this.initializeGroups();
+  }
+
+  openEdit(group: Group) {
+    this.showEdit = true;
+    this.editGroup = group;
+  }
+
+  closeEdit() {
+    this.showEdit = false;
+  }
+
+  /* --- CRUD operations --- */
+
+  async updateGroup(group: Group) {
+    await this.groupService.update(group.groupID, group);
+    this.closeEdit();
+    this.initializeGroups();
   }
 
   async createGroup() {
@@ -80,7 +95,7 @@ export class ManageGroupModalComponent implements OnInit {
     };
     await this.groupService.create(group);
     this.groupNameControl.reset();
-    this.ngOnInit();
+    this.initializeGroups();
   }
 
   async deleteGroup(group: Group) {
@@ -94,18 +109,9 @@ export class ManageGroupModalComponent implements OnInit {
           this.groups.forEach((obj, index) => {
             if (obj.groupID == group.groupID) this.groups.splice(index, 1);
           });
-          this.ngOnInit();
+          this.initializeGroups();
         },
       },
     });
-  }
-
-  openEdit(group: Group) {
-    this.showEdit = true;
-    this.editGroup = group;
-  }
-
-  closeEdit() {
-    this.showEdit = false;
   }
 }

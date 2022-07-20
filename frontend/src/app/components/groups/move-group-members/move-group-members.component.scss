@@ -1,11 +1,11 @@
 .group-member-list {
     display: grid;
     grid-template-columns: auto auto auto auto;
+    column-gap: 1rem;
     width: 100%;
 }
 
 .member-list-container {
-    margin: 10px;
     min-width: 200px;
 }
 

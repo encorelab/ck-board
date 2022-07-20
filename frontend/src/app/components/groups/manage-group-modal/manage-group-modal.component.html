@@ -6,16 +6,10 @@
         *ngIf="showEdit"
         style="margin-top: 20px"
       >
-        <button 
-          mat-icon-button
-          matTooltip="Back"
-          (click)="closeEdit()"
-        >
-          <mat-icon>arrow_back</mat-icon>
-        </button>
+        <h4>Enter a new group name:</h4>
         <mat-form-field
           appearance="outline"
-          style="width: 100%; margin-top: 20px"
+          style="width: 100%;"
         >
           <mat-label>Group Name</mat-label>
           <input
@@ -32,21 +26,30 @@
         <app-move-group-members
           [projectID]="data.project.projectID"
           [groups]="[editGroup]"
+          [headerText]="'Select students to add to your group:'"
           (updateGroups)="updateEditGroupMembers($event[0])"
         >
 
         </app-move-group-members>
-        <mat-divider></mat-divider>
-        <button
-          type="submit"
-          [disabled]="!editNameControl.valid"
-          mat-button
-          cdkFocusInitial
-          (click)="updateGroup(this.editGroup)"
-          style="margin-top: 10px"
-        >
-          Update
-        </button>
+        <mat-divider style="margin-top: 10px;"></mat-divider>
+        <div class="edit-group-actions">
+          <button 
+            mat-button
+            matTooltip="Back"
+            (click)="closeEdit()"
+          >
+            Back
+          </button>
+          <button
+            type="submit"
+            [disabled]="!editNameControl.valid"
+            mat-button
+            cdkFocusInitial
+            (click)="updateGroup(this.editGroup)"
+          >
+            Update
+          </button>
+        </div>
       </div>
       <mat-list *ngIf="!showEdit">
         <div class="create-group-container">
@@ -99,7 +102,10 @@
       </mat-list>
     </mat-tab>
     <mat-tab label="Multi-Group Assign">
-      <mat-form-field appearance="fill">
+      <mat-form-field
+        appearance="fill"
+        style="margin-top: 20px;"
+      >
         <mat-label>Select Groups...</mat-label>
         <mat-select
           #selectGroups
@@ -117,6 +123,7 @@
       <app-move-group-members
         [groups]="selectedGroups"
         [projectID]="data.project.projectID"
+        [headerText]="'Move students manually with drag&drop or randomly using the shuffle button:'"
         (updateGroups)="updateGroups($event)"
       >
       </app-move-group-members>

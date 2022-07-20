@@ -26,6 +26,7 @@ import { ProjectService } from 'src/app/services/project.service';
 export class MoveGroupMembersComponent implements OnInit {
   @Input() groups: Group[];
   @Input() projectID: string;
+  @Input() headerText: string;
   @Output() updateGroups: EventEmitter<Group[]> = new EventEmitter<Group[]>();
 
   groupMembers: GroupMembers[] = [];

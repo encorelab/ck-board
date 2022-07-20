@@ -1,5 +1,5 @@
-<div class="group-member-list">
-  <div cdkDropListGroup>
+<div>
+  <div cdkDropListGroup class="group-member-list">
     <div
       *ngFor="let group of groupMembers; let i = index"
       class="member-list-container"
@@ -40,7 +40,16 @@
       *ngIf="groups.length !== 0"
       class="member-list-container"
     >
-      <span>Unassigned</span>
+      <div class="member-list-header">
+        <span>Unassigned</span>
+        <button
+          mat-icon-button
+          matTooltip="Unassign all students"
+          (click)="unassignAllMembers()"
+        >
+          <mat-icon>arrow_downward</mat-icon>
+        </button>
+      </div>
       <div
         cdkDropList
         [cdkDropListData]="unassigned"

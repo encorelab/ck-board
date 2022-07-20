@@ -23,7 +23,7 @@ export class ManageGroupModalComponent implements OnInit {
 
   groups: Group[] = [];
   selectedGroups: Group[] = [];
-  updatedGroups: Group[] = [];
+  updatedGroups: Group[];
   members: User[] = [];
   showEdit: boolean = false;
   editGroup: Group;
@@ -43,8 +43,9 @@ export class ManageGroupModalComponent implements OnInit {
     this.initializeGroups();
   }
 
-  initializeGroups() {
+  initializeGroups(): void {
     this.groups.length = 0;
+    this.updatedGroups = [];
     this.groupService
       .getByProjectId(this.data.project.projectID)
       .then((groups) => {
@@ -52,31 +53,31 @@ export class ManageGroupModalComponent implements OnInit {
       });
   }
 
-  updateEditGroupMembers(group: Group) {
+  updateEditGroupMembers(group: Group): void {
     this.editGroup.members = group.members;
   }
 
-  updateGroups(groups: Group[]) {
+  updateGroups(groups: Group[]): void {
     this.updatedGroups.length = 0;
     this.updatedGroups.push(...groups);
   }
 
-  saveGroups() {
+  saveGroups(): void {
     this.updatedGroups.forEach((group) => {
       this.groupService.update(group.groupID, group);
       if (this.editGroup && this.editGroup.groupID === group.groupID)
         this.editGroup = group;
     });
     this.select.options.forEach((item: MatOption) => item.deselect());
-    this.groups = this.updatedGroups;
+    this.initializeGroups();
   }
 
-  openEdit(group: Group) {
+  openEdit(group: Group): void {
     this.showEdit = true;
     this.editGroup = group;
   }
 
-  closeEdit() {
+  closeEdit(): void {
     this.showEdit = false;
   }
 

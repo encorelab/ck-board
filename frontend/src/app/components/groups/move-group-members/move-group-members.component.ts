@@ -39,18 +39,19 @@ export class MoveGroupMembersComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  async ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges(changes: SimpleChanges): void {
     let promises: Promise<any>[] = [];
     if (changes.groups.firstChange) promises.push(this.updateProjectMembers());
 
     promises.push(...this.updateGroupMembers());
 
     Promise.all(promises).then(() => {
+      this.updateGroups.emit(this.getGroups());
       this.updateUnassignedMembers();
     });
   }
 
-  updateGroupMembers() {
+  private updateGroupMembers(): Promise<any>[] {
     this.groupMembers.length = 0;
     let promises: Promise<any>[] = [];
     this.groups.forEach((group) => {
@@ -70,13 +71,13 @@ export class MoveGroupMembersComponent implements OnInit {
     return promises;
   }
 
-  updateProjectMembers() {
+  private updateProjectMembers(): Promise<any> {
     return this.projectService.get(this.projectID).then((project) => {
       if (project) this.projectMembers = project.members;
     });
   }
 
-  updateUnassignedMembers() {
+  private updateUnassignedMembers(): void {
     this.unassigned.length = 0;
     let memberIDs: string[] = [];
     this.projectMembers.forEach((member) => {
@@ -87,10 +88,11 @@ export class MoveGroupMembersComponent implements OnInit {
     });
     this.userService.getMultipleByIds(memberIDs).then((users) => {
       if (users) this.unassigned.push(...users);
+      this.updateGroups.emit(this.getGroups());
     });
   }
 
-  getGroups(): Group[] {
+  private getGroups(): Group[] {
     const groups: Group[] = [];
     this.groupMembers.forEach((gm) => {
       const updatedGroup: Group = {
@@ -104,15 +106,18 @@ export class MoveGroupMembersComponent implements OnInit {
     return groups;
   }
 
-  removeMember(groupIndex: number, memberIndex: number) {
-    this.groupMembers[groupIndex].members.splice(memberIndex, 1);
-    this.updateGroups.emit(this.getGroups());
+  unassignAllMembers() {
+    this.clearAllGroupMembers();
     this.updateUnassignedMembers();
   }
 
-  removeAllMembers(groupIndex: number) {
+  removeMember(groupIndex: number, memberIndex: number): void {
+    this.groupMembers[groupIndex].members.splice(memberIndex, 1);
+    this.updateUnassignedMembers();
+  }
+
+  removeAllMembers(groupIndex: number): void {
     this.groupMembers[groupIndex].members.length = 0;
-    this.updateGroups.emit(this.getGroups());
     this.updateUnassignedMembers();
   }
 

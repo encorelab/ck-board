@@ -51,6 +51,12 @@ router.post('/register', async (req, res) => {
   res.status(200).send({ token, user, expiresAt });
 });
 
+router.post('/multiple', async (req, res) => {
+  const ids = req.body;
+  const users = await dalUser.findByUserIDs(ids);
+  res.status(200).json(users);
+});
+
 router.post('/:id', isAuthenticated, async (req, res) => {
   const id = req.params.id;
 

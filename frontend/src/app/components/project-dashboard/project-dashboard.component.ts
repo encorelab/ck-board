@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { UserService } from 'src/app/services/user.service';
+import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -94,6 +95,14 @@ export class ProjectDashboardComponent implements OnInit {
       data: {
         project: this.project,
         updateProjectName: this.updateProjectName,
+      },
+    });
+  }
+
+  openGroupDialog() {
+    this.dialog.open(ManageGroupModalComponent, {
+      data: {
+        project: this.project,
       },
     });
   }

@@ -28,6 +28,14 @@
     >
       <mat-icon>settings</mat-icon>
     </button>
+    <button
+    *ngIf="user && user.role == Role.TEACHER"
+    mat-icon-button
+    (click)="openGroupDialog()"
+    matTooltip="Manage Groups"
+  >
+    <mat-icon>group_work</mat-icon>
+  </button>
   </app-toolbar>
   <div class="content">
     <div class="heading">

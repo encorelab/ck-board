@@ -84,7 +84,7 @@ export class FabricUtils {
       const childObj = group.getObjects().find((obj) => obj.name == child);
       return childObj;
     } else {
-      const childObj = group.objects.find((obj) => obj.name == child);
+      const childObj = group?.objects.find((obj) => obj.name == child);
       return childObj;
     }
   }
@@ -373,14 +373,14 @@ export class FabricUtils {
     const comment: any = this.getChildFromGroup(fabricObj, 'comment');
     const commentCount: any = this.getChildFromGroup(fabricObj, 'commentCount');
 
-    commentCount.set({ text: amount.toString(), dirty: true });
+    commentCount?.set({ text: amount.toString(), dirty: true });
 
     if (amount >= 1) {
-      commentCount.set({ opacity: 1, dirty: true });
-      comment.set({ opacity: 1, dirty: true });
+      commentCount?.set({ opacity: 1, dirty: true });
+      comment?.set({ opacity: 1, dirty: true });
     } else {
-      commentCount.set({ opacity: 0, dirty: true });
-      comment.set({ opacity: 0, dirty: true });
+      commentCount?.set({ opacity: 0, dirty: true });
+      comment?.set({ opacity: 0, dirty: true });
     }
 
     fabricObj.dirty = true;

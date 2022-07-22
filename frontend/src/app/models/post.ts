@@ -15,6 +15,7 @@ export class DisplayAttributes {
 export enum PostType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
+  LIST = 'LIST',
 }
 
 export default class Post {

@@ -55,14 +55,16 @@ export class ManageGroupModalComponent implements OnInit {
   }
 
   saveGroups(): void {
-    let promises: Promise<any>[] = [];
     this.updatedGroups.forEach((group) => {
-      promises.push(this.groupService.update(group.groupID, group));
+      this.groupService.update(group.groupID, group);
       if (this.editGroup && this.editGroup.groupID === group.groupID)
         this.editGroup = group;
+      this.groups.forEach((elem, index) => {
+        if (elem.groupID === group.groupID)
+          this.groups[index] = group;
+      });
     });
     this.select.options.forEach((item: MatOption) => item.deselect());
-    Promise.all(promises).then(() => this.initializeGroups());
   }
 
   updateEditGroupMembers(group: Group): void {
@@ -83,7 +85,10 @@ export class ManageGroupModalComponent implements OnInit {
   async updateGroup(group: Group) {
     await this.groupService.update(group.groupID, group);
     this.closeEdit();
-    this.initializeGroups();
+    this.groups.forEach((elem, index) => {
+      if (elem.groupID === group.groupID)
+        this.groups[index] = group;
+    })
   }
 
   async createGroup() {
@@ -93,9 +98,9 @@ export class ManageGroupModalComponent implements OnInit {
       name: this.groupNameControl.value,
       members: [],
     };
-    await this.groupService.create(group);
+    this.groupService.create(group);
     this.groupNameControl.reset();
-    this.initializeGroups();
+    this.groups.push(group);
   }
 
   async deleteGroup(group: Group) {
@@ -105,11 +110,10 @@ export class ManageGroupModalComponent implements OnInit {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this group?',
         handleConfirm: async () => {
-          await this.groupService.delete(group.groupID);
+          this.groupService.delete(group.groupID);
           this.groups.forEach((obj, index) => {
             if (obj.groupID == group.groupID) this.groups.splice(index, 1);
           });
-          this.initializeGroups();
         },
       },
     });

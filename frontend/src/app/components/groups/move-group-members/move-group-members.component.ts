@@ -79,7 +79,7 @@ export class MoveGroupMembersComponent implements OnInit {
   }
 
   private updateUnassignedMembers(): void {
-    this.unassigned.length = 0;
+    this.unassigned = [];
     let memberIDs: string[] = [];
     this.projectMembers.forEach((member) => {
       const isUnassigned = !this.groupMembers.some((group) => {
@@ -113,13 +113,18 @@ export class MoveGroupMembersComponent implements OnInit {
   }
 
   removeMember(groupIndex: number, memberIndex: number): void {
-    this.groupMembers[groupIndex].members.splice(memberIndex, 1);
-    this.updateUnassignedMembers();
+    let members = this.groupMembers[groupIndex].members;
+    this.unassigned.push(members[memberIndex]);
+    members.splice(memberIndex, 1);
+    this.updateGroups.emit(this.getGroups());
   }
 
   removeAllMembers(groupIndex: number): void {
-    this.groupMembers[groupIndex].members.length = 0;
-    this.updateUnassignedMembers();
+    let members = this.groupMembers[groupIndex].members;
+    if (members.length === 0) return;
+    this.unassigned.push(...members);
+    members.length = 0;
+    this.updateGroups.emit(this.getGroups());
   }
 
   shuffleBetweenGroups(): void {

@@ -196,7 +196,12 @@ export class CanvasService {
 
     const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
     if (!fabricObject) {
-      return await this.postService.update(post.postID, update);
+      const savedPost = await this.postService.update(post.postID, update);
+      this.socketService.emit(SocketEvent.POST_TAG_REMOVE, {
+        tag,
+        post: savedPost,
+      });
+      return savedPost;
     }
 
     if (tag.specialAttributes) {

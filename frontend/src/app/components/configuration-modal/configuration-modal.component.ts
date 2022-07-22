@@ -163,6 +163,7 @@ export class ConfigurationModalComponent {
           if (board) {
             this.dialogRef.close();
             this.router.navigate(['project/' + this.projectID]);
+            this.data.update(board, true);
           }
         },
       },

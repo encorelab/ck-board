@@ -12,6 +12,7 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { UserService } from 'src/app/services/user.service';
+import { DASH } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -45,6 +46,7 @@ export class ProjectDashboardComponent implements OnInit {
   }
 
   async getBoards() {
+    console.log('here');
     this.project = await this.projectService.get(this.projectID);
     const tempBoards: Board[] = [];
     for (const boardID of this.project.boards) {

@@ -7,7 +7,6 @@ import {
   ContainerType,
   DistributionWorkflowModel,
   WorkflowModel,
-  WorkflowType,
 } from '../models/Workflow';
 import dalBucket from '../repository/dalBucket';
 import dalPost from '../repository/dalPost';

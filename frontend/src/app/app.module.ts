@@ -46,6 +46,7 @@ import { CsvDownloadButtonComponent } from './components/csv-download-button/csv
 import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
 import { MoveGroupMembersComponent } from './components/groups/move-group-members/move-group-members.component';
 
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AutofocusDirective } from './autofocus.directive';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
@@ -112,6 +113,10 @@ export function tokenGetter() {
       provide: HTTP_INTERCEPTORS,
       useClass: APIInterceptor,
       multi: true,
+    },
+    {
+      provide: MatDialogRef,
+      useValue: {},
     },
   ],
   bootstrap: [AppComponent],

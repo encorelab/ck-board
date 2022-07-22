@@ -43,6 +43,9 @@ export class PermissionsModel {
   public showBucketStudent!: boolean;
 
   @prop({ required: true })
+  public showSnackBarStudent!: boolean;
+
+  @prop({ required: true })
   public allowTracing!: boolean;
 }
 

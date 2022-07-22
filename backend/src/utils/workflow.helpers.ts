@@ -22,7 +22,7 @@ export const shuffle = <T>(array: T[]) => {
   return array;
 };
 
-export const distribute = async <T>(items: T[], n: number): Promise<T[][]> => {
+export const distribute = async <T>(items: T[], n: any): Promise<T[][]> => {
   if (n == 0) return [];
 
   const split: T[][] = [];

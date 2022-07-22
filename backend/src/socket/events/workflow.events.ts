@@ -1,3 +1,4 @@
+import { compareSync } from 'bcrypt';
 import { Server, Socket } from 'socket.io';
 import { runDistributionWorkflow } from '../../agents/workflow.agent';
 import { SocketEvent } from '../../constants';

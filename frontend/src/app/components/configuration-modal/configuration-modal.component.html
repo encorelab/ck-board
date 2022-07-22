@@ -53,32 +53,39 @@
           >Display task description when board is opened
           </mat-checkbox>
       </p>
-      <div class="image-form">
-        <mat-chip (click)="compressFile()" color="primary" selected>
+      <div style="display: grid; grid-template-columns: 1fr 1fr;">
+        <mat-chip (click)="compressFile()" color="primary" selected class="config-button">
           <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
           Upload New Background Image
         </mat-chip>
         <mat-chip
           *ngIf="currentBgImage && currentBgImage.url"
           color="warn"
+          class="config-button"
           selected
           (click)="removeImage()"
         >
           <mat-icon class="chip-icon">cancel</mat-icon>
           Remove Current Background Image
         </mat-chip>
-        <mat-chip mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
+        <mat-chip mat-raised-button color="accent" (click)="copyToClipboard()" style="text-align: center" selected class="config-button">
+          <span style="width: 100%;text-align: center;">
+            Copy Embeddable Board URL
+          </span>
+        </mat-chip>
+        <mat-chip class="config-button" mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
           <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
           <span style="width: 100%;text-align: center;">
           Clear Board
           </span>
         </mat-chip>
-        <mat-chip mat-raised-button color="accent" (click)="copyToClipboard()" style="text-align: center" selected>
+        <mat-chip class="config-button" mat-raised-button color="warn" (click)="openVoteDeleteDialog()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
           <span style="width: 100%;text-align: center;">
-            Copy Embeddable Board URL
+          Clear Votes
           </span>
         </mat-chip>
-        <mat-chip mat-raised-button color="warn" (click)="handleDeleteBoard()" style="text-align: center" selected>
+        <mat-chip class="config-button" mat-raised-button color="warn" (click)="handleDeleteBoard()" style="text-align: center" selected>
           <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
           <span style="width: 100%;text-align: center;">
           Delete Board

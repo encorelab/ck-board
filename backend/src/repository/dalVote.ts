@@ -73,6 +73,14 @@ export const getByPost = async (id: string, representation?: string) => {
   }
 };
 
+export const getByBoard = async (boardID: string) => {
+  try {
+    return await Upvote.find({ boardID: boardID });
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const getAmountByPost = async (id: string) => {
   try {
     const numUpvotes = await Upvote.countDocuments({ postID: id });
@@ -135,6 +143,7 @@ export const removeByBoard = async (boardID: string) => {
 
 const dalVote = {
   getByPost,
+  getByBoard,
   getAmountByPost,
   getByBoardAndUser,
   getByPostAndUser,

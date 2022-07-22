@@ -23,6 +23,7 @@ import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from 'src/app/utils/converters';
+import Upvote from 'src/app/models/upvote';
 
 @Component({
   selector: 'app-buckets-modal',
@@ -123,6 +124,18 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       const found = this.posts.find((p) => p.post.postID == post.postID);
       if (found) {
         found.post = post;
+      }
+    });
+    this.socketService.listen(SocketEvent.VOTES_CLEAR, (result: Upvote[]) => {
+      const resetedPosts: string[] = [];
+      for (const upvotes of result) {
+        if (!resetedPosts.includes(upvotes.postID)) {
+          const found = this.posts.find((p) => p.post.postID == upvotes.postID);
+          if (found) {
+            found.upvotes = [];
+            resetedPosts.push(upvotes.postID);
+          }
+        }
       }
     });
   }

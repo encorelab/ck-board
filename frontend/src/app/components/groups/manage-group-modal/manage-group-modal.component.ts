@@ -1,16 +1,15 @@
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { ConfirmModalComponent } from '../../confirm-modal/confirm-modal.component';
 import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatSelect } from '@angular/material/select';
 import { MatOption } from '@angular/material/core';
+import { MatSelect } from '@angular/material/select';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import Group from 'src/app/models/group';
-import { GroupService } from 'src/app/services/group.service';
-import { UserService } from 'src/app/services/user.service';
 import { generateUniqueID } from 'src/app/utils/Utils';
-import User from 'src/app/models/user';
+import { ConfirmModalComponent } from '../../confirm-modal/confirm-modal.component';
 import { MoveGroupMembersComponent } from '../move-group-members/move-group-members.component';
+import { GroupService } from 'src/app/services/group.service';
+import Group from 'src/app/models/group';
+import User from 'src/app/models/user';
 
 @Component({
   selector: 'app-manage-group-modal',
@@ -24,7 +23,6 @@ export class ManageGroupModalComponent implements OnInit {
   groups: Group[] = [];
   selectedGroups: Group[] = [];
   updatedGroups: Group[];
-  members: User[] = [];
   showEdit: boolean = false;
   editGroup: Group;
 
@@ -33,9 +31,8 @@ export class ManageGroupModalComponent implements OnInit {
   matcher = new MyErrorStateMatcher();
 
   constructor(
-    public groupService: GroupService,
-    public userService: UserService,
-    public dialog: MatDialog,
+    private groupService: GroupService,
+    private dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
@@ -43,9 +40,8 @@ export class ManageGroupModalComponent implements OnInit {
     this.initializeGroups();
   }
 
-  initializeGroups(): void {
-    this.groups.length = 0;
-    this.updatedGroups = [];
+  private initializeGroups(): void {
+    this.groups = [];
     this.groupService
       .getByProjectId(this.data.project.projectID)
       .then((groups) => {
@@ -53,23 +49,24 @@ export class ManageGroupModalComponent implements OnInit {
       });
   }
 
-  updateEditGroupMembers(group: Group): void {
-    this.editGroup.members = group.members;
-  }
-
   updateGroups(groups: Group[]): void {
-    this.updatedGroups.length = 0;
+    this.updatedGroups = [];
     this.updatedGroups.push(...groups);
   }
 
   saveGroups(): void {
+    let promises: Promise<any>[] = [];
     this.updatedGroups.forEach((group) => {
-      this.groupService.update(group.groupID, group);
+      promises.push(this.groupService.update(group.groupID, group));
       if (this.editGroup && this.editGroup.groupID === group.groupID)
         this.editGroup = group;
     });
     this.select.options.forEach((item: MatOption) => item.deselect());
-    this.initializeGroups();
+    Promise.all(promises).then(() => this.initializeGroups());
+  }
+
+  updateEditGroupMembers(group: Group): void {
+    this.editGroup.members = group.members;
   }
 
   openEdit(group: Group): void {

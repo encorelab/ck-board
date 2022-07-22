@@ -59,6 +59,12 @@ export class CanvasService {
   async createListPost(post: Post) {
     const savedPost = await this.postService.create(post);
     this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
+    for (const tag of post.tags) {
+      this.socketService.emit(SocketEvent.POST_TAG_ADD, {
+        tag,
+        post: savedPost,
+      });
+    }
 
     return savedPost;
   }
@@ -119,8 +125,10 @@ export class CanvasService {
     const result = await this.commentService.add(comment);
 
     let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
-    existing = this.fabricUtils.setCommentCount(existing, result.count);
-    this.fabricUtils._canvas.requestRenderAll();
+    if (existing) {
+      existing = this.fabricUtils.setCommentCount(existing, result.count);
+      this.fabricUtils._canvas.requestRenderAll();
+    }
 
     const post = await this.postService.get(result.comment.postID);
 
@@ -139,8 +147,10 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.POST_COMMENT_REMOVE, result.comment);
     if (parseInt(result.count) != -1) {
       let existing = this.fabricUtils.getObjectFromId(postID);
-      existing = this.fabricUtils.setCommentCount(existing, result.count);
-      this.fabricUtils._canvas.requestRenderAll();
+      if (existing) {
+        existing = this.fabricUtils.setCommentCount(existing, result.count);
+        this.fabricUtils._canvas.requestRenderAll();
+      }
     }
   }
 

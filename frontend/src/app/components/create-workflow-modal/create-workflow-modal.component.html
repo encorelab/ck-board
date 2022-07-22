@@ -201,7 +201,11 @@
                   Random
                 </mat-chip>
             </h4>
-            <h4>Posts Per Bucket/Board: {{ workflow.distributionWorkflowType.data }}</h4>
+            <h4>Posts Per Bucket/Board: 
+              <mat-chip color="primary" selected style="margin: 0 5px">
+                  {{ workflow.distributionWorkflowType.data }}
+              </mat-chip>
+            </h4>
           </div>
           <div *ngIf="workflow.distributionWorkflowType.type === 'TAG'">
             <h4>
@@ -224,7 +228,11 @@
                   Upvote
                 </mat-chip>
             </h4>
-            <h4>Minimum upvotes per post: {{ workflow.distributionWorkflowType.data }}</h4>
+            <h4>Minimum upvotes per post: 
+              <mat-chip color="primary" selected style="margin: 0 5px">
+                  {{ workflow.distributionWorkflowType.data }}
+              </mat-chip>
+            </h4>
           </div>
         </mat-expansion-panel>
       </mat-accordion>

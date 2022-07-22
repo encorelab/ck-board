@@ -60,8 +60,7 @@ export class ManageGroupModalComponent implements OnInit {
       if (this.editGroup && this.editGroup.groupID === group.groupID)
         this.editGroup = group;
       this.groups.forEach((elem, index) => {
-        if (elem.groupID === group.groupID)
-          this.groups[index] = group;
+        if (elem.groupID === group.groupID) this.groups[index] = group;
       });
     });
     this.select.options.forEach((item: MatOption) => item.deselect());
@@ -86,9 +85,8 @@ export class ManageGroupModalComponent implements OnInit {
     await this.groupService.update(group.groupID, group);
     this.closeEdit();
     this.groups.forEach((elem, index) => {
-      if (elem.groupID === group.groupID)
-        this.groups[index] = group;
-    })
+      if (elem.groupID === group.groupID) this.groups[index] = group;
+    });
   }
 
   async createGroup() {

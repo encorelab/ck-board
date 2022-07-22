@@ -125,7 +125,9 @@ export class MoveGroupMembersComponent implements OnInit {
   shuffleBetweenGroups(): void {
     if (this.groupMembers.length == 0) return;
 
-    const members = this.removeDuplicates(this.getAllMembersInSelectedGroups());
+    const members = this.removeDuplicateUsers(
+      this.getAllMembersInSelectedGroups()
+    );
     const shuffledMembers = this.shuffleArray(members);
 
     this.clearUnassignedMembers();
@@ -138,11 +140,11 @@ export class MoveGroupMembersComponent implements OnInit {
   }
 
   private clearUnassignedMembers(): void {
-    this.unassigned.length = 0;
+    this.unassigned = [];
   }
 
   private clearAllGroupMembers(): void {
-    this.groupMembers.forEach((group) => (group.members.length = 0));
+    this.groupMembers.forEach((group) => (group.members = []));
   }
 
   private getAllMembersInSelectedGroups(): User[] {
@@ -154,10 +156,11 @@ export class MoveGroupMembersComponent implements OnInit {
     return members;
   }
 
-  private removeDuplicates(array: any[]): any[] {
-    const set = new Set();
-    array.forEach((elem) => set.add(elem));
-    return Array.from(set);
+  private removeDuplicateUsers(users: User[]): User[] {
+    const ids = users.map((user) => user.userID);
+    return users.filter(
+      ({ userID }, index) => !ids.includes(userID, index + 1)
+    );
   }
 
   drop(event: CdkDragDrop<User[]>) {

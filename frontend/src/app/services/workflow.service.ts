@@ -2,17 +2,23 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   DistributionWorkflow,
+  ExpandedGroupTask,
+  GroupTask,
+  GroupTaskEntity,
+  GroupTaskType,
   TaskWorkflow,
   Workflow,
 } from '../models/workflow';
 import { BucketService } from './bucket.service';
 import { PostService } from './post.service';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WorkflowService {
   constructor(
+    public userService: UserService,
     public postService: PostService,
     public bucketService: BucketService,
     public http: HttpClient
@@ -39,22 +45,93 @@ export class WorkflowService {
   updateDistribution(
     workflowID: string,
     workflow: Partial<DistributionWorkflow>
-  ) {
+  ): Promise<DistributionWorkflow> {
     return this.http
-      .post<DistributionWorkflow>(
+      .put<DistributionWorkflow>(
         'workflows/distribution/' + workflowID,
         workflow
       )
       .toPromise();
   }
 
-  removeDistribution(workflowID: string): Promise<any> {
-    return this.http.delete('workflows/distribution/' + workflowID).toPromise();
+  removeDistribution(workflowID: string): Promise<DistributionWorkflow> {
+    return this.http
+      .delete<DistributionWorkflow>('workflows/distribution/' + workflowID)
+      .toPromise();
+  }
+
+  runDistribution(workflowID: string): Promise<any> {
+    return this.http
+      .post<any>('workflows/distribution/' + workflowID, {})
+      .toPromise();
   }
 
   getTask(boardID: string): Promise<TaskWorkflow[]> {
     return this.http
       .get<TaskWorkflow[]>('workflows/task/boards/' + boardID)
+      .toPromise();
+  }
+
+  getActiveTasks(boardID: string): Promise<TaskWorkflow[]> {
+    return this.http
+      .get<TaskWorkflow[]>('workflows/task/boards/' + boardID + '?active=true')
+      .toPromise();
+  }
+
+  getGroupTask<T extends GroupTaskEntity>(
+    groupID: string,
+    workflowID: string,
+    representation: T
+  ): Promise<GroupTaskType<T>[]> {
+    return this.http
+      .get<GroupTaskType<T>[]>(
+        'workflows/' +
+          workflowID +
+          '/task/group/' +
+          groupID +
+          '?representation=' +
+          representation
+      )
+      .toPromise();
+  }
+
+  getGroupTasks<T extends GroupTaskEntity>(
+    boardID: string,
+    representation: T
+  ): Promise<GroupTaskType<T>[]> {
+    return this.http
+      .get<GroupTaskType<T>[]>(
+        'workflows/groupTasks/board/' +
+          boardID +
+          '/user/' +
+          this.userService.user?.userID +
+          '?representation=' +
+          representation
+      )
+      .toPromise();
+  }
+
+  getGroupTasksByWorkflow<T extends GroupTaskEntity>(
+    workflowID: string,
+    representation: T
+  ): Promise<GroupTaskType<T>[]> {
+    return this.http
+      .get<GroupTaskType<T>[]>(
+        'workflows/' +
+          workflowID +
+          '/task' +
+          '?representation=' +
+          representation
+      )
+      .toPromise();
+  }
+
+  updateGroupTask(
+    groupTaskID: string,
+    update: Partial<GroupTask>
+  ): Promise<GroupTask> {
+    return this.http
+      .post<GroupTask>('workflows/groupTasks/' + groupTaskID, update)
       .toPromise();
   }
 
@@ -64,13 +141,22 @@ export class WorkflowService {
       .toPromise();
   }
 
-  updateTask(workflowID: string, workflow: Partial<TaskWorkflow>) {
+  updateTask(
+    workflowID: string,
+    workflow: Partial<TaskWorkflow>
+  ): Promise<TaskWorkflow> {
     return this.http
-      .post<TaskWorkflow>('workflows/task/' + workflowID, workflow)
+      .put<TaskWorkflow>('workflows/task/' + workflowID, workflow)
       .toPromise();
   }
 
-  removeTask(workflowID: string): Promise<any> {
-    return this.http.delete('workflows/task/' + workflowID).toPromise();
+  removeTask(workflowID: string): Promise<TaskWorkflow> {
+    return this.http
+      .delete<TaskWorkflow>('workflows/task/' + workflowID)
+      .toPromise();
+  }
+
+  runTask(workflowID: string): Promise<any> {
+    return this.http.post<any>('workflows/task/' + workflowID, {}).toPromise();
   }
 }

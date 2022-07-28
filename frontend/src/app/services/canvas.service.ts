@@ -5,7 +5,7 @@ import { Board, BoardPermissions } from '../models/board';
 import Comment from '../models/comment';
 import Post, { PostType } from '../models/post';
 import { Tag } from '../models/tag';
-import { DistributionWorkflow } from '../models/workflow';
+import { DistributionWorkflow, TaskWorkflow } from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
 import { FabricUtils } from '../utils/FabricUtils';
 import { generateUniqueID } from '../utils/Utils';
@@ -18,6 +18,8 @@ import { NotificationService } from './notification.service';
 import { PostService } from './post.service';
 import { SocketService } from './socket.service';
 import Upvote from '../models/upvote';
+import { WorkflowService } from './workflow.service';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -26,11 +28,13 @@ export class CanvasService {
   constructor(
     private socketService: SocketService,
     private fileUploadService: FileUploadService,
+    private userService: UserService,
     private postService: PostService,
     private upvotesService: UpvotesService,
     private commentService: CommentService,
     private boardService: BoardService,
     private bucketService: BucketService,
+    private workflowService: WorkflowService,
     private notificationService: NotificationService,
     private fabricUtils: FabricUtils
   ) {}
@@ -70,7 +74,7 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.POST_CREATE, post);
   }
 
-  async upvote(userID: string, post: string | Post) {
+  async upvote(userID: string, post: string | Post): Promise<Upvote> {
     if (typeof post === 'string') {
       post = await this.postService.get(post);
     }
@@ -111,10 +115,6 @@ export class CanvasService {
   async comment(comment: Comment) {
     const result = await this.commentService.add(comment);
 
-    let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
-    existing = this.fabricUtils.setCommentCount(existing, result.count);
-    this.fabricUtils._canvas.requestRenderAll();
-
     const post = await this.postService.get(result.comment.postID);
 
     this.socketService.emit(SocketEvent.POST_COMMENT_ADD, comment);
@@ -129,33 +129,32 @@ export class CanvasService {
 
   async deleteComment(commentID: string, postID: string) {
     const result = await this.commentService.remove(commentID);
+
     this.socketService.emit(SocketEvent.POST_COMMENT_REMOVE, result.comment);
-    if (parseInt(result.count) != -1) {
-      let existing = this.fabricUtils.getObjectFromId(postID);
-      existing = this.fabricUtils.setCommentCount(existing, result.count);
-      this.fabricUtils._canvas.requestRenderAll();
-    }
   }
 
   async tag(post: Post, tag: Tag): Promise<Post> {
     const tags = [...post.tags, tag];
     const update: Partial<Post> = { tags };
 
-    const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
-    if (!fabricObject) {
+    if (!post.displayAttributes) {
       return await this.postService.update(post.postID, { tags: tags });
     }
 
     if (tag.specialAttributes) {
       update.displayAttributes = this.fabricUtils.applyTagFeatures(
-        fabricObject,
+        post.postID,
         tag
       );
     }
 
     const savedPost = await this.postService.update(post.postID, update);
 
-    this.socketService.emit(SocketEvent.POST_TAG_ADD, { tag, post: savedPost });
+    this.socketService.emit(SocketEvent.POST_TAG_ADD, {
+      tag,
+      post: savedPost,
+      userId: this.userService.user?.userID,
+    });
 
     if (savedPost.userID !== post.userID) {
       this.socketService.emit(
@@ -171,14 +170,12 @@ export class CanvasService {
     post.tags = post.tags.filter((t) => t.name != tag.name);
     const update: Partial<Post> = { tags: post.tags };
 
-    const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
-    if (!fabricObject) {
+    if (!post.displayAttributes) {
       return await this.postService.update(post.postID, update);
     }
 
     if (tag.specialAttributes) {
-      update.displayAttributes =
-        this.fabricUtils.resetTagFeatures(fabricObject);
+      update.displayAttributes = this.fabricUtils.resetTagFeatures(post.postID);
     }
 
     const savedPost = await this.postService.update(post.postID, update);
@@ -186,6 +183,7 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.POST_TAG_REMOVE, {
       tag,
       post: savedPost,
+      userId: this.userService.user?.userID,
     });
 
     return savedPost;
@@ -289,8 +287,16 @@ export class CanvasService {
     return board;
   }
 
-  async runDistributionWorkflow(workflow: DistributionWorkflow) {
+  async runDistributionWorkflow(workflow: DistributionWorkflow): Promise<void> {
+    await this.workflowService.runDistribution(workflow.workflowID);
+
     this.socketService.emit(SocketEvent.WORKFLOW_RUN_DISTRIBUTION, workflow);
+  }
+
+  async runTaskWorkflow(workflow: TaskWorkflow): Promise<void> {
+    await this.workflowService.runTask(workflow.workflowID);
+
+    this.socketService.emit(SocketEvent.WORKFLOW_RUN_TASK, workflow);
   }
 
   async readPost(postID: string) {

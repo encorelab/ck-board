@@ -1,15 +1,9 @@
 import { Server, Socket } from 'socket.io';
-import {
-  runDistributionWorkflow,
-  runTaskWorkflow,
-} from '../../agents/workflow.agent';
 import { SocketEvent } from '../../constants';
 import {
   DistributionWorkflowModel,
   TaskWorkflowModel,
-  WorkflowType,
 } from '../../models/Workflow';
-import dalWorkflow from '../../repository/dalWorkflow';
 import { SocketPayload } from '../types/event.types';
 
 class WorkflowRunDistribution {
@@ -18,16 +12,7 @@ class WorkflowRunDistribution {
   static async handleEvent(
     input: SocketPayload<DistributionWorkflowModel>
   ): Promise<DistributionWorkflowModel | null> {
-    const id = input.eventData.workflowID;
-
-    const workflow = await dalWorkflow.updateDistribution(id, {
-      active: true,
-    });
-
-    if (!workflow) return null;
-
-    await runDistributionWorkflow(workflow);
-    return workflow;
+    return input.eventData;
   }
 
   static async handleResult(
@@ -45,16 +30,7 @@ class WorkflowRunTask {
   static async handleEvent(
     input: SocketPayload<TaskWorkflowModel>
   ): Promise<TaskWorkflowModel | null> {
-    const id = input.eventData.workflowID;
-
-    const workflow = await dalWorkflow.updateTask(id, {
-      active: true,
-    });
-
-    if (!workflow) return null;
-
-    await runTaskWorkflow(workflow);
-    return workflow;
+    return input.eventData;
   }
 
   static async handleResult(

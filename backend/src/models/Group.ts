@@ -13,9 +13,6 @@ export class GroupModel {
   public members!: string[];
 
   @prop({ required: true })
-  public groupTasks!: string[];
-
-  @prop({ required: true })
   public name!: string;
 }
 

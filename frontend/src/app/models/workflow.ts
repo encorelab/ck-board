@@ -14,10 +14,43 @@ export enum WorkflowType {
   TASK = 'TASK',
 }
 
-export enum TaskAction {
+export enum TaskActionType {
   UPVOTE = 'UPVOTE',
   COMMENT = 'COMMENT',
   TAG = 'TAG',
+}
+
+export enum GroupTaskStatus {
+  INACTIVE = 'INACTIVE',
+  ACTIVE = 'ACTIVE',
+  COMPLETE = 'COMPLETE',
+}
+
+export class TaskAction {
+  type: TaskActionType;
+  amountRequired: number;
+}
+
+export type GroupTaskEntity = 'default' | 'expanded';
+
+export type GroupTaskType<T> = T extends 'default'
+  ? GroupTask
+  : T extends 'expanded'
+  ? ExpandedGroupTask
+  : never;
+
+export class GroupTask {
+  groupTaskID: string;
+  groupID: string;
+  workflowID: string;
+  posts: string[];
+  actions: TaskAction[];
+  status: GroupTaskStatus;
+}
+
+export class ExpandedGroupTask {
+  groupTask: GroupTask;
+  workflow: TaskWorkflow;
 }
 
 export class Workflow {
@@ -38,8 +71,10 @@ export class DistributionWorkflow extends Workflow {
 export class TaskWorkflow extends Workflow {
   prompt: string;
 
-  actions: TaskAction[];
+  requiredActions: TaskAction[];
   assignedGroups: string[];
+
+  postsPerGroup: number;
 }
 
 const workflows = {

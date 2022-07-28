@@ -1,4 +1,47 @@
 import GroupTask, { GroupTaskModel } from '../models/GroupTask';
+import mongoose from 'mongoose';
+import dalGroup from './dalGroup';
+import dalWorkflow from './dalWorkflow';
+import { TaskWorkflowModel } from '../models/Workflow';
+import { isTask } from '../utils/workflow.helpers';
+
+interface GroupTaskExpanded {
+  groupTask: GroupTaskModel;
+  workflow: TaskWorkflowModel;
+}
+
+export const expandGroupTask = async (task: GroupTaskModel): Promise<GroupTaskExpanded> => {
+  const workflow = await dalWorkflow.getById(task.workflowID);
+
+  if (!workflow || !isTask<TaskWorkflowModel>(workflow))
+      throw new Error(
+        `No task workflow associated with group task (id: ${task.groupTaskID})`
+      );
+
+  return {
+      groupTask: task,
+      workflow: workflow
+    };
+}
+
+export const expandGroupTasks = async (
+  tasks: GroupTaskModel[]
+): Promise<GroupTaskExpanded[]> => {
+  const workflows = await dalWorkflow.getByIds(tasks.map((u) => u.workflowID));
+
+  return tasks.map((task) => {
+    const workflow = workflows.find((u) => u.workflowID == task.workflowID);
+    if (!workflow || !isTask<TaskWorkflowModel>(workflow))
+      throw new Error(
+        `No task workflow associated with group task (id: ${task.groupTaskID})`
+      );
+
+    return {
+      groupTask: task,
+      workflow: workflow
+    };
+  });
+};
 
 export const getById = async (id: string) => {
   try {
@@ -18,6 +61,28 @@ export const getAllByGroupId = async (id: string) => {
   }
 };
 
+export const getByUserAndPost = async (user: string, post: string) => {
+  try {
+    const groups = (await dalGroup.getByUserId(user)).map(g => g.groupID);
+    const groupTasks = await GroupTask.find({ groupID: { $in: groups }, posts: post });
+    return groupTasks;
+  } catch (err) {
+    throw new Error('500');
+  }
+}
+
+export const getByBoardAndUser = async (board: string, user: string) => {
+  try {
+    const groups = (await dalGroup.getByUserId(user)).map(g => g.groupID);
+    const workflows = (await dalWorkflow.getAllByBoardId(board)).map(g => g.workflowID);
+    const groupTasks = await GroupTask.find({ groupID: { $in: groups }, workflowID: { $in: workflows } });
+
+    return groupTasks;
+  } catch (err) {
+    throw new Error('500');
+  }
+}
+
 export const getAllByWorkflowId = async (id: string) => {
   try {
     const groupTasks = await GroupTask.find({ workflowID: id });
@@ -26,6 +91,15 @@ export const getAllByWorkflowId = async (id: string) => {
     throw new Error('500');
   }
 };
+
+export const getByWorkflowGroup = async (workflowID: string, groupID: string) => {
+  try {
+    const groupTask = await GroupTask.findOne({ workflowID, groupID });
+    return groupTask;
+  } catch (err) {
+    throw new Error('500');
+  }
+}
 
 export const create = async (groupTask: GroupTaskModel) => {
   try {
@@ -62,13 +136,39 @@ export const update = async (
   }
 };
 
+export const updateMany = async (
+  groupTasks: GroupTaskModel[]
+) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    return await Promise.all(groupTasks.map(async groupTask => {
+      return await GroupTask.findOneAndUpdate(
+        { groupTaskID: groupTask.groupTaskID },
+        groupTask,
+        { new: true }
+      );
+    }));
+  } catch (err) {
+    throw new Error('500');
+  } finally {
+    session.endSession();
+  }
+};
+
 const dalGroupTask = {
+  expandGroupTask,
+  expandGroupTasks,
   getById,
   getAllByGroupId,
   getAllByWorkflowId,
+  getByWorkflowGroup,
+  getByUserAndPost,
+  getByBoardAndUser,
   create,
   remove,
   update,
+  updateMany,
 };
 
 export default dalGroupTask;

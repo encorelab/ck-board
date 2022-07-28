@@ -30,6 +30,14 @@ router.get('/project/:id', async (req, res) => {
   res.status(200).json(groups);
 });
 
+router.get('/project/:projectID/user/:userID', async (req, res) => {
+  const { projectID, userID } = req.params;
+
+  const group = await dalGroup.getByProjectUser(projectID, userID);
+
+  res.status(200).json(group);
+});
+
 router.post('/', async (req, res) => {
   const group: GroupModel = req.body;
 

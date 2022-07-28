@@ -18,7 +18,7 @@ export enum ContainerType {
 }
 
 export enum TaskActionType {
-  LIKE = 'LIKE',
+  UPVOTE = 'UPVOTE',
   COMMENT = 'COMMENT',
   TAG = 'TAG',
 }
@@ -75,8 +75,8 @@ export class TaskWorkflowModel extends WorkflowModel {
   @prop({ required: true, type: () => [TaskAction] })
   public requiredActions!: TaskAction[];
 
-  @prop({ required: true, type: () => [GroupModel] })
-  public assignedGroups!: GroupModel[];
+  @prop({ required: true })
+  public assignedGroups!: string[];
 
   @prop({ required: true })
   public postsPerGroup!: number;

@@ -57,11 +57,14 @@ export class FabricUtils {
   }
 
   getObjectFromId(postID: string) {
-    const currentObjects: any = this._canvas?.getObjects();
+    if (!this._canvas) return null;
+
+    const currentObjects: any[] = this._canvas.getObjects();
 
     for (let i = currentObjects.length - 1; i >= 0; i--) {
       if (currentObjects[i].postID == postID) return currentObjects[i];
     }
+
     return null;
   }
 
@@ -276,11 +279,11 @@ export class FabricUtils {
 	Attributes can range from changed border width, border color,
 	post color, etc. 
 
-	@param fabricPost the post being tagged
+	@param postID the post being tagged
 	@param tag the tag being attached
 	@returns display attributes for post
 	*/
-  applyTagFeatures(fabricPost: any, tag: Tag): DisplayAttributes {
+  applyTagFeatures(postID: string, tag: Tag): DisplayAttributes {
     if (tag.specialAttributes == null) {
       return {};
     }
@@ -288,12 +291,14 @@ export class FabricUtils {
     const { borderColor, borderWidth, fillColor, opacity } =
       tag.specialAttributes;
 
-    fabricPost = this.setBorderColor(fabricPost, borderColor);
-    fabricPost = this.setBorderThickness(fabricPost, borderWidth);
-    fabricPost = this.setFillColor(fabricPost, fillColor);
-    fabricPost = this.setOpacity(fabricPost, opacity);
-
-    this._canvas.requestRenderAll();
+    let fabricPost = this.getObjectFromId(postID);
+    if (fabricPost) {
+      fabricPost = this.setBorderColor(fabricPost, borderColor);
+      fabricPost = this.setBorderThickness(fabricPost, borderWidth);
+      fabricPost = this.setFillColor(fabricPost, fillColor);
+      fabricPost = this.setOpacity(fabricPost, opacity);
+      this._canvas.requestRenderAll();
+    }
 
     return Object.assign(
       {},
@@ -310,19 +315,22 @@ export class FabricUtils {
 	Attributes that are reset can range from changed border width, 
   border color,  post color, etc. 
 
-	@param fabricPost the post being tagged
+	@param postID the post being tagged
 	@returns display attributes for post
 	*/
-  resetTagFeatures(fabricPost: any): DisplayAttributes {
-    fabricPost = this.setBorderColor(fabricPost, POST_DEFAULT_BORDER);
-    fabricPost = this.setBorderThickness(
-      fabricPost,
-      POST_DEFAULT_BORDER_THICKNESS
-    );
-    fabricPost = this.setFillColor(fabricPost, POST_COLOR);
-    fabricPost = this.setOpacity(fabricPost, POST_DEFAULT_OPACITY);
+  resetTagFeatures(postID: string): DisplayAttributes {
+    let fabricPost = this.getObjectFromId(postID);
 
-    this._canvas.requestRenderAll();
+    if (fabricPost) {
+      fabricPost = this.setBorderColor(fabricPost, POST_DEFAULT_BORDER);
+      fabricPost = this.setBorderThickness(
+        fabricPost,
+        POST_DEFAULT_BORDER_THICKNESS
+      );
+      fabricPost = this.setFillColor(fabricPost, POST_COLOR);
+      fabricPost = this.setOpacity(fabricPost, POST_DEFAULT_OPACITY);
+      this._canvas.requestRenderAll();
+    }
 
     return {
       borderColor: POST_DEFAULT_BORDER,

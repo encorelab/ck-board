@@ -14,6 +14,15 @@ export const getById = async (id: string) => {
   }
 };
 
+export const getManyById = async (ids: string[]) => {
+  try {
+    const post = await Post.find({ postID: ids });
+    return post;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const getByBoard = async (boardID: string) => {
   try {
     const posts = await Post.find({ boardID });
@@ -113,6 +122,7 @@ const formatAttributes = (post: Partial<PostModel>) => {
 const dalPost = {
   getById,
   getByBoard,
+  getManyById,
   create,
   createMany,
   remove,

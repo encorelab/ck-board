@@ -42,11 +42,12 @@ router.post('/', async (req, res) => {
 router.post('/:id', async (req, res) => {
   const { id } = req.params;
 
-  const { posts } = req.body;
+  const { posts, status } = req.body;
 
   const groupTask: Partial<GroupTaskModel> = Object.assign(
     {},
-    posts === null ? null : { posts }
+    posts === null ? null : { posts },
+    status === null ? null : { status }, 
   );
 
   const updatedGroupTask = await dalGroupTask.update(id, groupTask);

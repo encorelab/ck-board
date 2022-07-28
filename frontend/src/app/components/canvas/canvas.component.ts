@@ -251,8 +251,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   handlePostCommentRemoveEvent = (result: any) => {
     let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
-    existing = this.fabricUtils.setCommentCount(existing, result.amount);
-    this.canvas.requestRenderAll();
+    if (existing) {
+      existing = this.fabricUtils.setCommentCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostTagAddEvent = ({ post, tag }) => {

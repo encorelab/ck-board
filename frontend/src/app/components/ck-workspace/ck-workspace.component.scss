@@ -5,8 +5,21 @@
   color: gray;
 }
 
+.no-workflow-select {
+  position: absolute; 
+  top: 30%; 
+  left: 40%;
+
+  font-size: 24px;
+  font-weight: bold;
+  color: grey;
+}
+
 .swiper {
-  width: 400px;
+  width: 380px;
+  height: 100%;
+
+  margin: 30px 70px 0px 50px;
 }
 
 .swiper-slide {
@@ -48,3 +61,26 @@
 .swiper-slide:nth-child(7n) {
   background-color: rgb(54, 94, 77);
 } 
+
+.drawer-container {
+  flex: 1;
+}
+
+.subheader-button {
+  width: 100%;
+  text-align: left !important;
+}
+
+mat-sidenav {
+  width: 30%;
+  height: 100%;
+}
+
+mat-sidenav-content {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  min-height: 80vh;
+}

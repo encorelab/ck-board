@@ -24,8 +24,25 @@ import { UserService } from 'src/app/services/user.service';
 import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
 import Upvote from 'src/app/models/upvote';
+import { Board } from 'src/app/models/board';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
+
+export enum PostModalEvent {
+  POST_UPVOTE = 'POST_UPVOTE',
+  POST_DOWNVOTE = 'POST_DOWNVOTE',
+  POST_ADD_COMMENT = 'POST_ADD_COMMENT',
+  POST_REMOVE_COMMENT = 'POST_REMOVE_COMMENT',
+  POST_ADD_TAG = 'POST_ADD_TAG',
+  POST_REMOVE_TAG = 'POST_REMOVE_TAG',
+}
+
+export class PostModalData {
+  post!: Post;
+  user!: User;
+  board!: Board;
+  eventHandlers?: Map<PostModalEvent, Function>;
+}
 
 @Component({
   selector: 'app-post-modal',
@@ -81,7 +98,7 @@ export class PostModalComponent {
     public canvasService: CanvasService,
     public userService: UserService,
     public fabricUtils: FabricUtils,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: PostModalData
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
@@ -102,7 +119,7 @@ export class PostModalComponent {
         (n) => !this.tags.map((b) => b.name).includes(n.name)
       );
       this.canEditDelete =
-        this.data.post.authorID == this.user.userID ||
+        this.data.post.userID == this.user.userID ||
         this.user.role == Role.TEACHER;
       this.author = await this.userService.getOneById(p.userID);
     });
@@ -243,7 +260,7 @@ export class PostModalComponent {
         message: 'Are you sure you want to delete this comment?',
         handleConfirm: () => {
           this.canvasService.deleteComment(comment.commentID, comment.postID);
-          let ind = this.comments.indexOf(comment);
+          const ind = this.comments.indexOf(comment);
           if (ind != -1) {
             this.comments.splice(ind, 1);
           }

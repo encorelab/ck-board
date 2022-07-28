@@ -6,6 +6,24 @@ import {
   TaskWorkflow,
 } from '../models/Workflow';
 
+export const getById = async (id: string) => {
+  try {
+    const workflow = await Workflow.findOne({ workflowID: id });
+    return workflow;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getByIds = async (ids: string[]) => {
+  try {
+    const workflows = await Workflow.find({ workflowID: { $in: ids } });
+    return workflows;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const getAllByBoardId = async (id: string) => {
   try {
     const workflows = await Workflow.find({ boardID: id });
@@ -15,12 +33,18 @@ export const getAllByBoardId = async (id: string) => {
   }
 };
 
-export const getByBoardId = async (type: WorkflowType, id: string) => {
+export const getByBoardId = async (type: WorkflowType, boardID: string, active?: boolean) => {
   try {
+    const query = Object.assign(
+      {},
+      boardID === null ? null : { boardID },
+      active === null ? null : { active },
+    );
+
     if (type == WorkflowType.DISTRIBUTION) {
-      return await DistributionWorkflow.find({ boardID: id });
+      return await DistributionWorkflow.find(query);
     } else if (type == WorkflowType.TASK) {
-      return await TaskWorkflow.find({ boardID: id });
+      return await TaskWorkflow.find(query);
     }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -88,6 +112,8 @@ export const removeByBoard = async (boardID: string) => {
 };
 
 const dalWorkflow = {
+  getById,
+  getByIds,
   getAllByBoardId,
   getByBoardId,
   create,

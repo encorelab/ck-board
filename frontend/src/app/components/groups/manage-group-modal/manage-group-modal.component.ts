@@ -8,8 +8,7 @@ import { generateUniqueID } from 'src/app/utils/Utils';
 import { ConfirmModalComponent } from '../../confirm-modal/confirm-modal.component';
 import { MoveGroupMembersComponent } from '../move-group-members/move-group-members.component';
 import { GroupService } from 'src/app/services/group.service';
-import Group from 'src/app/models/group';
-import User from 'src/app/models/user';
+import { Group } from 'src/app/models/group';
 
 @Component({
   selector: 'app-manage-group-modal',
@@ -96,7 +95,7 @@ export class ManageGroupModalComponent implements OnInit {
       name: this.groupNameControl.value,
       members: [],
     };
-    this.groupService.create(group);
+    await this.groupService.create(group);
     this.groupNameControl.reset();
     this.groups.push(group);
   }
@@ -108,7 +107,7 @@ export class ManageGroupModalComponent implements OnInit {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this group?',
         handleConfirm: async () => {
-          this.groupService.delete(group.groupID);
+          await this.groupService.delete(group.groupID);
           this.groups.forEach((obj, index) => {
             if (obj.groupID == group.groupID) this.groups.splice(index, 1);
           });

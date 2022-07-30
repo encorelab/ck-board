@@ -1,25 +1,23 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import Group from '../models/group';
-import { SocketEvent } from '../utils/constants';
-import { SocketService } from './socket.service';
+import { Group } from '../models/group';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GroupService {
-  constructor(private http: HttpClient, private socketService: SocketService) {}
+  constructor(private http: HttpClient) {}
 
   getById(groupID: string): Promise<Group> {
-    return this.http.get<any>('groups/' + groupID).toPromise();
+    return this.http.get<Group>('groups/' + groupID).toPromise();
   }
 
   getByUserId(userID: string): Promise<Group[]> {
-    return this.http.get<any[]>('groups/user/' + userID).toPromise();
+    return this.http.get<Group[]>('groups/user/' + userID).toPromise();
   }
 
   getByProjectId(projectID: string): Promise<Group[]> {
-    return this.http.get<any[]>('groups/project/' + projectID).toPromise();
+    return this.http.get<Group[]>('groups/project/' + projectID).toPromise();
   }
 
   create(group: Group): Promise<Group> {
@@ -31,8 +29,6 @@ export class GroupService {
   }
 
   update(groupID: string, group: Partial<Group>) {
-    console.log(groupID);
-    console.log(group);
     return this.http.post<Group>('groups/' + groupID, group).toPromise();
   }
 

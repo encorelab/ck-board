@@ -13,10 +13,10 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import { UserService } from 'src/app/services/user.service';
-import User from 'src/app/models/user';
-import Group from 'src/app/models/group';
+import { User, Group } from 'src/app/models/group';
 import { GroupMembers } from 'src/app/models/groupMembers';
 import { ProjectService } from 'src/app/services/project.service';
+import { shuffle } from 'src/app/utils/Utils';
 
 @Component({
   selector: 'app-move-group-members',
@@ -133,12 +133,12 @@ export class MoveGroupMembersComponent implements OnInit {
     const members = this.removeDuplicateUsers(
       this.getAllMembersInSelectedGroups()
     );
-    const shuffledMembers = this.shuffleArray(members);
+    shuffle(members);
 
     this.clearUnassignedMembers();
     this.clearAllGroupMembers();
 
-    shuffledMembers.forEach((member, index) => {
+    members.forEach((member, index) => {
       this.groupMembers[index % this.groupMembers.length].members.push(member);
     });
     this.updateGroups.emit(this.getGroups());
@@ -184,21 +184,5 @@ export class MoveGroupMembersComponent implements OnInit {
       );
       this.updateGroups.emit(this.getGroups());
     }
-  }
-
-  // https://stackoverflow.com/a/2450976/4970939
-  // Uses Fisher-Yates shuffle https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-  private shuffleArray(array: any[]): any[] {
-    let currentIndex = array.length,
-      randomIndex;
-    while (currentIndex != 0) {
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-      [array[currentIndex], array[randomIndex]] = [
-        array[randomIndex],
-        array[currentIndex],
-      ];
-    }
-    return array;
   }
 }

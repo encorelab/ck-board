@@ -24,13 +24,14 @@
         <div
           cdkDrag
           *ngFor="let member of group.members; let j = index"
-          class="member-box"
+          class="group-member-box member-box"
         >
           {{ member.username }}
           <button 
             mat-icon-button
             matTooltip="Remove student from group"
             (click)="removeMember(i, j)"
+            class="icon-button"
           >
             <mat-icon>close</mat-icon>
           </button>

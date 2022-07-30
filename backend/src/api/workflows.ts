@@ -219,16 +219,12 @@ router.get('/groupTasks/board/:boardID/user/:userID', async (req, res) => {
   const {groupTaskID} = req.params;
   const {actions, posts, status} = req.body;
   
-  console.log(req.body)
   const update: Partial<GroupTaskModel> = Object.assign(
     {},
     actions === null ? null : { actions },
     posts === null ? null : { posts },
     status === null ? null : { status },
   );
-
-  console.log(groupTaskID)
-  console.log(update)
 
   const updatedGroupTask = await dalGroupTask.update(groupTaskID, update);
   res.status(200).json(updatedGroupTask);

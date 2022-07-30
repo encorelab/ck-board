@@ -132,7 +132,6 @@ export class CreateWorkflowModalComponent implements OnInit {
       workflows.forEach((workflow) => {
         this.workflows.push(workflow);
       });
-      console.log(workflows);
     });
   }
 

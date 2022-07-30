@@ -5,7 +5,7 @@ import dalWorkflow from './dalWorkflow';
 import { TaskWorkflowModel } from '../models/Workflow';
 import { isTask } from '../utils/workflow.helpers';
 
-interface GroupTaskExpanded {
+export interface GroupTaskExpanded {
   groupTask: GroupTaskModel;
   workflow: TaskWorkflowModel;
 }
@@ -118,6 +118,14 @@ export const remove = async (id: string) => {
   }
 };
 
+export const removeByWorkflow = async (workflowID: string) => {
+  try {
+    return await GroupTask.deleteMany({ workflowID });
+  } catch (err) {
+    throw new Error('500');
+  }
+}
+
 // Create specific function for marking tasks as complete? Or just do through update?
 
 export const update = async (
@@ -167,6 +175,7 @@ const dalGroupTask = {
   getByBoardAndUser,
   create,
   remove,
+  removeByWorkflow,
   update,
   updateMany,
 };

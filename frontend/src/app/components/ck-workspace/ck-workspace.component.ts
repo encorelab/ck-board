@@ -65,7 +65,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   runningGroupTask: ExpandedGroupTask | null;
   currentGroupProgress: number;
   averageGroupProgress: number;
-  averageGroupProgressSub: Subscription;
+  listeners: Subscription[] = [];
   posts: HTMLPost[] = [];
 
   Role: typeof Role = Role;
@@ -157,16 +157,21 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.currentGroupProgress = 0;
     this.averageGroupProgress = 0;
     this.posts = [];
-    this.averageGroupProgressSub.unsubscribe();
+    this.listeners.map((l) => l.unsubscribe());
   }
 
   async submit(): Promise<void> {
     if (!this.runningGroupTask) return;
 
-    const groupTask = await this.workflowService.updateGroupTask(
-      this.runningGroupTask.groupTask.groupTaskID,
-      { status: GroupTaskStatus.COMPLETE }
+    const task: GroupTask = this.runningGroupTask.groupTask;
+    await this.workflowService.updateGroupTask(task.groupTaskID, {
+      status: GroupTaskStatus.COMPLETE,
+    });
+
+    this.activeGroupTasks = this.activeGroupTasks.filter(
+      (g) => g.groupTask.groupTaskID !== task.groupTaskID
     );
+    this.completeGroupTasks.push(this.runningGroupTask);
 
     this.close();
   }
@@ -186,80 +191,104 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   private _startListening(): void {
-    this.socketService.listen(
-      SocketEvent.WORKFLOW_PROGRESS_UPDATE,
-      (updates) => {
-        const found = updates.find(
-          (u) => u.groupTaskID == this.runningGroupTask?.groupTask.groupTaskID
+    this.listeners.push(
+      this.socketService.listen(
+        SocketEvent.WORKFLOW_PROGRESS_UPDATE,
+        (updates) => {
+          console.log(updates);
+          const found = updates.find(
+            (u) =>
+              u.groupTask.groupTaskID ==
+              this.runningGroupTask?.groupTask.groupTaskID
+          );
+          if (found) {
+            this.runningGroupTask = found;
+            this.currentGroupProgress = this._calcGroupProgress(
+              this.runningGroupTask
+            );
+          }
+        }
+      )
+    );
+    this.listeners.push(
+      this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result: any) => {
+        const found = this.posts.find(
+          (p) => p.post.postID == result.upvote.postID
         );
         if (found) {
-          this.runningGroupTask = found;
-          this.currentGroupProgress = this._calcGroupProgress(
-            this.runningGroupTask
-          );
+          found.upvotes.push(result.upvote);
         }
-      }
+      })
     );
-    this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result: any) => {
-      const found = this.posts.find(
-        (p) => p.post.postID == result.upvote.postID
-      );
-      if (found) {
-        found.upvotes.push(result.upvote);
-      }
-    });
-    this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result: any) => {
-      const found = this.posts.find(
-        (p) => p.post.postID == result.upvote.postID
-      );
-      if (found) {
-        found.upvotes = found.upvotes.filter(
-          (upvote) => upvote.upvoteID != result.upvote.upvoteID
-        );
-      }
-    });
-    this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
-      const found = this.posts.find(
-        (p) => p.post.postID == result.comment.postID
-      );
-      if (found) {
-        found.comments += 1;
-      }
-    });
-    this.socketService.listen(
-      SocketEvent.POST_COMMENT_REMOVE,
-      (result: any) => {
+    this.listeners.push(
+      this.socketService.listen(
+        SocketEvent.POST_UPVOTE_REMOVE,
+        (result: any) => {
+          const found = this.posts.find(
+            (p) => p.post.postID == result.upvote.postID
+          );
+          if (found) {
+            found.upvotes = found.upvotes.filter(
+              (upvote) => upvote.upvoteID != result.upvote.upvoteID
+            );
+          }
+        }
+      )
+    );
+    this.listeners.push(
+      this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
         const found = this.posts.find(
           (p) => p.post.postID == result.comment.postID
         );
         if (found) {
-          found.comments -= 1;
+          found.comments += 1;
         }
-      }
+      })
     );
-    this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
-      const found = this.posts.find((p) => p.post.postID == post.postID);
-      if (found) {
-        found.post = post;
-      }
-    });
-    this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post, _tag }) => {
-      const found = this.posts.find((p) => p.post.postID == post.postID);
-      if (found) {
-        found.post = post;
-      }
-    });
-    this.averageGroupProgressSub = interval(30 * 1000).subscribe(async () => {
-      this.averageGroupProgress = await this._calcAverageProgress(
-        this.runningGroupTask
-      );
-    });
+    this.listeners.push(
+      this.socketService.listen(
+        SocketEvent.POST_COMMENT_REMOVE,
+        (result: any) => {
+          const found = this.posts.find(
+            (p) => p.post.postID == result.comment.postID
+          );
+          if (found) {
+            found.comments -= 1;
+          }
+        }
+      )
+    );
+    this.listeners.push(
+      this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
+        const found = this.posts.find((p) => p.post.postID == post.postID);
+        if (found) {
+          found.post = post;
+        }
+      })
+    );
+    this.listeners.push(
+      this.socketService.listen(
+        SocketEvent.POST_TAG_REMOVE,
+        ({ post, _tag }) => {
+          const found = this.posts.find((p) => p.post.postID == post.postID);
+          if (found) {
+            found.post = post;
+          }
+        }
+      )
+    );
+    this.listeners.push(
+      interval(30 * 1000).subscribe(async () => {
+        this.averageGroupProgress = await this._calcAverageProgress(
+          this.runningGroupTask
+        );
+      })
+    );
   }
 
   ngOnDestroy(): void {
+    this.listeners.map((l) => l.unsubscribe());
     this.socketService.disconnect(this.user.userID, this.board.boardID);
-    if (this.averageGroupProgressSub)
-      this.averageGroupProgressSub.unsubscribe();
   }
 
   private _calcGroupProgress(task: ExpandedGroupTask | null): number {

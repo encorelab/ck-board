@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import {
   WorkflowModel,
   Workflow,
@@ -5,6 +6,7 @@ import {
   DistributionWorkflow,
   TaskWorkflow,
 } from '../models/Workflow';
+import dalGroupTask from './dalGroupTask';
 
 export const getById = async (id: string) => {
   try {
@@ -92,14 +94,21 @@ export const updateTask = async (
 };
 
 export const remove = async (type: WorkflowType, id: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
+    let deleted;
     if (type == WorkflowType.DISTRIBUTION) {
-      return await DistributionWorkflow.findOneAndDelete({ workflowID: id });
+      deleted = await DistributionWorkflow.findOneAndDelete({ workflowID: id });
     } else if (type == WorkflowType.TASK) {
-      return await TaskWorkflow.findOneAndDelete({ workflowID: id });
+      deleted = await TaskWorkflow.findOneAndDelete({ workflowID: id });
     }
+    await dalGroupTask.removeByWorkflow(id);
+    return deleted;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
+  } finally {
+    session.endSession();
   }
 };
 

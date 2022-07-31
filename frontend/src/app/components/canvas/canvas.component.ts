@@ -344,6 +344,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
       ListModalComponent,
       {
         board: this.board,
+        user: this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top,
       },
       '95vw'
     );

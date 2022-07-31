@@ -1,3 +1,5 @@
+import AuthUser from "./user";
+
 export class Group {
   groupID: string;
   projectID: string;
@@ -6,15 +8,8 @@ export class Group {
   members: string[];
 }
 
-export class User {
-  userID: string;
-  email: string;
-  password: string;
-  username: string;
-  role: Role;
-}
-
-export enum Role {
-  TEACHER = 'TEACHER',
-  STUDENT = 'STUDENT',
+export class GroupMembers {
+  groupID: string;
+  groupName: string;
+  members: AuthUser[];
 }

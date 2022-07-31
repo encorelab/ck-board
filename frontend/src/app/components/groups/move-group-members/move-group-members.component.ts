@@ -13,10 +13,10 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import { UserService } from 'src/app/services/user.service';
-import { User, Group } from 'src/app/models/group';
-import { GroupMembers } from 'src/app/models/groupMembers';
+import { GroupMembers, Group } from 'src/app/models/group';
 import { ProjectService } from 'src/app/services/project.service';
 import { shuffle } from 'src/app/utils/Utils';
+import AuthUser from 'src/app/models/user';
 
 @Component({
   selector: 'app-move-group-members',
@@ -31,7 +31,7 @@ export class MoveGroupMembersComponent implements OnInit {
 
   groupMembers: GroupMembers[] = [];
   projectMembers: string[] = [];
-  unassigned: User[] = [];
+  unassigned: AuthUser[] = [];
 
   constructor(
     private userService: UserService,
@@ -152,8 +152,8 @@ export class MoveGroupMembersComponent implements OnInit {
     this.groupMembers.forEach((group) => (group.members = []));
   }
 
-  private getAllMembersInSelectedGroups(): User[] {
-    const members: User[] = [];
+  private getAllMembersInSelectedGroups(): AuthUser[] {
+    const members: AuthUser[] = [];
     this.groupMembers.forEach((group) => {
       members.push(...group.members);
     });
@@ -161,14 +161,14 @@ export class MoveGroupMembersComponent implements OnInit {
     return members;
   }
 
-  private removeDuplicateUsers(users: User[]): User[] {
+  private removeDuplicateUsers(users: AuthUser[]): AuthUser[] {
     const ids = users.map((user) => user.userID);
     return users.filter(
       ({ userID }, index) => !ids.includes(userID, index + 1)
     );
   }
 
-  drop(event: CdkDragDrop<User[]>) {
+  drop(event: CdkDragDrop<AuthUser[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,

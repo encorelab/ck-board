@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import WorkflowManager from '../agents/workflow.agent';
-import { GroupTaskModel } from '../models/GroupTask';
+import { GroupTaskModel, GroupTaskStatus } from '../models/GroupTask';
 import {
   DistributionWorkflowModel,
   TaskWorkflowModel,
@@ -10,6 +10,14 @@ import dalGroupTask from '../repository/dalGroupTask';
 import dalWorkflow from '../repository/dalWorkflow';
 
 const router = Router();
+
+/**
+ * 
+ * 
+ * DISTRIBUTION WORKFLOW API
+ * 
+ * 
+ */
 
 /**
  * Create a new distribution workflow.
@@ -96,6 +104,14 @@ router.delete('/distribution/:id', async (req, res) => {
 });
 
 /**
+ * 
+ * 
+ * TASK WORKFLOW API
+ * 
+ * 
+ */
+
+/**
  * Create a new task workflow.
  */
 router.post('/task', async (req, res) => {
@@ -166,9 +182,28 @@ router.get('/task/boards/:id', async (req, res) => {
 });
 
 /**
+ * Delete an existing task workflow.
+ */
+ router.delete('/task/:id', async (req, res) => {
+  const id = req.params.id;
+
+  await dalWorkflow.remove(WorkflowType.TASK, id);
+
+  res.status(200).end();
+});
+
+/**
+ * 
+ * 
+ * GROUP TASK API
+ * 
+ * 
+ */
+
+/**
  * Get a workflow's group task for one group.
  */
- router.get('/:workflowID/task/group/:groupID', async (req, res) => {
+ router.get('/task/:workflowID/groupTask/group/:groupID', async (req, res) => {
   const {workflowID, groupID} = req.params;
   const representation = req.query.representation as string;
 
@@ -185,7 +220,7 @@ router.get('/task/boards/:id', async (req, res) => {
 /**
  * Get all groups tasks for a workflow.
  */
- router.get('/:workflowID/task', async (req, res) => {
+ router.get('/task/:workflowID/groupTask', async (req, res) => {
   const {workflowID} = req.params;
   const representation = req.query.representation as string;
 
@@ -200,7 +235,7 @@ router.get('/task/boards/:id', async (req, res) => {
 /**
  * Get all groups tasks for a user by board.
  */
-router.get('/groupTasks/board/:boardID/user/:userID', async (req, res) => {
+router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
   const {boardID, userID} = req.params;
   const representation = req.query.representation as string;
 
@@ -215,7 +250,7 @@ router.get('/groupTasks/board/:boardID/user/:userID', async (req, res) => {
 /**
  * Update a group task.
  */
- router.post('/groupTasks/:groupTaskID', async (req, res) => {
+ router.post('/task/groupTask/:groupTaskID', async (req, res) => {
   const {groupTaskID} = req.params;
   const {actions, posts, status} = req.body;
   
@@ -231,15 +266,13 @@ router.get('/groupTasks/board/:boardID/user/:userID', async (req, res) => {
 });
 
 /**
- * Delete an existing task workflow.
+ * Update a group task.
  */
-router.delete('/task/:id', async (req, res) => {
-  const id = req.params.id;
-
-  await dalWorkflow.remove(WorkflowType.TASK, id);
-
-  res.status(200).end();
+ router.post('/task/groupTask/:groupTaskID/complete', async (req, res) => {
+  const {groupTaskID} = req.params;
+  
+  const updatedGroupTask = await dalGroupTask.update(groupTaskID, { status: GroupTaskStatus.COMPLETE });
+  res.status(200).json(updatedGroupTask);
 });
-
 
 export default router;

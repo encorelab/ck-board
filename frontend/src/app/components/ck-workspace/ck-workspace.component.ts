@@ -16,7 +16,6 @@ import {
   GroupTask,
   GroupTaskStatus,
   TaskActionType,
-  TaskWorkflow,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -48,9 +47,9 @@ SwiperCore.use([EffectCards]);
 export class CkWorkspaceComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
 
-  showInactive = true;
-  showActive = true;
-  showCompleted = true;
+  showInactive = false;
+  showActive = false;
+  showCompleted = false;
 
   user: AuthUser;
   group: Group;
@@ -112,12 +111,16 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     const tasks = await this.workflowService.getGroupTasks(boardID, 'expanded');
     tasks.forEach((t) => {
-      if (t.groupTask.status == GroupTaskStatus.INACTIVE)
+      if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
         this.inactiveGroupTasks.push(t);
-      else if (t.groupTask.status == GroupTaskStatus.ACTIVE)
+        this.showInactive = true;
+      } else if (t.groupTask.status == GroupTaskStatus.ACTIVE) {
         this.activeGroupTasks.push(t);
-      else if (t.groupTask.status == GroupTaskStatus.COMPLETE)
+        this.showActive = true;
+      } else if (t.groupTask.status == GroupTaskStatus.COMPLETE) {
         this.completeGroupTasks.push(t);
+        this.showCompleted = true;
+      }
     });
 
     this.socketService.connect(this.user.userID, this.board.boardID);
@@ -164,9 +167,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     if (!this.runningGroupTask) return;
 
     const task: GroupTask = this.runningGroupTask.groupTask;
-    await this.workflowService.updateGroupTask(task.groupTaskID, {
-      status: GroupTaskStatus.COMPLETE,
-    });
+    this.runningGroupTask.groupTask =
+      await this.workflowService.updateGroupTask(task.groupTaskID, {
+        status: GroupTaskStatus.COMPLETE,
+      });
 
     this.activeGroupTasks = this.activeGroupTasks.filter(
       (g) => g.groupTask.groupTaskID !== task.groupTaskID
@@ -195,7 +199,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       this.socketService.listen(
         SocketEvent.WORKFLOW_PROGRESS_UPDATE,
         (updates) => {
-          console.log(updates);
           const found = updates.find(
             (u) =>
               u.groupTask.groupTaskID ==

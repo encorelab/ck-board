@@ -78,63 +78,6 @@ export class WorkflowService {
       .toPromise();
   }
 
-  getGroupTask<T extends GroupTaskEntity>(
-    groupID: string,
-    workflowID: string,
-    representation: T
-  ): Promise<GroupTaskType<T>[]> {
-    return this.http
-      .get<GroupTaskType<T>[]>(
-        'workflows/' +
-          workflowID +
-          '/task/group/' +
-          groupID +
-          '?representation=' +
-          representation
-      )
-      .toPromise();
-  }
-
-  getGroupTasks<T extends GroupTaskEntity>(
-    boardID: string,
-    representation: T
-  ): Promise<GroupTaskType<T>[]> {
-    return this.http
-      .get<GroupTaskType<T>[]>(
-        'workflows/groupTasks/board/' +
-          boardID +
-          '/user/' +
-          this.userService.user?.userID +
-          '?representation=' +
-          representation
-      )
-      .toPromise();
-  }
-
-  getGroupTasksByWorkflow<T extends GroupTaskEntity>(
-    workflowID: string,
-    representation: T
-  ): Promise<GroupTaskType<T>[]> {
-    return this.http
-      .get<GroupTaskType<T>[]>(
-        'workflows/' +
-          workflowID +
-          '/task' +
-          '?representation=' +
-          representation
-      )
-      .toPromise();
-  }
-
-  updateGroupTask(
-    groupTaskID: string,
-    update: Partial<GroupTask>
-  ): Promise<GroupTask> {
-    return this.http
-      .post<GroupTask>('workflows/groupTasks/' + groupTaskID, update)
-      .toPromise();
-  }
-
   createTask(workflow: TaskWorkflow): Promise<TaskWorkflow> {
     return this.http
       .post<TaskWorkflow>('workflows/task/', workflow)
@@ -158,5 +101,54 @@ export class WorkflowService {
 
   runTask(workflowID: string): Promise<any> {
     return this.http.post<any>('workflows/task/' + workflowID, {}).toPromise();
+  }
+
+  getGroupTaskByWorkflowGroup<T extends GroupTaskEntity>(
+    groupID: string,
+    workflowID: string,
+    representation: T
+  ): Promise<GroupTaskType<T>[]> {
+    return this.http
+      .get<GroupTaskType<T>[]>(
+        `workflows/task/${workflowID}/groupTask/group/${groupID}?representation=${representation}`
+      )
+      .toPromise();
+  }
+
+  getGroupTasks<T extends GroupTaskEntity>(
+    boardID: string,
+    representation: T
+  ): Promise<GroupTaskType<T>[]> {
+    return this.http
+      .get<GroupTaskType<T>[]>(
+        `workflows/task/groupTask/board/${boardID}/user/${this.userService.user?.userID}?representation=${representation}`
+      )
+      .toPromise();
+  }
+
+  getGroupTasksByWorkflow<T extends GroupTaskEntity>(
+    workflowID: string,
+    representation: T
+  ): Promise<GroupTaskType<T>[]> {
+    return this.http
+      .get<GroupTaskType<T>[]>(
+        `workflows/task/${workflowID}/groupTask?representation=${representation}`
+      )
+      .toPromise();
+  }
+
+  updateGroupTask(
+    groupTaskID: string,
+    update: Partial<GroupTask>
+  ): Promise<GroupTask> {
+    return this.http
+      .post<GroupTask>('workflows/task/groupTask/' + groupTaskID, update)
+      .toPromise();
+  }
+
+  markGroupTaskComplete(groupTaskID: string): Promise<GroupTask> {
+    return this.http
+      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/complete`, {})
+      .toPromise();
   }
 }

@@ -1,4 +1,4 @@
-import AuthUser from "./user";
+import AuthUser from './user';
 
 export class Group {
   groupID: string;

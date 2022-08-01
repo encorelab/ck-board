@@ -28,9 +28,9 @@ export const getMultipleByIds = async (ids: string[]) => {
   }
 };
 
-export const getByUserId = async (id: string) => {
+export const getByProject = async (projectID: string) => {
   try {
-    const boards = await Board.find({ members: id });
+    const boards = await Board.find({ projectID });
     return boards;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -84,7 +84,7 @@ export const remove = async (id: string) => {
 const dalBoard = {
   getById,
   getMultipleByIds,
-  getByUserId,
+  getByProject,
   create,
   update,
   remove,

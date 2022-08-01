@@ -1,8 +1,24 @@
 import { Router } from 'express';
-import { BoardModel } from '../models/Board';
+import { BoardModel, BoardScope } from '../models/Board';
+import { ProjectModel } from '../models/Project';
+import { UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
+import dalProject from '../repository/dalProject';
 
 const router = Router();
+
+const validateAccess = (project: ProjectModel, board: BoardModel, user: UserModel) => {
+  const scope = board.scope;
+  if (scope == BoardScope.PROJECT_SHARED && project.members.includes(user.userID)) {
+    return true;
+  } else if (scope == BoardScope.PROJECT_PERSONAL && board.ownerID == user.userID) {
+    return true;
+  } else if (scope == BoardScope.PROJECT_PERSONAL && project.teacherID == user.userID) {
+    return true;
+  }
+
+  return false;
+}
 
 router.post('/', async (req, res) => {
   const board: BoardModel = req.body;
@@ -22,7 +38,7 @@ router.post('/:id', async (req, res) => {
   const id = req.params.id;
   const {
     name,
-    members,
+    scope,
     task,
     permissions,
     bgImage,
@@ -34,7 +50,7 @@ router.post('/:id', async (req, res) => {
   const board: Partial<BoardModel> = Object.assign(
     {},
     name === undefined ? null : { name },
-    members === undefined ? null : { members },
+    scope === undefined ? null : { scope },
     task === undefined ? null : { task },
     permissions === undefined ? null : { permissions },
     bgImage === undefined ? null : { bgImage },
@@ -49,16 +65,31 @@ router.post('/:id', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   const id = req.params.id;
+  const user: UserModel = res.locals.user;
 
   const board = await dalBoard.getById(id);
-  res.status(200).json(board);
+  
+  if (!board) return res.status(404).end('Board not found!');
+
+  const project = await dalProject.getById(board.projectID);
+  if (!project) return res.status(406).end('No project associated with board!');
+
+  if (validateAccess(project, board, user)) return res.status(200).json(board);
+  res.status(403).json(board);
 });
 
-router.get('/users/:id', async (req, res) => {
-  const id = req.params.id;
+router.get('/projects/:projectID', async (req, res) => {
+  const projectID: string = req.params.projectID;
+  const user = res.locals.user;
 
-  const boards = await dalBoard.getByUserId(id);
-  res.status(200).json(boards);
+  const boards = await dalBoard.getByProject(projectID);
+  if (boards.length < 1) return res.status(200).json(boards);
+
+  const project = await dalProject.getById(boards[0].projectID);
+  if (!project) return res.status(406).end('No project associated with board!');
+
+  const validated = boards.filter(board => validateAccess(project, board, user));
+  res.status(200).json(validated);
 });
 
 router.delete('/:id', async (req, res) => {

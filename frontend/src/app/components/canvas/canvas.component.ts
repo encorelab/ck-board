@@ -552,6 +552,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openTaskDialog() {
+    if (!this.board.task) return;
+
     const title = this.board.task.title
       ? this.board.task.title
       : 'No task created!';

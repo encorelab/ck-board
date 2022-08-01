@@ -48,14 +48,6 @@ export class ProjectGuard implements CanActivate {
         },
       });
     }
-    if (boardID) {
-      const isValidBoard = await this.isValidBoard(boardID);
-      if (!isValidBoard) {
-        this.router.navigate(['/error'], {
-          state: { code: 404, message: 'This board does not exist!' },
-        });
-      }
-    }
 
     return true;
   }
@@ -63,11 +55,6 @@ export class ProjectGuard implements CanActivate {
   async isValidProject(projectID: string) {
     this.project = await this.projectService.get(projectID);
     return this.project !== null;
-  }
-
-  async isValidBoard(boardID: string) {
-    this.board = await this.boardService.get(boardID);
-    return this.board !== null;
   }
 
   isProjectMember(): boolean {

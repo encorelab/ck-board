@@ -12,12 +12,12 @@ export class BoardService {
     return this.http.get<Board>('boards/' + boardID).toPromise();
   }
 
-  getMultiple(ids: string[]) {
-    return this.http.post<Board[]>('boards/multiple/', ids).toPromise();
+  getByProject(projectID: string): Promise<Board[]> {
+    return this.http.get<Board[]>('boards/projects/' + projectID).toPromise();
   }
 
-  getByUserID(id: string): Promise<Board[]> {
-    return this.http.get<Board[]>('boards/users/' + id).toPromise();
+  getMultiple(ids: string[]): Promise<Board[]> {
+    return this.http.post<Board[]>('boards/multiple/', ids).toPromise();
   }
 
   update(boardID: string, board: Partial<Board>): Promise<Board> {

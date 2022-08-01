@@ -5,7 +5,7 @@
     <button
       mat-icon-button
       [matMenuTriggerFor]="addMenu"
-      *ngIf="user && user.role == Role.TEACHER"
+      *ngIf="user && user.role === Role.TEACHER"
       matTooltip="Create Board"
     >
       <mat-icon>add</mat-icon>
@@ -17,11 +17,11 @@
     </mat-menu>
     <app-csv-download-button
       [projectID]="this.projectID"
-      *ngIf="user && user.role == Role.TEACHER && boards.length > 0"
+      *ngIf="user && user.role === Role.TEACHER"
     >
     </app-csv-download-button>
     <button
-      *ngIf="user && user.role == Role.TEACHER"
+      *ngIf="user && user.role === Role.TEACHER"
       mat-icon-button
       (click)="openSettingsDialog()"
       matTooltip="Adjust Settings"
@@ -40,22 +40,110 @@
       </button>
       <h3 class="mat-title" *ngIf="project">Boards for {{ project.name }}</h3>
     </div>
-    <div class="cards">
-      <ng-container *ngFor="let board of boards">
-        <mat-card
-          class="card"
-          (click)="handleBoardClick(board.boardID)"
-          (keyup.enter)="handleBoardClick(board.boardID)"
-          role="button"
-          tabindex="0"
-          [attr.aria-label]="'View ' + board.name"
-        >
-          <mat-card-title class="title accent">
-            <mat-icon color="accent">picture_in_picture</mat-icon>
-            <span>{{ board.name }}</span>
-          </mat-card-title>
-        </mat-card>
-      </ng-container>
-    </div>
+
+
+    <ng-container *ngIf="user.role === Role.TEACHER">
+      <div>
+        <button class="subheader-button" mat-button (click)="showPersonalBoards = !showPersonalBoards">
+          All Personal Boards ({{ personalBoards.length }})
+          <mat-icon>{{ showPersonalBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        <div *ngIf="showPersonalBoards" style="padding: 10px 0px">
+          <div class="cards">
+            <ng-container *ngFor="let board of personalBoards">
+              <mat-card
+                class="card"
+                (click)="handleBoardClick(board.boardID)"
+                (keyup.enter)="handleBoardClick(board.boardID)"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="'View ' + board.name"
+              >
+                <mat-card-title class="title accent">
+                  <mat-icon color="accent">picture_in_picture</mat-icon>
+                  <span>{{ board.name }}</span>
+                </mat-card-title>
+                <mat-card-content>
+                  <mat-chip-list>
+                    <mat-chip>
+                      <mat-icon class="tag-icon">lock</mat-icon>
+                      Personal
+                    </mat-chip>
+                  </mat-chip-list>
+                </mat-card-content>
+              </mat-card>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+      <div>
+        <button class="subheader-button" mat-button (click)="showSharedBoards = !showSharedBoards">
+          Shared Project Boards ({{ sharedBoards.length }})
+          <mat-icon>{{ showSharedBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        <div *ngIf="showSharedBoards" style="padding: 10px 0px">
+          <div class="cards">
+            <div *ngFor="let board of sharedBoards">
+              <mat-card
+                class="card"
+                (click)="handleBoardClick(board.boardID)"
+                (keyup.enter)="handleBoardClick(board.boardID)"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="'View ' + board.name"
+              >
+                <mat-card-title class="title accent">
+                  <mat-icon color="accent">picture_in_picture</mat-icon>
+                  <span>{{ board.name }}</span>
+                </mat-card-title>
+                <mat-card-content>
+                  <mat-chip-list>
+                    <mat-chip id="shared-chip">
+                      <mat-icon class="tag-icon">group</mat-icon>
+                      Shared
+                    </mat-chip>
+                  </mat-chip-list>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+
+
+
+    <ng-container *ngIf="user.role === Role.STUDENT">
+      <div class="cards">
+        <ng-container *ngFor="let board of personalBoards.concat(sharedBoards)">
+          <mat-card
+            class="card"
+            (click)="handleBoardClick(board.boardID)"
+            (keyup.enter)="handleBoardClick(board.boardID)"
+            role="button"
+            tabindex="0"
+            [attr.aria-label]="'View ' + board.name"
+          >
+            <mat-card-title class="title accent">
+              <mat-icon color="accent">picture_in_picture</mat-icon>
+              <span>{{ board.name }}</span>
+            </mat-card-title>
+            <mat-card-content>
+              <mat-chip-list>
+                <mat-chip *ngIf="board.scope === BoardScope.PROJECT_SHARED" id="shared-chip">
+                  <mat-icon class="tag-icon">group</mat-icon>
+                  Shared
+                </mat-chip>
+                <mat-chip *ngIf="board.scope === BoardScope.PROJECT_PERSONAL">
+                  <mat-icon class="tag-icon">lock</mat-icon>
+                  Personal
+                </mat-chip>
+              </mat-chip-list>
+            </mat-card-content>
+          </mat-card>
+        </ng-container>
+      </div>
+    </ng-container>
   </div>
 </div>

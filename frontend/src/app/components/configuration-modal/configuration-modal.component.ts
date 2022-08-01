@@ -44,8 +44,6 @@ export class ConfigurationModalComponent {
   initialZoom = 100;
   upvoteLimit = 5;
 
-  members: string[] = [];
-
   constructor(
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
     public dialog: MatDialog,
@@ -67,13 +65,6 @@ export class ConfigurationModalComponent {
     this.permissions = data.board.permissions;
     this.initialZoom = data.board.initialZoom;
     this.upvoteLimit = data.board.upvoteLimit;
-    data.board.members.map((id) => {
-      userService.getOneById(id).then((user) => {
-        if (user) {
-          this.members.push(user.username);
-        }
-      });
-    });
   }
 
   addTag() {

@@ -8,7 +8,7 @@ import { Tag } from 'src/app/models/tag';
 import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
-import { BoardPermissions } from 'src/app/models/board';
+import { BoardPermissions, BoardScope } from 'src/app/models/board';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -23,6 +23,7 @@ export class AddBoardModalComponent implements OnInit {
   permissions: BoardPermissions;
 
   boardName = '';
+  boardScope = BoardScope.PROJECT_SHARED;
 
   bgImgURL: any = null;
   bgImgSettings: ImageSettings;
@@ -98,8 +99,9 @@ export class AddBoardModalComponent implements OnInit {
       {
         projectID: this.selectedProject,
         boardID: this.boardID,
-        teacherID: this.data.user.userID,
+        ownerID: this.data.user.userID,
         name: this.boardName,
+        scope: this.boardScope,
         task: {
           title: this.taskTitle,
           message: this.taskMessage,
@@ -108,7 +110,6 @@ export class AddBoardModalComponent implements OnInit {
           ? { url: this.bgImgURL, imgSettings: this.bgImgSettings }
           : null,
         permissions: this.permissions,
-        members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),
         initialZoom: this.initialZoom,
         upvoteLimit: this.upvoteLimit,

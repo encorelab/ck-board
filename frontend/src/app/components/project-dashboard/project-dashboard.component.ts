@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Board } from 'src/app/models/board';
+import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 
 import User, { AuthUser, Role } from 'src/app/models/user';
@@ -17,13 +17,19 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./project-dashboard.component.scss'],
 })
 export class ProjectDashboardComponent implements OnInit {
-  boards: Board[] = [];
+  showPersonalBoards = true;
+  showSharedBoards = true;
+
+  personalBoards: Board[] = [];
+  sharedBoards: Board[] = [];
+
   project: Project;
   user: AuthUser;
   projectID: string;
   yourProjects: Project[] = [];
 
   Role: typeof Role = Role;
+  BoardScope: typeof BoardScope = BoardScope;
 
   constructor(
     public boardService: BoardService,
@@ -44,10 +50,14 @@ export class ProjectDashboardComponent implements OnInit {
 
   async getBoards() {
     this.project = await this.projectService.get(this.projectID);
-    for (const boardID of this.project.boards) {
-      const board = await this.boardService.get(boardID);
-      this.boards.push(board);
-    }
+    const boards = await this.boardService.getByProject(this.projectID);
+    boards.forEach((board) => {
+      if (board.scope == BoardScope.PROJECT_PERSONAL) {
+        this.personalBoards.push(board);
+      } else if (board.scope == BoardScope.PROJECT_SHARED) {
+        this.sharedBoards.push(board);
+      }
+    });
   }
 
   async getUsersProjects(id) {

@@ -2,21 +2,31 @@
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Board">
-      <mat-form-field
-        appearance="outline"
-        style="width: 100%; margin-top: 20px"
-      >
-        <mat-label>Board Name</mat-label>
-        <input
-          matInput
-          [(ngModel)]="boardName"
-          #boardNameInput="ngModel"
-          required
-        />
-        <mat-error *ngIf="boardNameInput.invalid">
-          Board Name is required.
-        </mat-error>
-      </mat-form-field>
+      <div class="board-name-form">
+        <mat-form-field
+          appearance="outline"
+          style="width: 45%;"
+        >
+          <mat-label>Board Name</mat-label>
+          <input
+            matInput
+            [(ngModel)]="boardName"
+            #boardNameInput="ngModel"
+            required
+          />
+          <mat-error *ngIf="boardNameInput.invalid">
+            Board Name is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-chip
+          class="chip"
+          color="accent"
+          selected
+          (click)="copyToClipboard()"
+        >
+          <span>Copy Embeddable Board URL</span>
+        </mat-chip>
+      </div>
       <div>
         <mat-label style="font-weight: bold"
           >Initial Zoom: {{ initialZoom }}%</mat-label
@@ -30,6 +40,19 @@
           thumbLabel
         ></mat-slider>
       </div>
+      <div style="display: flex; justify-content: space-between;">
+        <p>
+          <mat-checkbox [(ngModel)]="permissions.allowTracing"
+            >Allow tracing of board activity
+          </mat-checkbox>
+        </p>
+        <p>
+          <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent"
+            >Display task description when board is opened
+            </mat-checkbox>
+        </p>
+      </div>
+      <h2>Voting</h2>
       <div>
         <mat-label style="font-weight: bold"
           >Maximum Upvotes Per Student: {{ upvoteLimit }}</mat-label
@@ -43,46 +66,84 @@
           thumbLabel
         ></mat-slider>
       </div>
-      <p>
-        <mat-checkbox [(ngModel)]="permissions.allowTracing"
-          >Allow tracing of board activity
-        </mat-checkbox>
-      </p>
-      <p>
-        <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent"
-          >Display task description when board is opened
-          </mat-checkbox>
-      </p>
+
+      <h2>Background</h2>
       <div class="image-form">
-        <mat-chip (click)="compressFile()" color="primary" selected>
-          <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
-          Upload New Background Image
-        </mat-chip>
+        <div class="container">
+          <mat-chip
+            class="chip"
+            color="primary"
+            selected
+            (click)="compressFile()"
+          >
+            <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
+            <span>Upload New Background Image</span>
+          </mat-chip>
+          <mat-chip
+            class="chip"
+            *ngIf="currentBgImage && currentBgImage.url"
+            color="warn"
+            selected
+            (click)="removeImage()"
+          >
+            <mat-icon class="chip-icon">cancel</mat-icon>
+            <span>Remove Current Background Image</span>
+          </mat-chip>
+        </div>
+        <div>
+          <mat-label style="font-weight: bold">Background Size</mat-label>
+          <mat-slider
+            class="slider"
+            min="0"
+            max="200"
+            step="5"
+            thumbLabel
+          ></mat-slider>
+        </div>
+        <div class="bg-position-form">
+          <mat-form-field>
+            <mat-label>Background Pos X</mat-label>
+            <input
+              matInput
+              type="number"
+              required
+            />
+            <mat-error *ngIf="boardNameInput.invalid">
+              Board Name is required.
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Background Pos Y</mat-label>
+            <input
+              matInput
+              type="number"
+              required
+            />
+            <mat-error *ngIf="boardNameInput.invalid">
+              Board Name is required.
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      <h2>Clear/Delete Board</h2>
+      <div class="container">
         <mat-chip
-          *ngIf="currentBgImage && currentBgImage.url"
+          class="chip"
           color="warn"
           selected
-          (click)="removeImage()"
+          (click)="handleClearBoard()"
         >
-          <mat-icon class="chip-icon">cancel</mat-icon>
-          Remove Current Background Image
+          <mat-icon class="chip-icon">clear_all</mat-icon>
+          <span>Clear Board</span>
         </mat-chip>
-        <mat-chip mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
-          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
-          <span style="width: 100%;text-align: center;">
-          Clear Board
-          </span>
-        </mat-chip>
-        <mat-chip mat-raised-button color="accent" (click)="copyToClipboard()" style="text-align: center" selected>
-          <span style="width: 100%;text-align: center;">
-            Copy Embeddable Board URL
-          </span>
-        </mat-chip>
-        <mat-chip mat-raised-button color="warn" (click)="handleDeleteBoard()" style="text-align: center" selected>
-          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
-          <span style="width: 100%;text-align: center;">
-          Delete Board
-          </span>
+        <mat-chip
+          class="chip"
+          color="warn"
+          selected
+          (click)="handleDeleteBoard()"
+        >
+          <mat-icon class="chip-icon">delete</mat-icon>
+        <span>Delete Board</span>
         </mat-chip>
       </div>
     </mat-tab>

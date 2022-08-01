@@ -3,8 +3,28 @@
   padding-bottom: 20px;
 }
 
+.board-name-form {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+  gap: 30px;
+  align-items: center;
+}
+
+.board-name-form > .chip {
+  margin-top: -1.6em; // account for margin + padding from form field
+}
+
 .mat-radio-button ~ .mat-radio-button {
   margin-left: 16px;
+}
+
+.chip {
+  width: 45%;
+}
+
+.chip > span {
+  margin: auto;
 }
 
 .chip-icon {
@@ -17,8 +37,18 @@
 .image-form {
   display: flex;
   flex-direction: column;
-  width: fit-content;
   margin-top: 15px;
+}
+
+.bg-position-form {
+  display: inline-flex;
+  gap: 20px;
+}
+
+.container {
+  width: 100%;
+  display: inline-flex;
+  gap: 30px;
 }
 
 .image-form > * {

@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import { mongo, Mongoose } from 'mongoose';
+import { NotFoundError } from '../errors/client.errors';
+import { InternalServerError } from '../errors/server.errors';
 import { BoardScope } from '../models/Board';
-import { ProjectModel } from '../models/Project';
+import Project, { ProjectModel } from '../models/Project';
 import { Role, UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
 import dalProject from '../repository/dalProject';
+import { getErrorMessage } from '../utils/errors';
 import { getDefaultBoardPermissions, getDefaultBoardTags } from '../utils/utils';
 
 const router = Router();
@@ -13,7 +16,7 @@ router.post('/', async (req, res) => {
   const project: ProjectModel = req.body;
   const user: UserModel = res.locals.user;
 
-  if (user.role != Role.TEACHER || user.userID != project.teacherID) {
+  if (!project.teacherIDs.includes(user.userID)) {
     return res.status(403).end('Unauthorized to create project.');
   }
 
@@ -45,8 +48,15 @@ router.post('/join', async (req, res) => {
   const user: UserModel = res.locals.user;
 
   try {
-    let project = await dalProject.addUser(code, user.userID);
-
+    let project;
+    if (user.role === Role.STUDENT) {
+      project = await dalProject.addStudent(code, user.userID);
+    } else if (user.role === Role.TEACHER) {
+      project = await dalProject.addTeacher(code, user.userID);
+    } else {
+      return res.status(500).end('No role associated with user!');
+    }
+    
     if (project.personalBoardSetting.enabled) {
       const image = project.personalBoardSetting.bgImage;
       const boardID = (new mongo.ObjectId()).toString()
@@ -63,12 +73,13 @@ router.post('/join', async (req, res) => {
         initialZoom: 100,
         upvoteLimit: 5,
       });
-      project = await project.updateOne({ boards: [board.boardID] })
+      project = await Project.findOneAndUpdate({ projectID: project.projectID }, { $push: { boards: boardID } }, { new: true });
     }
 
     return res.status(200).json(project);
   } catch (e) {
-    return res.status(500).json(e);
+    if (e instanceof NotFoundError) return res.status(e.statusCode).end(e.message);
+    return res.status(500).end('Internal Server Error');
   }
 });
 

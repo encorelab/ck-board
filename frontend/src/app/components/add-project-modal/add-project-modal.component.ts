@@ -47,11 +47,12 @@ export class AddProjectModalComponent implements OnInit {
     const projectID = generateUniqueID();
     this.data.createProject({
       projectID: projectID,
-      teacherID: this.data.user.userID,
+      teacherIDs: [this.data.user.userID],
       name: this.name,
       members: [this.data.user.userID],
       boards: [],
-      joinCode: generateCode(5).toString(),
+      studentJoinCode: generateCode(5).toString(),
+      teacherJoinCode: generateCode(5).toString(),
       personalBoardSetting: this.personalBoardSetting,
     });
     this.dialogRef.close();

@@ -15,7 +15,7 @@ export class ProjectModel {
   public projectID!: string;
 
   @prop({ required: true })
-  public teacherID!: string;
+  public teacherIDs!: string[];
 
   @prop({ required: true })
   public name!: string;
@@ -30,7 +30,10 @@ export class ProjectModel {
   public boards!: string[];
 
   @prop({ required: true })
-  public joinCode!: string;
+  public studentJoinCode!: string;
+
+  @prop({ required: true })
+  public teacherJoinCode!: string;
 
   @prop({ required: true, type: () => PersonalBoardSetting })
   public personalBoardSetting!: PersonalBoardSetting;

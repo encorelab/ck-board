@@ -30,13 +30,13 @@ export class ProjectGuard implements CanActivate {
     _state: RouterStateSnapshot
   ): Promise<boolean> {
     const projectID = next.params.projectID;
-    const boardID = next.params.boardID;
 
     const isValidProject = await this.isValidProject(projectID);
     if (!isValidProject) {
       this.router.navigate(['/error'], {
         state: { code: 404, message: 'This project does not exist!' },
       });
+      return false;
     }
 
     const isMember = this.isProjectMember();
@@ -47,6 +47,7 @@ export class ProjectGuard implements CanActivate {
           message: 'You do not have access to this project!',
         },
       });
+      return false;
     }
 
     return true;

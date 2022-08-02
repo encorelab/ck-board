@@ -13,7 +13,7 @@ const validateAccess = (project: ProjectModel, board: BoardModel, user: UserMode
     return true;
   } else if (scope == BoardScope.PROJECT_PERSONAL && board.ownerID == user.userID) {
     return true;
-  } else if (scope == BoardScope.PROJECT_PERSONAL && project.teacherID == user.userID) {
+  } else if (scope == BoardScope.PROJECT_PERSONAL && project.teacherIDs.includes(user.userID)) {
     return true;
   }
 
@@ -75,7 +75,7 @@ router.get('/:id', async (req, res) => {
   if (!project) return res.status(406).end('No project associated with board!');
 
   if (validateAccess(project, board, user)) return res.status(200).json(board);
-  res.status(403).json(board);
+  res.status(403).end('Access to board is forbidden!');
 });
 
 router.get('/projects/:projectID', async (req, res) => {

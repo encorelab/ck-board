@@ -26,12 +26,14 @@ export class JoinProjectModalComponent implements OnInit {
 
   joinProject() {
     this.projectService
-      .joinProject(this.inputCode, this.userService.user!.userID)
+      .joinProject(this.inputCode)
       .then((project) => {
         this.dialogRef.close();
         this.router.navigate(['project/' + project.projectID]);
       })
-      .catch((e) => this.showError(e));
+      .catch((e) => {
+        this.showError(e.error);
+      });
   }
 
   onNoClick(): void {

@@ -7,10 +7,11 @@ export class PersonalBoardSetting {
 
 export class Project {
   projectID: string;
-  teacherID: string;
+  teacherIDs: string[];
   name: string;
   boards: string[];
   members: string[];
-  joinCode: string;
+  studentJoinCode: string;
+  teacherJoinCode: string;
   personalBoardSetting: PersonalBoardSetting;
 }

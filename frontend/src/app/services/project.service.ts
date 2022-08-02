@@ -26,9 +26,7 @@ export class ProjectService {
       .toPromise();
   }
 
-  joinProject(code: string, userID: string) {
-    return this.http
-      .post<Project>('projects/join', { code, userID })
-      .toPromise();
+  joinProject(code: string) {
+    return this.http.post<Project>(`projects/join`, { code }).toPromise();
   }
 }

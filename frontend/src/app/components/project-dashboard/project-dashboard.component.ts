@@ -20,11 +20,13 @@ export class ProjectDashboardComponent implements OnInit {
   showPersonalBoards = true;
   showSharedBoards = true;
 
-  personalBoards: Board[] = [];
+  teacherPersonalBoards: Board[] = [];
+  studentPersonalBoards: Board[] = [];
   sharedBoards: Board[] = [];
 
   project: Project;
   user: AuthUser;
+  teachers: AuthUser[];
   projectID: string;
   yourProjects: Project[] = [];
 
@@ -53,7 +55,10 @@ export class ProjectDashboardComponent implements OnInit {
     const boards = await this.boardService.getByProject(this.projectID);
     boards.forEach((board) => {
       if (board.scope == BoardScope.PROJECT_PERSONAL) {
-        this.personalBoards.push(board);
+        const isTeacher = this.project.teacherIDs.includes(board.ownerID);
+        isTeacher
+          ? this.teacherPersonalBoards.push(board)
+          : this.studentPersonalBoards.push(board);
       } else if (board.scope == BoardScope.PROJECT_SHARED) {
         this.sharedBoards.push(board);
       }

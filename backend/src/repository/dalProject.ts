@@ -1,3 +1,4 @@
+import { NotFoundError } from '../errors/client.errors';
 import Project, { ProjectModel } from '../models/Project';
 
 export const getById = async (id: string) => {
@@ -18,28 +19,25 @@ export const getByUserId = async (id: string) => {
   }
 };
 
-export const addUser = async (code: string, userID: string) => {
-  try {
-    const project = await Project.findOne({ joinCode: code });
-    if (!project) {
-      throw new Error('Project with specified join code does not exist!');
-    }
-    await project.updateOne({ $push: { members: userID } });
-
-    return project;
-  } catch (err) {
-    throw new Error(JSON.stringify(err, null, ' '));
+export const addStudent = async (code: string, userID: string) => {
+  const project = await Project.findOne({ studentJoinCode: code });
+  if (!project) {
+    throw new NotFoundError('Invalid Join Code!');
   }
+  await project.updateOne({ $push: { members: userID } });
+
+  return project;
 }
 
-export const getByJoinCode = async (code: string) => {
-  try {
-    const project = await Project.findOne({ joinCode: code });
-    return project;
-  } catch (err) {
-    throw new Error(JSON.stringify(err, null, ' '));
+export const addTeacher = async (code: string, userID: string) => {
+  const project = await Project.findOne({ teacherJoinCode: code });
+  if (!project) {
+    throw new NotFoundError('Invalid Join Code!');
   }
-};
+  await project.updateOne({ $push: { teacherIDs: userID, members: userID } });
+
+  return project;
+}
 
 export const create = async (project: ProjectModel) => {
   try {
@@ -79,9 +77,9 @@ export const removeBoard = async (id: string, boardID: string) => {
 const dalProject = {
   getById,
   getByUserId,
-  getByJoinCode,
   create,
-  addUser,
+  addStudent,
+  addTeacher,
   update,
   removeBoard,
 };

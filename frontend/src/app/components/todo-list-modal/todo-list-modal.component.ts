@@ -105,7 +105,7 @@ export class TodoListModalComponent implements OnInit {
         userID: this.userID,
         onComplete: async (todoItem: TodoItem) => {
           this.todoItems.push(todoItem);
-          let data = this.dataSource.data;
+          const data = this.dataSource.data;
           data.push(todoItem);
           this.dataSource.data = data;
         },

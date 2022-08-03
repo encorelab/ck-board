@@ -1,0 +1,20 @@
+.table {
+  width: 100%;
+}
+
+.mat-column-task-title {
+  padding-left: 16px;
+  font-size: 18px;
+}
+
+.mat-column-deadline {
+  font-style: italic;
+  font-size: 18px;
+}
+
+.addTodoItemButton{
+  float: left;
+  position: absolute; 
+  right: 0; 
+  margin: 10px 0;
+}

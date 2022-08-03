@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
+import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
@@ -94,6 +95,16 @@ export class ProjectDashboardComponent implements OnInit {
       data: {
         project: this.project,
         updateProjectName: this.updateProjectName,
+      },
+    });
+  }
+
+  openTodoList() {
+    this.dialog.open(TodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+        user: this.user,
       },
     });
   }

@@ -44,6 +44,8 @@ import { NotificationDropdownComponent } from './components/notification-dropdow
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AutofocusDirective } from './autofocus.directive';
+import { TodoListModalComponent } from './components/todo-list-modal/todo-list-modal.component';
+import { AddTodoListModalComponent } from './components/add-todo-list-modal/add-todo-list-modal.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -79,6 +81,8 @@ export function tokenGetter() {
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
     AutofocusDirective,
+    TodoListModalComponent,
+    AddTodoListModalComponent,
   ],
   imports: [
     BrowserModule,

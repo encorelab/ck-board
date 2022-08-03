@@ -4,6 +4,14 @@
     <span style="flex: 1 1 auto"></span>
     <button
       mat-icon-button
+      *ngIf="user && user.role === Role.STUDENT"
+      (click)="openTodoList()"
+      matTooltip="Todo List"
+    >
+      <mat-icon>view_list</mat-icon>
+    </button>
+    <button
+      mat-icon-button
       [matMenuTriggerFor]="addMenu"
       *ngIf="user && user.role == Role.TEACHER"
       matTooltip="Create Board"

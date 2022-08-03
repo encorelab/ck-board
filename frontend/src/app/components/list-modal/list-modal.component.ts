@@ -195,6 +195,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
       onComplete: async (post: Post) => {
         const htmlPost = await this.converters.toHTMLPost(post);
         this.posts.push(htmlPost);
+        this.filterPosts();
       },
     };
     this.dialog.open(AddPostComponent, {

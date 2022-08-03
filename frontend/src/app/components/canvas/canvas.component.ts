@@ -176,8 +176,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handlePostCreateEvent = (post: Post) => {
-    const fabricPost = new FabricPostComponent(post);
-    this.canvas.add(fabricPost);
+    if (post.type === PostType.BOARD) {
+      const fabricPost = new FabricPostComponent(post);
+      this.canvas.add(fabricPost);
+    }
   };
 
   handlePostUpdateEvent = (post: Post) => {

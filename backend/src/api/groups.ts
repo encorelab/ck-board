@@ -47,7 +47,6 @@ router.post('/:id', async (req, res) => {
     name === null ? null : { name },
     members === null ? null : { members }
   );
-
   const updatedGroup = await dalGroup.update(id, group);
   res.status(200).json(updatedGroup);
 });

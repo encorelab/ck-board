@@ -48,6 +48,7 @@ import { getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
+import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 
 @Component({
   selector: 'app-canvas',
@@ -470,6 +471,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
         if (previousBoard.initialZoom !== board.initialZoom) {
           this.configureZoom();
         }
+      },
+    });
+  }
+
+  openGroupDialog() {
+    this.dialog.open(ManageGroupModalComponent, {
+      data: {
+        project: this.project,
       },
     });
   }

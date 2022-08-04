@@ -8,6 +8,7 @@ import {
   DistributionWorkflowModel,
   WorkflowModel,
   DistributionWorkflowType,
+  Container,
 } from '../models/Workflow';
 import dalBucket from '../repository/dalBucket';
 import dalPost from '../repository/dalPost';
@@ -19,6 +20,7 @@ import {
   cloneManyToBoard,
   distribute,
   shuffle,
+  removePostFromSource,
 } from '../utils/workflow.helpers';
 
 export const run = async (
@@ -29,107 +31,151 @@ export const run = async (
   }
 };
 
-export const runDistributionWorkflow = async (
-  workflow: DistributionWorkflowModel
+export const randomDistributionWorkflow = async (
+  workflow: DistributionWorkflowModel,
+  source: Container,
+  destinations: Container[],
+  removeFromSource: boolean
 ) => {
-  const { source, destinations } = workflow;
-  if (
-    workflow.distributionWorkflowType.type === DistributionWorkflowType.RANDOM
-  ) {
-    let sourcePosts;
-    if (source.type == ContainerType.BOARD) {
-      sourcePosts = await dalPost.getByBoard(source.id);
-      sourcePosts = sourcePosts.map((p) => p.postID);
+  let sourcePosts;
+  if (source.type == ContainerType.BOARD) {
+    sourcePosts = await dalPost.getByBoard(source.id);
+    sourcePosts = sourcePosts.map((p) => p.postID);
+  } else {
+    const bucket: BucketModel | null = await dalBucket.getById(source.id);
+    sourcePosts = bucket ? bucket.posts : [];
+  }
+  const split: string[][] = await distribute(
+    shuffle(sourcePosts),
+    workflow.distributionWorkflowType.data
+  );
+
+  for (let i = 0; i < destinations.length; i++) {
+    const destination = destinations[i];
+    const posts = split[i];
+
+    if (destination.type == ContainerType.BOARD) {
+      const originals: PostModel[] = await convertPostsFromID(posts);
+      const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
+      await dalPost.createMany(copied);
     } else {
-      const bucket: BucketModel | null = await dalBucket.getById(source.id);
-      sourcePosts = bucket ? bucket.posts : [];
+      await dalBucket.addPost(destination.id, posts);
     }
-    const split: string[][] = await distribute(
-      shuffle(sourcePosts),
-      workflow.distributionWorkflowType.data
-    );
+  }
 
-    for (let i = 0; i < destinations.length; i++) {
-      const destination = destinations[i];
-      const posts = split[i];
+  if (removeFromSource) removePostFromSource(source, sourcePosts);
+};
 
-      if (destination.type == ContainerType.BOARD) {
-        const originals: PostModel[] = await convertPostsFromID(posts);
-        const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
-        await dalPost.createMany(copied);
-      } else {
-        await dalBucket.addPost(destination.id, posts);
-      }
-    }
-  } else if (
-    workflow.distributionWorkflowType.type === DistributionWorkflowType.TAG
-  ) {
-    let sourcePosts: PostModel[] = [];
-    const filteredPosts: string[] = [];
-    if (source.type == ContainerType.BOARD) {
-      sourcePosts = await dalPost.getByBoard(source.id);
-      sourcePosts.forEach((post) => {
-        post.tags.forEach((tag) => {
+export const tagDistributionWorkflow = async (
+  workflow: DistributionWorkflowModel,
+  source: Container,
+  destinations: Container[],
+  removeFromSource: boolean
+) => {
+  let sourcePosts: PostModel[] = [];
+  const filteredPosts: string[] = [];
+  if (source.type == ContainerType.BOARD) {
+    sourcePosts = await dalPost.getByBoard(source.id);
+    sourcePosts.forEach((post) => {
+      post.tags.forEach((tag) => {
+        if (tag.tagID === workflow.distributionWorkflowType.data.tagID) {
+          filteredPosts.push(post.postID);
+        }
+      });
+    });
+  } else {
+    const bucket: BucketModel | null = await dalBucket.getById(source.id);
+    if (bucket) {
+      bucket.posts.forEach(async (postID) => {
+        const post = await dalPost.getById(postID);
+        post?.tags.forEach((tag) => {
           if (tag.tagID === workflow.distributionWorkflowType.data.tagID) {
-            filteredPosts.push(post.postID);
+            filteredPosts.push(post?.postID);
           }
         });
       });
-    } else {
-      const bucket: BucketModel | null = await dalBucket.getById(source.id);
-      if (bucket) {
-        bucket.posts.forEach(async (postID) => {
-          const post = await dalPost.getById(postID);
-          post?.tags.forEach((tag) => {
-            if (tag.tagID === workflow.distributionWorkflowType.data.tagID) {
-              filteredPosts.push(post?.postID);
-            }
-          });
-        });
-      }
     }
+  }
 
-    for (let i = 0; i < destinations.length; i++) {
-      const destination = destinations[i];
-      if (destination.type == ContainerType.BOARD) {
-        const originals: PostModel[] = await convertPostsFromID(filteredPosts);
-        const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
-        await dalPost.createMany(copied);
-      } else {
-        await dalBucket.addPost(destination.id, filteredPosts);
-      }
+  for (let i = 0; i < destinations.length; i++) {
+    const destination = destinations[i];
+    if (destination.type == ContainerType.BOARD) {
+      const originals: PostModel[] = await convertPostsFromID(filteredPosts);
+      const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
+      await dalPost.createMany(copied);
+    } else {
+      await dalBucket.addPost(destination.id, filteredPosts);
     }
+  }
+
+  if (removeFromSource) removePostFromSource(source, filteredPosts);
+};
+
+export const upvoteDistributionWorkflow = async (
+  workflow: DistributionWorkflowModel,
+  source: Container,
+  destinations: Container[],
+  removeFromSource: boolean
+) => {
+  let sourcePosts;
+  const filteredPosts: string[] = [];
+  if (source.type == ContainerType.BOARD) {
+    sourcePosts = await dalPost.getByBoard(source.id);
+    sourcePosts = sourcePosts.map((p) => p.postID);
+  } else {
+    const bucket: BucketModel | null = await dalBucket.getById(source.id);
+    sourcePosts = bucket ? bucket.posts : [];
+  }
+
+  for (let i = 0; i < sourcePosts.length; i++) {
+    const upvotes = await dalVote.getAmountByPost(sourcePosts[i]);
+    if (upvotes >= workflow.distributionWorkflowType.data) {
+      filteredPosts.push(sourcePosts[i]);
+    }
+  }
+
+  for (let i = 0; i < destinations.length; i++) {
+    const destination = destinations[i];
+    if (destination.type == ContainerType.BOARD) {
+      const originals: PostModel[] = await convertPostsFromID(filteredPosts);
+      const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
+      await dalPost.createMany(copied);
+    } else {
+      await dalBucket.addPost(destination.id, filteredPosts);
+    }
+  }
+
+  if (removeFromSource) removePostFromSource(source, filteredPosts);
+};
+
+export const runDistributionWorkflow = async (
+  workflow: DistributionWorkflowModel
+) => {
+  const { source, destinations, removeFromSource } = workflow;
+  if (
+    workflow.distributionWorkflowType.type === DistributionWorkflowType.RANDOM
+  ) {
+    randomDistributionWorkflow(
+      workflow,
+      source,
+      destinations,
+      removeFromSource
+    );
+  } else if (
+    workflow.distributionWorkflowType.type === DistributionWorkflowType.TAG
+  ) {
+    tagDistributionWorkflow(workflow, source, destinations, removeFromSource);
   } else if (
     workflow.distributionWorkflowType.type === DistributionWorkflowType.UPVOTES
   ) {
-    let sourcePosts;
-    const filteredPosts: string[] = [];
-    if (source.type == ContainerType.BOARD) {
-      sourcePosts = await dalPost.getByBoard(source.id);
-      sourcePosts = sourcePosts.map((p) => p.postID);
-    } else {
-      const bucket: BucketModel | null = await dalBucket.getById(source.id);
-      sourcePosts = bucket ? bucket.posts : [];
-    }
-
-    for (let i = 0; i < sourcePosts.length; i++) {
-      const upvotes = await dalVote.getAmountByPost(sourcePosts[i]);
-      if (upvotes >= workflow.distributionWorkflowType.data) {
-        filteredPosts.push(sourcePosts[i]);
-      }
-    }
-
-    for (let i = 0; i < destinations.length; i++) {
-      const destination = destinations[i];
-      if (destination.type == ContainerType.BOARD) {
-        const originals: PostModel[] = await convertPostsFromID(filteredPosts);
-        const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
-        await dalPost.createMany(copied);
-      } else {
-        await dalBucket.addPost(destination.id, filteredPosts);
-      }
-    }
+    upvoteDistributionWorkflow(
+      workflow,
+      source,
+      destinations,
+      removeFromSource
+    );
   }
+
   await dalWorkflow.updateDistribution(workflow.workflowID, {
     active: false,
   });

@@ -84,7 +84,10 @@
         </section>
         <section>
           <h4>Choose Distribution:</h4>
-          <mat-radio-group [(ngModel)]="distributionWorkflowType">
+          <mat-radio-group 
+            [(ngModel)]="distributionWorkflowType"
+            [formControl]="workflowTypeFormControl"
+          >
               <mat-radio-button value="RANDOM">Random</mat-radio-button>
               <mat-radio-button value="TAG">Tag</mat-radio-button>
               <mat-radio-button value="UPVOTES">Upvotes</mat-radio-button>
@@ -129,6 +132,9 @@
             </section>
           </div>
         </section>
+        <p>
+          <mat-checkbox [(ngModel)]="removeFromSource">Remove From Source</mat-checkbox>
+        </p>
       </div>
     </mat-tab>
     <mat-tab label="Manage Workflows">

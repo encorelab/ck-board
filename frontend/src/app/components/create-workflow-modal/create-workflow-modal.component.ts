@@ -51,6 +51,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   postsPerBucket: number;
   distributionWorkflowType: DistributionWorkflowType;
+  removeFromSource = false;
 
   bucketNameFormControl = new FormControl('valid', [
     Validators.required,
@@ -59,6 +60,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   workflowNameFormControl = new FormControl('valid', [Validators.required]);
   sourceFormControl = new FormControl('valid', [Validators.required]);
   destinationFormControl = new FormControl('valid', [Validators.required]);
+  workflowTypeFormControl = new FormControl('valid', [Validators.required]);
+  removeFromSourceFormControl = new FormControl('valid', [Validators.required]);
   tagsFormControl = new FormControl();
 
   matcher = new MyErrorStateMatcher();
@@ -139,6 +142,12 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.workflowService.createDistribution(workflow).then(async () => {
       await this.loadWorkflows();
       this.selected.setValue(2);
+      this.workflowNameFormControl.reset();
+      this.sourceFormControl.reset();
+      this.destinationFormControl.reset();
+      this.tagsFormControl.reset();
+      this.workflowTypeFormControl.reset();
+      this.removeFromSourceFormControl.reset();
     });
   }
 
@@ -231,6 +240,7 @@ export class CreateWorkflowModalComponent implements OnInit {
         type: this.distributionWorkflowType,
         data: this._distributionWorkflowTypeData(),
       },
+      removeFromSource: this.removeFromSource,
     };
 
     return workflow;

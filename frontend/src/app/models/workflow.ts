@@ -34,6 +34,7 @@ export class Workflow {
 export class DistributionWorkflow extends Workflow {
   // postsPerDestination: number;
   distributionWorkflowType: DistributionWorkflowTypeModel;
+  removeFromSource: boolean;
 }
 
 const workflows = {

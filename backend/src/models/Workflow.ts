@@ -80,6 +80,9 @@ export class WorkflowModel {
 export class DistributionWorkflowModel extends WorkflowModel {
   @prop({ required: true, type: () => DistributionWorkflowTypeModel })
   public distributionWorkflowType!: DistributionWorkflowTypeModel;
+
+  @prop({ required: true })
+  public removeFromSource!: boolean;
 }
 
 export class TaskWorkflowModel extends WorkflowModel {

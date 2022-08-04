@@ -1,13 +1,31 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
+import {
+  prop,
+  getModelForClass,
+  modelOptions,
+  getDiscriminatorModelForClass,
+} from '@typegoose/typegoose';
 
-export enum DestinationType {
-  BOARD = "BOARD",
-  BUCKET = "BUCKET",
+import { GroupModel } from './Group';
+
+export enum WorkflowType {
+  DISTRIBUTION = 'DISTRIBUTION',
+  TASK = 'TASK',
 }
 
-export class Destination {
-  @prop({ enum: DestinationType, type: String, required: true })
-  public type!: DestinationType;
+export enum ContainerType {
+  BOARD = 'BOARD',
+  BUCKET = 'BUCKET',
+}
+
+export enum TaskActionType {
+  LIKE = 'LIKE',
+  COMMENT = 'COMMENT',
+  TAG = 'TAG',
+}
+
+export class Container {
+  @prop({ enum: ContainerType, type: String, required: true })
+  public type!: ContainerType;
 
   @prop({ required: true })
   public id!: string;
@@ -16,7 +34,15 @@ export class Destination {
   public name!: string;
 }
 
-@modelOptions({ schemaOptions: { collection: "workflows", timestamps: true } })
+export class TaskAction {
+  @prop({ enum: TaskActionType, type: String, required: true })
+  public type!: TaskActionType;
+
+  @prop({ required: true })
+  public amountRequired!: number;
+}
+
+@modelOptions({ schemaOptions: { collection: 'workflows', timestamps: true } })
 export class WorkflowModel {
   @prop({ required: true })
   public workflowID!: string;
@@ -30,14 +56,40 @@ export class WorkflowModel {
   @prop({ required: true })
   public name!: string;
 
-  @prop({ required: true, type: () => Destination })
-  public source!: Destination;
+  @prop({ required: true, type: () => Container })
+  public source!: Container;
 
-  @prop({ required: true, type: () => [Destination] })
-  public destinations!: Destination[];
+  @prop({ required: true, type: () => [Container] })
+  public destinations!: Container[];
+}
 
+export class DistributionWorkflowModel extends WorkflowModel {
   @prop({ required: true })
   public postsPerDestination!: number;
 }
 
-export default getModelForClass(WorkflowModel);
+export class TaskWorkflowModel extends WorkflowModel {
+  @prop({ required: true })
+  public prompt!: string;
+
+  @prop({ required: true, type: () => [TaskAction] })
+  public requiredActions!: TaskAction[];
+
+  @prop({ required: true, type: () => [GroupModel] })
+  public assignedGroups!: GroupModel[];
+
+  @prop({ required: true })
+  public postsPerGroup!: number;
+}
+
+export const Workflow = getModelForClass(WorkflowModel);
+export const DistributionWorkflow = getDiscriminatorModelForClass(
+  Workflow,
+  DistributionWorkflowModel,
+  WorkflowType.DISTRIBUTION
+);
+export const TaskWorkflow = getDiscriminatorModelForClass(
+  Workflow,
+  TaskWorkflowModel,
+  WorkflowType.TASK
+);

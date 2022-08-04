@@ -1,49 +1,100 @@
-import Workflow, { WorkflowModel } from "../models/Workflow";
+import {
+  WorkflowModel,
+  Workflow,
+  WorkflowType,
+  DistributionWorkflow,
+  TaskWorkflow,
+} from '../models/Workflow';
 
-export const getByBoardId = async (id: string) => {
+export const getAllByBoardId = async (id: string) => {
   try {
     const workflows = await Workflow.find({ boardID: id });
     return workflows;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
-export const create = async (workflow: WorkflowModel) => {
+export const getByBoardId = async (type: WorkflowType, id: string) => {
   try {
-    const savedWorkflow = await Workflow.create(workflow);
-    return savedWorkflow;
+    if (type == WorkflowType.DISTRIBUTION) {
+      return await DistributionWorkflow.find({ boardID: id });
+    } else if (type == WorkflowType.TASK) {
+      return await TaskWorkflow.find({ boardID: id });
+    }
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
-export const update = async (id: string, workflow: Partial<WorkflowModel>) => {
+export const create = async (type: WorkflowType, workflow: WorkflowModel) => {
   try {
-    const updatedWorkflow = await Workflow.findOneAndUpdate(
+    if (type == WorkflowType.DISTRIBUTION) {
+      return await DistributionWorkflow.create(workflow);
+    } else if (type == WorkflowType.TASK) {
+      return await TaskWorkflow.create(workflow);
+    }
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const updateDistribution = async (
+  id: string,
+  update: Partial<WorkflowModel>
+) => {
+  try {
+    return await DistributionWorkflow.findOneAndUpdate(
       { workflowID: id },
-      workflow,
+      update,
       { new: true }
     );
-    return updatedWorkflow;
   } catch (err) {
-    throw new Error("500");
+    throw new Error('500');
   }
 };
 
-export const remove = async (id: string) => {
+export const updateTask = async (
+  id: string,
+  update: Partial<WorkflowModel>
+) => {
   try {
-    await Workflow.findOneAndDelete({ workflowID: id });
+    return await TaskWorkflow.findOneAndUpdate({ workflowID: id }, update, {
+      new: true,
+    });
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const remove = async (type: WorkflowType, id: string) => {
+  try {
+    if (type == WorkflowType.DISTRIBUTION) {
+      return await DistributionWorkflow.findOneAndDelete({ workflowID: id });
+    } else if (type == WorkflowType.TASK) {
+      return await TaskWorkflow.findOneAndDelete({ workflowID: id });
+    }
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const removeByBoard = async (boardID: string) => {
+  try {
+    return await DistributionWorkflow.deleteMany({ boardID: boardID });
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
 const dalWorkflow = {
+  getAllByBoardId,
   getByBoardId,
   create,
-  update,
+  updateDistribution,
+  updateTask,
   remove,
+  removeByBoard,
 };
 
 export default dalWorkflow;

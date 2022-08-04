@@ -1,10 +1,10 @@
-export enum DestinationType {
+export enum ContainerType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
 }
 
-export class Destination {
-  type: DestinationType;
+export class Container {
+  type: ContainerType;
   id: string;
   name: string;
 }
@@ -16,10 +16,16 @@ export class Workflow {
 
   active: boolean;
 
-  source: Destination;
-  destinations: Destination[];
+  source: Container;
+  destinations: Container[];
+}
 
+export class DistributionWorkflow extends Workflow {
   postsPerDestination: number;
 }
 
-export default Workflow;
+const workflows = {
+  DistributionWorkflow,
+};
+
+export default workflows;

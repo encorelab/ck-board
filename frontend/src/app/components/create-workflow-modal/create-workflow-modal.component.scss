@@ -1,7 +1,6 @@
 .list-accordion {
-  padding: 10px
+  padding: 10px;
 }
-
 
 .list-accordion .mat-expansion-panel-header-title,
 .list-accordion .mat-expansion-panel-header-description {
@@ -20,19 +19,19 @@
 }
 
 .arrow-icon-md {
-  width: 2rem; 
-  height: 2rem; 
+  width: 2rem;
+  height: 2rem;
   font-size: 2rem;
 }
 
 .arrow-icon-lg {
-  width: 3rem; 
-  height: 3rem; 
+  width: 3rem;
+  height: 3rem;
   font-size: 3rem;
 }
 
 .source-dest-info {
-  display: flex; 
+  display: flex;
   flex-direction: row;
 
   padding: 20px 0px;
@@ -46,6 +45,15 @@
 #workflow-action-delete {
   padding: 0px 5px;
   color: rgba(255, 0, 0, 0.708);
+}
+
+#bucket-action-delete {
+  position: absolute; 
+  right:0;
+}
+
+.delete-toggler {
+  padding: 0 !important;
 }
 
 .mat-radio-button ~ .mat-radio-button {

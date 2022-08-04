@@ -27,4 +27,8 @@ export class BoardService {
   create(board: Board) {
     return this.http.post<Board>('boards/', board).toPromise();
   }
+
+  remove(id: string) {
+    return this.http.delete<Board>('boards/' + id).toPromise();
+  }
 }

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import Workflow from '../models/workflow';
+import { DistributionWorkflow, Workflow } from '../models/workflow';
 import { BucketService } from './bucket.service';
 import { PostService } from './post.service';
 
@@ -14,21 +14,31 @@ export class WorkflowService {
     public http: HttpClient
   ) {}
 
-  get(boardID: string): Promise<Workflow[]> {
+  getAll(boardID: string): Promise<Workflow[]> {
     return this.http.get<Workflow[]>('workflows/boards/' + boardID).toPromise();
   }
 
-  create(workflow: Workflow): Promise<Workflow> {
-    return this.http.post<Workflow>('workflows/', workflow).toPromise();
-  }
-
-  update(workflowID: string, workflow: Partial<Workflow>) {
+  getDistribution(boardID: string): Promise<Workflow[]> {
     return this.http
-      .post<Workflow>('workflows/' + workflowID, workflow)
+      .get<Workflow[]>('workflows/distribution/boards/' + boardID)
       .toPromise();
   }
 
-  remove(workflowID: string): Promise<any> {
-    return this.http.delete('workflows/' + workflowID).toPromise();
+  createDistribution(
+    workflow: DistributionWorkflow
+  ): Promise<DistributionWorkflow> {
+    return this.http
+      .post<DistributionWorkflow>('workflows/distribution/', workflow)
+      .toPromise();
+  }
+
+  updateDistribution(workflowID: string, workflow: Partial<Workflow>) {
+    return this.http
+      .post<Workflow>('workflows/distribution/' + workflowID, workflow)
+      .toPromise();
+  }
+
+  removeDistribution(workflowID: string): Promise<any> {
+    return this.http.delete('workflows/distribution/' + workflowID).toPromise();
   }
 }

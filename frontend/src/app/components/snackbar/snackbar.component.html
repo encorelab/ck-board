@@ -2,9 +2,7 @@
   <div class="title" [innerHTML]="title">
     {{ title }}
   </div>
-  <button mat-button (click)="close()">
-    Close!
-  </button>
+  <button mat-button (click)="close()">Close</button>
   <button mat-button *ngIf="action" (click)="doAction()">
     {{ this.action.name }}
   </button>
@@ -17,9 +15,7 @@
     {{ description }}
   </div>
   <div class="actions complex-actions">
-    <button mat-button (click)="close()">
-      Close!
-    </button>
+    <button mat-button (click)="close()">Close</button>
     <button mat-button *ngIf="action" (click)="doAction()">
       {{ this.action.name }}
     </button>

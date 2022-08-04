@@ -1,25 +1,32 @@
-import { Server, Socket } from "socket.io";
-import { SocketEvent } from "../../constants";
-import { BucketModel } from "../../models/Bucket";
-import { CommentModel } from "../../models/Comment";
-import { LikeModel } from "../../models/Like";
-import { PostModel } from "../../models/Post";
-import { TagModel } from "../../models/Tag";
-import dalBucket from "../../repository/dalBucket";
-import dalComment from "../../repository/dalComment";
-import dalLike from "../../repository/dalLike";
-import dalPost from "../../repository/dalPost";
-
-type PostTagEventInput = {
-  post: PostModel;
-  tag: TagModel;
-};
+import { Server, Socket } from 'socket.io';
+import {
+  POST_COLOR,
+  POST_DEFAULT_OPACITY,
+  POST_MOVING_FILL,
+  POST_MOVING_OPACITY,
+  SocketEvent,
+} from '../../constants';
+import { CommentModel } from '../../models/Comment';
+import { UpvoteModel } from '../../models/Upvote';
+import { PostModel } from '../../models/Post';
+import dalComment from '../../repository/dalComment';
+import dalPost from '../../repository/dalPost';
+import postTrace from '../trace/post.trace';
+import {
+  PostStopMoveEventInput,
+  PostTagEventInput,
+  SocketPayload,
+} from '../types/event.types';
+import dalVote from '../../repository/dalVote';
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
 
-  static async handleEvent(eventData: PostModel): Promise<PostModel> {
-    return eventData;
+  static async handleEvent(
+    input: SocketPayload<PostModel>
+  ): Promise<PostModel> {
+    if (input.trace.allowTracing) await postTrace.create(input, this.type);
+    return input.eventData;
   }
 
   static async handleResult(io: Server, socket: Socket, result: PostModel) {
@@ -31,43 +38,43 @@ class PostUpdate {
   static type: SocketEvent = SocketEvent.POST_UPDATE;
 
   static async handleEvent(
-    eventData: Partial<PostModel> & Pick<PostModel, "postID">
+    input: SocketPayload<Partial<PostModel> & Pick<PostModel, 'postID'>>
   ): Promise<PostModel | null> {
-    const post = await dalPost.update(eventData.postID, eventData);
+    const post = await dalPost.update(input.eventData.postID, input.eventData);
+    if (input.trace.allowTracing) await postTrace.update(input, this.type);
     return post;
   }
 
   static async handleResult(io: Server, socket: Socket, result: PostModel) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 
 class PostDelete {
   static type: SocketEvent = SocketEvent.POST_DELETE;
 
-  static async handleEvent(eventData: PostModel): Promise<string> {
-    const postID = eventData.postID;
-
-    await dalPost.remove(postID);
-
-    const buckets: BucketModel[] = await dalBucket.getByPostId(postID);
-    for (let i = 0; i < buckets.length; i++) {
-      await dalBucket.removePost(buckets[i].bucketID, [postID]);
-    }
-
-    return eventData.postID;
+  static async handleEvent(input: SocketPayload<PostModel>): Promise<string> {
+    if (input.trace.allowTracing) await postTrace.remove(input, this.type);
+    return input.eventData.postID;
   }
 
   static async handleResult(io: Server, socket: Socket, result: string) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 
 class PostStartMove {
   static type: SocketEvent = SocketEvent.POST_START_MOVE;
 
-  static async handleEvent(eventData: PostModel): Promise<PostModel | null> {
-    const post = await dalPost.update(eventData.postID, eventData);
+  static async handleEvent(
+    input: SocketPayload<PostModel>
+  ): Promise<PostModel | null> {
+    const post = await dalPost.update(input.eventData.postID, {
+      displayAttributes: {
+        fillColor: POST_MOVING_FILL,
+        opacity: POST_MOVING_OPACITY,
+      },
+    });
     return post;
   }
 
@@ -79,8 +86,17 @@ class PostStartMove {
 class PostStopMove {
   static type: SocketEvent = SocketEvent.POST_STOP_MOVE;
 
-  static async handleEvent(eventData: PostModel): Promise<PostModel | null> {
-    const post = await dalPost.update(eventData.postID, eventData);
+  static async handleEvent(
+    input: SocketPayload<PostStopMoveEventInput>
+  ): Promise<PostModel | null> {
+    const post = await dalPost.update(input.eventData.postID, {
+      displayAttributes: {
+        position: { left: input.eventData.left, top: input.eventData.top },
+        fillColor: POST_COLOR,
+        opacity: POST_DEFAULT_OPACITY,
+      },
+    });
+    if (input.trace.allowTracing) await postTrace.move(input, this.type);
     return post;
   }
 
@@ -89,41 +105,67 @@ class PostStopMove {
   }
 }
 
-class PostLikeAdd {
-  static type: SocketEvent = SocketEvent.POST_LIKE_ADD;
+class PostUpvoteAdd {
+  static type: SocketEvent = SocketEvent.POST_UPVOTE_ADD;
 
-  static async handleEvent(eventData: LikeModel): Promise<object> {
-    const likeAmount = await dalLike.getAmountByPost(eventData.postID);
+  static async handleEvent(input: SocketPayload<UpvoteModel>): Promise<object> {
+    const upvoteAmount = await dalVote.getAmountByPost(input.eventData.postID);
+    if (input.trace.allowTracing) await postTrace.upvoteAdd(input, this.type);
 
-    return { like: eventData, amount: likeAmount };
+    return { upvote: input.eventData, amount: upvoteAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 
-class PostLikeRemove {
-  static type: SocketEvent = SocketEvent.POST_LIKE_REMOVE;
+class PostUpvoteRemove {
+  static type: SocketEvent = SocketEvent.POST_UPVOTE_REMOVE;
 
-  static async handleEvent(eventData: LikeModel): Promise<object> {
-    const likeAmount = await dalLike.getAmountByPost(eventData.postID);
-
-    return { like: eventData, amount: likeAmount };
+  static async handleEvent(input: SocketPayload<UpvoteModel>): Promise<object> {
+    const upvoteAmount = await dalVote.getAmountByPost(input.eventData.postID);
+    if (input.trace.allowTracing)
+      await postTrace.upvoteRemove(input, this.type);
+    return { upvote: input.eventData, amount: upvoteAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 
 class PostCommentAdd {
   static type: SocketEvent = SocketEvent.POST_COMMENT_ADD;
 
-  static async handleEvent(eventData: CommentModel): Promise<object> {
-    const commentAmount = await dalComment.getAmountByPost(eventData.postID);
+  static async handleEvent(
+    input: SocketPayload<CommentModel>
+  ): Promise<object> {
+    const commentAmount = await dalComment.getAmountByPost(
+      input.eventData.postID
+    );
+    if (input.trace.allowTracing) await postTrace.commentAdd(input, this.type);
 
-    return { comment: eventData, amount: commentAmount };
+    return { comment: input.eventData, amount: commentAmount };
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: object) {
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+class PostCommentRemove {
+  static type: SocketEvent = SocketEvent.POST_COMMENT_REMOVE;
+
+  static async handleEvent(
+    input: SocketPayload<CommentModel>
+  ): Promise<object> {
+    const commentAmount = await dalComment.getAmountByPost(
+      input.eventData.postID
+    );
+    await postTrace.commentRemove(input, this.type);
+
+    return { comment: input.eventData, amount: commentAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
@@ -135,9 +177,10 @@ class PostTagAdd {
   static type: SocketEvent = SocketEvent.POST_TAG_ADD;
 
   static async handleEvent(
-    eventData: PostTagEventInput
+    input: SocketPayload<PostTagEventInput>
   ): Promise<PostTagEventInput> {
-    return eventData;
+    if (input.trace.allowTracing) await postTrace.tagAdd(input, this.type);
+    return input.eventData;
   }
 
   static async handleResult(
@@ -153,9 +196,27 @@ class PostTagRemove {
   static type: SocketEvent = SocketEvent.POST_TAG_REMOVE;
 
   static async handleEvent(
-    eventData: PostTagEventInput
+    input: SocketPayload<PostTagEventInput>
   ): Promise<PostTagEventInput> {
-    return eventData;
+    if (input.trace.allowTracing) await postTrace.tagRemove(input, this.type);
+    return input.eventData;
+  }
+
+  static async handleResult(
+    io: Server,
+    socket: Socket,
+    result: PostTagEventInput
+  ) {
+    io.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+class PostRead {
+  static type: SocketEvent = SocketEvent.POST_READ;
+
+  static async handleEvent(input: SocketPayload<string>): Promise<string> {
+    if (input.trace.allowTracing) await postTrace.read(input, this.type);
+    return input.eventData;
   }
 
   static async handleResult(
@@ -173,11 +234,13 @@ const postEvents = [
   PostDelete,
   PostStartMove,
   PostStopMove,
-  PostLikeAdd,
-  PostLikeRemove,
+  PostUpvoteAdd,
+  PostUpvoteRemove,
   PostCommentAdd,
+  PostCommentRemove,
   PostTagAdd,
   PostTagRemove,
+  PostRead,
 ];
 
 export default postEvents;

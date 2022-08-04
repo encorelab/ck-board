@@ -7,6 +7,7 @@ import {
 } from '@angular/router';
 import { AuthGuard } from './auth.guard';
 import { ProjectService } from '../services/project.service';
+import { BoardService } from '../services/board.service';
 import { UserService } from '../services/user.service';
 
 @Injectable({
@@ -18,6 +19,7 @@ export class ProjectGuard implements CanActivate {
 
   constructor(
     public projectService: ProjectService,
+    public boardService: BoardService,
     public userService: UserService,
     public router: Router,
     public authGuard: AuthGuard
@@ -28,6 +30,7 @@ export class ProjectGuard implements CanActivate {
     _state: RouterStateSnapshot
   ): Promise<boolean> {
     const projectID = next.params.projectID;
+    const boardID = next.params.boardID;
 
     const isValidProject = await this.isValidProject(projectID);
     if (!isValidProject) {
@@ -45,6 +48,14 @@ export class ProjectGuard implements CanActivate {
         },
       });
     }
+    if (boardID) {
+      const isValidBoard = await this.isValidBoard(boardID);
+      if (!isValidBoard) {
+        this.router.navigate(['/error'], {
+          state: { code: 404, message: 'This board does not exist!' },
+        });
+      }
+    }
 
     return true;
   }
@@ -52,6 +63,11 @@ export class ProjectGuard implements CanActivate {
   async isValidProject(projectID: string) {
     this.project = await this.projectService.get(projectID);
     return this.project !== null;
+  }
+
+  async isValidBoard(boardID: string) {
+    this.board = await this.boardService.get(boardID);
+    return this.board !== null;
   }
 
   isProjectMember(): boolean {

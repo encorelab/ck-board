@@ -15,6 +15,9 @@ export class ProjectModel {
   public members!: string[];
 
   @prop({ required: true })
+  public groups!: string[];
+
+  @prop({ required: true })
   public boards!: string[];
 
   @prop({ required: true })

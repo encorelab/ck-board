@@ -1,10 +1,10 @@
-import { Router } from "express";
-import { NotificationModel } from "../models/Notification";
-import dalNotification from "../repository/dalNotification";
+import { Router } from 'express';
+import { NotificationModel } from '../models/Notification';
+import dalNotification from '../repository/dalNotification';
 
 const router = Router();
 
-router.get("/user/:userID/board/:boardID", async (req, res) => {
+router.get('/user/:userID/board/:boardID', async (req, res) => {
   const userID: string = req.params.userID;
   const boardID: string = req.params.boardID;
 
@@ -15,14 +15,14 @@ router.get("/user/:userID/board/:boardID", async (req, res) => {
   res.status(200).json(notifications);
 });
 
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   const notification = req.body;
 
   const savedNotification = await dalNotification.create(notification);
   res.status(200).json(savedNotification);
 });
 
-router.post("/:id", async (req, res) => {
+router.post('/:id', async (req, res) => {
   const id = req.params.id;
   const { text, viewed } = req.body;
 
@@ -36,7 +36,7 @@ router.post("/:id", async (req, res) => {
   res.status(200).json(updatedNotification);
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete('/:id', async (req, res) => {
   const id = req.params.id;
 
   const notification = await dalNotification.remove(id);

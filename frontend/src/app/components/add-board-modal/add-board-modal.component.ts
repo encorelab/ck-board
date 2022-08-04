@@ -4,8 +4,8 @@ import { UserService } from 'src/app/services/user.service';
 import { Project } from 'src/app/models/project';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
-import { Tag } from 'src/app/models/post';
-import Utils from 'src/app/utils/Utils';
+import { Tag } from 'src/app/models/tag';
+import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
 import { BoardPermissions } from 'src/app/models/board';
@@ -22,24 +22,25 @@ export class AddBoardModalComponent implements OnInit {
 
   permissions: BoardPermissions;
 
-  boardName: string = '';
+  boardName = '';
 
   bgImgURL: any = null;
   bgImgSettings: ImageSettings;
 
-  taskTitle: string = '';
-  taskMessage: string = '';
+  taskTitle = '';
+  taskMessage = '';
 
   tags: Tag[] = [];
   defaultTags: Tag[];
 
-  newTagText: string = '';
+  newTagText = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
 
-  initialZoom: number = 100;
+  initialZoom = 100;
+  upvoteLimit = 5;
 
   projects: Project[];
-  selectedProject: string = '';
+  selectedProject = '';
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
@@ -51,24 +52,28 @@ export class AddBoardModalComponent implements OnInit {
   ) {
     this.permissions = {
       allowStudentMoveAny: true,
-      allowStudentLiking: true,
+      allowStudentUpvoting: true,
       allowStudentEditAddDeletePost: true,
       allowStudentCommenting: true,
       allowStudentTagging: true,
       showAuthorNameStudent: true,
       showAuthorNameTeacher: true,
+      showBucketStudent: true,
+      showSnackBarStudent: false,
+      allowTracing: false,
     };
     this.projects = data.projects;
     this.selectedProject = data.defaultProject || '';
   }
 
   ngOnInit(): void {
-    this.boardID = Utils.generateUniqueID();
+    this.boardID = generateUniqueID();
     this.defaultTags = this.fabricUtils.getDefaultTagsForBoard(this.boardID);
   }
 
   addTag() {
     this.tags.push({
+      tagID: generateUniqueID(),
       boardID: this.boardID,
       name: this.newTagText,
       color: this.newTagColor,
@@ -91,6 +96,7 @@ export class AddBoardModalComponent implements OnInit {
   handleDialogSubmit() {
     this.data.createBoard(
       {
+        projectID: this.selectedProject,
         boardID: this.boardID,
         teacherID: this.data.user.userID,
         name: this.boardName,
@@ -105,6 +111,7 @@ export class AddBoardModalComponent implements OnInit {
         members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),
         initialZoom: this.initialZoom,
+        upvoteLimit: this.upvoteLimit,
       },
       this.selectedProject
     );

@@ -1,14 +1,13 @@
-
 /* You can add global styles to this file, and also import other style files */
 @use 'sass:map';
-@use "@angular/material" as mat;
-@use "./style/themes/light";
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@use '@angular/material' as mat;
+@use './style/themes/light';
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
 
 $font-family-default: '"Roboto", sans-serif';
 
 $custom-typography: mat.define-typography-config(
-  $font-family: $font-family-default
+  $font-family: $font-family-default,
 );
 @include mat.core($custom-typography);
 
@@ -36,8 +35,13 @@ $color-config: mat.get-color-config(light.$ckb-light-theme);
 $accent-palette: map.get($color-config, 'accent');
 $accent: mat.get-color-from-palette($accent-palette, 500);
 
-html, body { height: 100%; }
-body { margin: 0; }
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+}
 
 a {
   color: $accent;

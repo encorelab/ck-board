@@ -1,7 +1,7 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 
 @modelOptions({
-  schemaOptions: { collection: "notifications", timestamps: true },
+  schemaOptions: { collection: 'notifications', timestamps: true },
 })
 export class NotificationModel {
   @prop({ required: true })

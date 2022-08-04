@@ -1,28 +1,33 @@
-export default class Post {
-  postID: string;
-  boardID: string;
-  title: string;
-  desc: string;
-  tags: Tag[];
-  userID: string;
-  fabricObject: string | null;
-}
+import { Tag } from './tag';
 
-export class TagSpecialAttributes {
+export class DisplayAttributes {
+  position?: {
+    left: number;
+    top: number;
+  };
+  lock?: boolean;
   borderWidth?: number;
   borderColor?: string;
   fillColor?: string;
   opacity?: number;
 }
 
-export class Tag {
-  boardID: string;
-  name: string;
-  color: string;
-  specialAttributes?: TagSpecialAttributes;
+export enum PostType {
+  BOARD = 'BOARD',
+  BUCKET = 'BUCKET',
 }
 
-export enum PostType {
-  BOARD,
-  BUCKET,
+export default class Post {
+  postID: string;
+  userID: string;
+  boardID: string;
+
+  type: PostType;
+
+  title: string;
+  desc: string;
+  author: string;
+  tags: Tag[];
+
+  displayAttributes: DisplayAttributes | null;
 }

@@ -1,11 +1,11 @@
-import Project, { ProjectModel } from "../models/Project";
+import Project, { ProjectModel } from '../models/Project';
 
 export const getById = async (id: string) => {
   try {
     const project = await Project.findOne({ projectID: id });
     return project;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -14,7 +14,7 @@ export const getByUserId = async (id: string) => {
     const projects = await Project.find({ members: id });
     return projects;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -23,7 +23,7 @@ export const getByJoinCode = async (code: string) => {
     const project = await Project.findOne({ joinCode: code });
     return project;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -32,7 +32,7 @@ export const create = async (project: ProjectModel) => {
     const savedProject = await Project.create(project);
     return savedProject;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -45,7 +45,20 @@ export const update = async (id: string, project: Partial<ProjectModel>) => {
     );
     return updatedProject;
   } catch (err) {
-    throw new Error("500");
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const removeBoard = async (id: string, boardID: string) => {
+  try {
+    const updatedProject = await Project.findOneAndUpdate(
+      { projectID: id },
+      { $pull: { boards: boardID } },
+      { new: true }
+    );
+    return updatedProject;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -55,6 +68,7 @@ const dalProject = {
   getByJoinCode,
   create,
   update,
+  removeBoard,
 };
 
 export default dalProject;

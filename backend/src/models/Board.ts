@@ -1,9 +1,9 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
-import { TagModel } from "./Tag";
+import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { TagModel } from './Tag';
 
 export class TaskModel {
-  @prop({ required: true })
-  public title!: string;
+  @prop({ required: false })
+  public title?: string;
 
   @prop({ required: false })
   public message?: string;
@@ -22,7 +22,7 @@ export class PermissionsModel {
   public allowStudentMoveAny!: boolean;
 
   @prop({ required: true })
-  public allowStudentLiking!: boolean;
+  public allowStudentUpvoting!: boolean;
 
   @prop({ required: true })
   public allowStudentEditAddDeletePost!: boolean;
@@ -38,10 +38,22 @@ export class PermissionsModel {
 
   @prop({ required: true })
   public showAuthorNameTeacher!: boolean;
+
+  @prop({ required: true })
+  public showBucketStudent!: boolean;
+
+  @prop({ required: true })
+  public showSnackBarStudent!: boolean;
+
+  @prop({ required: true })
+  public allowTracing!: boolean;
 }
 
-@modelOptions({ schemaOptions: { collection: "boards", timestamps: true } })
+@modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })
 export class BoardModel {
+  @prop({ required: true })
+  public projectID!: string;
+
   @prop({ required: true })
   public boardID!: string;
 
@@ -54,8 +66,8 @@ export class BoardModel {
   @prop({ required: true })
   public members!: string[];
 
-  @prop({ required: true, type: () => TaskModel })
-  public task!: TaskModel;
+  @prop({ required: false, type: () => TaskModel })
+  public task?: TaskModel;
 
   @prop({ required: true, type: () => PermissionsModel })
   public permissions!: PermissionsModel;
@@ -68,6 +80,9 @@ export class BoardModel {
 
   @prop({ required: true })
   public initialZoom!: number;
+
+  @prop({ required: true })
+  public upvoteLimit!: number;
 }
 
 export default getModelForClass(BoardModel);

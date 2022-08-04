@@ -1,0 +1,37 @@
+name: Linter
+on: [pull_request]
+
+
+jobs: 
+  Linter:
+    name: Linting and Code Formating Check CI
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: { directory : [backend, frontend] }
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Download dependencies
+        working-directory: ${{ matrix.directory }}
+        run: npm cache clean --force && npm install
+        env: 
+          CI: false
+
+      - name: Run Linter
+        working-directory: ${{ matrix.directory }}
+        run: npm run style:linter
+        env: 
+          CI: false
+
+      - name: Run Code Formatter
+        working-directory: ${{ matrix.directory }}
+        run: npm run style:formatter
+        env: 
+          CI: false

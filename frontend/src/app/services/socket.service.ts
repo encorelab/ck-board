@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Socket } from 'ngx-socket-io';
 import { Observable, Subscription } from 'rxjs';
+import { SocketPayload } from '../models/socketPayload';
 import { SocketEvent } from '../utils/constants';
+import { TraceService } from './trace.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SocketService {
-  constructor(private socket: Socket) {}
+  constructor(private socket: Socket, private traceService: TraceService) {}
 
   /**
    * Connect to specific board's websocket connection.
@@ -39,7 +41,12 @@ export class SocketService {
    * @returns void
    */
   emit(event: SocketEvent, value: any): void {
-    this.socket.emit(event, value);
+    const trace = this.traceService.getTraceContext();
+    const socketPayload: SocketPayload = {
+      trace,
+      eventData: value,
+    };
+    this.socket.emit(event, socketPayload);
   }
 
   /**

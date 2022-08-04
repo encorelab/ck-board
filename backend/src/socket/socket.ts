@@ -33,18 +33,18 @@ class Socket {
       },
     });
 
-    console.log("Socket server running at " + 8000);
+    console.log('Socket server running at ' + 8000);
 
-    io.on("connection", (socket) => {
+    io.on('connection', (socket) => {
       this._socket = socket;
 
-      socket.on("join", (user: string, room: string) => {
+      socket.on('join', (user: string, room: string) => {
         socket.data.room = room;
         this._safeJoin(socket, user, room);
         this._listenForEvents(io, socket);
       });
 
-      socket.on("leave", (user, room) => {
+      socket.on('leave', (user: string, room: string) => {
         if (this._currentRoom && this._currentRoom == room) {
           socket.leave(this._currentRoom);
           console.log(`Socket ${socket.id} left room ${room}`);
@@ -52,7 +52,14 @@ class Socket {
           events.map((e) => socket.removeAllListeners(e.type.toString()));
           socket.data.room = null;
           this._currentRoom = null;
-          this._socketManager.remove(user);
+          this._socketManager.removeByUserId(user);
+        }
+      });
+
+      socket.on('disconnect', () => {
+        if (this._socket) {
+          this._currentRoom = null;
+          this._socketManager.removeBySocketId(this._socket.id);
         }
       });
     });
@@ -67,9 +74,9 @@ class Socket {
    */
   emit(event: SocketEvent, eventData: unknown): void {
     if (this._socket == null) {
-      throw new Error("Socket not initialized. Please invoke init() first.");
+      throw new Error('Socket not initialized. Please invoke init() first.');
     } else if (this._currentRoom == null) {
-      throw new Error("Socket not connected to any rooms.");
+      throw new Error('Socket not connected to any rooms.');
     }
 
     this._socket.to(this._currentRoom).emit(event, eventData);

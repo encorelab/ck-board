@@ -148,6 +148,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.tagsFormControl.reset();
       this.workflowTypeFormControl.reset();
       this.removeFromSourceFormControl.reset();
+      this.removeFromSource = false;
     });
   }
 

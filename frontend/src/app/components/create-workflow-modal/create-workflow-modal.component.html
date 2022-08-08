@@ -133,7 +133,11 @@
           </div>
         </section>
         <p>
-          <mat-checkbox [(ngModel)]="removeFromSource">Remove From Source</mat-checkbox>
+          <mat-checkbox 
+            [(ngModel)]="removeFromSource" [formControl]="removeFromSourceFormControl"
+          >
+            Remove From Source
+          </mat-checkbox>
         </p>
       </div>
     </mat-tab>
@@ -239,6 +243,11 @@
                   {{ workflow.distributionWorkflowType.data }}
               </mat-chip>
             </h4>
+          </div>
+          <div *ngIf="workflow.removeFromSource">
+            <mat-chip color="warn" selected>
+              Remove From Source Enabled
+            </mat-chip>
           </div>
         </mat-expansion-panel>
       </mat-accordion>

@@ -36,6 +36,12 @@
     >
       <mat-icon>settings</mat-icon>
     </button>
+    <div *ngIf="project">
+      <app-project-notification-dropdown
+        [user]="user"
+        [project]="project"
+      ></app-project-notification-dropdown>
+    </div>
   </app-toolbar>
   <div class="content">
     <div class="heading">

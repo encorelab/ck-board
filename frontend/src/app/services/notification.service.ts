@@ -1,6 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import Notification from '../models/notification';
+import {
+  Notification,
+  NotificationType,
+  BoardNotification,
+  ProjectNotification,
+} from '../models/notification';
 import Post from '../models/post';
 import { TodoItem } from '../models/todoItem';
 import { generateUniqueID } from '../utils/Utils';
@@ -12,34 +17,72 @@ import { UserService } from './user.service';
 export class NotificationService {
   constructor(public http: HttpClient, public userService: UserService) {}
 
-  getByUserAndBoard(userID: string, boardID: string): Promise<Notification[]> {
+  getByUserAndBoard(
+    userID: string,
+    boardID: string
+  ): Promise<BoardNotification[]> {
     return this.http
-      .get<Notification[]>('notifications/user/' + userID + '/board/' + boardID)
+      .get<BoardNotification[]>(
+        'notifications/user/' + userID + '/board/' + boardID
+      )
       .toPromise();
   }
 
-  add(notification: Notification): Promise<Notification> {
+  getByUserAndProject(
+    userID: string,
+    projectID: string
+  ): Promise<ProjectNotification[]> {
     return this.http
-      .post<Notification>('notifications/', notification)
+      .get<ProjectNotification[]>(
+        'notifications/user/' + userID + '/project/' + projectID
+      )
       .toPromise();
   }
 
-  markAsRead(notificationID: string): Promise<Notification> {
+  add(
+    type: NotificationType,
+    notification: ProjectNotification | BoardNotification
+  ): Promise<ProjectNotification | BoardNotification> {
     return this.http
-      .post<Notification>('notifications/' + notificationID, { viewed: true })
+      .post<ProjectNotification | BoardNotification>('notifications/', {
+        type: type,
+        notification: notification,
+      })
       .toPromise();
   }
 
-  remove(notificationID: string): Promise<Notification> {
+  markAsRead(
+    type: NotificationType,
+    notificationID: string
+  ): Promise<ProjectNotification | BoardNotification> {
     return this.http
-      .delete<Notification>('notifications/' + notificationID)
+      .post<ProjectNotification | BoardNotification>(
+        'notifications/' + notificationID,
+        { type: type, viewed: true }
+      )
       .toPromise();
   }
 
-  buildUpvoteNotification(post: Post): Notification {
+  remove(
+    type: NotificationType,
+    notificationID: string
+  ): Promise<ProjectNotification | BoardNotification> {
+    if (type === NotificationType.BOARD) {
+      return this.http
+        .delete<BoardNotification>('notifications/board/' + notificationID)
+        .toPromise();
+    } else {
+      return this.http
+        .delete<ProjectNotification>('notifications/project/' + notificationID)
+        .toPromise();
+    }
+  }
+
+  buildUpvoteNotification(post: Post): BoardNotification {
     return {
       notificationID: generateUniqueID(),
       text: this.userService.user?.username + ' upvoted "' + post.title + '"',
+      type: NotificationType.BOARD,
       viewed: false,
       userID: post.userID,
       postID: post.postID,
@@ -47,11 +90,12 @@ export class NotificationService {
     };
   }
 
-  buildCommentNotification(post: Post): Notification {
+  buildCommentNotification(post: Post): BoardNotification {
     return {
       notificationID: generateUniqueID(),
       text:
         this.userService.user?.username + ' commented on "' + post.title + '"',
+      type: NotificationType.BOARD,
       viewed: false,
       userID: post.userID,
       postID: post.postID,
@@ -59,10 +103,11 @@ export class NotificationService {
     };
   }
 
-  buildTagNotification(post: Post): Notification {
+  buildTagNotification(post: Post): BoardNotification {
     return {
       notificationID: generateUniqueID(),
       text: this.userService.user?.username + ' tagged "' + post.title + '"',
+      type: NotificationType.BOARD,
       viewed: false,
       userID: post.userID,
       postID: post.postID,
@@ -70,7 +115,7 @@ export class NotificationService {
     };
   }
 
-  // buildTodoItemNotification(todoItem: TodoItem): Notification {
+  // buildTodoItemNotification(todoItem: TodoItem): ProjectNotification {
   //   return {
   //     notificationID: generateUniqueID(),
   //     text: this.userService.user?.username + ' tagged "' + post.title + '"',

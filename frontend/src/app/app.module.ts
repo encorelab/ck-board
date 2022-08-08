@@ -46,6 +46,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AutofocusDirective } from './autofocus.directive';
 import { TodoListModalComponent } from './components/todo-list-modal/todo-list-modal.component';
 import { AddTodoListModalComponent } from './components/add-todo-list-modal/add-todo-list-modal.component';
+import { ProjectNotificationDropdownComponent } from './components/project-notification-dropdown/project-notification-dropdown.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -83,6 +84,7 @@ export function tokenGetter() {
     AutofocusDirective,
     TodoListModalComponent,
     AddTodoListModalComponent,
+    ProjectNotificationDropdownComponent,
   ],
   imports: [
     BrowserModule,

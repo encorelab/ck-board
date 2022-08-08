@@ -10,7 +10,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AddTodoListModalComponent } from '../add-todo-list-modal/add-todo-list-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
-import { Subject, interval } from 'rxjs';
+import { interval } from 'rxjs';
 import { PausableObservable, pausable } from 'rxjs-pausable';
 
 @Component({
@@ -20,12 +20,13 @@ import { PausableObservable, pausable } from 'rxjs-pausable';
 })
 export class TodoListModalComponent implements OnInit {
   minDate: Date;
-  todoItems;
+  todoItems: TodoItem[];
   projectID: string;
   userID: string;
   displayColumns: string[];
   selection = new SelectionModel<TodoItem>(true, []);
-  dataSource;
+  pausable: PausableObservable<number>;
+  dataSource: MatTableDataSource<TodoItem>;
 
   constructor(
     public dialogRef: MatDialogRef<TodoListModalComponent>,
@@ -40,6 +41,11 @@ export class TodoListModalComponent implements OnInit {
 
   async ngOnInit() {
     await this.getTodoItems();
+    this.pausable = interval(800).pipe(
+      pausable()
+    ) as PausableObservable<number>;
+    this.pausable.subscribe(this.shoot.bind(this));
+    this.pausable.pause();
   }
 
   async getTodoItems() {
@@ -48,7 +54,7 @@ export class TodoListModalComponent implements OnInit {
       this.projectID
     );
 
-    this.dataSource = new MatTableDataSource<any>(
+    this.dataSource = new MatTableDataSource<TodoItem>(
       this.todoItems.filter((todoItem: TodoItem) => !todoItem.completed)
     );
     console.log(this.dataSource.data);
@@ -67,27 +73,36 @@ export class TodoListModalComponent implements OnInit {
   }
 
   async completeTodoItems() {
-    this.selection.selected.forEach(async (todoItem) => {
-      await this.todoItemService.update(todoItem.todoItemID, {
-        completed: true,
+    if (this.selection.selected.length > 0) {
+      this.selection.selected.forEach(async (todoItem) => {
+        await this.todoItemService.update(todoItem.todoItemID, {
+          completed: true,
+        });
       });
-    });
-    await this.getTodoItems();
-    this.shoot()
+      await this.getTodoItems();
+      this.dialogRef.close();
+      this.pausable.resume();
+      this.shoot();
+      this.playAudio();
+      setTimeout(() => this.pausable.pause(), 4000);
+    }
   }
 
   async handleDeleteTodoItems() {
-    this.dialog.open(ConfirmModalComponent, {
-      width: '500px',
-      data: {
-        title: 'Confirmation',
-        message:
-          'This will permanently delete the selected Todo Items. Are you sure you want to do this?',
-        handleConfirm: async () => {
-          await this.deleteTodoItems();
+    if (this.selection.selected.length > 0) {
+      this.dialog.open(ConfirmModalComponent, {
+        width: '500px',
+        data: {
+          title: 'Confirmation',
+          message:
+            'This will permanently delete the selected Todo Items. Are you sure you want to do this?',
+          handleConfirm: async () => {
+            await this.deleteTodoItems();
+          },
         },
-      },
-    });
+      });
+      ``;
+    }
   }
 
   async deleteTodoItems() {
@@ -118,7 +133,7 @@ export class TodoListModalComponent implements OnInit {
       this.confetti({
         angle: this.random(60, 120),
         spread: this.random(10, 50),
-        particleCount: this.random(40, 50),
+        particleCount: this.random(50, 60),
         origin: {
           y: 0.6,
         },
@@ -126,6 +141,13 @@ export class TodoListModalComponent implements OnInit {
     } catch (e) {
       // noop, confettijs may not be loaded yet
     }
+  }
+
+  playAudio() {
+    const audio = new Audio();
+    audio.src = '../../../assets/celebration-sound-effect.wav';
+    audio.load();
+    audio.play();
   }
 
   random(min: number, max: number) {

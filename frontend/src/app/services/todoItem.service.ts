@@ -18,6 +18,10 @@ export class TodoItemService {
       .toPromise();
   }
 
+  getByUser(userID: string): Promise<TodoItem[]> {
+    return this.http.get<TodoItem[]>(`todoItems/${userID}`).toPromise();
+  }
+
   create(todoItem: TodoItem): Promise<TodoItem> {
     return this.http.post<TodoItem>(`todoItems/`, todoItem).toPromise();
   }
@@ -30,5 +34,14 @@ export class TodoItemService {
 
   remove(todoItemID: string) {
     return this.http.delete<TodoItem>(`todoItems/${todoItemID}`).toPromise();
+  }
+
+  async sendReminder(userID: string) {
+    const todoItems: TodoItem[] = await this.getByUser(userID);
+    for (let i = 0; i < todoItems.length; i++) {
+      const deadline = new Date(
+        `${todoItems[i].deadline.date} ${todoItems[i].deadline.time}`
+      );
+    }
   }
 }

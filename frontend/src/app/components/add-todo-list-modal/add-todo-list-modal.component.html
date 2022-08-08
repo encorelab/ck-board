@@ -52,7 +52,7 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
-  <button 
+  <button
     mat-button [disabled]="!taskTitleControl.valid " 
     (click)="createTodoItem()"
   >Create Todo Item</button>

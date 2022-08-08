@@ -18,3 +18,16 @@
   right: 0; 
   margin: 10px 0;
 }
+
+.canvas {
+  height: 100%; /* we need these for full-screen effect */
+  width: 100%;
+}
+
+.chip-icon {
+  padding-right: 10px;
+  width: 12px;
+  height: 15px;
+  font-size: medium;
+  margin-right: 10px;
+}

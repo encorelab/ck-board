@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import Notification from '../models/notification';
 import Post from '../models/post';
+import { TodoItem } from '../models/todoItem';
 import { generateUniqueID } from '../utils/Utils';
 import { UserService } from './user.service';
 
@@ -68,4 +69,15 @@ export class NotificationService {
       boardID: post.boardID,
     };
   }
+
+  // buildTodoItemNotification(todoItem: TodoItem): Notification {
+  //   return {
+  //     notificationID: generateUniqueID(),
+  //     text: this.userService.user?.username + ' tagged "' + post.title + '"',
+  //     viewed: false,
+  //     userID: post.userID,
+  //     postID: post.postID,
+  //     boardID: "f",
+  //   };
+  // }
 }

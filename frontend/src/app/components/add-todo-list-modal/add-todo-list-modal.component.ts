@@ -14,7 +14,7 @@ import { generateUniqueID } from 'src/app/utils/Utils';
 })
 export class AddTodoListModalComponent implements OnInit {
   taskTitle = '';
-  taskDeadlineDate: Date = new Date();
+  taskDeadlineDate: Date = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
   timeHour = 12;
   timeMinute = 0;
   timePeriod = 'AM';
@@ -60,7 +60,10 @@ export class AddTodoListModalComponent implements OnInit {
       completed: false,
       deadline: {
         date: this.taskDeadlineDate.toDateString(),
-        time: `${this.timeHour}:${String(this.timeMinute).padStart(2,'0')}:00 ${this.timePeriod}`,
+        time: `${this.timeHour}:${String(this.timeMinute).padStart(
+          2,
+          '0'
+        )}:00 ${this.timePeriod}`,
       },
     };
 

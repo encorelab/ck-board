@@ -86,14 +86,14 @@ export const tagDistributionWorkflow = async (
   } else {
     const bucket: BucketModel | null = await dalBucket.getById(source.id);
     if (bucket) {
-      bucket.posts.forEach(async (postID) => {
-        const post = await dalPost.getById(postID);
+      for (let i = 0; i < bucket.posts.length; i++) {
+        const post = await dalPost.getById(bucket.posts[i]);
         post?.tags.forEach((tag) => {
           if (tag.tagID === workflow.distributionWorkflowType.data.tagID) {
             filteredPosts.push(post?.postID);
           }
         });
-      });
+      }
     }
   }
 

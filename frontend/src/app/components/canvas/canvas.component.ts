@@ -49,6 +49,7 @@ import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
 import Upvote from 'src/app/models/upvote';
+import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 
 @Component({
   selector: 'app-canvas',
@@ -361,6 +362,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
       ListModalComponent,
       {
         board: this.board,
+        user: this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top,
       },
       '95vw'
     );
@@ -484,6 +488,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
         if (previousBoard.initialZoom !== board.initialZoom) {
           this.configureZoom();
         }
+      },
+    });
+  }
+
+  openGroupDialog() {
+    this.dialog.open(ManageGroupModalComponent, {
+      data: {
+        project: this.project,
       },
     });
   }

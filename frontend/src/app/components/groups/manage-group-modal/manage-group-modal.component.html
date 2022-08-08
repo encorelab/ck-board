@@ -1,0 +1,148 @@
+<h1 mat-dialog-title>Manage Groups</h1>
+<div mat-dialog-content>
+  <mat-tab-group dynamicHeight animationDuration="0ms">
+    <mat-tab label="Groups">
+      <div
+        *ngIf="showEdit"
+        style="margin-top: 20px"
+      >
+        <h4>Enter a new group name:</h4>
+        <mat-form-field
+          appearance="outline"
+          style="width: 100%;"
+        >
+          <mat-label>Group Name</mat-label>
+          <input
+            name="editName"
+            [formControl]="editNameControl"
+            [errorStateMatcher]="matcher"
+            [(ngModel)]="editGroup.name"
+            matInput
+            autocomplete="off"
+            cdkFocusInitial
+          />
+          <mat-error *ngIf="!editNameControl.value">Group Name is <strong>required</strong></mat-error>
+        </mat-form-field>
+        <app-move-group-members
+          [projectID]="data.project.projectID"
+          [groups]="[editGroup]"
+          [headerText]="'Select students to add to your group:'"
+          (updateGroups)="updateEditGroupMembers($event[0])"
+        >
+
+        </app-move-group-members>
+        <mat-divider style="margin-top: 10px;"></mat-divider>
+        <div class="edit-group-actions">
+          <button 
+            mat-button
+            matTooltip="Back"
+            (click)="closeEdit()"
+          >
+            Back
+          </button>
+          <button
+            type="submit"
+            [disabled]="!editNameControl.valid"
+            mat-button
+            cdkFocusInitial
+            (click)="updateGroup(this.editGroup)"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <mat-list *ngIf="!showEdit">
+        <div class="create-group-container">
+          <mat-form-field
+            appearance="outline"
+            class="create-group-form"
+          >
+            <mat-label>Group Name</mat-label>
+            <input
+              name="groupName"
+              [formControl]="groupNameControl"
+              [errorStateMatcher]="matcher"
+              matInput
+              autocomplete="off"
+              cdkFocusInitial
+            />
+            <mat-error *ngIf="!groupNameControl.value">Group Name is <strong>required</strong></mat-error>
+          </mat-form-field>
+          <button
+            type="submit"
+            [disabled]="!groupNameControl.valid"
+            mat-button
+            class="create-group-submit"
+            (click)="createGroup()"
+            cdkFocusInitial
+          >
+            Create
+          </button>
+        </div>
+        
+        <div mat-subheader>Groups: {{ groups.length }}</div>
+        <mat-list-item *ngFor="let group of groups">
+          <mat-icon mat-list-icon>group</mat-icon>
+          <div mat-line>{{ group.name }}</div>
+          <button 
+            mat-icon-button
+            matTooltip="Edit Group"
+            (click)="openEdit(group)"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button 
+            mat-icon-button
+            matTooltip="Delete Group"
+            (click)="deleteGroup(group)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-list-item>
+      </mat-list>
+    </mat-tab>
+    <mat-tab label="Multi-Group Assign">
+      <mat-form-field
+        appearance="fill"
+        style="margin-top: 20px;"
+      >
+        <mat-label>Select Groups...</mat-label>
+        <mat-select
+          #selectGroups
+          [(ngModel)]="selectedGroups"
+          multiple
+        >
+          <mat-option
+            *ngFor="let group of groups"
+            [value]="group"
+          >
+            ({{ group.members.length }}) {{ group.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <app-move-group-members
+        [groups]="selectedGroups"
+        [projectID]="data.project.projectID"
+        [headerText]="'Move students manually with drag&drop or randomly using the shuffle button:'"
+        (updateGroups)="updateGroups($event)"
+      >
+      </app-move-group-members>
+      <mat-divider></mat-divider>
+      <div class="multi-group-actions">
+        <button
+          mat-icon-button
+          matTooltip="Shuffle members between selected groups"
+          (click)="child.shuffleBetweenGroups()"
+        >
+          Shuffle <mat-icon>shuffle</mat-icon>
+        </button>
+        <button
+          mat-button
+          (click)="saveGroups()"
+        >
+          Save Groups
+        </button>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

@@ -48,6 +48,7 @@ import { getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
+import Upvote from 'src/app/models/upvote';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 
 @Component({
@@ -126,6 +127,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.BOARD_TAGS_UPDATE, this.handleBoardTagsUpdateEvent],
       [SocketEvent.BOARD_TASK_UPDATE, this.handleBoardTaskUpdateEvent],
       [SocketEvent.BOARD_UPVOTE_UPDATE, this.handleBoardUpvoteUpdateEvent],
+      [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent],
       [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
     ]);
   }
@@ -321,6 +323,21 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._calcUpvoteCounter();
   };
 
+  handleVotesClearEvent = async (result: Upvote[]) => {
+    this._calcUpvoteCounter();
+    const resetedPosts: string[] = [];
+    for (const upvotes of result) {
+      if (!resetedPosts.includes(upvotes.postID)) {
+        let existing = this.fabricUtils.getObjectFromId(upvotes.postID);
+        if (existing) {
+          existing = this.fabricUtils.setUpvoteCount(existing, 0);
+          this.canvas.requestRenderAll();
+          resetedPosts.push(upvotes.postID);
+        }
+      }
+    }
+  };
+
   handleBoardClearEvent = (ids: string[]) => {
     ids.forEach((id) => {
       this.handlePostDeleteEvent(id);
@@ -491,13 +508,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   onResize(event) {
-    let scaleX = event.target.innerWidth / this.canvas.getWidth();
+    const scaleX = event.target.innerWidth / this.canvas.getWidth();
     // Without toolbar height
-    let scaleY = (event.target.innerHeight - 64) / this.canvas.getHeight();
-    let objects = this.canvas.getObjects();
+    const scaleY = (event.target.innerHeight - 64) / this.canvas.getHeight();
+    const objects = this.canvas.getObjects();
 
     // Resize all objects inside the canvas
-    for (var i in objects) {
+    for (const i in objects) {
       objects[i].scaleX = objects[i].getObjectScaling().scaleX * scaleY;
       objects[i].scaleY = objects[i].getObjectScaling().scaleY * scaleY;
       objects[i].left = (objects[i].left || 0) * scaleX;

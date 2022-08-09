@@ -9,12 +9,32 @@ export class TaskModel {
   public message?: string;
 }
 
+export class ImageSettings {
+  @prop({ required: false })
+  public top?: number;
+
+  @prop({ required: false })
+  public left?: number;
+  
+  @prop({ required: false })
+  public width?: number;
+  
+  @prop({ required: false })
+  public height?: number;
+  
+  @prop({ required: false })
+  public scaleX?: number;
+  
+  @prop({ required: false })
+  public scaleY?: number;
+}
+
 export class BgImageModel {
   @prop({ required: true })
   public url!: string;
 
   @prop({ required: false })
-  public imgSettings?: unknown;
+  public imgSettings?: ImageSettings;
 }
 
 export class PermissionsModel {

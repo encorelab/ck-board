@@ -16,6 +16,7 @@ import { Board, BoardPermissions } from 'src/app/models/board';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { ImageSettings } from 'src/app/utils/FabricUtils';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -44,6 +45,11 @@ export class ConfigurationModalComponent {
   initialZoom = 100;
   upvoteLimit = 5;
 
+  bgImgSettings: ImageSettings;
+  backgroundPosX;
+  backgroundPosY;
+  backgroundScale;
+
   members: string[] = [];
 
   constructor(
@@ -66,6 +72,12 @@ export class ConfigurationModalComponent {
     this.tags = data.board.tags ?? [];
     this.permissions = data.board.permissions;
     this.initialZoom = data.board.initialZoom;
+    this.bgImgSettings = data.board.bgImage?.imgSettings;
+    this.backgroundPosX = this.bgImgSettings?.left;
+    this.backgroundPosY = this.bgImgSettings?.top;
+    this.backgroundScale = this.bgImgSettings
+      ? Math.round(this.bgImgSettings.scaleX * 100)
+      : 100;
     this.upvoteLimit = data.board.upvoteLimit;
     data.board.members.map((id) => {
       userService.getOneById(id).then((user) => {
@@ -102,6 +114,19 @@ export class ConfigurationModalComponent {
     });
   }
 
+  async updateBoardImageSettings(): Promise<Board> {
+    this.bgImgSettings.top = this.backgroundPosY;
+    this.bgImgSettings.left = this.backgroundPosX;
+    this.bgImgSettings.scaleX = this.backgroundScale / 100;
+    this.bgImgSettings.scaleY = this.backgroundScale / 100;
+
+    const board: Board = await this.canvasService.updateBoardImageSettings(
+      this.boardID,
+      this.bgImgSettings
+    );
+    return board;
+  }
+
   async removeImage() {
     this.currentBgImage = null;
     const board = await this.canvasService.updateBoardImage(this.boardID, null);
@@ -128,6 +153,9 @@ export class ConfigurationModalComponent {
       this.boardID,
       this.upvoteLimit
     );
+
+    if (this.bgImgSettings) board = await this.updateBoardImageSettings();
+
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,
     });

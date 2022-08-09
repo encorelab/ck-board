@@ -37,6 +37,9 @@ export class AddBoardModalComponent implements OnInit {
   newTagColor: any = TAG_DEFAULT_COLOR;
 
   initialZoom = 100;
+  backgroundSize = 100;
+  backgroundPosX = 0;
+  backgroundPosY = 0;
   upvoteLimit = 5;
 
   projects: Project[];

@@ -11,7 +11,7 @@ class WorkflowRunDistribution {
 
   static async handleEvent(
     input: SocketPayload<DistributionWorkflowModel>
-  ): Promise<DistributionWorkflowModel | null> {
+  ): Promise<string[] | null> {
     const id = input.eventData.workflowID;
 
     const workflow = await dalWorkflow.updateDistribution(id, {
@@ -19,17 +19,17 @@ class WorkflowRunDistribution {
     });
 
     if (!workflow) return null;
-
-    await runDistributionWorkflow(workflow);
-    return workflow;
+    const posts = await runDistributionWorkflow(workflow);
+    if (posts) return posts;
+    return null;
   }
 
   static async handleResult(
     io: Server,
     socket: Socket,
-    result: DistributionWorkflowModel | null
+    result: string[] | null
   ) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 

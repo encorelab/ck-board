@@ -39,7 +39,7 @@ export const randomDistributionWorkflow = async (
 ) => {
   let sourcePosts;
   if (source.type == ContainerType.BOARD) {
-    sourcePosts = await dalPost.getByBoard(source.id);
+    sourcePosts = await dalPost.getBoardTypePosts(source.id);
     sourcePosts = sourcePosts.map((p) => p.postID);
   } else {
     const bucket: BucketModel | null = await dalBucket.getById(source.id);
@@ -63,7 +63,9 @@ export const randomDistributionWorkflow = async (
     }
   }
 
-  if (removeFromSource) removePostFromSource(source, sourcePosts);
+  if (removeFromSource) {
+    return removePostFromSource(source, sourcePosts);
+  }
 };
 
 export const tagDistributionWorkflow = async (
@@ -75,7 +77,7 @@ export const tagDistributionWorkflow = async (
   let sourcePosts: PostModel[] = [];
   const filteredPosts: string[] = [];
   if (source.type == ContainerType.BOARD) {
-    sourcePosts = await dalPost.getByBoard(source.id);
+    sourcePosts = await dalPost.getBoardTypePosts(source.id);
     sourcePosts.forEach((post) => {
       post.tags.forEach((tag) => {
         if (tag.tagID === workflow.distributionWorkflowType.data.tagID) {
@@ -108,7 +110,9 @@ export const tagDistributionWorkflow = async (
     }
   }
 
-  if (removeFromSource) removePostFromSource(source, filteredPosts);
+  if (removeFromSource) {
+    return removePostFromSource(source, filteredPosts);
+  }
 };
 
 export const upvoteDistributionWorkflow = async (
@@ -120,7 +124,7 @@ export const upvoteDistributionWorkflow = async (
   let sourcePosts;
   const filteredPosts: string[] = [];
   if (source.type == ContainerType.BOARD) {
-    sourcePosts = await dalPost.getByBoard(source.id);
+    sourcePosts = await dalPost.getBoardTypePosts(source.id);
     sourcePosts = sourcePosts.map((p) => p.postID);
   } else {
     const bucket: BucketModel | null = await dalBucket.getById(source.id);
@@ -145,17 +149,20 @@ export const upvoteDistributionWorkflow = async (
     }
   }
 
-  if (removeFromSource) removePostFromSource(source, filteredPosts);
+  if (removeFromSource) {
+    return removePostFromSource(source, filteredPosts);
+  }
 };
 
 export const runDistributionWorkflow = async (
   workflow: DistributionWorkflowModel
 ) => {
   const { source, destinations, removeFromSource } = workflow;
+  let posts;
   if (
     workflow.distributionWorkflowType.type === DistributionWorkflowType.RANDOM
   ) {
-    randomDistributionWorkflow(
+    posts = randomDistributionWorkflow(
       workflow,
       source,
       destinations,
@@ -164,11 +171,16 @@ export const runDistributionWorkflow = async (
   } else if (
     workflow.distributionWorkflowType.type === DistributionWorkflowType.TAG
   ) {
-    tagDistributionWorkflow(workflow, source, destinations, removeFromSource);
+    posts = tagDistributionWorkflow(
+      workflow,
+      source,
+      destinations,
+      removeFromSource
+    );
   } else if (
     workflow.distributionWorkflowType.type === DistributionWorkflowType.UPVOTES
   ) {
-    upvoteDistributionWorkflow(
+    posts = upvoteDistributionWorkflow(
       workflow,
       source,
       destinations,
@@ -179,6 +191,8 @@ export const runDistributionWorkflow = async (
   await dalWorkflow.updateDistribution(workflow.workflowID, {
     active: false,
   });
+
+  return posts;
 };
 
 const workflowAgent = {

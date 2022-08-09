@@ -125,6 +125,17 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
         found.post = post;
       }
     });
+    this.socketService.listen(
+      SocketEvent.WORKFLOW_RUN_DISTRIBUTION,
+      (ids: string[]) => {
+        ids.forEach((id) => {
+          const found = this.posts.find((p) => p.post.postID == id);
+          if (found) {
+            this.posts = this.posts.filter((post) => post.post.postID != id);
+          }
+        });
+      }
+    );
   }
 
   fetchBuckets() {

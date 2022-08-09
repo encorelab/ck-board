@@ -72,6 +72,7 @@ export const removePostFromSource = async (
   } else {
     await dalBucket.removePost(source.id, posts);
   }
+  return posts;
 };
 
 const helpers = [isDistribution, shuffle, distribute];

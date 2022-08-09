@@ -6,25 +6,60 @@
     [selectedIndex]="selected.value"
     (selectedIndexChange)="selected.setValue($event)"
   >
-    <mat-tab label="Create Bucket">
-      <mat-form-field
-        appearance="outline"
-        style="width: 100%; margin-top: 20px"
-      >
-        <mat-label>Bucket Name</mat-label>
-        <input
-          matInput
-          [formControl]="bucketNameFormControl"
-          [errorStateMatcher]="matcher"
-          [(ngModel)]="bucketName"
-        />
-        <mat-error *ngIf="bucketNameFormControl.hasError('required')"
-          >Bucket name required!</mat-error
+  
+    <mat-tab label="Manage Buckets">
+      <h2 style="margin-top: 20px">Create New Bucket</h2>
+      <div style="display: flex;">
+        <mat-form-field
+          appearance="outline"
+          style="width: 100%"
         >
-        <mat-error *ngIf="bucketNameFormControl.hasError('forbidden')"
-          >Bucket name cannot be the same as board name!</mat-error
+          <mat-label>Bucket Name</mat-label>
+          <input
+            matInput
+            [formControl]="bucketNameFormControl"
+            [errorStateMatcher]="matcher"
+            [(ngModel)]="bucketName"
+          />
+          <mat-error *ngIf="bucketNameFormControl.hasError('required')"
+            >Bucket name required!</mat-error
+          >
+          <mat-error *ngIf="bucketNameFormControl.hasError('forbidden')"
+            >Bucket name cannot be the same as board name!</mat-error
+          >
+        </mat-form-field>
+        <button
+          mat-button
+          *ngIf="selected.value == 0"
+          [disabled]="!_validBucketForm()"
+          (click)="createBucket()"
         >
-      </mat-form-field>
+          Create Bucket!
+        </button>
+      </div>
+
+      <div>
+        <button class="delete-toggler" mat-button (click)="toggleDeleteBoard()">
+          Delete Buckets ({{boardBuckets.length}})
+          <mat-icon>{{ showDelete ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr;" *ngIf="showDelete">
+        <mat-card *ngFor="let bucket of boardBuckets" style="display:flex;margin: 10px;
+            padding: 10px;justify-content:space-between">
+          <mat-card-title style="font-size: small;margin:auto 0;">
+            {{ bucket.name }}
+          </mat-card-title>
+          <button 
+            mat-icon-button
+            (click)="deleteBucket(bucket)"
+          >
+            <mat-icon style="color: red;">
+              delete
+            </mat-icon>
+          </button>
+        </mat-card>
+      </div>
     </mat-tab>
     <mat-tab label="Create Workflow">
       <div>
@@ -256,14 +291,6 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
-  <button
-    mat-button
-    *ngIf="selected.value == 0"
-    [disabled]="!_validBucketForm()"
-    (click)="createBucket()"
-  >
-    Create Bucket!
-  </button>
   <button
     mat-button
     *ngIf="selected.value == 1"

@@ -35,6 +35,13 @@ router.get('/posts/:id', async (req, res) => {
   res.json(upvotes);
 });
 
+router.get('/board/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const upvotes = await dalVote.getByBoard(id);
+  res.status(200).json(upvotes);
+});
+
 router.get('/posts/:postID/users/:userID', async (req, res) => {
   const { postID, userID } = req.params;
 
@@ -69,6 +76,13 @@ router.delete('/', async (req, res) => {
   } catch (e) {
     return res.status(500).end('Unable to remove upvote!');
   }
+});
+
+router.delete('/board/:boardID', async (req, res) => {
+  const { boardID } = req.params;
+
+  const deletedVotes = await dalVote.removeByBoard(boardID);
+  res.status(200).json(deletedVotes);
 });
 
 export default router;

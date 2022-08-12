@@ -115,9 +115,8 @@ export const getParamMap = (params: string): Map<string, string> => {
 export const getOrCreateUser = async (
   paramMap: Map<string, string>
 ): Promise<UserModel | null> => {
-  const userId = paramMap.get('user-id');
-  const email = `user-${userId}@score.oise.utoronto.ca`;
   const username = paramMap.get('username') ?? '';
+  const email = `${username}@score.oise.utoronto.ca`;
   const role = getRole(paramMap.get('role'));
   try {
     return await createUserIfNecessary(email, username, role);

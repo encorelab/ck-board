@@ -58,7 +58,7 @@
         [ngStyle]="isUpvoted() && { color: '#4f47ff' }"
         (click)="handleUpvoteClick()"
       >
-        <mat-icon>arrow_upward</mat-icon>
+        <mat-icon style="transform: scale(2);">arrow_drop_up</mat-icon>
       </button>
       <button
         mat-icon-button
@@ -68,7 +68,7 @@
         {{ upvotes.length }}
       </button>
       <button mat-icon-button (click)="handleDownvoteClick()">
-        <mat-icon>arrow_downward</mat-icon>
+        <mat-icon style="transform: scale(2);">arrow_drop_down</mat-icon>
       </button>
     </mat-card-actions>
     <mat-card-actions style="margin-bottom: -1.25em">
@@ -146,7 +146,7 @@
       Update
     </button>
     <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
-  </div>
+  </div> 
   <div class="comment-area" *ngIf="!isEditing">
     <div class="comments-header">
       <button class="comment-toggler" mat-button (click)="toggleComments()">
@@ -176,7 +176,7 @@
       *ngIf="showComments && canStudentComment"
     >
       <mat-label>Add Comment</mat-label>
-      <input matInput [(ngModel)]="newComment" (keyup.enter)="addComment()" />
+      <input matInput [appAutofocus]="showComments" [(ngModel)]="newComment" (keyup.enter)="addComment()" />
       <button color="primary" matSuffix mat-button (click)="addComment()">
         Comment!
       </button>

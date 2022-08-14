@@ -1,5 +1,5 @@
 <mat-toolbar color="primary" role="toolbar" aria-label="Top Toolbar">
-  <a routerLink="/dashboard">
+  <a routerLink="/dashboard" *ngIf="!embedded">
     <img
       class="logo"
       src="/assets/encore-logo-white-sm.png"
@@ -9,7 +9,7 @@
   <ng-content></ng-content>
   <button
     style="margin-left: 1em"
-    *ngIf="user && user.username"
+    *ngIf="user && user.username && !embedded"
     mat-button
     [matMenuTriggerFor]="menu"
     matTooltip="Account"

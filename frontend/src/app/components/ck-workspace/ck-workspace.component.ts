@@ -34,6 +34,7 @@ import { PostService } from 'src/app/services/post.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
 import { interval, Subscription } from 'rxjs';
+import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 
 // install Swiper modules
 SwiperCore.use([EffectCards]);
@@ -191,6 +192,14 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   showListModal(): void {
     this._openDialog(ListModalComponent, {
       board: this.board,
+    });
+  }
+
+  openGroupDialog() {
+    this.dialog.open(ManageGroupModalComponent, {
+      data: {
+        project: this.project,
+      },
     });
   }
 

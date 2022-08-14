@@ -1,8 +1,14 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  TemplateRef,
+} from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import Post, { PostType } from '../../models/post';
 
@@ -42,6 +48,8 @@ import { getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
+import Upvote from 'src/app/models/upvote';
+import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 
 @Component({
   selector: 'app-canvas',
@@ -64,6 +72,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   initialClientY = 0;
   finalClientX = 0;
   finalClientY = 0;
+
+  embedded = false;
 
   zoom = 1;
 
@@ -91,6 +101,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public snackbarService: SnackbarService,
     public dialog: MatDialog,
     public fileUploadService: FileUploadService,
@@ -116,10 +127,18 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.BOARD_TAGS_UPDATE, this.handleBoardTagsUpdateEvent],
       [SocketEvent.BOARD_TASK_UPDATE, this.handleBoardTaskUpdateEvent],
       [SocketEvent.BOARD_UPVOTE_UPDATE, this.handleBoardUpvoteUpdateEvent],
+      [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent],
+      [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
     ]);
   }
 
   ngOnInit() {
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params.embedded == 'true') {
+        this.embedded = true;
+      }
+    });
+
     this.user = this.userService.user!;
     this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
     this.fabricUtils._canvas = this.canvas;
@@ -301,8 +320,30 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.board = board;
   };
 
-  handleBoardUpvoteUpdateEvent = (_board: Board) => {
+  handleBoardUpvoteUpdateEvent = (board: Board) => {
+    this.board = board;
     this._calcUpvoteCounter();
+  };
+
+  handleVotesClearEvent = async (result: Upvote[]) => {
+    this._calcUpvoteCounter();
+    const resetedPosts: string[] = [];
+    for (const upvotes of result) {
+      if (!resetedPosts.includes(upvotes.postID)) {
+        let existing = this.fabricUtils.getObjectFromId(upvotes.postID);
+        if (existing) {
+          existing = this.fabricUtils.setUpvoteCount(existing, 0);
+          this.canvas.requestRenderAll();
+          resetedPosts.push(upvotes.postID);
+        }
+      }
+    }
+  };
+
+  handleBoardClearEvent = (ids: string[]) => {
+    ids.forEach((id) => {
+      this.handlePostDeleteEvent(id);
+    });
   };
 
   showBucketsModal() {
@@ -323,6 +364,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
       ListModalComponent,
       {
         board: this.board,
+        user: this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top,
       },
       '95vw'
     );
@@ -372,6 +416,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
           );
           this.updateShowAddPost(this.board.permissions);
           this.setAuthorVisibilityAll();
+          if (this.board.permissions.showSnackBarStudent) {
+            this.openTaskDialog();
+          }
         }
       });
     });
@@ -447,11 +494,42 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   }
 
+  openGroupDialog() {
+    this.dialog.open(ManageGroupModalComponent, {
+      data: {
+        project: this.project,
+      },
+    });
+  }
+
   lockPostsMovement(value) {
     this.canvas.getObjects().map((obj) => {
       obj.set({ lockMovementX: value, lockMovementY: value });
     });
     this.canvas.renderAll();
+  }
+
+  onResize(event) {
+    const scaleX = event.target.innerWidth / this.canvas.getWidth();
+    // Without toolbar height
+    const scaleY = (event.target.innerHeight - 64) / this.canvas.getHeight();
+    const objects = this.canvas.getObjects();
+
+    // Resize all objects inside the canvas
+    for (const i in objects) {
+      objects[i].scaleX = objects[i].getObjectScaling().scaleX * scaleY;
+      objects[i].scaleY = objects[i].getObjectScaling().scaleY * scaleY;
+      objects[i].left = (objects[i].left || 0) * scaleX;
+      objects[i].top = (objects[i].top || 0) * scaleY;
+      objects[i].setCoords();
+    }
+
+    this.canvas.setWidth(event.target.innerWidth);
+    // Without toolbar height
+    this.canvas.setHeight(event.target.innerHeight - 64);
+
+    this.canvas.renderAll();
+    this.canvas.calcOffset();
   }
 
   hideAuthorNames() {
@@ -530,7 +608,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
 
     this.snackbarService.queueSnackbar(title, message, {
-      action: { name: 'View Full Task!', run: openDialogCloseSnack },
+      action: { name: 'View Full Task', run: openDialogCloseSnack },
       matSnackbarConfig: {
         verticalPosition: 'bottom',
         horizontalPosition: 'center',
@@ -589,16 +667,19 @@ export class CanvasComponent implements OnInit, OnDestroy {
       const votePress = e.subTargets?.find(
         (o) => o.name == 'upvote' || o.name == 'downvote'
       );
+      const commentPress = e.subTargets?.find((o) => o.name == 'comment');
       const isDragEnd = isDragging;
       isDragging = false;
       isMouseDown = false;
 
       if (!isDragEnd && !votePress && obj?.name == 'post') {
         this.canvas.discardActiveObject().renderAll();
+
         this._openDialog(PostModalComponent, {
           user: this.user,
           post: obj,
           board: this.board,
+          commentPress: commentPress,
         });
         this.canvasService.readPost(obj.postID);
       }

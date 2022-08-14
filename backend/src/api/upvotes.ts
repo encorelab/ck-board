@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
   );
   const board: BoardModel | null = await dalBoard.getById(upvote.boardID);
   if (board && usersUpvotes.length >= board.upvoteLimit) {
-    return res.status(406).end('You have already surpassed the upvote limit!');
+    return res.status(406).end('You have reached the upvote limit!');
   }
 
   const savedUpvote = await dalVote.create(upvote);
@@ -33,6 +33,13 @@ router.get('/posts/:id', async (req, res) => {
 
   const upvotes = await dalVote.getByPost(id, representation);
   res.json(upvotes);
+});
+
+router.get('/board/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const upvotes = await dalVote.getByBoard(id);
+  res.status(200).json(upvotes);
 });
 
 router.get('/posts/:postID/users/:userID', async (req, res) => {
@@ -69,6 +76,13 @@ router.delete('/', async (req, res) => {
   } catch (e) {
     return res.status(500).end('Unable to remove upvote!');
   }
+});
+
+router.delete('/board/:boardID', async (req, res) => {
+  const { boardID } = req.params;
+
+  const deletedVotes = await dalVote.removeByBoard(boardID);
+  res.status(200).json(deletedVotes);
 });
 
 export default router;

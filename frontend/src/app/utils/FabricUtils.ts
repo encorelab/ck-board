@@ -9,7 +9,7 @@ import {
   POST_DEFAULT_BORDER_THICKNESS,
   POST_DEFAULT_OPACITY,
 } from './constants';
-import { numDigits } from './Utils';
+import { numDigits, generateUniqueID } from './Utils';
 
 export interface ImageSettings {
   top: number;
@@ -72,6 +72,7 @@ export class FabricUtils {
     return DEFAULT_TAGS.map((tag) => {
       const fullTag: Tag = {
         boardID,
+        tagID: generateUniqueID(),
         name: tag.name!,
         color: tag.color!,
         specialAttributes: tag.specialAttributes,

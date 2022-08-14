@@ -6,7 +6,11 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialog,
+} from '@angular/material/dialog';
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
 import { Board } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
@@ -28,6 +32,7 @@ import { SnackbarService } from 'src/app/services/snackbar.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-create-workflow-modal',
@@ -39,17 +44,19 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   board: Board;
   buckets: Bucket[];
+  boardBuckets: Bucket[];
   workflows: any[] = [];
   tags: string[];
 
   bucketName = '';
+  workflowName = '';
+  showDelete = false;
 
   // Common fields between all workflows
   WorkflowType: typeof WorkflowType = WorkflowType;
   workflowType: WorkflowType = WorkflowType.DISTRIBUTION;
   sourceOptions: (Bucket | Board)[] = [];
   destOptions: (Bucket | Board)[] = [];
-  workflowName = '';
 
   // Fields for distribution workflow creation
   distributionSource: Board | Bucket;
@@ -90,6 +97,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
+    public dialog: MatDialog,
     private snackbarService: SnackbarService,
     public bucketService: BucketService,
     public boardService: BoardService,
@@ -111,12 +119,14 @@ export class CreateWorkflowModalComponent implements OnInit {
   async loadBucketsBoards(): Promise<void> {
     this.sourceOptions = [];
     this.destOptions = [];
+    this.boardBuckets = [];
 
     this.bucketService
       .getAllByBoard(this.data.board.boardID)
       .then((buckets) => {
         this.sourceOptions = this.sourceOptions.concat(buckets);
         this.destOptions = this.destOptions.concat(buckets);
+        this.boardBuckets = this.boardBuckets.concat(buckets);
         this.sourceOptions.push(this.board);
       });
     this.boardService.getMultiple(this.data.project.boards).then((data) => {
@@ -147,6 +157,28 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.loadBucketsBoards();
       this.openSnackBar('Bucket: ' + bucket.name + ' created succesfully!');
       this.bucketNameFormControl.reset();
+    });
+  }
+
+  toggleDeleteBoard() {
+    this.showDelete = !this.showDelete;
+  }
+
+  deleteBucket(bucket: Bucket) {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to delete this bucket?',
+        handleConfirm: () => {
+          this.bucketService.delete(bucket.bucketID).then(() => {
+            this.loadBucketsBoards();
+            this.openSnackBar(
+              'Bucket: ' + bucket.name + ' deleted succesfully!'
+            );
+          });
+        },
+      },
     });
   }
 

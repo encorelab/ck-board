@@ -168,6 +168,7 @@ const tagAdd = async (
   trace.event = {
     postID: post.postID,
     postTagNameAdded: tag.name,
+    postTagIDAdded: tag.tagID,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);
@@ -189,6 +190,7 @@ const tagRemove = async (
   trace.event = {
     postID: post.postID,
     postTagNameRemoved: tag.name,
+    postTagIDRemoved: tag.tagID,
   };
   trace.eventType = eventType;
   return dalTrace.create(trace);

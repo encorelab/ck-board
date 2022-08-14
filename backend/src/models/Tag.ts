@@ -16,8 +16,11 @@ export class TagSpecialAttributes {
 
 @modelOptions({ schemaOptions: { collection: 'tags' } })
 export class TagModel {
-  @prop({ required: false })
+  @prop({ required: true })
   public boardID!: string;
+
+  @prop({ required: true })
+  public tagID!: string;
 
   @prop({ required: true })
   public name!: string;

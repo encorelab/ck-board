@@ -1,0 +1,71 @@
+<div>
+  <h4>{{ headerText }}</h4>
+  <div cdkDropListGroup class="group-member-list">
+    <div
+      *ngFor="let group of groupMembers; let i = index"
+      class="member-list-container"
+    >
+      <div class="member-list-header">
+        <span>{{ group.groupName }}</span>
+        <button
+          mat-icon-button
+          matTooltip="Remove all students from group"
+          (click)="removeAllMembers(i)"
+        >
+          <mat-icon>clear_all</mat-icon>
+        </button>
+      </div>
+      <div
+        cdkDropList
+        [cdkDropListData]="group.members"
+        (cdkDropListDropped)="drop($event)"
+        class="member-list"
+      >
+        <div
+          cdkDrag
+          *ngFor="let member of group.members; let j = index"
+          class="group-member-box member-box"
+        >
+          {{ member.username }}
+          <button 
+            mat-icon-button
+            matTooltip="Remove student from group"
+            (click)="removeMember(i, j)"
+            class="icon-button"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      *ngIf="groups.length !== 0"
+      class="member-list-container"
+    >
+      <div class="member-list-header">
+        <span>Unassigned</span>
+        <button
+          mat-icon-button
+          matTooltip="Unassign all students"
+          (click)="unassignAllMembers()"
+        >
+          <mat-icon>arrow_downward</mat-icon>
+        </button>
+      </div>
+      <div
+        cdkDropList
+        [cdkDropListData]="unassigned"
+        (cdkDropListDropped)="drop($event)"
+        class="member-list"
+      >
+        <div
+          cdkDrag
+          *ngFor="let member of unassigned"
+          class="member-box"
+        >
+          <span>{{ member.username }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -5,9 +5,14 @@
     <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
       <mat-icon>keyboard_return</mat-icon>
     </button>
-    <button mat-icon-button matTooltip="View Groups">
-      <mat-icon>group</mat-icon>
-    </button>
+    <button
+        *ngIf="user && user.role === Role.TEACHER"
+        mat-icon-button
+        (click)="openGroupDialog()"
+        matTooltip="Manage Groups"
+      >
+        <mat-icon>group_work</mat-icon>
+      </button>
     <button mat-icon-button *ngIf="!(user && user.role === Role.STUDENT && !board.permissions.showBucketStudent)" (click)="showBucketsModal()" matTooltip="View Buckets">
       <mat-icon>shopping_basket</mat-icon>
     </button>

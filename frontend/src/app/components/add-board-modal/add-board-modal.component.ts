@@ -59,6 +59,7 @@ export class AddBoardModalComponent implements OnInit {
       showAuthorNameStudent: true,
       showAuthorNameTeacher: true,
       showBucketStudent: true,
+      showSnackBarStudent: false,
       allowTracing: false,
     };
     this.projects = data.projects;
@@ -72,6 +73,7 @@ export class AddBoardModalComponent implements OnInit {
 
   addTag() {
     this.tags.push({
+      tagID: generateUniqueID(),
       boardID: this.boardID,
       name: this.newTagText,
       color: this.newTagColor,

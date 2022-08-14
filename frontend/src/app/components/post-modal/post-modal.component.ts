@@ -41,6 +41,7 @@ export class PostModalData {
   post!: Post;
   user!: User;
   board!: Board;
+  commentPress?: boolean;
   eventHandlers?: Map<PostModalEvent, Function>;
 }
 
@@ -102,6 +103,7 @@ export class PostModalComponent {
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
+    this.showComments = data?.commentPress ? true : false;
     this.postService.get(data.post.postID).then(async (p: Post) => {
       this.post = p;
       this.title = p.title;

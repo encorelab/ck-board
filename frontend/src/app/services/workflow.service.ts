@@ -146,10 +146,10 @@ export class WorkflowService {
       .toPromise();
   }
 
-  removePosts(groupTaskID: string, posts: string[]): Promise<GroupTask> {
+  submitPost(groupTaskID: string, post: string): Promise<GroupTask> {
     return this.http
-      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/remove`, {
-        posts,
+      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/submit`, {
+        post,
       })
       .toPromise();
   }

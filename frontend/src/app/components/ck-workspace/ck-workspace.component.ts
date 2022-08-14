@@ -49,8 +49,8 @@ SwiperCore.use([EffectCards]);
 export class CkWorkspaceComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
 
-  showInactive = false;
-  showActive = false;
+  showInactive = true;
+  showActive = true;
   showCompleted = false;
 
   user: AuthUser;
@@ -115,13 +115,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     tasks.forEach((t) => {
       if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
         this.inactiveGroupTasks.push(t);
-        this.showInactive = true;
       } else if (t.groupTask.status == GroupTaskStatus.ACTIVE) {
         this.activeGroupTasks.push(t);
-        this.showActive = true;
       } else if (t.groupTask.status == GroupTaskStatus.COMPLETE) {
         this.completeGroupTasks.push(t);
-        this.showCompleted = true;
       }
     });
 
@@ -150,9 +147,14 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       this.runningGroupTask
     );
 
-    const posts = await this.postService.getAll(
-      this.runningGroupTask.groupTask.posts
-    );
+    let postIDs: string[] = [];
+    if (groupTask.groupTask.status == GroupTaskStatus.COMPLETE) {
+      postIDs = postIDs.concat(Object.keys(groupTask.groupTask.progress));
+    } else {
+      postIDs = postIDs.concat(groupTask.groupTask.posts);
+    }
+
+    const posts = await this.postService.getAll(postIDs);
     this.posts = await this.converters.toHTMLPosts(posts);
     this._startListening();
   }
@@ -169,9 +171,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     if (!this.runningGroupTask) return;
 
     const task: GroupTask = this.runningGroupTask.groupTask;
-    this.runningGroupTask.groupTask = await this.workflowService.removePosts(
+    this.runningGroupTask.groupTask = await this.workflowService.submitPost(
       task.groupTaskID,
-      [post.post.postID]
+      post.post.postID
     );
 
     this.posts = this.posts.filter((p) => p.post.postID !== post.post.postID);
@@ -232,6 +234,30 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     return amountRequired == 0;
   }
 
+  taskSubmittable(groupTask: ExpandedGroupTask): boolean {
+    return (
+      this.currentGroupProgress == 100 &&
+      groupTask.groupTask.posts.length == 0 &&
+      groupTask.groupTask.status == GroupTaskStatus.ACTIVE
+    );
+  }
+
+  hasCommentRequirement(runningGroupTask: ExpandedGroupTask): boolean {
+    return (
+      runningGroupTask.workflow.requiredActions.find(
+        (a) => a.type == TaskActionType.COMMENT
+      ) != undefined
+    );
+  }
+
+  hasTagRequirement(runningGroupTask: ExpandedGroupTask): boolean {
+    return (
+      runningGroupTask.workflow.requiredActions.find(
+        (a) => a.type == TaskActionType.TAG
+      ) != undefined
+    );
+  }
+
   private _startListening(): void {
     this.listeners.push(
       this.socketService.listen(
@@ -252,7 +278,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       )
     );
     this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result: any) => {
+      this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result) => {
         const found = this.posts.find(
           (p) => p.post.postID == result.upvote.postID
         );
@@ -262,22 +288,19 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       })
     );
     this.listeners.push(
-      this.socketService.listen(
-        SocketEvent.POST_UPVOTE_REMOVE,
-        (result: any) => {
-          const found = this.posts.find(
-            (p) => p.post.postID == result.upvote.postID
+      this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result) => {
+        const found = this.posts.find(
+          (p) => p.post.postID == result.upvote.postID
+        );
+        if (found) {
+          found.upvotes = found.upvotes.filter(
+            (upvote) => upvote.upvoteID != result.upvote.upvoteID
           );
-          if (found) {
-            found.upvotes = found.upvotes.filter(
-              (upvote) => upvote.upvoteID != result.upvote.upvoteID
-            );
-          }
         }
-      )
+      })
     );
     this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result: any) => {
+      this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result) => {
         const found = this.posts.find(
           (p) => p.post.postID == result.comment.postID
         );
@@ -287,20 +310,17 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       })
     );
     this.listeners.push(
-      this.socketService.listen(
-        SocketEvent.POST_COMMENT_REMOVE,
-        (result: any) => {
-          const found = this.posts.find(
-            (p) => p.post.postID == result.comment.postID
-          );
-          if (found) {
-            found.comments -= 1;
-          }
+      this.socketService.listen(SocketEvent.POST_COMMENT_REMOVE, (result) => {
+        const found = this.posts.find(
+          (p) => p.post.postID == result.comment.postID
+        );
+        if (found) {
+          found.comments -= 1;
         }
-      )
+      })
     );
     this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post, tag }) => {
+      this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post }) => {
         const found = this.posts.find((p) => p.post.postID == post.postID);
         if (found) {
           found.post = post;
@@ -308,15 +328,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       })
     );
     this.listeners.push(
-      this.socketService.listen(
-        SocketEvent.POST_TAG_REMOVE,
-        ({ post, _tag }) => {
-          const found = this.posts.find((p) => p.post.postID == post.postID);
-          if (found) {
-            found.post = post;
-          }
+      this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post }) => {
+        const found = this.posts.find((p) => p.post.postID == post.postID);
+        if (found) {
+          found.post = post;
         }
-      )
+      })
     );
     this.listeners.push(
       interval(30 * 1000).subscribe(async () => {
@@ -347,6 +364,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         partialSum + a.reduce((partial, b) => partial + b.amountRequired, 0),
       0
     );
+
+    // nothing left to do
+    if (remaining == 0) return 100;
 
     // sum both required tags (1) and required comments (1) = 2
     // multiple by number of posts since those requirements are per-post

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import WorkflowManager from '../agents/workflow.agent';
 import { GroupTaskModel, GroupTaskStatus } from '../models/GroupTask';
 import {
@@ -7,7 +8,9 @@ import {
   WorkflowType,
 } from '../models/Workflow';
 import dalGroupTask from '../repository/dalGroupTask';
+import dalPost from '../repository/dalPost';
 import dalWorkflow from '../repository/dalWorkflow';
+import { movePostsToDestination } from '../utils/workflow.helpers';
 
 const router = Router();
 
@@ -264,14 +267,36 @@ router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
 });
 
 /**
- * Remove post from group task.
+ * Submit post from group task.
  */
- router.post('/task/groupTask/:groupTaskID/remove', async (req, res) => {
+ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
   const {groupTaskID} = req.params;
-  const {posts} = req.body;
+  const {post} = req.body;
   
-  const updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, posts);
-  res.status(200).json(updatedGroupTask);
+  const groupTask = await dalGroupTask.getById(groupTaskID);
+  if (!groupTask) return res.status(404).end('No group task with id: ' + groupTaskID);
+
+  const workflow = await dalWorkflow.getById(groupTask.workflowID);
+  if (!workflow) return res.status(404).end('No workflow with id: ' + groupTask.workflowID);
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  
+  try {
+    // Remove post from group task
+    const updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, [post]);
+
+    // Remove post from source and move to destination
+    const destination = workflow.destinations[0];
+    await movePostsToDestination(destination, [post]);
+    await dalPost.remove(post);
+
+    return res.status(200).json(updatedGroupTask);
+  } catch (e) {
+    return res.status(500).end('Unable to submit post!');
+  } finally {
+    session.endSession();
+  }
 });
 
 /**

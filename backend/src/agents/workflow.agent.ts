@@ -131,19 +131,21 @@ class WorkflowManager {
       sourcePosts.length / taskWorkflow.assignedGroups.length
     );
   
+    const commentAction = taskWorkflow.requiredActions.find(a => a.type == TaskActionType.COMMENT)
+    const tagAction = taskWorkflow.requiredActions.find(a => a.type == TaskActionType.TAG)
+    const actions: TaskAction[] = []
+    if (commentAction) actions.push({ type: TaskActionType.COMMENT, amountRequired: commentAction.amountRequired });
+    if (tagAction) actions.push({ type: TaskActionType.TAG, amountRequired: tagAction.amountRequired })
+
     if (assignedGroups.length > 0) {
       for (let i = 0; i < assignedGroups.length; i++) {
         const assignedGroup = assignedGroups[i];
-        const posts = split[i];
-  
+        const posts = split[i] ?? [];
+
         const progress: Map<string, TaskAction[]> = new Map<string, TaskAction[]>();
-      
         posts.forEach(post => {
-          progress.set(post, [
-            { type: TaskActionType.COMMENT, amountRequired: 1 },
-            { type: TaskActionType.TAG, amountRequired: 1 },
-          ])
-        })
+          progress.set(post, actions)
+        });
 
         const groupTask: GroupTaskModel = {
           groupTaskID: new mongo.ObjectId().toString(),

@@ -72,11 +72,14 @@
       </div>
     </mat-sidenav>
     <mat-sidenav-content>
-      <div class="no-workflow-select" *ngIf="!runningGroupTask">
+      <div class="heading no-workflow-select" *ngIf="!runningGroupTask">
         No workflow task selected!
       </div>
       <div style="display: flex; flex-direction: row;">
-        <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask">
+        <div class="heading no-posts" *ngIf="runningGroupTask && (!posts || posts.length === 0)">
+          No posts to review!
+        </div>
+        <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask && posts && posts.length > 0">
           <ng-template swiperSlide *ngFor="let htmlPost of posts">
             <div (click)="$event.stopPropagation();" style="display: flex; flex-direction: column; gap: 10px;">
               <app-html-post (click)="$event.stopPropagation();" [post]="htmlPost" style="width: 360px; height: 100%;"></app-html-post>
@@ -96,8 +99,8 @@
               <section>
                 <h5>Actions Required:</h5>
                 <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
-                  <li>Comment on each post atleast once!</li>
-                  <li>Tag each post atleast once!</li>
+                  <li *ngIf="hasCommentRequirement(runningGroupTask)">Comment on each post atleast once!</li>
+                  <li *ngIf="hasTagRequirement(runningGroupTask)">Tag each post atleast once!</li>
                 </ul>
               </section>
             </mat-card-content>
@@ -110,7 +113,7 @@
               <mat-progress-bar mode="determinate" [value]="averageGroupProgress" color="accent"></mat-progress-bar>
             </div>
             <div style="padding: 20px 0 0 0;">
-              <button mat-raised-button color="primary" [disabled]="currentGroupProgress !== 100 || runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE" (click)="markComplete()">Mark Task Complete</button>
+              <button mat-raised-button color="primary" [disabled]="!taskSubmittable(runningGroupTask)" (click)="markComplete()">Mark Task Complete</button>
             </div>
           </mat-card>
         </div>

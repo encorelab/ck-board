@@ -129,7 +129,7 @@
               <mat-select [(ngModel)]="assignedGroups" [formControl]="groupsFormControl" [errorStateMatcher]="matcher" multiple>
                 <mat-option *ngFor="let option of groupOptions" [value]="option">{{ option.name }}</mat-option>
               </mat-select>
-              <mat-error *ngIf="groupsFormControl.hasError('required')">Atleast one group required!</mat-error>
+              <mat-error *ngIf="groupsFormControl.hasError('required')">At least one group required!</mat-error>
             </mat-form-field>
           </div>
         </section>

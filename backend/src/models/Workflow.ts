@@ -35,7 +35,7 @@ export class TaskAction {
   @prop({ enum: TaskActionType, type: String, required: true })
   public type!: TaskActionType;
 
-  @prop({ required: true, default: 1 })
+  @prop({ required: true, default: 0 })
   public amountRequired!: number;
 }
 

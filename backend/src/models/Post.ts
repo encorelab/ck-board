@@ -1,9 +1,11 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 import { TagModel } from './Tag';
 
+
 export enum PostType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
+  LIST = 'LIST'
 }
 
 export class Position {

@@ -2,8 +2,11 @@ import { isDocument } from '@typegoose/typegoose';
 import { DocumentType } from '@typegoose/typegoose';
 import { KeyStringAny } from '@typegoose/typegoose/lib/types';
 import { Document, mongo } from 'mongoose';
-import { PostModel } from '../models/Post';
-import { WorkflowModel, WorkflowType } from '../models/Workflow';
+import { PostModel, PostType } from '../models/Post';
+import { Container, ContainerType, WorkflowModel, WorkflowType } from '../models/Workflow';
+import dalBucket from '../repository/dalBucket';
+import dalPost from '../repository/dalPost';
+import { convertPostsFromID } from './converter';
 
 export const isDistribution = <T extends WorkflowModel>(
   doc: Document & KeyStringAny
@@ -59,6 +62,16 @@ export const cloneManyToBoard = (
 ): PostModel[] => {
   return posts.map((post) => cloneToBoard(board, post));
 };
+
+export const movePostsToDestination = async (destination: Container, posts: string[]) => {
+  if (destination.type == ContainerType.BOARD) {
+    const originals: PostModel[] = await convertPostsFromID(posts);
+    const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
+    await dalPost.createMany(copied);
+  } else {
+    await dalBucket.addPost(destination.id, posts);
+  }
+}
 
 const helpers = [isDistribution, shuffle, distribute];
 

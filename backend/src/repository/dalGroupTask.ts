@@ -164,6 +164,22 @@ export const updateMany = async (
   }
 };
 
+export const removePosts = async (id: string, posts: string[]) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    return await GroupTask.findOneAndUpdate(
+      { groupTaskID: id },
+      { $pull: { posts: { $in: posts } }},
+      { new: true }
+    );
+  } catch (err) {
+    throw new Error('500');
+  } finally {
+    session.endSession();
+  }
+};
+
 const dalGroupTask = {
   expandGroupTask,
   expandGroupTasks,
@@ -178,6 +194,7 @@ const dalGroupTask = {
   removeByWorkflow,
   update,
   updateMany,
+  removePosts,
 };
 
 export default dalGroupTask;

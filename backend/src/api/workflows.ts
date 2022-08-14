@@ -150,8 +150,7 @@ router.put('/task/:id', async (req, res) => {
     destinations,
     prompt,
     requiredActions,
-    assignedGroups,
-    postsPerGroup,
+    assignedGroups
   } = req.body;
 
   const workflow: Partial<TaskWorkflowModel> = Object.assign(
@@ -162,8 +161,7 @@ router.put('/task/:id', async (req, res) => {
     destinations === null ? null : { destinations },
     prompt === null ? null : { prompt },
     requiredActions === null ? null : { requiredActions },
-    assignedGroups === null ? null : { assignedGroups },
-    postsPerGroup === null ? null : { postsPerGroup }
+    assignedGroups === null ? null : { assignedGroups }
   );
 
   const updatedWorkflow = await dalWorkflow.updateTask(id, workflow);
@@ -266,7 +264,18 @@ router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
 });
 
 /**
- * Update a group task.
+ * Remove post from group task.
+ */
+ router.post('/task/groupTask/:groupTaskID/remove', async (req, res) => {
+  const {groupTaskID} = req.params;
+  const {posts} = req.body;
+  
+  const updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, posts);
+  res.status(200).json(updatedGroupTask);
+});
+
+/**
+ * Mark group task as complete.
  */
  router.post('/task/groupTask/:groupTaskID/complete', async (req, res) => {
   const {groupTaskID} = req.params;

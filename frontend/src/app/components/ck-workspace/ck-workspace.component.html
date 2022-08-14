@@ -76,13 +76,14 @@
         No workflow task selected!
       </div>
       <div style="display: flex; flex-direction: row;">
-        <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper">
+        <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask">
           <ng-template swiperSlide *ngFor="let htmlPost of posts">
             <div (click)="$event.stopPropagation();" style="display: flex; flex-direction: column; gap: 10px;">
               <app-html-post (click)="$event.stopPropagation();" [post]="htmlPost" style="width: 360px; height: 100%;"></app-html-post>
               <div style="display: flex; flex-direction: row;">
-                <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 50%; margin: 0px 10px;">Previous</button>
-                <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 50%; margin: 0px 10px;">Next</button>
+                <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Previous</button>
+                <button (click)="submitPost(htmlPost)" mat-raised-button color="primary" [disabled]="runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE || !postSubmittable(htmlPost)" style="width: 30%; margin: 0px 5px;">Submit</button>
+                <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Next</button>
               </div>
             </div>
           </ng-template>
@@ -94,11 +95,10 @@
               <p>{{ runningGroupTask.workflow.prompt }} </p>
               <section>
                 <h5>Actions Required:</h5>
-                <p *ngFor="let action of runningGroupTask.groupTask.actions">
-                  <mat-checkbox disabled *ngIf="action.type === TaskActionType.UPVOTE" [checked]="action.amountRequired === 0">{{action.amountRequired}} total upvotes required!</mat-checkbox>
-                  <mat-checkbox disabled *ngIf="action.type === TaskActionType.COMMENT" [checked]="action.amountRequired === 0">{{action.amountRequired}} total comments required!</mat-checkbox>
-                  <mat-checkbox disabled *ngIf="action.type === TaskActionType.TAG" [checked]="action.amountRequired === 0">{{action.amountRequired}} tags per post required!</mat-checkbox>
-                </p>
+                <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
+                  <li>Comment on each post atleast once!</li>
+                  <li>Tag each post atleast once!</li>
+                </ul>
               </section>
             </mat-card-content>
             <div style="margin-bottom: 10px;">
@@ -110,7 +110,7 @@
               <mat-progress-bar mode="determinate" [value]="averageGroupProgress" color="accent"></mat-progress-bar>
             </div>
             <div style="padding: 20px 0 0 0;">
-              <button mat-raised-button color="primary" [disabled]="currentGroupProgress !== 100 || runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE" (click)="submit()">Submit Task</button>
+              <button mat-raised-button color="primary" [disabled]="currentGroupProgress !== 100 || runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE" (click)="markComplete()">Mark Task Complete</button>
             </div>
           </mat-card>
         </div>

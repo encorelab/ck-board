@@ -28,6 +28,7 @@ import {
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
+import { GroupService } from 'src/app/services/group.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
@@ -64,22 +65,13 @@ export class CreateWorkflowModalComponent implements OnInit {
   postsPerBucket: number;
 
   // Fields for task workflow creation
-  groupOptions: Group[] = [
-    {
-      groupID: 'ammar-testing',
-      projectID: '1652397082676-bea4ae95-42a0-458c-a120-0be4486b432e',
-      name: 'ammar',
-      members: ['bea4ae95-42a0-458c-a120-0be4486b432e'],
-    },
-  ];
+  groupOptions: Group[] = [];
   taskSource: Board | Bucket;
   taskDestination: Board | Bucket;
   prompt: string;
   assignedGroups: Group[] = [];
-  postsPerGroup = 0;
-  upvotesRequired = 0;
-  commentsRequired = 0;
-  tagsRequired = 0;
+  commentsRequired = false;
+  tagsRequired = false;
 
   bucketNameFormControl = new FormControl('valid', [
     Validators.required,
@@ -103,6 +95,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     public boardService: BoardService,
     public workflowService: WorkflowService,
     public canvasService: CanvasService,
+    public groupService: GroupService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.snackbarConfig = new MatSnackBarConfig();
@@ -112,8 +105,15 @@ export class CreateWorkflowModalComponent implements OnInit {
   ngOnInit(): void {
     this.board = this.data.board;
     this.tags = this.data.board.tags;
+    this.loadGroups();
     this.loadBucketsBoards();
     this.loadWorkflows();
+  }
+
+  async loadGroups() {
+    this.groupOptions = await this.groupService.getByProjectId(
+      this.data.project.projectID
+    );
   }
 
   async loadBucketsBoards(): Promise<void> {
@@ -263,7 +263,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   _isTaskWorkflow(
     object: DistributionWorkflow | TaskWorkflow
   ): object is TaskWorkflow {
-    return (object as TaskWorkflow).postsPerGroup !== undefined;
+    return (object as TaskWorkflow).requiredActions !== undefined;
   }
 
   _validDistributionWorkflow(): boolean {
@@ -307,31 +307,22 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   _actionSelected(): boolean {
-    return (
-      this.upvotesRequired > 0 ||
-      this.commentsRequired > 0 ||
-      this.tagsRequired > 0
-    );
+    return this.commentsRequired || this.tagsRequired;
   }
 
   _assembleTaskWorkflow(): TaskWorkflow {
     const workflowID: string = generateUniqueID();
 
     const actions: TaskAction[] = [];
-    if (this.upvotesRequired > 0)
-      actions.push({
-        type: TaskActionType.UPVOTE,
-        amountRequired: this.upvotesRequired,
-      });
-    if (this.commentsRequired > 0)
+    if (this.commentsRequired)
       actions.push({
         type: TaskActionType.COMMENT,
-        amountRequired: this.commentsRequired,
+        amountRequired: 1,
       });
-    if (this.tagsRequired > 0)
+    if (this.tagsRequired)
       actions.push({
         type: TaskActionType.TAG,
-        amountRequired: this.tagsRequired,
+        amountRequired: 1,
       });
 
     const workflow: TaskWorkflow = {
@@ -344,7 +335,6 @@ export class CreateWorkflowModalComponent implements OnInit {
       prompt: this.prompt,
       requiredActions: actions,
       assignedGroups: this.assignedGroups.map((g) => g.groupID),
-      postsPerGroup: this.postsPerGroup,
     };
 
     return workflow;

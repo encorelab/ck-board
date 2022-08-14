@@ -15,6 +15,7 @@ import {
   ExpandedGroupTask,
   GroupTask,
   GroupTaskStatus,
+  TaskAction,
   TaskActionType,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
@@ -164,7 +165,19 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.listeners.map((l) => l.unsubscribe());
   }
 
-  async submit(): Promise<void> {
+  async submitPost(post: HTMLPost): Promise<void> {
+    if (!this.runningGroupTask) return;
+
+    const task: GroupTask = this.runningGroupTask.groupTask;
+    this.runningGroupTask.groupTask = await this.workflowService.removePosts(
+      task.groupTaskID,
+      [post.post.postID]
+    );
+
+    this.posts = this.posts.filter((p) => p.post.postID !== post.post.postID);
+  }
+
+  async markComplete(): Promise<void> {
     if (!this.runningGroupTask) return;
 
     const task: GroupTask = this.runningGroupTask.groupTask;
@@ -195,12 +208,28 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  openGroupDialog() {
+  openGroupDialog(): void {
     this.dialog.open(ManageGroupModalComponent, {
       data: {
         project: this.project,
       },
     });
+  }
+
+  postSubmittable(post: HTMLPost): boolean {
+    if (!this.runningGroupTask) return false;
+
+    const progress = this.runningGroupTask.groupTask.progress;
+    const postProgress = progress[post.post.postID];
+
+    if (!postProgress) return false;
+
+    const amountRequired = postProgress.reduce(
+      (sum: number, a: TaskAction) => sum + a.amountRequired,
+      0
+    );
+
+    return amountRequired == 0;
   }
 
   private _startListening(): void {
@@ -306,14 +335,26 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   private _calcGroupProgress(task: ExpandedGroupTask | null): number {
     if (!task) return 0;
 
-    const remaining = task.groupTask.actions.reduce(
-      (partialSum, a) => partialSum + a.amountRequired,
+    // get all posts' progress
+    const values = Object.keys(task.groupTask.progress).map(function (key) {
+      return task.groupTask.progress[key];
+    });
+
+    // sum all amountRequired for each action per post
+    // i.e. Post A (1 tag req, 1 comment req) + Post B (1 tag req, 0 comments required)
+    const remaining = values.reduce(
+      (partialSum, a) =>
+        partialSum + a.reduce((partial, b) => partial + b.amountRequired, 0),
       0
     );
-    const total = task.workflow.requiredActions.reduce(
-      (partialSum, a) => partialSum + a.amountRequired,
-      0
-    );
+
+    // sum both required tags (1) and required comments (1) = 2
+    // multiple by number of posts since those requirements are per-post
+    const total =
+      task.workflow.requiredActions.reduce(
+        (partialSum, a) => partialSum + a.amountRequired,
+        0
+      ) * values.length;
 
     return ((total - remaining) / total) * 100;
   }

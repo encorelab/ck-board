@@ -15,7 +15,6 @@ export enum WorkflowType {
 }
 
 export enum TaskActionType {
-  UPVOTE = 'UPVOTE',
   COMMENT = 'COMMENT',
   TAG = 'TAG',
 }
@@ -44,7 +43,7 @@ export class GroupTask {
   groupID: string;
   workflowID: string;
   posts: string[];
-  actions: TaskAction[];
+  progress: Map<string, TaskAction[]>;
   status: GroupTaskStatus;
 }
 
@@ -73,8 +72,6 @@ export class TaskWorkflow extends Workflow {
 
   requiredActions: TaskAction[];
   assignedGroups: string[];
-
-  postsPerGroup: number;
 }
 
 const workflows = {

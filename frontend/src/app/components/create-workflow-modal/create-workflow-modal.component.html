@@ -131,10 +131,6 @@
               </mat-select>
               <mat-error *ngIf="groupsFormControl.hasError('required')">Atleast one group required!</mat-error>
             </mat-form-field>
-            <mat-form-field appearance="fill">
-              <mat-label>Posts Per Group</mat-label>
-              <input matInput type="number" placeholder="5" [(ngModel)]="postsPerGroup">
-            </mat-form-field>
           </div>
         </section>
         <section>
@@ -146,21 +142,15 @@
         </section>
         <section>
           <h4 style="font-weight: bold">
-            Student Action Required:
+            Workflow Actions:
           </h4>
-          <div style="display: flex; flex-direction: row; gap: 10px;">
-            <mat-form-field appearance="fill">
-              <mat-label>Total # Upvotes Required</mat-label>
-              <input matInput type="number" placeholder="5" [(ngModel)]="upvotesRequired">
-            </mat-form-field>
-            <mat-form-field appearance="fill">
-              <mat-label>Total # Comments Required</mat-label>
-              <input matInput type="number" placeholder="5" [(ngModel)]="commentsRequired">
-            </mat-form-field>
-            <mat-form-field appearance="fill">
-              <mat-label>Required # Tags Per Post</mat-label>
-              <input matInput type="number" placeholder="5" [(ngModel)]="tagsRequired">
-            </mat-form-field>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <mat-checkbox [(ngModel)]="commentsRequired">
+              Require minimum 1 comment per post
+            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="tagsRequired">
+              Require minimum 1 tag per post
+            </mat-checkbox>
           </div>
         </section>
       </div>

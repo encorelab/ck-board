@@ -116,8 +116,6 @@ class PostUpvoteAdd {
     const upvoteAmount = await dalVote.getAmountByPost(upvote.postID);
     if (input.trace.allowTracing) await postTrace.upvoteAdd(input, this.type);
 
-    WorkflowManager.Instance.updateTask(upvote.voterID, upvote.postID, TaskActionType.UPVOTE, -1);
-
     return { upvote: upvote, amount: upvoteAmount };
   }
 
@@ -135,8 +133,6 @@ class PostUpvoteRemove {
     const upvoteAmount = await dalVote.getAmountByPost(upvote.postID);
     if (input.trace.allowTracing)
       await postTrace.upvoteRemove(input, this.type);
-
-    WorkflowManager.Instance.updateTask(upvote.voterID, upvote.postID, TaskActionType.UPVOTE, 1);
 
     return { upvote: upvote, amount: upvoteAmount };
   }

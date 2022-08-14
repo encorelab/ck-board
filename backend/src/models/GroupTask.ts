@@ -21,8 +21,8 @@ export class GroupTaskModel {
   @prop({ required: true })
   public posts!: string[];
   
-  @prop({ required: true })
-  public actions!: TaskAction[];
+  @prop({ required: true, type: () => [TaskAction] })
+  public progress!: Map<string, TaskAction[]>;
 
   @prop({ enum: GroupTaskStatus, type: String, required: true })
   public status!: GroupTaskStatus;

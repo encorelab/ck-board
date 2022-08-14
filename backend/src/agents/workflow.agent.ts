@@ -7,6 +7,7 @@ import { GroupTaskModel, GroupTaskStatus } from '../models/GroupTask';
 import {
   ContainerType,
   DistributionWorkflowModel,
+  TaskAction,
   TaskActionType,
   TaskWorkflowModel,
   WorkflowModel,
@@ -58,7 +59,10 @@ class WorkflowManager {
       const workflow = await dalWorkflow.getById(task.workflow.workflowID);
       if (!workflow || !isTask<TaskWorkflowModel>(workflow)) return [];
       
-      const action = task.groupTask.actions.find((a) => a.type === type);
+      const progress = task.groupTask.progress.get(postId);
+      if (!progress) return [];
+
+      const action = progress.find((a) => a.type === type);
       if (workflow && action) {
         const newAmountReq = action.amountRequired + delta;
         const limit = workflow.requiredActions.find((a) => a.type === type);
@@ -124,7 +128,7 @@ class WorkflowManager {
   
     const split: string[][] = await distribute(
       shuffle(sourcePosts),
-      taskWorkflow.postsPerGroup
+      sourcePosts.length / taskWorkflow.assignedGroups.length
     );
   
     if (assignedGroups.length > 0) {
@@ -132,12 +136,21 @@ class WorkflowManager {
         const assignedGroup = assignedGroups[i];
         const posts = split[i];
   
+        const progress: Map<string, TaskAction[]> = new Map<string, TaskAction[]>();
+      
+        posts.forEach(post => {
+          progress.set(post, [
+            { type: TaskActionType.COMMENT, amountRequired: 1 },
+            { type: TaskActionType.TAG, amountRequired: 1 },
+          ])
+        })
+
         const groupTask: GroupTaskModel = {
           groupTaskID: new mongo.ObjectId().toString(),
           groupID: assignedGroup,
           workflowID: taskWorkflow.workflowID,
           posts: posts,
-          actions: taskWorkflow.requiredActions,
+          progress: progress,
           status: GroupTaskStatus.INACTIVE,
         };
   

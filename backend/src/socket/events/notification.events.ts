@@ -1,7 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { SocketEvent } from '../../constants';
 import {
-  NotificationModel,
   BoardNotificationModel,
   ProjectNotificationModel,
   NotificationType,
@@ -16,6 +15,7 @@ class NotificationCreate {
   static async handleEvent(
     input: SocketPayload<BoardNotificationModel | ProjectNotificationModel>
   ): Promise<BoardNotificationModel | ProjectNotificationModel> {
+    console.log('h');
     const notification = await dalNotification.create(
       input.eventData.type,
       input.eventData
@@ -29,6 +29,7 @@ class NotificationCreate {
     notification: BoardNotificationModel | ProjectNotificationModel
   ) {
     const id = SocketManager.Instance.get(notification.userID);
+    console.log(notification);
     if (id) {
       if (notification.type === NotificationType.BOARD) {
         socket.broadcast

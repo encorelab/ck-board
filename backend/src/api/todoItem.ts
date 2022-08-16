@@ -11,7 +11,7 @@ router.get('/:id', async (req, res) => {
   res.status(200).json(todoItem);
 });
 
-router.get('/:userID', async (req, res) => {
+router.get('/user/:userID', async (req, res) => {
   const { userID } = req.params;
 
   const todoItems = await dalTodoItem.getByUser(userID);
@@ -35,13 +35,15 @@ router.post('/', async (req, res) => {
 router.post('/:id', async (req, res) => {
   const { id } = req.params;
 
-  const { title, deadline, completed } = req.body;
+  const { title, deadline, completed, overdue, notificationSent } = req.body;
 
   const todoItem: Partial<TodoItemModel> = Object.assign(
     {},
     title === null ? null : { title },
     deadline === null ? null : { deadline },
-    completed === null ? null : { completed }
+    completed === null ? null : { completed },
+    overdue === null ? null : { overdue },
+    notificationSent === null ? null : { notificationSent }
   );
 
   const updatedTodoItem = await dalTodoItem.update(id, todoItem);

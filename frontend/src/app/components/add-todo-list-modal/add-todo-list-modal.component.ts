@@ -47,17 +47,14 @@ export class AddTodoListModalComponent implements OnInit {
   ngOnInit(): void {}
 
   async createTodoItem() {
-    console.log(this.taskDeadlineDate);
-    console.log(this.timeHour);
-    console.log(this.timeMinute);
-    console.log(this.timePeriod);
-
     const todoItem: TodoItem = {
       todoItemID: generateUniqueID(),
       projectID: this.projectID,
       userID: this.userID,
       title: this.taskTitle,
       completed: false,
+      overdue: false,
+      notificationSent: false,
       deadline: {
         date: this.taskDeadlineDate.toDateString(),
         time: `${this.timeHour}:${String(this.timeMinute).padStart(

@@ -1,21 +1,26 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
-  Notification,
   NotificationType,
   BoardNotification,
   ProjectNotification,
 } from '../models/notification';
 import Post from '../models/post';
+import { Project } from '../models/project';
 import { TodoItem } from '../models/todoItem';
 import { generateUniqueID } from '../utils/Utils';
 import { UserService } from './user.service';
+import { ProjectService } from './project.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
-  constructor(public http: HttpClient, public userService: UserService) {}
+  constructor(
+    public http: HttpClient,
+    public userService: UserService,
+    public projectService: ProjectService
+  ) {}
 
   getByUserAndBoard(
     userID: string,
@@ -115,14 +120,25 @@ export class NotificationService {
     };
   }
 
-  // buildTodoItemNotification(todoItem: TodoItem): ProjectNotification {
-  //   return {
-  //     notificationID: generateUniqueID(),
-  //     text: this.userService.user?.username + ' tagged "' + post.title + '"',
-  //     viewed: false,
-  //     userID: post.userID,
-  //     postID: post.postID,
-  //     boardID: "f",
-  //   };
-  // }
+  buildTodoItemNotification(
+    todoItem: TodoItem,
+    project: Project,
+    overdue: boolean
+  ): ProjectNotification {
+    const notificationID = generateUniqueID();
+    let text: string;
+    if (overdue) {
+      text = `Todo Item: ${todoItem.title} for Project: ${project.name} overdue`;
+    } else {
+      text = `Pending Todo Item: ${todoItem.title} for Project: ${project.name}`;
+    }
+    return {
+      notificationID: notificationID,
+      text: text,
+      viewed: false,
+      type: NotificationType.PROJECT,
+      userID: todoItem.userID,
+      projectID: todoItem.projectID,
+    };
+  }
 }

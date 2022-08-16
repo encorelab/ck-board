@@ -123,6 +123,7 @@ export class TodoListModalComponent implements OnInit {
           const data = this.dataSource.data;
           data.push(todoItem);
           this.dataSource.data = data;
+          await this.todoItemService.sendReminder();
         },
       },
     });

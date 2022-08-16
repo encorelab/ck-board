@@ -27,6 +27,12 @@ export class TodoItemModel {
 
   @prop({ required: true, type: () => [Deadline] })
   public deadline!: Deadline;
+
+  @prop({ required: true })
+  public notificationSent!: boolean;
+
+  @prop({ required: true })
+  public overdue!: boolean;
 }
 
 export default getModelForClass(TodoItemModel);

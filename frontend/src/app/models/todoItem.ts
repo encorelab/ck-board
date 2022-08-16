@@ -10,4 +10,6 @@ export class TodoItem {
   title: string;
   completed: boolean;
   deadline: Deadline;
+  notificationSent: boolean;
+  overdue: boolean;
 }

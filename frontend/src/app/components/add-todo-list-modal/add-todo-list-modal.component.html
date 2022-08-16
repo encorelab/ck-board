@@ -1,4 +1,5 @@
-<h1 mat-dialog-title>Add Todo List Task</h1>
+<h1 mat-dialog-title *ngIf="!editing">Add Todo List Task</h1>
+<h1 mat-dialog-title *ngIf="editing">Update Todo List Task</h1>
 <div style="position: relative;">
   <mat-form-field appearance="fill" style="width: 100%">
     <mat-label>Title</mat-label>
@@ -19,7 +20,7 @@
   <div>
     <mat-form-field appearance="fill">
       <mat-label>Choose a date</mat-label>
-      <input matInput [min]="minDate" [matDatepicker]="picker" [(ngModel)]="taskDeadlineDate">
+      <input matInput [min]="taskDeadlineDate" [matDatepicker]="picker" [(ngModel)]="taskDeadlineDate">
       <mat-hint>MM/DD/YYYY</mat-hint>
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
@@ -52,8 +53,14 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
-  <button
+  <button 
+    *ngIf="!editing"
     mat-button [disabled]="!taskTitleControl.valid " 
     (click)="createTodoItem()"
   >Create Todo Item</button>
+  <button 
+    *ngIf="editing"
+    mat-button [disabled]="!taskTitleControl.valid " 
+    (click)="updateTodoItem()"
+  >Update Todo Item</button>
 </div>

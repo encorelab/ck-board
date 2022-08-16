@@ -29,7 +29,7 @@ export class TodoItemModel {
   public deadline!: Deadline;
 
   @prop({ required: true })
-  public notificationSent!: boolean;
+  public notifications!: string[];
 
   @prop({ required: true })
   public overdue!: boolean;

@@ -1,37 +1,48 @@
 <h1 mat-dialog-title>Todo List</h1>
 <div style="position: relative;">
-  <table mat-table [dataSource]="dataSource" class="mat-elevation-z3 table">
-    <ng-container matColumnDef="select">
-      <th mat-header-cell *matHeaderCellDef>
-        <mat-checkbox 
-          (change)="$event ? masterToggle() : null"
-          [checked]="selection.hasValue() && isAllSelected()"
-          [indeterminate]="selection.hasValue() && !isAllSelected()">
-        </mat-checkbox>
-      </th>
-      <td mat-cell *matCellDef="let row">
-        <mat-checkbox 
-          (click)="$event.stopPropagation()"
-          (change)="$event ? selection.toggle(row) : null"
-          [checked]="selection.isSelected(row)">
-        </mat-checkbox>
-      </td>
-    </ng-container>
+  <div class="mat-elevation-z3" style="overflow-y:auto;max-height:500px;">
+    <table mat-table [dataSource]="dataSource" class="table">
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef>
+          <mat-checkbox 
+            (change)="$event ? masterToggle() : null"
+            [checked]="selection.hasValue() && isAllSelected()"
+            [indeterminate]="selection.hasValue() && !isAllSelected()">
+          </mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <mat-checkbox 
+            (click)="$event.stopPropagation()"
+            (change)="$event ? selection.toggle(row) : null"
+            [checked]="selection.isSelected(row)">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+  
+      <ng-container matColumnDef="task-title">
+        <th mat-header-cell *matHeaderCellDef> Task Title </th>
+        <td mat-cell *matCellDef="let todo"> {{todo.title}} </td>
+      </ng-container>
+  
+  
+      <ng-container matColumnDef="deadline">
+        <th mat-header-cell *matHeaderCellDef> Deadline </th>
+        <td mat-cell *matCellDef="let todo"> {{todo.deadline.date}} @ {{todo.deadline.time}}</td>
+      </ng-container>
 
-    <ng-container matColumnDef="task-title">
-      <th mat-header-cell *matHeaderCellDef> Task Title </th>
-      <td mat-cell *matCellDef="let todo"> {{todo.title}} </td>
-    </ng-container>
-
-
-    <ng-container matColumnDef="deadline">
-      <th mat-header-cell *matHeaderCellDef> Deadline </th>
-      <td mat-cell *matCellDef="let todo"> {{todo.deadline.date}} @ {{todo.deadline.time}}</td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayColumns;"></tr>
-  </table>
+      <ng-container matColumnDef="edit">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let todo">
+          <button mat-icon-button (click)="editTodoItem(todo)" matTooltip="Edit Task">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+  
+      <tr mat-header-row *matHeaderRowDef="displayColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayColumns;"></tr>
+    </table>
+  </div>
   <mat-chip-list style="display: flex; margin-top: 10px">
     <mat-chip mat-raised-button color="accent" (click)="completeTodoItems()" style="text-align: center; margin-right: 10px;" selected>
       <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>

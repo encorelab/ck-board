@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
 router.post('/:id', async (req, res) => {
   const { id } = req.params;
 
-  const { title, deadline, completed, overdue, notificationSent } = req.body;
+  const { title, deadline, completed, overdue, notifications } = req.body;
 
   const todoItem: Partial<TodoItemModel> = Object.assign(
     {},
@@ -43,7 +43,7 @@ router.post('/:id', async (req, res) => {
     deadline === null ? null : { deadline },
     completed === null ? null : { completed },
     overdue === null ? null : { overdue },
-    notificationSent === null ? null : { notificationSent }
+    notifications === null ? null : { notifications }
   );
 
   const updatedTodoItem = await dalTodoItem.update(id, todoItem);

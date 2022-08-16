@@ -36,7 +36,7 @@ export class TodoListModalComponent implements OnInit {
   ) {
     this.projectID = data.project.projectID;
     this.userID = data.user.userID;
-    this.displayColumns = ['select', 'task-title', 'deadline'];
+    this.displayColumns = ['select', 'task-title', 'deadline', 'edit'];
   }
 
   async ngOnInit() {
@@ -57,7 +57,6 @@ export class TodoListModalComponent implements OnInit {
     this.dataSource = new MatTableDataSource<TodoItem>(
       this.todoItems.filter((todoItem: TodoItem) => !todoItem.completed)
     );
-    console.log(this.dataSource.data);
   }
 
   isAllSelected() {
@@ -123,6 +122,21 @@ export class TodoListModalComponent implements OnInit {
           const data = this.dataSource.data;
           data.push(todoItem);
           this.dataSource.data = data;
+          await this.todoItemService.sendReminder();
+        },
+      },
+    });
+  }
+
+  editTodoItem(todoItem: TodoItem) {
+    this.dialog.open(AddTodoListModalComponent, {
+      width: '600px',
+      data: {
+        projectID: this.projectID,
+        userID: this.userID,
+        todoItem: todoItem,
+        onComplete: async () => {
+          await this.getTodoItems();
           await this.todoItemService.sendReminder();
         },
       },

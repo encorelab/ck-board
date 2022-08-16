@@ -4,7 +4,6 @@ import { TodoItemService } from 'src/app/services/todoItem.service';
 import { TodoItem } from 'src/app/models/todoItem';
 import { FormControl, Validators } from '@angular/forms';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import { MatDatepickerModule } from '@angular/material/datepicker';
 import { generateUniqueID } from 'src/app/utils/Utils';
 
 @Component({
@@ -24,7 +23,6 @@ export class AddTodoListModalComponent implements OnInit {
   minuteRange = Array(4)
     .fill(0)
     .map((_, i) => i * 15);
-  minDate: Date = new Date();
   taskTitleControl = new FormControl('', [
     Validators.required,
     Validators.maxLength(50),
@@ -34,6 +32,7 @@ export class AddTodoListModalComponent implements OnInit {
 
   projectID: string;
   userID: string;
+  editing = false;
 
   constructor(
     public dialogRef: MatDialogRef<AddTodoListModalComponent>,
@@ -42,6 +41,15 @@ export class AddTodoListModalComponent implements OnInit {
   ) {
     this.projectID = data.projectID;
     this.userID = data.userID;
+    if (data.todoItem) {
+      this.editing = true;
+      this.taskDeadlineDate = new Date(data.todoItem.deadline.date);
+      this.taskTitle = data.todoItem.title;
+      const time = data.todoItem.deadline.time.split(':');
+      this.timeHour = parseInt(time[0]);
+      this.timeMinute = parseInt(time[1]);
+      this.timePeriod = time[2].split(' ')[1];
+    }
   }
 
   ngOnInit(): void {}
@@ -54,7 +62,7 @@ export class AddTodoListModalComponent implements OnInit {
       title: this.taskTitle,
       completed: false,
       overdue: false,
-      notificationSent: false,
+      notifications: [],
       deadline: {
         date: this.taskDeadlineDate.toDateString(),
         time: `${this.timeHour}:${String(this.timeMinute).padStart(
@@ -66,6 +74,24 @@ export class AddTodoListModalComponent implements OnInit {
 
     await this.todoItemService.create(todoItem);
     this.data.onComplete(todoItem);
+    this.dialogRef.close();
+    return todoItem;
+  }
+
+  async updateTodoItem() {
+    const todoItem: Partial<TodoItem> = {
+      title: this.taskTitle,
+      deadline: {
+        date: this.taskDeadlineDate.toDateString(),
+        time: `${this.timeHour}:${String(this.timeMinute).padStart(
+          2,
+          '0'
+        )}:00 ${this.timePeriod}`,
+      },
+    };
+
+    await this.todoItemService.update(this.data.todoItem.todoItemID, todoItem);
+    this.data.onComplete();
     this.dialogRef.close();
     return todoItem;
   }

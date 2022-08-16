@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { TodoItem } from '../models/todoItem';
 import { NotificationService } from './notification.service';
 import { SocketService } from './socket.service';
-import { SocketEvent } from '../utils/constants';
+import { SocketEvent, TODOITEM_NOTIFICATION } from '../utils/constants';
 import { ProjectService } from './project.service';
 
 @Injectable({
@@ -47,7 +47,6 @@ export class TodoItemService {
 
   async sendReminder() {
     this.socketService.emit(SocketEvent.NOTIFICATION_CREATE, {});
-    console.log('here');
     const diff_hours = (dt2: Date, dt1: Date) => {
       let diff = (dt2.getTime() - dt1.getTime()) / 1000;
       diff /= 60 * 60;
@@ -81,7 +80,7 @@ export class TodoItemService {
         if (
           timeDifference > 12 &&
           timeDifference <= 24 &&
-          !todoItems[i].notificationSent
+          !todoItems[i].notifications.includes(TODOITEM_NOTIFICATION.INITIAL)
         ) {
           const project = await this.projectService.get(todoItems[i].projectID);
           this.socketService.emit(
@@ -92,7 +91,16 @@ export class TodoItemService {
               false
             )
           );
-        } else if (timeDifference <= 12 && !todoItems[i].notificationSent) {
+          this.update(todoItems[i].todoItemID, {
+            notifications: [
+              ...todoItems[i].notifications,
+              TODOITEM_NOTIFICATION.INITIAL,
+            ],
+          });
+        } else if (
+          timeDifference <= 12 &&
+          !todoItems[i].notifications.includes(TODOITEM_NOTIFICATION.SECONDARY)
+        ) {
           const project = await this.projectService.get(todoItems[i].projectID);
           this.socketService.emit(
             SocketEvent.NOTIFICATION_CREATE,
@@ -102,6 +110,12 @@ export class TodoItemService {
               false
             )
           );
+          this.update(todoItems[i].todoItemID, {
+            notifications: [
+              ...todoItems[i].notifications,
+              TODOITEM_NOTIFICATION.SECONDARY,
+            ],
+          });
         }
       }
     }

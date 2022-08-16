@@ -15,7 +15,6 @@ class NotificationCreate {
   static async handleEvent(
     input: SocketPayload<BoardNotificationModel | ProjectNotificationModel>
   ): Promise<BoardNotificationModel | ProjectNotificationModel> {
-    console.log('h');
     const notification = await dalNotification.create(
       input.eventData.type,
       input.eventData

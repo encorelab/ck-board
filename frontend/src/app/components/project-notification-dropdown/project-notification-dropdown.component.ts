@@ -47,7 +47,6 @@ export class ProjectNotificationDropdownComponent implements OnInit {
   }
 
   handleAdd = (notification: ProjectNotification) => {
-    console.log('jdhfgkjhdfgkjhdfgkjhdgf');
     this.notifications.push(notification);
   };
 

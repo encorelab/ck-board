@@ -79,4 +79,10 @@ export const DEFAULT_TAGS: Partial<Tag>[] = [
   NEEDS_ATTENTION_TAG,
 ];
 
+export enum TODOITEM_NOTIFICATION {
+  INITIAL = 'INITIAL',
+  SECONDARY = 'SECONDARY',
+  OVERDUE = 'OVERDUE',
+}
+
 export const TAG_DEFAULT_COLOR = '#c5c2b5';

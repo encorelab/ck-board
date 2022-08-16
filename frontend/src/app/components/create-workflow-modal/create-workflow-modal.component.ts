@@ -188,7 +188,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     e.stopPropagation();
     workflow.active = true;
     this.canvasService
-      .runDistributionWorkflow(workflow)
+      .runWorkflow(workflow)
       .then(async () => {
         workflow.active = false;
         this.openSnackBar(

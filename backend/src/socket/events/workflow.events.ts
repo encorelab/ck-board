@@ -1,6 +1,5 @@
-import { compareSync } from 'bcrypt';
 import { Server, Socket } from 'socket.io';
-import { runDistributionWorkflow } from '../../agents/workflow.agent';
+import { runWorkflow } from '../../agents/workflow.agent';
 import { SocketEvent } from '../../constants';
 import { DistributionWorkflowModel } from '../../models/Workflow';
 import dalWorkflow from '../../repository/dalWorkflow';
@@ -19,7 +18,7 @@ class WorkflowRunDistribution {
     });
 
     if (!workflow) return null;
-    const posts = await runDistributionWorkflow(workflow);
+    const posts = await runWorkflow(workflow);
     if (posts) return posts;
     return null;
   }

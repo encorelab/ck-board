@@ -14,18 +14,14 @@ export const getById = async (id: string) => {
   }
 };
 
-export const getByBoard = async (boardID: string) => {
+export const getByBoard = async (boardID: string, type?: any) => {
   try {
-    const posts = await Post.find({ boardID });
-    return posts;
-  } catch (err) {
-    throw new Error(JSON.stringify(err, null, ' '));
-  }
-};
-
-export const getBoardTypePosts = async (boardID: string) => {
-  try {
-    const posts = await Post.find({ boardID: boardID, type: PostType.BOARD });
+    let posts;
+    if (type) {
+      posts = await Post.find({ boardID: boardID, type: type });
+    } else {
+      posts = await Post.find({ boardID });
+    }
     return posts;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -120,7 +116,6 @@ const formatAttributes = (post: Partial<PostModel>) => {
 const dalPost = {
   getById,
   getByBoard,
-  getBoardTypePosts,
   create,
   createMany,
   remove,

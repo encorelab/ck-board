@@ -2,7 +2,7 @@
 import { BeAnObject } from '@typegoose/typegoose/lib/types';
 import { Document } from 'mongoose';
 import { BucketModel } from '../models/Bucket';
-import { PostModel } from '../models/Post';
+import { PostModel, PostType } from '../models/Post';
 import {
   ContainerType,
   DistributionWorkflowModel,
@@ -27,7 +27,7 @@ export const run = async (
   workflow: Document<any, BeAnObject, any> & WorkflowModel
 ) => {
   if (isDistribution<DistributionWorkflowModel>(workflow)) {
-    runDistributionWorkflow(workflow);
+    runWorkflow(workflow);
   }
 };
 
@@ -39,7 +39,7 @@ export const randomDistributionWorkflow = async (
 ) => {
   let sourcePosts;
   if (source.type == ContainerType.BOARD) {
-    sourcePosts = await dalPost.getBoardTypePosts(source.id);
+    sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
     sourcePosts = sourcePosts.map((p) => p.postID);
   } else {
     const bucket: BucketModel | null = await dalBucket.getById(source.id);
@@ -77,7 +77,7 @@ export const tagDistributionWorkflow = async (
   let sourcePosts: PostModel[] = [];
   const filteredPosts: string[] = [];
   if (source.type == ContainerType.BOARD) {
-    sourcePosts = await dalPost.getBoardTypePosts(source.id);
+    sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
     sourcePosts.forEach((post) => {
       post.tags.forEach((tag) => {
         if (tag.tagID === workflow.distributionWorkflowType.data.tagID) {
@@ -124,7 +124,7 @@ export const upvoteDistributionWorkflow = async (
   let sourcePosts;
   const filteredPosts: string[] = [];
   if (source.type == ContainerType.BOARD) {
-    sourcePosts = await dalPost.getBoardTypePosts(source.id);
+    sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
     sourcePosts = sourcePosts.map((p) => p.postID);
   } else {
     const bucket: BucketModel | null = await dalBucket.getById(source.id);
@@ -154,9 +154,7 @@ export const upvoteDistributionWorkflow = async (
   }
 };
 
-export const runDistributionWorkflow = async (
-  workflow: DistributionWorkflowModel
-) => {
+export const runWorkflow = async (workflow: DistributionWorkflowModel) => {
   const { source, destinations, removeFromSource } = workflow;
   let posts;
   if (
@@ -197,7 +195,7 @@ export const runDistributionWorkflow = async (
 
 const workflowAgent = {
   run,
-  runDistributionWorkflow,
+  runWorkflow,
 };
 
 export default workflowAgent;

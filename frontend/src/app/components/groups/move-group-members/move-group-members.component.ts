@@ -41,7 +41,7 @@ export class MoveGroupMembersComponent implements OnInit {
   ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    let promises: Promise<any>[] = [];
+    const promises: Promise<any>[] = [];
     if (changes.groups.firstChange) promises.push(this.updateProjectMembers());
 
     promises.push(...this.updateGroupMembers());
@@ -54,7 +54,7 @@ export class MoveGroupMembersComponent implements OnInit {
 
   private updateGroupMembers(): Promise<any>[] {
     this.groupMembers.length = 0;
-    let promises: Promise<any>[] = [];
+    const promises: Promise<any>[] = [];
     this.groups.forEach((group) => {
       promises.push(
         this.userService.getMultipleByIds(group.members).then((users) => {
@@ -80,7 +80,7 @@ export class MoveGroupMembersComponent implements OnInit {
 
   private updateUnassignedMembers(): void {
     this.unassigned = [];
-    let memberIDs: string[] = [];
+    const memberIDs: string[] = [];
     this.projectMembers.forEach((member) => {
       const isUnassigned = !this.groupMembers.some((group) => {
         return group.members.map((gm) => gm.userID).includes(member);
@@ -113,14 +113,14 @@ export class MoveGroupMembersComponent implements OnInit {
   }
 
   removeMember(groupIndex: number, memberIndex: number): void {
-    let members = this.groupMembers[groupIndex].members;
+    const members = this.groupMembers[groupIndex].members;
     this.unassigned.push(members[memberIndex]);
     members.splice(memberIndex, 1);
     this.updateGroups.emit(this.getGroups());
   }
 
   removeAllMembers(groupIndex: number): void {
-    let members = this.groupMembers[groupIndex].members;
+    const members = this.groupMembers[groupIndex].members;
     if (members.length === 0) return;
     this.unassigned.push(...members);
     members.length = 0;

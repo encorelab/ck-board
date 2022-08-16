@@ -304,7 +304,7 @@ export class CanvasService {
     return board;
   }
 
-  async runDistributionWorkflow(workflow: DistributionWorkflow) {
+  async runWorkflow(workflow: DistributionWorkflow) {
     this.socketService.emit(SocketEvent.WORKFLOW_RUN_DISTRIBUTION, workflow);
   }
 

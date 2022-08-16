@@ -48,6 +48,7 @@ import { getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
+import { DistributionWorkflow } from 'src/app/models/workflow';
 import Upvote from 'src/app/models/upvote';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 
@@ -129,6 +130,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.BOARD_UPVOTE_UPDATE, this.handleBoardUpvoteUpdateEvent],
       [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent],
       [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
+      [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
     ]);
   }
 
@@ -211,6 +213,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
 
     this._calcUpvoteCounter();
+  };
+
+  handleWorkflowRun = (data: string[] | null) => {
+    if (data) {
+      data.forEach((postID) => this.handlePostDeleteEvent(postID));
+    }
   };
 
   handlePostStartMoveEvent = (post: Post) => {

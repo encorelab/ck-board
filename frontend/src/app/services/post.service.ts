@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import Post from '../models/post';
+import Post, { PostType } from '../models/post';
 
 interface Options {
   size: number;
@@ -17,12 +17,18 @@ export class PostService {
     return this.http.get<Post>('posts/' + postID).toPromise();
   }
 
-  getAllByBoard(boardID: string, opts?: Options): Promise<Post[]> {
+  getAllByBoard(
+    boardID: string,
+    opts?: Options,
+    type?: PostType
+  ): Promise<Post[]> {
     let params = new HttpParams();
-
     if (opts) {
       params = params.append('size', opts.size);
       params = params.append('page', opts.page);
+    }
+    if (type) {
+      params = params.append('type', type);
     }
 
     return this.http

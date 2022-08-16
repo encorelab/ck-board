@@ -25,6 +25,7 @@ import {
   AddPostDialog,
 } from 'src/app/components/add-post-modal/add-post.component';
 import User from 'src/app/models/user';
+import Upvote from 'src/app/models/upvote';
 
 @Component({
   selector: 'app-list-modal',
@@ -131,6 +132,18 @@ export class ListModalComponent implements OnInit, OnDestroy {
       if (found) {
         found.post = post;
         this.filterPosts();
+      }
+    });
+    this.socketService.listen(SocketEvent.VOTES_CLEAR, (result: Upvote[]) => {
+      const resetedPosts: string[] = [];
+      for (const upvotes of result) {
+        if (!resetedPosts.includes(upvotes.postID)) {
+          const found = this.posts.find((p) => p.post.postID == upvotes.postID);
+          if (found) {
+            found.upvotes = [];
+            resetedPosts.push(upvotes.postID);
+          }
+        }
       }
     });
   }

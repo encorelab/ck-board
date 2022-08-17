@@ -5,7 +5,6 @@ import { UserService } from 'src/app/services/user.service';
 @Component({
   selector: 'app-sso-login',
   templateUrl: './sso-login.component.html',
-  styleUrls: ['./sso-login.component.scss'],
 })
 export class SsoLoginComponent implements OnInit {
   constructor(

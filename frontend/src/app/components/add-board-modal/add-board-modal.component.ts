@@ -59,6 +59,7 @@ export class AddBoardModalComponent implements OnInit {
       showAuthorNameStudent: true,
       showAuthorNameTeacher: true,
       showBucketStudent: true,
+      showSnackBarStudent: false,
       allowTracing: false,
     };
     this.projects = data.projects;

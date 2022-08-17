@@ -58,6 +58,12 @@ router.post('/register', async (req, res) => {
   res.status(200).send({ token, user, expiresAt });
 });
 
+router.post('/multiple', async (req, res) => {
+  const ids = req.body;
+  const users = await dalUser.findByUserIDs(ids);
+  res.status(200).json(users);
+});
+
 router.get('/is-sso-enabled', async (req, res) => {
   res.status(200).send({
     isSsoEnabled: isSsoEnabled(),

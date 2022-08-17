@@ -16,6 +16,7 @@ import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
 import { ColorPickerModule } from 'ngx-color-picker';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component';
 import { FabricPostComponent } from './components/fabric-post/fabric-post.component';
@@ -42,6 +43,10 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
 import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
+import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
+import { MoveGroupMembersComponent } from './components/groups/move-group-members/move-group-members.component';
+
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AutofocusDirective } from './autofocus.directive';
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 
@@ -78,6 +83,8 @@ export function tokenGetter() {
     ConfirmModalComponent,
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
+    ManageGroupModalComponent,
+    MoveGroupMembersComponent,
     AutofocusDirective,
     SsoLoginComponent,
   ],
@@ -101,12 +108,17 @@ export function tokenGetter() {
     ReactiveFormsModule,
     ColorPickerModule,
     MaterialModule,
+    DragDropModule,
   ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
       useClass: APIInterceptor,
       multi: true,
+    },
+    {
+      provide: MatDialogRef,
+      useValue: {},
     },
   ],
   bootstrap: [AppComponent],

@@ -50,6 +50,16 @@
           thumbLabel
         ></mat-slider>
       </div>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowTracing">
+          Allow tracing of board activity
+        </mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent">
+          Display task description when board is opened
+          </mat-checkbox>
+      </p>
       <h4>Set Background Image:</h4>
       <mat-chip (click)="compressFile()" color="primary" selected>
         <mat-icon class="chip-icon">upload</mat-icon>
@@ -85,10 +95,6 @@
       </mat-form-field>
     </mat-tab>
     <mat-tab label="Permissions">
-      <h2 style="margin-top: 20px">Tracing</h2>
-      <p>
-        <mat-checkbox [(ngModel)]="permissions.allowTracing"
-          >Allow tracing of board activity</mat-checkbox>
       <h2 style="margin-top: 20px">Post Features</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny"

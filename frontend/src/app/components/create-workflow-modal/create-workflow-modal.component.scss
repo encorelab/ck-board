@@ -47,6 +47,15 @@
   color: rgba(255, 0, 0, 0.708);
 }
 
+#bucket-action-delete {
+  position: absolute; 
+  right:0;
+}
+
+.delete-toggler {
+  padding: 0 !important;
+}
+
 .mat-radio-button ~ .mat-radio-button {
   margin-left: 16px;
 }

@@ -41,13 +41,13 @@
       [ngStyle]="isUpvoted() && { color: '#4f47ff' }"
       (click)="handleUpvote($event)"
     >
-      <mat-icon>arrow_upward</mat-icon>
+      <mat-icon style="transform: scale(2);">arrow_drop_up</mat-icon>
     </button>
     <button mat-icon-button [ngStyle]="isUpvoted() && { color: '#4f47ff' }">
       {{ post.upvotes.length }}
     </button>
     <button mat-icon-button (click)="handleDownvote($event)">
-      <mat-icon>arrow_downward</mat-icon>
+      <mat-icon style="transform: scale(2);">arrow_drop_down</mat-icon>
     </button>
     <button mat-button style="margin-left: auto" (click)="openPostDialog(true); $event.stopPropagation()">
       <mat-icon>comment</mat-icon>

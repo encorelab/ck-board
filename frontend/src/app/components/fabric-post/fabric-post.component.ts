@@ -64,7 +64,7 @@ export class FabricPostComponent extends fabric.Group {
       }
     );
 
-    const upvoteButton = new fabric.Textbox('⇧', {
+    const upvoteButton = new fabric.Textbox('▲', {
       name: 'upvote',
       width: 55,
       top:
@@ -94,7 +94,7 @@ export class FabricPostComponent extends fabric.Group {
     });
 
     const upvoteDigits = options ? numDigits(options.upvotes) : 1;
-    const downvoteButton = new fabric.Textbox('⇩', {
+    const downvoteButton = new fabric.Textbox('▼', {
       name: 'downvote',
       width: 55,
       top:
@@ -176,6 +176,7 @@ export class FabricPostComponent extends fabric.Group {
       name: 'post',
       postID: post.postID,
       left: position.left,
+      userID: post.userID,
       top: position.top,
       hasControls: false,
       transparentCorners: false,

@@ -12,7 +12,6 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { UserService } from 'src/app/services/user.service';
-import { DASH } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -115,9 +114,9 @@ export class ProjectDashboardComponent implements OnInit {
       data: {
         projectID: this.projectID,
         board: await this.boardService.get(boardID),
-        update: (updatedBoard: Board, removed = false) => {
+        update: async (updatedBoard: Board, removed = false) => {
           if (removed || updatedBoard.name !== board.name) {
-            this.getBoards();
+            await this.getBoards();
           }
           if (updatedBoard.name !== board.name) {
             board.name = updatedBoard.name;
@@ -137,7 +136,7 @@ export class ProjectDashboardComponent implements OnInit {
         handleConfirm: async () => {
           const deletedBoard = await this.boardService.remove(board.boardID);
           if (deletedBoard) {
-            this.getBoards();
+            await this.getBoards();
           }
         },
       },

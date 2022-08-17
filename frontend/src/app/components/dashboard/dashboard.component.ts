@@ -11,6 +11,7 @@ import { Project } from 'src/app/models/project';
 import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
 import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,13 +42,32 @@ export class DashboardComponent implements OnInit {
     );
   }
 
-  async getUsersProjects(id) {
+  async getUsersProjects(id: string) {
     const projects = await this.projectService.getByUserID(id);
     this.yourProjects = projects;
   }
 
-  handleProjectClick(projectID) {
+  handleProjectClick(projectID: string) {
     this.router.navigate(['project/' + projectID]);
+  }
+
+  async handleDeleteProject(project: Project) {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message:
+          'This will permanently delete this project and all related content. Are you sure you want to do this?',
+        handleConfirm: async () => {
+          const deletedProject = await this.projectService.remove(
+            project.projectID
+          );
+          if (deletedProject) {
+            await this.getUsersProjects(this.user.userID);
+          }
+        },
+      },
+    });
   }
 
   openCreateBoardDialog() {

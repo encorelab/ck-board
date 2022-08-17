@@ -45,8 +45,8 @@ export class ProjectDashboardComponent implements OnInit {
   }
 
   async getBoards() {
-    console.log('here');
     this.project = await this.projectService.get(this.projectID);
+    await this.getUsersProjects(this.user.userID);
     const tempBoards: Board[] = [];
     for (const boardID of this.project.boards) {
       const board = await this.boardService.get(boardID);
@@ -57,7 +57,7 @@ export class ProjectDashboardComponent implements OnInit {
 
   async getUsersProjects(id) {
     const projects = await this.projectService.getByUserID(id);
-    this.yourProjects = this.yourProjects.concat(projects);
+    this.yourProjects = projects;
   }
 
   openCreateBoardDialog() {

@@ -47,7 +47,7 @@
               <mat-icon color="accent">grid_view</mat-icon>
               <span>{{ project.name }}</span>
               <button 
-              *ngIf="user.role === 'TEACHER'"
+              *ngIf="user && user.role === Role.TEACHER"
               mat-icon-button
               [matMenuTriggerFor]="projectOptions"
               style="margin:0; padding:0;line-height: inherit;height: inherit;right: 0;position: absolute;"
@@ -62,6 +62,9 @@
             <mat-menu #projectOptions="matMenu">
               <button mat-menu-item (click)="openProjectConfigDialog(project)">
                 Edit
+              </button>
+              <button mat-menu-item (click)="handleDeleteProject(project)">
+                Delete
               </button>
             </mat-menu>
           </div>

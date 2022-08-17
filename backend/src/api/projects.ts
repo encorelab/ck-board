@@ -47,4 +47,10 @@ router.get('/code/:code', async (req, res) => {
   res.status(200).json(project);
 });
 
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  const deletedProject = await dalProject.remove(id);
+  res.status(200).json(deletedProject);
+});
+
 export default router;

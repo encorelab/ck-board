@@ -6,25 +6,60 @@
     [selectedIndex]="selected.value"
     (selectedIndexChange)="selected.setValue($event)"
   >
-    <mat-tab label="Create Bucket">
-      <mat-form-field
-        appearance="outline"
-        style="width: 100%; margin-top: 20px"
-      >
-        <mat-label>Bucket Name</mat-label>
-        <input
-          matInput
-          [formControl]="bucketNameFormControl"
-          [errorStateMatcher]="matcher"
-          [(ngModel)]="bucketName"
-        />
-        <mat-error *ngIf="bucketNameFormControl.hasError('required')"
-          >Bucket name required!</mat-error
+  
+    <mat-tab label="Manage Buckets">
+      <h2 style="margin-top: 20px">Create New Bucket</h2>
+      <div style="display: flex;">
+        <mat-form-field
+          appearance="outline"
+          style="width: 100%"
         >
-        <mat-error *ngIf="bucketNameFormControl.hasError('forbidden')"
-          >Bucket name cannot be the same as board name!</mat-error
+          <mat-label>Bucket Name</mat-label>
+          <input
+            matInput
+            [formControl]="bucketNameFormControl"
+            [errorStateMatcher]="matcher"
+            [(ngModel)]="bucketName"
+          />
+          <mat-error *ngIf="bucketNameFormControl.hasError('required')"
+            >Bucket name required!</mat-error
+          >
+          <mat-error *ngIf="bucketNameFormControl.hasError('forbidden')"
+            >Bucket name cannot be the same as board name!</mat-error
+          >
+        </mat-form-field>
+        <button
+          mat-button
+          *ngIf="selected.value == 0"
+          [disabled]="!_validBucketForm()"
+          (click)="createBucket()"
         >
-      </mat-form-field>
+          Create Bucket!
+        </button>
+      </div>
+
+      <div>
+        <button class="delete-toggler" mat-button (click)="toggleDeleteBoard()">
+          Delete Buckets ({{boardBuckets.length}})
+          <mat-icon>{{ showDelete ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr;" *ngIf="showDelete">
+        <mat-card *ngFor="let bucket of boardBuckets" style="display:flex;margin: 10px;
+            padding: 10px;justify-content:space-between">
+          <mat-card-title style="font-size: small;margin:auto 0;">
+            {{ bucket.name }}
+          </mat-card-title>
+          <button 
+            mat-icon-button
+            (click)="deleteBucket(bucket)"
+          >
+            <mat-icon style="color: red;">
+              delete
+            </mat-icon>
+          </button>
+        </mat-card>
+      </div>
     </mat-tab>
     <mat-tab label="Create Workflow">
       <div>
@@ -81,19 +116,64 @@
           </mat-form-field>
         </div>
         <section>
-          <h4>
-            Posts Per Bucket/Board:
-            <input type="number" [(ngModel)]="postsPerBucket" />
-          </h4>
         </section>
         <section>
           <h4>Choose Distribution:</h4>
-          <p>
-            <mat-checkbox [checked]="true" disabled="true">
-              Random
-            </mat-checkbox>
-          </p>
+          <mat-radio-group 
+            [(ngModel)]="distributionWorkflowType"
+            [formControl]="workflowTypeFormControl"
+          >
+              <mat-radio-button value="RANDOM">Random</mat-radio-button>
+              <mat-radio-button value="TAG">Tag</mat-radio-button>
+              <mat-radio-button value="UPVOTES">Upvotes</mat-radio-button>
+          </mat-radio-group>
+          <div style="margin:20px 0">
+            <section *ngIf="distributionWorkflowType === 'RANDOM'">
+              <mat-form-field class="example-full-width" appearance="fill">
+                <mat-label>Posts Per Bucket/Board:</mat-label>
+                <input type="number" min="0" [(ngModel)]="postsPerBucket" matInput >
+              </mat-form-field>
+              <mat-error *ngIf="postsPerBucket <= 0">
+                Enter a Positive Number
+              </mat-error>
+            </section>
+            <section *ngIf="distributionWorkflowType === 'TAG'">
+              <mat-form-field appearance="fill">
+                <mat-label>Tags</mat-label>
+                <mat-select [(ngModel)]="selectedTag">
+                  <mat-option 
+                    *ngFor="let tag of tags" 
+                    [value]="tag" 
+                  >
+                    {{tag.name}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </section>
+            <section *ngIf="distributionWorkflowType === 'UPVOTES'">
+              <div>
+                <mat-label style="font-weight: bold"
+                  >Minimum Upvotes Per Post: {{ upvoteLimit }}</mat-label
+                >
+                <mat-slider
+                  class="slider"
+                  min="0"
+                  max={{board.upvoteLimit}}
+                  step="1"
+                  [(ngModel)]="upvoteLimit"
+                  thumbLabel
+                ></mat-slider>
+              </div>
+            </section>
+          </div>
         </section>
+        <p>
+          <mat-checkbox 
+            [(ngModel)]="removeFromSource" [formControl]="removeFromSourceFormControl"
+          >
+            Remove From Source
+          </mat-checkbox>
+        </p>
       </div>
     </mat-tab>
     <mat-tab label="Manage Workflows">
@@ -123,7 +203,7 @@
                 <mat-chip
                   color="primary"
                   selected
-                  *ngIf="workflow.postsPerDestination"
+                  *ngIf="workflow.distributionWorkflowType"
                   >Distribution</mat-chip
                 >
               </mat-chip-list>
@@ -159,8 +239,50 @@
               }}</mat-chip>
             </mat-chip-list>
           </div>
-          <div *ngIf="workflow.postsPerDestination">
-            <h4>Posts Per Bucket/Board: {{ workflow.postsPerDestination }}</h4>
+          <div *ngIf="workflow.distributionWorkflowType.type === 'RANDOM'">
+            <h4>
+              Distribution Type: 
+                <mat-chip color="primary" selected style="margin: 0 5px">
+                  Random
+                </mat-chip>
+            </h4>
+            <h4>Posts Per Bucket/Board: 
+              <mat-chip color="primary" selected style="margin: 0 5px">
+                  {{ workflow.distributionWorkflowType.data }}
+              </mat-chip>
+            </h4>
+          </div>
+          <div *ngIf="workflow.distributionWorkflowType.type === 'TAG'">
+            <h4>
+              Distribution Type: 
+                <mat-chip color="primary" selected style="margin: 0 5px">
+                  Tag
+                </mat-chip>
+            </h4>
+            <h4>Selected Tag:<mat-chip
+              [ngStyle]="{ 'background-color': workflow.distributionWorkflowType.data.color }"
+              style="margin: 0 5px"
+              selected
+            >{{ workflow.distributionWorkflowType.data.name }}
+            </mat-chip></h4>
+          </div>
+          <div *ngIf="workflow.distributionWorkflowType.type === 'UPVOTES'">
+            <h4>
+              Distribution Type: 
+                <mat-chip color="primary" selected style="margin: 0 5px">
+                  Upvote
+                </mat-chip>
+            </h4>
+            <h4>Minimum upvotes per post: 
+              <mat-chip color="primary" selected style="margin: 0 5px">
+                  {{ workflow.distributionWorkflowType.data }}
+              </mat-chip>
+            </h4>
+          </div>
+          <div *ngIf="workflow.removeFromSource">
+            <mat-chip color="warn" selected>
+              Remove From Source Enabled
+            </mat-chip>
           </div>
         </mat-expansion-panel>
       </mat-accordion>
@@ -169,14 +291,6 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
-  <button
-    mat-button
-    *ngIf="selected.value == 0"
-    [disabled]="!_validBucketForm()"
-    (click)="createBucket()"
-  >
-    Create Bucket!
-  </button>
   <button
     mat-button
     *ngIf="selected.value == 1"

@@ -11,6 +11,7 @@ import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.compo
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
 import { UserService } from 'src/app/services/user.service';
+import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -105,6 +106,14 @@ export class ProjectDashboardComponent implements OnInit {
       data: {
         project: this.project,
         user: this.user,
+      },
+    });
+  }
+  
+  openGroupDialog() {
+    this.dialog.open(ManageGroupModalComponent, {
+      data: {
+        project: this.project,
       },
     });
   }

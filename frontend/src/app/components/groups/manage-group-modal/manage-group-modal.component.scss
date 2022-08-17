@@ -1,0 +1,45 @@
+.create-group-container {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.create-group-form {
+    width: 80%;
+}
+
+.create-group-submit {
+    margin-bottom: 20px;
+}
+
+.edit-group-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-group-actions > button {
+    margin-top: 10px;
+}
+
+.select-groups-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.multi-group-actions {
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.select-group {
+    overflow: hidden;
+    min-width: 0;
+    max-width: 100px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

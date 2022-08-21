@@ -1,5 +1,6 @@
-<h1 mat-dialog-title *ngIf="!editing">Add Todo List Task</h1>
+<h1 mat-dialog-title *ngIf="!editing && !restoring">Add Todo List Task</h1>
 <h1 mat-dialog-title *ngIf="editing">Update Todo List Task</h1>
+<h1 mat-dialog-title *ngIf="restoring">Restore Todo List Task</h1>
 <div style="position: relative;">
   <mat-form-field appearance="fill" style="width: 100%">
     <mat-label>Title</mat-label>
@@ -54,7 +55,7 @@
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
   <button 
-    *ngIf="!editing"
+    *ngIf="!editing && !restoring"
     mat-button [disabled]="!taskTitleControl.valid " 
     (click)="createTodoItem()"
   >Create Todo Item</button>
@@ -63,4 +64,9 @@
     mat-button [disabled]="!taskTitleControl.valid " 
     (click)="updateTodoItem()"
   >Update Todo Item</button>
+  <button 
+    *ngIf="restoring"
+    mat-button [disabled]="!taskTitleControl.valid " 
+    (click)="restoreTodoItem()"
+  >Restore Todo Item</button>
 </div>

@@ -36,6 +36,22 @@
         <mat-icon>settings</mat-icon>
       </button>
       <button
+        mat-icon-button
+        *ngIf="user && user.role === Role.STUDENT"
+        (click)="openTodoList()"
+        matTooltip="Todo List"
+      >
+        <mat-icon>assignment</mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        *ngIf="user && user.role === Role.TEACHER"
+        (click)="openProjectTodoList()"
+        matTooltip="Member Todo List"
+      >
+        <mat-icon>assignment_ind</mat-icon>
+      </button>
+      <button
         *ngIf="user && user.role == Role.TEACHER"
         mat-icon-button
         (click)="openGroupDialog()"

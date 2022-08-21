@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Board } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
-
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -12,6 +11,7 @@ import { ProjectConfigurationModalComponent } from '../project-configuration-mod
 import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
 import { UserService } from 'src/app/services/user.service';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { ProjectTodoListModalComponent } from '../project-todo-list-modal/project-todo-list-modal.component';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -109,7 +109,16 @@ export class ProjectDashboardComponent implements OnInit {
       },
     });
   }
-  
+
+  openProjectTodoList() {
+    this.dialog.open(ProjectTodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+      },
+    });
+  }
+
   openGroupDialog() {
     this.dialog.open(ManageGroupModalComponent, {
       data: {

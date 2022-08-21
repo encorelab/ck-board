@@ -24,9 +24,11 @@ export class TodoListModalComponent implements OnInit {
   projectID: string;
   userID: string;
   displayColumns: string[];
+  completedDisplayColums: string[];
   selection = new SelectionModel<TodoItem>(true, []);
   pausable: PausableObservable<number>;
   dataSource: MatTableDataSource<TodoItem>;
+  completedItemsDataSource: MatTableDataSource<TodoItem>;
 
   constructor(
     public dialogRef: MatDialogRef<TodoListModalComponent>,
@@ -37,6 +39,7 @@ export class TodoListModalComponent implements OnInit {
     this.projectID = data.project.projectID;
     this.userID = data.user.userID;
     this.displayColumns = ['select', 'task-title', 'deadline', 'edit'];
+    this.completedDisplayColums = ['task-title', 'completion-date', 'options'];
   }
 
   async ngOnInit() {
@@ -56,6 +59,10 @@ export class TodoListModalComponent implements OnInit {
 
     this.dataSource = new MatTableDataSource<TodoItem>(
       this.todoItems.filter((todoItem: TodoItem) => !todoItem.completed)
+    );
+
+    this.completedItemsDataSource = new MatTableDataSource<TodoItem>(
+      this.todoItems.filter((todoItem: TodoItem) => todoItem.completed)
     );
   }
 
@@ -80,10 +87,12 @@ export class TodoListModalComponent implements OnInit {
       });
       await this.getTodoItems();
       this.dialogRef.close();
-      this.pausable.resume();
-      this.shoot();
       this.playAudio();
-      setTimeout(() => this.pausable.pause(), 4000);
+      setTimeout(() => {
+        this.shoot();
+        this.pausable.resume();
+        setTimeout(() => this.pausable.pause(), 4000);
+      }, 4000);
     }
   }
 
@@ -135,6 +144,21 @@ export class TodoListModalComponent implements OnInit {
         projectID: this.projectID,
         userID: this.userID,
         todoItem: todoItem,
+        onComplete: async () => {
+          await this.getTodoItems();
+          await this.todoItemService.sendReminder();
+        },
+      },
+    });
+  }
+
+  restoreTodoItem(todoItem: TodoItem) {
+    this.dialog.open(AddTodoListModalComponent, {
+      width: '600px',
+      data: {
+        projectID: this.projectID,
+        userID: this.userID,
+        restoreTodoItem: todoItem,
         onComplete: async () => {
           await this.getTodoItems();
           await this.todoItemService.sendReminder();

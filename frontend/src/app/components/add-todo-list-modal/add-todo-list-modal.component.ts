@@ -33,6 +33,7 @@ export class AddTodoListModalComponent implements OnInit {
   projectID: string;
   userID: string;
   editing = false;
+  restoring = false;
 
   constructor(
     public dialogRef: MatDialogRef<AddTodoListModalComponent>,
@@ -49,6 +50,9 @@ export class AddTodoListModalComponent implements OnInit {
       this.timeHour = parseInt(time[0]);
       this.timeMinute = parseInt(time[1]);
       this.timePeriod = time[2].split(' ')[1];
+    } else if (data.restoreTodoItem) {
+      this.restoring = true;
+      this.taskTitle = data.restoreTodoItem.title;
     }
   }
 
@@ -91,6 +95,29 @@ export class AddTodoListModalComponent implements OnInit {
     };
 
     await this.todoItemService.update(this.data.todoItem.todoItemID, todoItem);
+    this.data.onComplete();
+    this.dialogRef.close();
+    return todoItem;
+  }
+
+  async restoreTodoItem() {
+    const todoItem: Partial<TodoItem> = {
+      title: this.taskTitle,
+      completed: false,
+      overdue: false,
+      deadline: {
+        date: this.taskDeadlineDate.toDateString(),
+        time: `${this.timeHour}:${String(this.timeMinute).padStart(
+          2,
+          '0'
+        )}:00 ${this.timePeriod}`,
+      },
+    };
+
+    await this.todoItemService.update(
+      this.data.restoreTodoItem.todoItemID,
+      todoItem
+    );
     this.data.onComplete();
     this.dialogRef.close();
     return todoItem;

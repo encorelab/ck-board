@@ -8,7 +8,7 @@
       (click)="openTodoList()"
       matTooltip="Todo List"
     >
-      <mat-icon>view_list</mat-icon>
+      <mat-icon>assignment</mat-icon>
     </button>
     <button
       mat-icon-button
@@ -43,13 +43,21 @@
       ></app-project-notification-dropdown>
     </div>
     <button
-    *ngIf="user && user.role == Role.TEACHER"
-    mat-icon-button
-    (click)="openGroupDialog()"
-    matTooltip="Manage Groups"
-  >
-    <mat-icon>group_work</mat-icon>
-  </button>
+      *ngIf="user && user.role == Role.TEACHER"
+      mat-icon-button
+      (click)="openGroupDialog()"
+      matTooltip="Manage Groups"
+    >
+      <mat-icon>group_work</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      *ngIf="user && user.role === Role.TEACHER"
+      (click)="openProjectTodoList()"
+      matTooltip="Member Todo List"
+    >
+      <mat-icon>assignment_ind</mat-icon>
+    </button>
   </app-toolbar>
   <div class="content">
     <div class="heading">

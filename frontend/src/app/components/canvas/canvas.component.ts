@@ -51,6 +51,8 @@ import { TraceService } from 'src/app/services/trace.service';
 import { DistributionWorkflow } from 'src/app/models/workflow';
 import Upvote from 'src/app/models/upvote';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
+import { ProjectTodoListModalComponent } from '../project-todo-list-modal/project-todo-list-modal.component';
 
 @Component({
   selector: 'app-canvas',
@@ -960,6 +962,20 @@ export class CanvasComponent implements OnInit, OnDestroy {
     return () => {
       subscription.unsubscribe();
     };
+  }
+
+  openTodoList() {
+    this.dialog.open(TodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+        user: this.user,
+      },
+    });
+  }
+
+  openProjectTodoList() {
+    //
   }
 
   private _openDialog(

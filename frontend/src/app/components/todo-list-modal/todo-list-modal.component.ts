@@ -194,7 +194,7 @@ export class TodoListModalComponent implements OnInit {
   }
 
   confetti(args: any) {
-    return window['confetti'].apply(this, rest);
+    return window['confetti'].apply(this, arguments);
   }
 
   onNoClick(): void {

@@ -36,13 +36,13 @@ $ npm install
 
 Create a `.env` file inside the `/backend` directory (`touch .env` in your terminal or manually create file using your IDE)
 
-Add the following content into the `.env` file:
+Add the following content into the `.env` file (You will have the required credentials if you area authorized to continue development on this project):
 
 ```
-DB_USER=dev
-DB_PASSWORD=PwZIezot9sWP3GFF
-DB_NAME=CK-Board-Cluster
-JWT_SECRET=7j$n8P69XE6E
+DB_USER
+DB_PASSWORD
+DB_NAME
+JWT_SECRET
 ```
 
 ### 5. Run Application

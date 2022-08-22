@@ -36,13 +36,13 @@ $ npm install
 
 Create a `.env` file inside the `/backend` directory (`touch .env` in your terminal or manually create file using your IDE)
 
-Add the following content into the `.env` file (You will have the required credentials if you area authorized to continue development on this project):
+Add the following content into the `.env` file and replace with your own credentials:
 
 ```
-DB_USER
-DB_PASSWORD
-DB_NAME
-JWT_SECRET
+DB_USER=[Mongoose DB Username]
+DB_PASSWORD=[Mongoose DB Password]
+DB_NAME=[Mongoose DB Name]
+JWT_SECRET=[JWT Secret Token]
 ```
 
 ### 5. Run Application

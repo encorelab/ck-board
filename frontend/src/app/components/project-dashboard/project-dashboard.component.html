@@ -51,7 +51,7 @@
     <div class="cards">
       <ng-container *ngFor="let board of boards">
         <mat-card
-          *ngIf="!(!board.visible && user.role === Role.STUDENT)"
+          *ngIf="board.visible || user.role === Role.TEACHER"
           class="card"
           (click)="handleBoardClick(board.boardID)"
           (keyup.enter)="handleBoardClick(board.boardID)"

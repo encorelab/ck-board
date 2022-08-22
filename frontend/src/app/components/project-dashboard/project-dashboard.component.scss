@@ -3,3 +3,13 @@
 .heading {
   margin-top: -0.5em;
 }
+
+.board-card-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.board-card-title {
+  margin-bottom: 0;
+  align-items: center;
+}

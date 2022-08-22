@@ -99,6 +99,13 @@ export class ProjectDashboardComponent implements OnInit {
     });
   }
 
+  toggleBoardVisibility(event: any, boardID: string, visibility: boolean) {
+    event.stopPropagation();
+    this.boardService.update(boardID, { visible: !visibility });
+    let index = this.boards.findIndex((board) => board.boardID === boardID);
+    this.boards[index].visible = !visibility;
+  }
+
   openGroupDialog() {
     this.dialog.open(ManageGroupModalComponent, {
       data: {

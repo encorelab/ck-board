@@ -29,6 +29,7 @@ router.post('/:id', async (req, res) => {
     tags,
     initialZoom,
     upvoteLimit,
+    visible,
   } = req.body;
 
   const board: Partial<BoardModel> = Object.assign(
@@ -40,7 +41,8 @@ router.post('/:id', async (req, res) => {
     bgImage === undefined ? null : { bgImage },
     tags === undefined ? null : { tags },
     initialZoom === undefined ? null : { initialZoom },
-    upvoteLimit === undefined ? null : { upvoteLimit }
+    upvoteLimit === undefined ? null : { upvoteLimit },
+    visible === undefined? true : { visible },
   );
 
   const updatedBoard = await dalBoard.update(id, board);

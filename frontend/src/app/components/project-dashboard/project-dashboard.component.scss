@@ -12,4 +12,10 @@
 .board-card-title {
   margin-bottom: 0;
   align-items: center;
+  min-width: 0;
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

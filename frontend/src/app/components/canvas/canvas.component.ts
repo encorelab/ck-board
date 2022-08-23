@@ -354,12 +354,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handleBoardConnEvent = () => {
+    if (this.user.role === Role.TEACHER) return;
     this.router.navigate(['/error'], {
       state: {
         code: 403,
-        message: 'You do not have access to this board!' },
+        message: 'You do not have access to this board!',
+      },
     });
-  }
+  };
 
   showBucketsModal() {
     this._openDialog(

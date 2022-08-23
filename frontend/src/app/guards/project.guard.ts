@@ -61,7 +61,8 @@ export class ProjectGuard implements CanActivate {
         this.router.navigate(['/error'], {
           state: {
             code: 403,
-            message: 'You do not have access to this board!' },
+            message: 'You do not have access to this board!',
+          },
         });
       }
     }
@@ -83,7 +84,7 @@ export class ProjectGuard implements CanActivate {
     const user = this.userService.user;
     return user?.role === Role.TEACHER || this.board.visible;
   }
- 
+
   isProjectMember(): boolean {
     const user = this.userService.user;
 

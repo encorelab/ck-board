@@ -103,8 +103,7 @@ export class ProjectDashboardComponent implements OnInit {
 
   toggleBoardVisibility(event: any, boardID: string, visibility: boolean) {
     event.stopPropagation();
-    if (visibility)
-      this.socketService.disconnectAll(boardID);
+    if (visibility) this.socketService.disconnectAll(boardID);
     this.boardService.update(boardID, { visible: !visibility });
     let index = this.boards.findIndex((board) => board.boardID === boardID);
     this.boards[index].visible = !visibility;

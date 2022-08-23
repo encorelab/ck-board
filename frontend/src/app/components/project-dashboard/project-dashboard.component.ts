@@ -11,6 +11,7 @@ import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.compo
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { UserService } from 'src/app/services/user.service';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { SocketService } from 'src/app/services/socket.service';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -30,6 +31,7 @@ export class ProjectDashboardComponent implements OnInit {
     public boardService: BoardService,
     public projectService: ProjectService,
     public userService: UserService,
+    public socketService: SocketService,
     public dialog: MatDialog,
     private router: Router
   ) {}
@@ -101,6 +103,8 @@ export class ProjectDashboardComponent implements OnInit {
 
   toggleBoardVisibility(event: any, boardID: string, visibility: boolean) {
     event.stopPropagation();
+    if (visibility)
+      this.socketService.disconnectAll(boardID);
     this.boardService.update(boardID, { visible: !visibility });
     let index = this.boards.findIndex((board) => board.boardID === boardID);
     this.boards[index].visible = !visibility;

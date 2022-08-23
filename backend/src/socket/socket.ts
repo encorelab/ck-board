@@ -61,6 +61,11 @@ class Socket {
           this._socketManager.removeBySocketId(this._socket.id);
         }
       });
+
+      socket.on('disconnectAll', async (room: string) => {
+        io.in(room).disconnectSockets(true);
+      });
+
     });
   }
 

@@ -57,4 +57,8 @@ export class SocketService {
   disconnect(userID: string, boardID: string): void {
     this.socket.emit('leave', userID, boardID);
   }
+
+  disconnectAll(boardID): void {
+    this.socket.emit('disconnectAll', boardID);
+  }
 }

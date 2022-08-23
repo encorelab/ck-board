@@ -63,6 +63,7 @@ class Socket {
       });
 
       socket.on('disconnectAll', async (room: string) => {
+        io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
         io.in(room).disconnectSockets(true);
       });
 

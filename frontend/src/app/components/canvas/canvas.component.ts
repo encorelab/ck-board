@@ -131,6 +131,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent],
       [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
       [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
+      [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
     ]);
   }
 
@@ -351,6 +352,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.handlePostDeleteEvent(id);
     });
   };
+
+  handleBoardConnEvent = () => {
+    this.router.navigate(['/error'], {
+      state: {
+        code: 403,
+        message: 'You do not have access to this board!' },
+    });
+  }
 
   showBucketsModal() {
     this._openDialog(

@@ -52,7 +52,7 @@
             </mat-checkbox>
         </p>
       </div>
-      <h2>Voting</h2>
+      <h1 class="section-title">Voting</h1>
       <div>
         <mat-label style="font-weight: bold"
           >Maximum Upvotes Per Student: {{ upvoteLimit }}</mat-label
@@ -67,7 +67,7 @@
         ></mat-slider>
       </div>
 
-      <h2>Background</h2>
+      <h1 class="section-title">Background</h1>
       <div class="image-form">
         <div class="container">
           <mat-chip
@@ -90,38 +90,42 @@
             <span>Remove Current Background Image</span>
           </mat-chip>
         </div>
-        <div>
-          <mat-label style="font-weight: bold">Background Size: {{ backgroundScale }}%</mat-label>
-          <mat-slider
-            class="slider"
-            min="0"
-            max="200"
-            step="5"
-            [(ngModel)]="backgroundScale"
-            thumbLabel
-          ></mat-slider>
-        </div>
-        <mat-label style="font-weight: bold">Background Position</mat-label>
-        <div class="bg-position-form">
-          <mat-form-field>
-            <mat-label>Background Pos X</mat-label>
-            <input
-              matInput
-              type="number"
-              [(ngModel)]="backgroundPosX"
-            />
-          </mat-form-field>
-          <mat-form-field>
-            <mat-label>Background Pos Y</mat-label>
-            <input
-              matInput
-              type="number"
-              [(ngModel)]="backgroundPosY"
-            />
-          </mat-form-field>
+        <div *ngIf="bgImage">
+          <div style="margin-top: 15px">
+            <mat-label style="font-weight: bold">Background Size: {{ backgroundScale }}%</mat-label>
+            <mat-slider
+              class="slider"
+              min="0"
+              max="200"
+              step="5"
+              [(ngModel)]="backgroundScale"
+              thumbLabel
+            ></mat-slider>
+          </div>
+          <div class="bg-position">
+            <mat-label style="font-weight: bold">Background Position</mat-label>
+            <div class="bg-position-form">
+              <mat-form-field>
+                <mat-label>Background Pos X</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="backgroundPosX"
+                />
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>Background Pos Y</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="backgroundPosY"
+                />
+              </mat-form-field>
+            </div>
+          </div>
         </div>
       </div>
-      <h2>Clear/Delete Board</h2>
+      <h1 class="section-title">Clear/Delete Board</h1>
       <div class="container">
         <mat-chip
           class="chip"

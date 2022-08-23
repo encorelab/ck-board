@@ -12,7 +12,11 @@ import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { Tag } from 'src/app/models/tag';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
-import { Board, BoardPermissions } from 'src/app/models/board';
+import {
+  Board,
+  BoardBackgroundImage,
+  BoardPermissions,
+} from 'src/app/models/board';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
@@ -45,6 +49,7 @@ export class ConfigurationModalComponent {
   initialZoom = 100;
   upvoteLimit = 5;
 
+  bgImage: BoardBackgroundImage;
   bgImgSettings: ImageSettings;
   backgroundPosX;
   backgroundPosY;
@@ -72,6 +77,7 @@ export class ConfigurationModalComponent {
     this.tags = data.board.tags ?? [];
     this.permissions = data.board.permissions;
     this.initialZoom = data.board.initialZoom;
+    this.bgImage = data.board.bgImage;
     this.bgImgSettings = data.board.bgImage?.imgSettings;
     this.backgroundPosX = this.bgImgSettings?.left;
     this.backgroundPosY = this.bgImgSettings?.top;

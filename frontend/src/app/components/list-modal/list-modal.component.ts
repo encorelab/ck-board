@@ -5,8 +5,6 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import Post, { PostType } from 'src/app/models/post';
-import User from 'src/app/models/user';
 import Post, { PostType, DisplayAttributes } from 'src/app/models/post';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { BucketService } from 'src/app/services/bucket.service';

@@ -8,6 +8,7 @@ import { PostType } from '../../models/post';
 import { BoardService } from 'src/app/services/board.service';
 import { PostService } from '../../services/post.service';
 import { UserService } from 'src/app/services/user.service';
+import { UpvotesService } from 'src/app/services/upvotes.service';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { Tag } from 'src/app/models/tag';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
@@ -50,6 +51,7 @@ export class ConfigurationModalComponent {
     public postService: PostService,
     public boardService: BoardService,
     public userService: UserService,
+    public upvoteService: UpvotesService,
     public canvasService: CanvasService,
     public fileUploadService: FileUploadService,
     private router: Router,
@@ -122,7 +124,7 @@ export class ConfigurationModalComponent {
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,
     });
-    this.data.update(board);
+    await this.data.update(board);
     this.dialogRef.close();
   }
 
@@ -154,6 +156,7 @@ export class ConfigurationModalComponent {
           if (board) {
             this.dialogRef.close();
             this.router.navigate(['project/' + this.projectID]);
+            await this.data.update(board, true);
           }
         },
       },
@@ -166,6 +169,19 @@ export class ConfigurationModalComponent {
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  openVoteDeleteDialog() {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to clear all votes from the board?',
+        handleConfirm: async () => {
+          await this.upvoteService.removeByBoard(this.boardID);
+        },
+      },
+    });
   }
 
   copyToClipboard() {

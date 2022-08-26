@@ -34,7 +34,6 @@ router.delete('/:id', async (req, res) => {
   }
   if (comment) {
     amount = await dalComment.getAmountByPost(comment.postID);
-    console.log(amount);
     res.status(200).json({ comment, count: amount });
   }
 });

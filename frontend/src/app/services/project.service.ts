@@ -26,7 +26,11 @@ export class ProjectService {
       .toPromise();
   }
 
-  joinProject(code: string) {
+  joinProject(code: string): Promise<Project> {
     return this.http.post<Project>(`projects/join`, { code }).toPromise();
+  }
+
+  remove(projectID: string): Promise<Project> {
+    return this.http.delete<Project>('projects/' + projectID).toPromise();
   }
 }

@@ -8,7 +8,10 @@ import { Role, UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
 import dalProject from '../repository/dalProject';
 import { getErrorMessage } from '../utils/errors';
-import { getDefaultBoardPermissions, getDefaultBoardTags } from '../utils/utils';
+import {
+  getDefaultBoardPermissions,
+  getDefaultBoardTags,
+} from '../utils/utils';
 
 const router = Router();
 
@@ -23,7 +26,7 @@ router.post('/', async (req, res) => {
   let savedProject = await dalProject.create(project);
   if (project.personalBoardSetting.enabled) {
     const image = project.personalBoardSetting.bgImage;
-    const boardID = (new mongo.ObjectId()).toString()
+    const boardID = new mongo.ObjectId().toString();
     const board = await dalBoard.create({
       projectID: project.projectID,
       boardID: boardID,
@@ -37,14 +40,14 @@ router.post('/', async (req, res) => {
       initialZoom: 100,
       upvoteLimit: 5,
     });
-    savedProject = await savedProject.updateOne({ boards: [board.boardID] })
+    savedProject = await savedProject.updateOne({ boards: [board.boardID] });
   }
 
   res.status(200).json(savedProject);
 });
 
 router.post('/join', async (req, res) => {
-  const {code} = req.body;
+  const { code } = req.body;
   const user: UserModel = res.locals.user;
 
   try {
@@ -56,10 +59,10 @@ router.post('/join', async (req, res) => {
     } else {
       return res.status(500).end('No role associated with user!');
     }
-    
+
     if (project.personalBoardSetting.enabled) {
       const image = project.personalBoardSetting.bgImage;
-      const boardID = (new mongo.ObjectId()).toString()
+      const boardID = new mongo.ObjectId().toString();
       const board = await dalBoard.create({
         projectID: project.projectID,
         boardID: boardID,
@@ -73,12 +76,17 @@ router.post('/join', async (req, res) => {
         initialZoom: 100,
         upvoteLimit: 5,
       });
-      project = await Project.findOneAndUpdate({ projectID: project.projectID }, { $push: { boards: boardID } }, { new: true });
+      project = await Project.findOneAndUpdate(
+        { projectID: project.projectID },
+        { $push: { boards: boardID } },
+        { new: true }
+      );
     }
 
     return res.status(200).json(project);
   } catch (e) {
-    if (e instanceof NotFoundError) return res.status(e.statusCode).end(e.message);
+    if (e instanceof NotFoundError)
+      return res.status(e.statusCode).end(e.message);
     return res.status(500).end('Internal Server Error');
   }
 });
@@ -110,6 +118,12 @@ router.get('/users/:id', async (req, res) => {
 
   const projects = await dalProject.getByUserId(id);
   res.status(200).json(projects);
+});
+
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  const deletedProject = await dalProject.remove(id);
+  res.status(200).json(deletedProject);
 });
 
 export default router;

@@ -9,7 +9,7 @@ import { AuthGuard } from './auth.guard';
 import { ProjectService } from '../services/project.service';
 import { BoardService } from '../services/board.service';
 import { UserService } from '../services/user.service';
-import { Role } from '../models/user';
+import { Role, AuthUser } from '../models/user';
 
 @Injectable({
   providedIn: 'root',
@@ -42,12 +42,19 @@ export class ProjectGuard implements CanActivate {
 
     const isMember = this.isProjectMember();
     if (!isMember) {
-      this.router.navigate(['/error'], {
-        state: {
-          code: 403,
-          message: 'You do not have access to this project!',
-        },
-      });
+      if (
+        (await this.userService.isSsoEnabled()) &&
+        this.userService.user != null
+      ) {
+        this.addProjectMember(this.project, this.userService.user);
+      } else {
+        this.router.navigate(['/error'], {
+          state: {
+            code: 403,
+            message: 'You do not have access to this project!',
+          },
+        });
+      }
     }
     if (boardID) {
       const isValidBoard = await this.isValidBoard(boardID);
@@ -93,5 +100,11 @@ export class ProjectGuard implements CanActivate {
     }
 
     return false;
+  }
+
+  addProjectMember(project: any, user: AuthUser) {
+    const members: string[] = project.members;
+    members.push(user!.userID);
+    this.projectService.update(project.projectID, { members: members });
   }
 }

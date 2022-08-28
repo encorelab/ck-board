@@ -190,8 +190,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handlePostCreateEvent = (post: Post) => {
-    const fabricPost = new FabricPostComponent(post);
-    this.canvas.add(fabricPost);
+    if (post.type === PostType.BOARD) {
+      const fabricPost = new FabricPostComponent(post);
+      this.canvas.add(fabricPost);
+    }
   };
 
   handlePostUpdateEvent = (post: Post) => {
@@ -500,7 +502,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._openDialog(ConfigurationModalComponent, {
       projectID: this.projectID,
       board: this.board,
-      update: (board: Board) => {
+      update: (board: Board, removed = false) => {
         const previousBoard = this.board;
         this.board = board;
 

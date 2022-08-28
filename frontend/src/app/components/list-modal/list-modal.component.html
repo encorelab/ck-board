@@ -1,5 +1,15 @@
 <h1 mat-dialog-title>
-  <span>CK List</span>
+  <div style="display: flex;">
+    <span>CK List</span>
+    <button
+      mat-icon-button
+      matTooltip="Create Post"
+      (click)="openAddPostDialog()"
+      style="margin:0; padding:0;line-height: inherit;height: inherit;"
+    >
+      <mat-icon class="material-icons-outlined">note_add</mat-icon>
+    </button>
+  </div>
   <button mat-icon-button [mat-dialog-close] aria-label="Close">
     <mat-icon>close</mat-icon>
   </button>

@@ -42,7 +42,7 @@ router.post('/:id', async (req, res) => {
     tags === undefined ? null : { tags },
     initialZoom === undefined ? null : { initialZoom },
     upvoteLimit === undefined ? null : { upvoteLimit },
-    visible === undefined? true : { visible },
+    visible === undefined ? true : { visible }
   );
 
   const updatedBoard = await dalBoard.update(id, board);

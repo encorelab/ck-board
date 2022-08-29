@@ -66,7 +66,6 @@ class Socket {
         io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
         io.in(room).disconnectSockets(true);
       });
-
     });
   }
 

@@ -52,6 +52,7 @@ import { TodoListModalComponent } from './components/todo-list-modal/todo-list-m
 import { AddTodoListModalComponent } from './components/add-todo-list-modal/add-todo-list-modal.component';
 import { ProjectNotificationDropdownComponent } from './components/project-notification-dropdown/project-notification-dropdown.component';
 import { ProjectTodoListModalComponent } from './components/project-todo-list-modal/project-todo-list-modal.component';
+import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -93,6 +94,7 @@ export function tokenGetter() {
     AddTodoListModalComponent,
     ProjectNotificationDropdownComponent,
     ProjectTodoListModalComponent,
+    SsoLoginComponent,
   ],
   imports: [
     BrowserModule,

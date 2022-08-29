@@ -133,7 +133,7 @@ export class ConfigurationModalComponent {
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,
     });
-    this.data.update(board);
+    await this.data.update(board);
     this.dialogRef.close();
   }
 
@@ -165,6 +165,7 @@ export class ConfigurationModalComponent {
           if (board) {
             this.dialogRef.close();
             this.router.navigate(['project/' + this.projectID]);
+            await this.data.update(board, true);
           }
         },
       },

@@ -491,7 +491,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this._openDialog(ConfigurationModalComponent, {
       projectID: this.projectID,
       board: this.board,
-      update: (board: Board) => {
+      update: (board: Board, removed = false) => {
         const previousBoard = this.board;
         this.board = board;
 
@@ -975,7 +975,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openProjectTodoList() {
-    //
+    this.dialog.open(ProjectTodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+      },
+    });
   }
 
   private _openDialog(

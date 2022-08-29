@@ -7,6 +7,8 @@ import { ProjectService } from 'src/app/services/project.service';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.component';
+import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
 import { UserService } from 'src/app/services/user.service';
@@ -46,15 +48,18 @@ export class ProjectDashboardComponent implements OnInit {
 
   async getBoards() {
     this.project = await this.projectService.get(this.projectID);
+    await this.getUsersProjects(this.user.userID);
+    const tempBoards: Board[] = [];
     for (const boardID of this.project.boards) {
       const board = await this.boardService.get(boardID);
-      this.boards.push(board);
+      tempBoards.push(board);
     }
+    this.boards = tempBoards;
   }
 
   async getUsersProjects(id) {
     const projects = await this.projectService.getByUserID(id);
-    this.yourProjects = this.yourProjects.concat(projects);
+    this.yourProjects = projects;
   }
 
   openCreateBoardDialog() {
@@ -86,9 +91,9 @@ export class ProjectDashboardComponent implements OnInit {
     }
   };
 
-  updateProjectName = (name) => {
+  updateProjectName = (projectID: string, name: string) => {
     this.project.name = name;
-    this.projectService.update(this.projectID, { name: name });
+    this.projectService.update(projectID, { name: name });
   };
 
   openSettingsDialog() {
@@ -129,5 +134,41 @@ export class ProjectDashboardComponent implements OnInit {
 
   handleBoardClick(boardID) {
     this.router.navigate(['project/' + this.projectID + '/board/' + boardID]);
+  }
+
+  async handleEditBoard(board: Board) {
+    const boardID: string = board.boardID;
+    this.dialog.open(ConfigurationModalComponent, {
+      width: '700px',
+      data: {
+        projectID: this.projectID,
+        board: await this.boardService.get(boardID),
+        update: async (updatedBoard: Board, removed = false) => {
+          if (removed || updatedBoard.name !== board.name) {
+            await this.getBoards();
+          }
+          if (updatedBoard.name !== board.name) {
+            board.name = updatedBoard.name;
+          }
+        },
+      },
+    });
+  }
+
+  async handleDeleteBoard(board: Board) {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message:
+          'This will permanently delete the board and all related content. Are you sure you want to do this?',
+        handleConfirm: async () => {
+          const deletedBoard = await this.boardService.remove(board.boardID);
+          if (deletedBoard) {
+            await this.getBoards();
+          }
+        },
+      },
+    });
   }
 }

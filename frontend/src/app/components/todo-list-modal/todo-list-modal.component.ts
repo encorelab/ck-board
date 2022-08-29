@@ -29,6 +29,8 @@ export class TodoListModalComponent implements OnInit {
   pausable: PausableObservable<number>;
   dataSource: MatTableDataSource<TodoItem>;
   completedItemsDataSource: MatTableDataSource<TodoItem>;
+  CONFETTI_DELAY = 3400;
+  CONFETTI_DURATION = 500;
 
   constructor(
     public dialogRef: MatDialogRef<TodoListModalComponent>,
@@ -91,8 +93,8 @@ export class TodoListModalComponent implements OnInit {
       setTimeout(() => {
         this.shoot();
         this.pausable.resume();
-        setTimeout(() => this.pausable.pause(), 4000);
-      }, 4000);
+        setTimeout(() => this.pausable.pause(), this.CONFETTI_DURATION);
+      }, this.CONFETTI_DELAY);
     }
   }
 

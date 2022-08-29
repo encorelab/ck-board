@@ -91,6 +91,9 @@ export class BoardModel {
 
   @prop({ required: true })
   public upvoteLimit!: number;
+
+  @prop({ required: true })
+  public visible!: boolean;
 }
 
 export default getModelForClass(BoardModel);

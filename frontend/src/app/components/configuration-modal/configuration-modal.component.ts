@@ -49,7 +49,6 @@ export class ConfigurationModalComponent {
   initialZoom = 100;
   upvoteLimit = 5;
 
-  bgImage: BoardBackgroundImage;
   bgImgSettings: ImageSettings;
   backgroundPosX;
   backgroundPosY;
@@ -77,7 +76,6 @@ export class ConfigurationModalComponent {
     this.tags = data.board.tags ?? [];
     this.permissions = data.board.permissions;
     this.initialZoom = data.board.initialZoom;
-    this.bgImage = data.board.bgImage;
     this.bgImgSettings = data.board.bgImage?.imgSettings;
     this.backgroundPosX = this.bgImgSettings?.left;
     this.backgroundPosY = this.bgImgSettings?.top;
@@ -117,6 +115,14 @@ export class ConfigurationModalComponent {
         this.newCompressedImage
       );
       this.data.update(board);
+      this.currentBgImage = board.bgImage;
+      if (board.bgImage) {
+        this.backgroundPosX = board.bgImage.imgSettings.left;
+        this.backgroundPosY = board.bgImage.imgSettings.top;
+        this.backgroundScale = board.bgImage
+          ? Math.round(board.bgImage.imgSettings.scaleX * 100)
+          : 100;
+      }
     });
   }
 
@@ -160,7 +166,7 @@ export class ConfigurationModalComponent {
       this.upvoteLimit
     );
 
-    if (this.bgImgSettings) board = await this.updateBoardImageSettings();
+    if (this.currentBgImage) board = await this.updateBoardImageSettings();
 
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,

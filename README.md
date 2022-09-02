@@ -4,36 +4,59 @@ This Common Knowledge (CK) Board is the latest rebuild of the ENCORE Lab's colla
 
 ## Setup
 
-#### 1. Install Node.js and Angular
+### 1. Install Node.js and Angular
 
 - Node: https://nodejs.org/
   - Use the LTS versions. v16 works, v17 has some compatabily issues
 - Angular: `npm install -g @angular/cli `
 
-#### 2. Clone the repository
+### 2. Clone the repository
 
 ```shell
 $ git clone https://github.com/encorelab/ck-board.git
 ```
 
-#### 3. Install required dependencies
+### 3. Install required dependencies
 
-If you are building locally or on an instance install depedancies with
-
-```shell
-$ npm ci
-```
-
-Only if you are installing a NEW package use
+Install Frontend dependencies:
 
 ```shell
+$ cd frontend
 $ npm install
 ```
 
-#### 4. You're now ready to start developing!
+Install Backend dependencies:
 
 ```shell
-$ ng serve --open # will start application on http://localhost:4200/
+$ cd backend
+$ npm install
+```
+
+### 4. Add environment variables
+
+Create a `.env` file inside the `/backend` directory (`touch .env` in your terminal or manually create file using your IDE)
+
+Add the following content into the `.env` file and replace with your own credentials:
+
+```
+DB_USER=[Mongoose DB Username]
+DB_PASSWORD=[Mongoose DB Password]
+DB_NAME=[Mongoose DB Name]
+JWT_SECRET=[JWT Secret Token]
+```
+
+### 5. Run Application
+
+Start server first, then start client app once the server has successfully started:
+
+```shell
+$ cd backend     # Go into backend folder if not already
+$ npm run dev    # Start server
+
+# … Open a new terminal tab to run client app
+
+$ cd frontend    # Go into frontend folder
+$ ng serve --open      # Run Angular app; Will start application on http://localhost:4200/
 ```
 
 ## Running unit tests

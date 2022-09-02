@@ -1,8 +1,8 @@
-import { Server } from "http";
-import * as socketIO from "socket.io";
-import { SocketEvent } from "../constants";
-import events from "./events";
-import SocketManager from "./socketManager";
+import { Server } from 'http';
+import * as socketIO from 'socket.io';
+import { SocketEvent } from '../constants';
+import events from './events';
+import SocketManager from './socketManager';
 
 class Socket {
   private static _instance: Socket;
@@ -29,7 +29,7 @@ class Socket {
   init(server: Server) {
     const io = new socketIO.Server(server, {
       cors: {
-        origin: ["https://ck-board-staging.herokuapp.com"],
+        origin: ['https://ck-board-staging.herokuapp.com'],
       },
     });
 
@@ -61,6 +61,11 @@ class Socket {
           this._currentRoom = null;
           this._socketManager.removeBySocketId(this._socket.id);
         }
+      });
+
+      socket.on('disconnectAll', async (room: string) => {
+        io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
+        io.in(room).disconnectSockets(true);
       });
     });
   }

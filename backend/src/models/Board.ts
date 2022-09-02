@@ -1,5 +1,13 @@
-import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import {
+  prop,
+  getModelForClass,
+  modelOptions,
+  Severity,
+  setGlobalOptions,
+} from '@typegoose/typegoose';
 import { TagModel } from './Tag';
+
+setGlobalOptions({ options: { allowMixed: Severity.ALLOW } });
 
 export class TaskModel {
   @prop({ required: false })
@@ -83,6 +91,9 @@ export class BoardModel {
 
   @prop({ required: true })
   public upvoteLimit!: number;
+
+  @prop({ required: true })
+  public visible!: boolean;
 }
 
 export default getModelForClass(BoardModel);

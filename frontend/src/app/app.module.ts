@@ -48,6 +48,7 @@ import { MoveGroupMembersComponent } from './components/groups/move-group-member
 
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AutofocusDirective } from './autofocus.directive';
+import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 
 const config: SocketIoConfig = {
   url: 'https://ck-board-staging.herokuapp.com',
@@ -88,6 +89,7 @@ export function tokenGetter() {
     ManageGroupModalComponent,
     MoveGroupMembersComponent,
     AutofocusDirective,
+    SsoLoginComponent,
   ],
   imports: [
     BrowserModule,

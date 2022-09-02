@@ -1,6 +1,14 @@
-import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import {
+  getModelForClass,
+  modelOptions,
+  prop,
+  Severity,
+} from '@typegoose/typegoose';
 
-@modelOptions({ schemaOptions: { collection: 'trace', timestamps: true } })
+@modelOptions({
+  schemaOptions: { collection: 'trace', timestamps: true },
+  options: { allowMixed: Severity.ALLOW },
+})
 export class TraceModel {
   @prop({ required: true })
   projectID!: string;

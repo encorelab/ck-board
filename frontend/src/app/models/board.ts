@@ -36,4 +36,5 @@ export class Board {
   tags: Tag[];
   initialZoom = 100;
   upvoteLimit = 5;
+  visible: boolean;
 }

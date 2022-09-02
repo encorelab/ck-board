@@ -1,19 +1,19 @@
-import express from "express";
-import http from "http";
-import bodyParser from "body-parser";
-import path from "path";
-import cors from "cors";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import Socket from "./socket/socket";
-import notifications from "./api/notifications";
-import posts from "./api/posts";
-import comments from "./api/comments";
-import boards from "./api/boards";
-import buckets from "./api/buckets";
-import projects from "./api/projects";
-import workflows from "./api/workflows";
-import auth from "./api/auth";
+import express from 'express';
+import http from 'http';
+import bodyParser from 'body-parser';
+import path from 'path';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import Socket from './socket/socket';
+import notifications from './api/notifications';
+import posts from './api/posts';
+import comments from './api/comments';
+import boards from './api/boards';
+import buckets from './api/buckets';
+import projects from './api/projects';
+import workflows from './api/workflows';
+import auth from './api/auth';
 import upvotes from './api/upvotes';
 import trace from './api/trace';
 import groups from './api/groups';
@@ -29,11 +29,11 @@ const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@ck-board-cluster.f2vut.
 const app = express();
 app.use(
   cors({
-    origin: "https://ck-board-staging.herokuapp.com/",
+    origin: 'https://ck-board-staging.herokuapp.com/',
   })
 );
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "../../frontend/dist/ck-board")));
+app.use(express.static(path.join(__dirname, '../../frontend/dist/ck-board')));
 
 const server = http.createServer(app);
 
@@ -52,9 +52,9 @@ app.use('/api/groups', isAuthenticated, groups);
 app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
 
-app.get("*", (req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(
-    path.join(__dirname + "/../../frontend/dist/ck-board/index.html")
+    path.join(__dirname + '/../../frontend/dist/ck-board/index.html')
   );
 });
 

@@ -29,7 +29,7 @@ class Socket {
   init(server: Server) {
     const io = new socketIO.Server(server, {
       cors: {
-        origin: ['https://ck-board-staging.herokuapp.com'],
+        origin: '*',
       },
     });
 

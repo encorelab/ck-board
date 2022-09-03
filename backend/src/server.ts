@@ -27,11 +27,7 @@ const dbName = process.env.DB_NAME;
 const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@ck-board-cluster.f2vut.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
 const app = express();
-app.use(
-  cors({
-    origin: 'https://ck-board-staging.herokuapp.com/',
-  })
-);
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../../frontend/dist/ck-board')));
 

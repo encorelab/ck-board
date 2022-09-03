@@ -14,6 +14,10 @@ export class UserService {
     return this.http.get<User>('auth/' + id).toPromise();
   }
 
+  getMultipleByIds(ids: string[]) {
+    return this.http.post<User[]>('auth/multiple', ids).toPromise();
+  }
+
   async register(user: User) {
     return this.http
       .post<TokenResponse>('auth/register', user)
@@ -37,6 +41,38 @@ export class UserService {
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('access_token', result.token);
         localStorage.setItem('expires_at', result.expiresAt);
+        return true;
+      });
+  }
+
+  async isSsoEnabled(): Promise<boolean> {
+    return this.http
+      .get('auth/is-sso-enabled')
+      .toPromise()
+      .then((response: any) => {
+        return response.isSsoEnabled;
+      });
+  }
+
+  async trySsoLogin(attemptedUrl: string): Promise<any> {
+    return this.http
+      .get('auth/sso/handshake')
+      .toPromise()
+      .then((response: any) => {
+        window.location.href = `${response.scoreSsoEndpoint}?sig=${response.sig}&sso=${response.sso}&redirectUrl=${attemptedUrl}`;
+        return false;
+      });
+  }
+
+  async ssoLogin(sso: string | null, sig: string | null): Promise<boolean> {
+    return this.http
+      .get(`auth/sso/login/${sso}/${sig}`)
+      .toPromise()
+      .then((result: any) => {
+        localStorage.setItem('user', JSON.stringify(result.user));
+        localStorage.setItem('access_token', result.token);
+        localStorage.setItem('expires_at', result.expiresAt);
+        window.location.href = result.redirectUrl;
         return true;
       });
   }

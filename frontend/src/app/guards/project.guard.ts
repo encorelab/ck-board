@@ -9,6 +9,7 @@ import { AuthGuard } from './auth.guard';
 import { ProjectService } from '../services/project.service';
 import { BoardService } from '../services/board.service';
 import { UserService } from '../services/user.service';
+import { Role, AuthUser } from '../models/user';
 
 @Injectable({
   providedIn: 'root',
@@ -41,18 +42,34 @@ export class ProjectGuard implements CanActivate {
 
     const isMember = this.isProjectMember();
     if (!isMember) {
-      this.router.navigate(['/error'], {
-        state: {
-          code: 403,
-          message: 'You do not have access to this project!',
-        },
-      });
+      if (
+        (await this.userService.isSsoEnabled()) &&
+        this.userService.user != null
+      ) {
+        this.addProjectMember(this.project, this.userService.user);
+      } else {
+        this.router.navigate(['/error'], {
+          state: {
+            code: 403,
+            message: 'You do not have access to this project!',
+          },
+        });
+      }
     }
     if (boardID) {
       const isValidBoard = await this.isValidBoard(boardID);
       if (!isValidBoard) {
         this.router.navigate(['/error'], {
           state: { code: 404, message: 'This board does not exist!' },
+        });
+      }
+      const isVisibleBoard = this.isVisibleBoard();
+      if (!isVisibleBoard) {
+        this.router.navigate(['/error'], {
+          state: {
+            code: 403,
+            message: 'You do not have access to this board!',
+          },
         });
       }
     }
@@ -70,6 +87,11 @@ export class ProjectGuard implements CanActivate {
     return this.board !== null;
   }
 
+  isVisibleBoard() {
+    const user = this.userService.user;
+    return user?.role === Role.TEACHER || this.board.visible;
+  }
+
   isProjectMember(): boolean {
     const user = this.userService.user;
 
@@ -78,5 +100,11 @@ export class ProjectGuard implements CanActivate {
     }
 
     return false;
+  }
+
+  addProjectMember(project: any, user: AuthUser) {
+    const members: string[] = project.members;
+    members.push(user!.userID);
+    this.projectService.update(project.projectID, { members: members });
   }
 }

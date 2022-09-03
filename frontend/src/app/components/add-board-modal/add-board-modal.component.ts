@@ -115,6 +115,7 @@ export class AddBoardModalComponent implements OnInit {
         tags: this.tags.concat(this.defaultTags),
         initialZoom: this.initialZoom,
         upvoteLimit: this.upvoteLimit,
+        visible: true,
       },
       this.selectedProject
     );

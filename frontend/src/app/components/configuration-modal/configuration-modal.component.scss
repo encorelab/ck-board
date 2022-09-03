@@ -31,6 +31,19 @@
   margin: auto;
 }
 
+.config-button-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  @media (min-width: breakpoint('md', 'min')) {
+    grid-template-columns: 1fr;
+    max-width: breakpoint('lg', 'min');
+  }
+}
+
+.config-button {
+  margin:5px
+}
+
 .chip-icon {
   padding-right: 10px;
   width: 12px;

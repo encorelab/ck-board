@@ -23,16 +23,16 @@ export class ImageSettings {
 
   @prop({ required: false })
   public left?: number;
-  
+
   @prop({ required: false })
   public width?: number;
-  
+
   @prop({ required: false })
   public height?: number;
-  
+
   @prop({ required: false })
   public scaleX?: number;
-  
+
   @prop({ required: false })
   public scaleY?: number;
 }

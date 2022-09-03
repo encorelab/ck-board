@@ -66,6 +66,15 @@
           thumbLabel
         ></mat-slider>
       </div>
+      <mat-chip 
+        class="chip"
+        mat-raised-button color="warn"
+        (click)="openVoteDeleteDialog()"
+        selected
+      >
+        <mat-icon class="chip-icon">clear_all</mat-icon>
+        <span>Clear Votes</span>
+      </mat-chip>
       
       <h1 class="section-title">Background</h1>
       <div class="image-form">
@@ -130,7 +139,6 @@
         <mat-chip
           class="chip"
           color="warn"
-          class="config-button"
           selected
           (click)="handleClearBoard()"
         >
@@ -146,12 +154,6 @@
         >
           <mat-icon class="chip-icon">delete</mat-icon>
           <span>Delete Board</span>
-        </mat-chip>
-        <mat-chip class="config-button" mat-raised-button color="warn" (click)="openVoteDeleteDialog()" style="text-align: center" selected>
-          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
-          <span style="width: 100%;text-align: center;">
-            Clear Votes
-          </span>
         </mat-chip>
       </div>
     </mat-tab>

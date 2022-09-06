@@ -35,7 +35,7 @@
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.4",
     "ngx-color-picker": "^12.0.1",
-    "ngx-image-compress": "^11.0.3",
+    "ngx-image-compress": "^13.0.9",
     "ngx-socket-io": "^4.2.0",
     "prettier": "^2.6.2",
     "rxjs": "~6.6.0",

@@ -93,7 +93,6 @@ export function tokenGetter() {
     HttpClientModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
-    AngularFireAnalyticsModule,
     AngularFirestoreModule,
     AngularFireAuthModule,
     FormsModule,

@@ -46,9 +46,10 @@ import { CsvDownloadButtonComponent } from './components/csv-download-button/csv
 import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
 import { MoveGroupMembersComponent } from './components/groups/move-group-members/move-group-members.component';
 
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { AutofocusDirective } from './autofocus.directive';
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
+import { NgxImageCompressService } from 'ngx-image-compress';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -118,6 +119,10 @@ export function tokenGetter() {
     },
     {
       provide: MatDialogRef,
+      useValue: {},
+    },
+    {
+      provide: NgxImageCompressService,
       useValue: {},
     },
   ],

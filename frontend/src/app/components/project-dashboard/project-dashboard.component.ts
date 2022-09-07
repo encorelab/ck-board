@@ -20,8 +20,9 @@ import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-g
   styleUrls: ['./project-dashboard.component.scss'],
 })
 export class ProjectDashboardComponent implements OnInit {
-  showPersonalBoards = true;
   showSharedBoards = true;
+  showStudentPersonalBoards = true;
+  showTeacherPersonalBoards = true;
 
   teacherPersonalBoards: Board[] = [];
   studentPersonalBoards: Board[] = [];

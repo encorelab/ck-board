@@ -61,8 +61,8 @@ export class ConfigurationModalComponent {
     this.boardID = data.board.boardID;
     this.boardName = data.board.name;
     this.currentBgImage = data.board.bgImage;
-    this.taskTitle = data.board.task.title;
-    this.taskMessage = data.board.task.message;
+    this.taskTitle = data.board.task?.title;
+    this.taskMessage = data.board.task?.message;
     this.tags = data.board.tags ?? [];
     this.permissions = data.board.permissions;
     this.initialZoom = data.board.initialZoom;

@@ -1,0 +1,58 @@
+<mat-card
+  class="bucket-card"
+  (click)="openPostDialog()"
+  (keyup.enter)="openPostDialog()"
+  *ngIf="exists"
+  [ngStyle]="{ 'background-color': postColor }"
+  role="button"
+  tabindex="0"
+  aria-label="View post details"
+>
+  <div class="titleRow">
+    <div class="mat-title">{{ post.post.title }}</div>
+    <button
+      mat-icon-button
+      *ngIf="post.bucketOnly"
+      (click)="movePostToBoard(post.post.postID); $event.stopPropagation()"
+      style="display: inline-block"
+    >
+      <mat-icon class="material-icons-outlined">download</mat-icon>
+    </button>
+  </div>
+  <mat-card-subtitle *ngIf="!post.hideAuthorName">{{
+    post.author
+  }}</mat-card-subtitle>
+  <mat-card-subtitle *ngIf="post.hideAuthorName">Anonymous</mat-card-subtitle>
+  <mat-card-content>
+    <mat-chip-list>
+      <mat-chip
+        [ngStyle]="{ 'background-color': tag.color, color: 'black' }"
+        selected
+        *ngFor="let tag of post.post.tags"
+      >
+        {{ tag.name }}
+      </mat-chip>
+    </mat-chip-list>
+    <p class="content">{{ post.post.desc }}</p>
+  </mat-card-content>
+  <mat-card-actions style="display: flex">
+    <button
+      mat-icon-button
+      [ngStyle]="isUpvoted() && { color: '#4f47ff' }"
+      (click)="handleUpvote($event)"
+    >
+      <mat-icon style="transform: scale(2);">arrow_drop_up</mat-icon>
+    </button>
+    <button mat-icon-button [ngStyle]="isUpvoted() && { color: '#4f47ff' }">
+      {{ post.upvotes.length }}
+    </button>
+    <button mat-icon-button (click)="handleDownvote($event)">
+      <mat-icon style="transform: scale(2);">arrow_drop_down</mat-icon>
+    </button>
+    <button mat-button style="margin-left: auto" (click)="openPostDialog(true); $event.stopPropagation()">
+      <mat-icon>comment</mat-icon>
+      {{ post.comments }}
+    </button>
+  </mat-card-actions>
+  <mat-error *ngIf="error">{{ error }}</mat-error>
+</mat-card>

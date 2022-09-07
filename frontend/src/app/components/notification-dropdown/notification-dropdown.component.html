@@ -1,0 +1,24 @@
+<button mat-icon-button [matMenuTriggerFor]="menu">
+  <mat-icon
+    *ngIf="notifications && notifications.length > 0; else elseBlock"
+    matBadge="{{ notifications.length }}"
+    >notifications_active</mat-icon
+  >
+  <ng-template #elseBlock> <mat-icon>notifications</mat-icon></ng-template>
+</button>
+<mat-menu #menu="matMenu">
+  <div *ngIf="notifications && notifications.length > 0; else matMenuElse">
+    <button
+      mat-menu-item
+      (click)="openPost(notification)"
+      *ngFor="let notification of notifications.reverse()"
+      style="white-space: unset; line-height: normal"
+    >
+      {{ notification.text }}
+    </button>
+    <button mat-button (click)="markAllAsRead()">Mark all as read</button>
+  </div>
+  <ng-template #matMenuElse
+    ><p mat-menu-item>No notifications to display</p></ng-template
+  >
+</mat-menu>

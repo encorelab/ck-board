@@ -1,0 +1,51 @@
+<h1 mat-dialog-title>
+  <span>CK Buckets</span>
+  <button mat-icon-button [mat-dialog-close] aria-label="Close">
+    <mat-icon>close</mat-icon>
+  </button>
+</h1>
+<div mat-dialog-content>
+  <h3
+    *ngIf="!loading && buckets && buckets.length == 0"
+    style="color: grey; text-align: center"
+  >
+    No buckets created!
+  </h3>
+  <mat-form-field
+    *ngIf="buckets && buckets.length > 0 && !loading"
+    appearance="outline"
+    style="font-size: 14px; margin-right: 1em"
+  >
+    <mat-select [(ngModel)]="activeBucket.name">
+      <mat-option
+        value="{{ bucket.name }}"
+        *ngFor="let bucket of buckets"
+        (click)="loadBucketPosts(bucket)"
+        >{{ bucket.name }}</mat-option
+      >
+    </mat-select>
+  </mat-form-field>
+  <button
+    mat-icon-button
+    matTooltip="Create Post in Bucket"
+    (click)="openAddPostDialog()"
+    [disabled]="buckets && buckets.length == 0"
+  >
+    <mat-icon class="material-icons-outlined">note_add</mat-icon>
+  </button>
+  <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
+  <h3
+    *ngIf="!loading && posts && posts.length == 0"
+    style="color: grey; text-align: center"
+  >
+    No posts in bucket!
+  </h3>
+  <div class="post-list">
+    <div *ngFor="let post of posts">
+      <app-html-post
+        [post]="post"
+        (movePostToBoardEvent)="movePostToBoard($event)"
+      ></app-html-post>
+    </div>
+  </div>
+</div>

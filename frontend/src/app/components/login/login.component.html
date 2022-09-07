@@ -1,0 +1,54 @@
+<div class="wrapper">
+  <div class="container">
+    <div class="form-image-wrapper">
+      <img
+        class="form-image"
+        src="../../assets/Login.png"
+        alt="CK Board login picture"
+      />
+    </div>
+    <div class="form-container">
+      <form class="form" (ngSubmit)="onLogin()">
+        <div class="welcome">
+          <img
+            class="logo"
+            src="/assets/encore-logo.png"
+            alt="Encore Lab logo"
+          />
+          <h1 class="header">Common Knowledge Board</h1>
+        </div>
+        <div class="credentials-container">
+          <mat-form-field appearance="fill">
+            <mat-label>Email</mat-label>
+            <input
+              autocomplete="username"
+              type="email"
+              matInput
+              [(ngModel)]="email"
+              name="username"
+            />
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Password</mat-label>
+            <input
+              autocomplete="current-password"
+              type="password"
+              matInput
+              [(ngModel)]="password"
+              name="password"
+            />
+          </mat-form-field>
+          <p *ngIf="invalidCredentials" class="invalid-pass">
+            Invalid email or password!
+          </p>
+        </div>
+        <div class="next">
+          <button type="submit" mat-button>Login</button>
+        </div>
+        <p class="alternate">
+          <a routerLink="/register">Don't have an account? Sign up here!</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>

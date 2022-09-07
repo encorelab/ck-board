@@ -1,0 +1,11 @@
+# dependencies
+/node_modules
+
+# secrets
+.env
+
+# compiled js files
+*.js
+
+# misc
+.DS_Store

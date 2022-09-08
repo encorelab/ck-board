@@ -54,14 +54,17 @@
           </mat-checkbox>
       </p>
       <div style="display: grid; grid-template-columns: 1fr 1fr;">
-        <mat-chip (click)="compressFile()" color="primary" selected class="config-button">
-          <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
-          Upload New Background Image
+        <mat-chip class="config-button" mat-raised-button color="accent" (click)="compressFile()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;" (click)="removeImage()">upload</mat-icon>
+          <span style="width: 100%;text-align: center;">
+            Upload New Background Image
+          </span>
         </mat-chip>
         <mat-chip
           *ngIf="currentBgImage && currentBgImage.url"
           color="warn"
           class="config-button"
+          style="text-align: center"
           selected
           (click)="removeImage()"
         >
@@ -69,8 +72,15 @@
           Remove Current Background Image
         </mat-chip>
         <mat-chip mat-raised-button color="accent" (click)="copyToClipboard()" style="text-align: center" selected class="config-button">
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">file_copy</mat-icon>
           <span style="width: 100%;text-align: center;">
             Copy Embeddable Board URL
+          </span>
+        </mat-chip>
+        <mat-chip *ngIf="board.scope === BoardScope.PROJECT_PERSONAL" mat-raised-button color="accent" (click)="copyConfiguration()" style="text-align: center" selected class="config-button">
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">file_copy</mat-icon>
+          <span style="width: 100%; text-align: center; font-size: smaller;">
+            Copy Configuration to all Personal {{isTeacherPersonalBoard ? 'Teacher' : 'Student'}} Boards
           </span>
         </mat-chip>
         <mat-chip class="config-button" mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
@@ -196,7 +206,7 @@
       </button>
       <button
         mat-button
-        [disabled]="newTagColor == tagDefaultColor"
+        [disabled]="newTagColor === tagDefaultColor"
         color="primary"
         (click)="resetColor()"
       >
@@ -207,18 +217,6 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button
-    mat-button
-    (click)="handleDialogSubmit()"
-    [disabled]="
-      (taskMessage && !taskTitle.trim()) ||
-      (taskTitle && !taskTitle.trim()) ||
-      boardNameInput.invalid
-    "
-    cdkFocusInitial
-  >
-    Apply Configuration!
-  </button>
   <button
     mat-button
     (click)="handleDialogSubmit()"

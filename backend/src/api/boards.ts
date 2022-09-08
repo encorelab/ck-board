@@ -7,18 +7,31 @@ import dalProject from '../repository/dalProject';
 
 const router = Router();
 
-const validateAccess = (project: ProjectModel, board: BoardModel, user: UserModel) => {
+const validateAccess = (
+  project: ProjectModel,
+  board: BoardModel,
+  user: UserModel
+) => {
   const scope = board.scope;
-  if (scope == BoardScope.PROJECT_SHARED && project.members.includes(user.userID)) {
+  if (
+    scope == BoardScope.PROJECT_SHARED &&
+    project.members.includes(user.userID)
+  ) {
     return true;
-  } else if (scope == BoardScope.PROJECT_PERSONAL && board.ownerID == user.userID) {
+  } else if (
+    scope == BoardScope.PROJECT_PERSONAL &&
+    board.ownerID == user.userID
+  ) {
     return true;
-  } else if (scope == BoardScope.PROJECT_PERSONAL && project.teacherIDs.includes(user.userID)) {
+  } else if (
+    scope == BoardScope.PROJECT_PERSONAL &&
+    project.teacherIDs.includes(user.userID)
+  ) {
     return true;
   }
 
   return false;
-}
+};
 
 router.post('/', async (req, res) => {
   const board: BoardModel = req.body;
@@ -28,9 +41,9 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/multiple', async (req, res) => {
-  const ids = req.body;
+  const { ids, filter } = req.body;
 
-  const boards = await dalBoard.getMultipleByIds(ids);
+  const boards = await dalBoard.getMultipleByIds(ids, filter);
   res.status(200).json(boards);
 });
 
@@ -63,12 +76,33 @@ router.post('/:id', async (req, res) => {
   res.status(200).json(updatedBoard);
 });
 
+router.post('/:boardID/copy-configuration', async (req, res) => {
+  const boardID = req.params.boardID;
+  const { boards } = req.body;
+
+  const board = await dalBoard.getById(boardID);
+  if (!board) return res.status(404).end('Board not found!');
+
+  const updatedBoard: Partial<BoardModel> = Object.assign(
+    {},
+    board.task === undefined ? null : { task: board.task },
+    board.permissions === undefined ? null : { permissions: board.permissions },
+    board.bgImage === undefined ? null : { bgImage: board.bgImage },
+    board.tags === undefined ? null : { tags: board.tags },
+    board.initialZoom === undefined ? null : { initialZoom: board.initialZoom },
+    board.upvoteLimit === undefined ? null : { upvoteLimit: board.upvoteLimit }
+  );
+
+  await dalBoard.updateMany(boards, updatedBoard);
+  res.status(200);
+});
+
 router.get('/:id', async (req, res) => {
   const id = req.params.id;
   const user: UserModel = res.locals.user;
 
   const board = await dalBoard.getById(id);
-  
+
   if (!board) return res.status(404).end('Board not found!');
 
   const project = await dalProject.getById(board.projectID);
@@ -88,7 +122,9 @@ router.get('/projects/:projectID', async (req, res) => {
   const project = await dalProject.getById(boards[0].projectID);
   if (!project) return res.status(406).end('No project associated with board!');
 
-  const validated = boards.filter(board => validateAccess(project, board, user));
+  const validated = boards.filter((board) =>
+    validateAccess(project, board, user)
+  );
   res.status(200).json(validated);
 });
 

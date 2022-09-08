@@ -16,8 +16,10 @@ export class BoardService {
     return this.http.get<Board[]>('boards/projects/' + projectID).toPromise();
   }
 
-  getMultiple(ids: string[]): Promise<Board[]> {
-    return this.http.post<Board[]>('boards/multiple/', ids).toPromise();
+  getMultipleBy(ids: string[], filter?: Partial<Board>): Promise<Board[]> {
+    return this.http
+      .post<Board[]>('boards/multiple/', { ids, filter })
+      .toPromise();
   }
 
   update(boardID: string, board: Partial<Board>): Promise<Board> {
@@ -30,5 +32,11 @@ export class BoardService {
 
   remove(id: string) {
     return this.http.delete<Board>('boards/' + id).toPromise();
+  }
+
+  copyConfiguration(boardID: string, boards: string[]) {
+    return this.http
+      .post<any>(`boards/${boardID}/copy-configuration/`, { boards })
+      .toPromise();
   }
 }

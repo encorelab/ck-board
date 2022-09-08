@@ -19,9 +19,12 @@ export const getById = async (id: string) => {
   }
 };
 
-export const getMultipleByIds = async (ids: string[]) => {
+export const getMultipleByIds = async (
+  ids: string[],
+  filter?: Partial<BoardModel>
+) => {
   try {
-    const boards = await Board.find({ boardID: { $in: ids } });
+    const boards = await Board.find({ boardID: { $in: ids }, filter });
     return boards;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -57,6 +60,14 @@ export const update = async (id: string, board: Partial<BoardModel>) => {
   }
 };
 
+export const updateMany = async (ids: string[], board: Partial<BoardModel>) => {
+  try {
+    await Board.updateMany({ boardID: ids }, board);
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const remove = async (id: string) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -87,6 +98,7 @@ const dalBoard = {
   getByProject,
   create,
   update,
+  updateMany,
   remove,
 };
 

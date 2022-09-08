@@ -134,7 +134,7 @@ export class ProjectDashboardComponent implements OnInit {
     this.dialog.open(ConfigurationModalComponent, {
       width: '700px',
       data: {
-        projectID: this.projectID,
+        project: this.project,
         board: await this.boardService.get(boardID),
         update: async (updatedBoard: Board, removed = false) => {
           if (removed || updatedBoard.name !== board.name) {

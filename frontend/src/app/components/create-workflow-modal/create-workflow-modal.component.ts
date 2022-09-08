@@ -109,7 +109,7 @@ export class CreateWorkflowModalComponent implements OnInit {
         this.boardBuckets = this.boardBuckets.concat(buckets);
         this.sourceOptions.push(this.board);
       });
-    this.boardService.getMultiple(this.data.project.boards).then((data) => {
+    this.boardService.getMultipleBy(this.data.project.boards).then((data) => {
       data.forEach((board: Board) => {
         if (board.boardID != this.board.boardID) this.destOptions.push(board);
       });

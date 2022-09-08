@@ -30,7 +30,7 @@ const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '/../../frontend/dist/ck-board')));
+app.use(express.static(path.join(__dirname, '../../frontend/dist/ck-board')));
 const server = http.createServer(app);
 
 const socket = Socket.Instance;
@@ -47,6 +47,12 @@ app.use('/api/notifications', isAuthenticated, notifications);
 app.use('/api/groups', isAuthenticated, groups);
 app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
+
+app.get('*', (req, res) => {
+  res.sendFile(
+    path.join(__dirname + '/../../frontend/dist/ck-board/index.html')
+  );
+});
 
 mongoose
   .connect(dbURI)

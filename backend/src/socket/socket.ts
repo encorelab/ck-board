@@ -28,7 +28,7 @@ class Socket {
   init() {
     const io = new socketIO.Server(8000, {
       cors: {
-        origin: ['http://localhost:4200', 'http://localhost:4201'],
+        origin: '*',
       },
     });
 

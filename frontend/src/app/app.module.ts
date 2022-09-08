@@ -50,7 +50,10 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AutofocusDirective } from './autofocus.directive';
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 
-const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
+const config: SocketIoConfig = {
+  url: 'https://ck-board.oise.utoronto.ca/',
+  options: {},
+};
 
 export function tokenGetter() {
   return localStorage.getItem('access_token');
@@ -99,8 +102,8 @@ export function tokenGetter() {
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
-        allowedDomains: ['localhost:8001'],
-        disallowedRoutes: ['localhost:8001/api/auth'],
+        allowedDomains: ['https://ck-board.oise.utoronto.ca/'],
+        disallowedRoutes: ['https://ck-board.oise.utoronto.ca/api/auth'],
       },
     }),
     SocketIoModule.forRoot(config),

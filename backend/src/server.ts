@@ -30,7 +30,11 @@ const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '/../../frontend/dist/ck-board')));
+app.use(express.static(path.join(__dirname, './../../frontend/dist/ck-board')));
+
+app.get('/*', function (req, res) {
+  res.sendFile('index.html', { root: 'frontend/dist/ck-board/' });
+});
 
 const server = http.createServer(app);
 

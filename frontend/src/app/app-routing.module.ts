@@ -7,6 +7,7 @@ import { LoginComponent } from './components/login/login.component';
 import { ProjectDashboardComponent } from './components/project-dashboard/project-dashboard.component';
 import { RegisterComponent } from './components/register/register.component';
 import { AuthGuard } from './guards/auth.guard';
+import { BoardGuard } from './guards/board.guard';
 import { ProjectGuard } from './guards/project.guard';
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 import { SsoGuard } from './guards/sso.guard';
@@ -32,7 +33,7 @@ const routes: Routes = [
   {
     path: 'project/:projectID/board/:boardID',
     component: CanvasComponent,
-    canActivate: [SsoGuard, AuthGuard, ProjectGuard],
+    canActivate: [SsoGuard, AuthGuard, ProjectGuard, BoardGuard],
   },
   { path: 'error', component: ErrorComponent },
   { path: '**', redirectTo: 'error' },

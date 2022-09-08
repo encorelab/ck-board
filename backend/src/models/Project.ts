@@ -1,4 +1,13 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { BgImageModel } from './Board';
+
+export class PersonalBoardSetting {
+  @prop({ required: true })
+  public enabled!: boolean;
+
+  @prop({ required: false, type: () => BgImageModel })
+  public bgImage?: BgImageModel;
+}
 
 @modelOptions({ schemaOptions: { collection: 'projects', timestamps: true } })
 export class ProjectModel {
@@ -6,7 +15,7 @@ export class ProjectModel {
   public projectID!: string;
 
   @prop({ required: true })
-  public teacherID!: string;
+  public teacherIDs!: string[];
 
   @prop({ required: true })
   public name!: string;
@@ -21,7 +30,13 @@ export class ProjectModel {
   public boards!: string[];
 
   @prop({ required: true })
-  public joinCode!: string;
+  public studentJoinCode!: string;
+
+  @prop({ required: true })
+  public teacherJoinCode!: string;
+
+  @prop({ required: true, type: () => PersonalBoardSetting })
+  public personalBoardSetting!: PersonalBoardSetting;
 }
 
 export default getModelForClass(ProjectModel);

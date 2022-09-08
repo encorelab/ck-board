@@ -121,7 +121,6 @@ export const getOrCreateUser = async (
   try {
     return await createUserIfNecessary(email, username, role);
   } catch (err) {
-    console.log(err);
     return null;
   }
 };
@@ -209,7 +208,6 @@ export const signInUserWithSso = async (
   }
   const sessionToken = generateSessionToken(userModel);
   sessionToken.redirectUrl = redirectUrl;
-  console.log(redirectUrl);
   return res.status(200).send(sessionToken);
 };
 

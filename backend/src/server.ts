@@ -2,6 +2,7 @@ import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import path from 'path';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Socket from './socket/socket';
@@ -29,6 +30,8 @@ const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, '../../frontend/dist/ck-board')));
+
 const server = http.createServer(app);
 
 const socket = Socket.Instance;

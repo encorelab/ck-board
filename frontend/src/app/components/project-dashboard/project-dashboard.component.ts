@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Board } from 'src/app/models/board';
+import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 
 import User, { AuthUser, Role } from 'src/app/models/user';
@@ -21,13 +21,22 @@ import { SocketService } from 'src/app/services/socket.service';
   styleUrls: ['./project-dashboard.component.scss'],
 })
 export class ProjectDashboardComponent implements OnInit {
-  boards: Board[] = [];
+  showSharedBoards = true;
+  showStudentPersonalBoards = true;
+  showTeacherPersonalBoards = true;
+
+  teacherPersonalBoards: Board[] = [];
+  studentPersonalBoards: Board[] = [];
+  sharedBoards: Board[] = [];
+
   project: Project;
   user: AuthUser;
+  teachers: AuthUser[];
   projectID: string;
   yourProjects: Project[] = [];
 
   Role: typeof Role = Role;
+  BoardScope: typeof BoardScope = BoardScope;
 
   constructor(
     public boardService: BoardService,
@@ -49,13 +58,16 @@ export class ProjectDashboardComponent implements OnInit {
 
   async getBoards() {
     this.project = await this.projectService.get(this.projectID);
-    await this.getUsersProjects(this.user.userID);
-    const tempBoards: Board[] = [];
-    for (const boardID of this.project.boards) {
-      const board = await this.boardService.get(boardID);
-      tempBoards.push(board);
-    }
-    this.boards = tempBoards;
+    const boards = await this.boardService.getByProject(this.projectID);
+    boards.forEach((board) => {
+      if (board.scope == BoardScope.PROJECT_PERSONAL) {
+        const isTeacher = this.project.teacherIDs.includes(board.ownerID);
+        if (isTeacher) this.teacherPersonalBoards.push(board);
+        else this.studentPersonalBoards.push(board);
+      } else if (board.scope == BoardScope.PROJECT_SHARED) {
+        this.sharedBoards.push(board);
+      }
+    });
   }
 
   async getUsersProjects(id) {
@@ -106,12 +118,11 @@ export class ProjectDashboardComponent implements OnInit {
     });
   }
 
-  toggleBoardVisibility(event: any, boardID: string, visibility: boolean) {
+  toggleBoardVisibility(event: any, board: Board) {
     event.stopPropagation();
-    if (visibility) this.socketService.disconnectAll(boardID);
-    this.boardService.update(boardID, { visible: !visibility });
-    let index = this.boards.findIndex((board) => board.boardID === boardID);
-    this.boards[index].visible = !visibility;
+    if (board.visible) this.socketService.disconnectAll(board.boardID);
+    this.boardService.update(board.boardID, { visible: !board.visible });
+    board.visible = !board.visible;
   }
 
   openGroupDialog() {
@@ -131,7 +142,7 @@ export class ProjectDashboardComponent implements OnInit {
     this.dialog.open(ConfigurationModalComponent, {
       width: '700px',
       data: {
-        projectID: this.projectID,
+        project: this.project,
         board: await this.boardService.get(boardID),
         update: async (updatedBoard: Board, removed = false) => {
           if (removed || updatedBoard.name !== board.name) {

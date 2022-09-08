@@ -1,3 +1,4 @@
+import { NotFoundError } from '../errors/client.errors';
 import Project, { ProjectModel } from '../models/Project';
 import mongoose from 'mongoose';
 import dalBoard from './dalBoard';
@@ -20,13 +21,24 @@ export const getByUserId = async (id: string) => {
   }
 };
 
-export const getByJoinCode = async (code: string) => {
-  try {
-    const project = await Project.findOne({ joinCode: code });
-    return project;
-  } catch (err) {
-    throw new Error(JSON.stringify(err, null, ' '));
+export const addStudent = async (code: string, userID: string) => {
+  const project = await Project.findOne({ studentJoinCode: code });
+  if (!project) {
+    throw new NotFoundError('Invalid Join Code!');
   }
+  await project.updateOne({ $push: { members: userID } });
+
+  return project;
+};
+
+export const addTeacher = async (code: string, userID: string) => {
+  const project = await Project.findOne({ teacherJoinCode: code });
+  if (!project) {
+    throw new NotFoundError('Invalid Join Code!');
+  }
+  await project.updateOne({ $push: { teacherIDs: userID, members: userID } });
+
+  return project;
 };
 
 export const create = async (project: ProjectModel) => {
@@ -86,8 +98,9 @@ export const remove = async (id: string) => {
 const dalProject = {
   getById,
   getByUserId,
-  getByJoinCode,
   create,
+  addStudent,
+  addTeacher,
   update,
   removeBoard,
   remove,

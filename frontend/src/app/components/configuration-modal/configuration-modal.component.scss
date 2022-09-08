@@ -11,7 +11,7 @@
   width: 100%;
   margin-top: 20px;
   display: flex;
-  gap: 30px;
+  column-gap: 30px;
   align-items: center;
 }
 
@@ -36,6 +36,10 @@
   width: 12px;
   height: 15px;
   font-size: medium;
+}
+
+.config-button {
+  margin: 5px;
 }
 
 .image-form {

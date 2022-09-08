@@ -508,8 +508,8 @@ export class FabricUtils {
     const offsetY = Math.floor(
       (dimensions.height - scale.scaleY * image.height!) / 2
     );
-    const vptCoords = this._canvas.vptCoords;
 
+    const vptCoords = this._canvas?.vptCoords;
     if (vptCoords) {
       return {
         offsetX: offsetX + vptCoords.tl.x,

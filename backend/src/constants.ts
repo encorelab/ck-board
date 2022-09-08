@@ -1,3 +1,5 @@
+import { TagModel } from './models/Tag';
+
 export enum SocketEvent {
   POST_CREATE = 'POST_CREATE',
   POST_UPDATE = 'POST_UPDATE',
@@ -47,3 +49,26 @@ export const POST_TAGGED_BORDER_THICKNESS = 4;
 
 export const POST_MOVING_FILL = '#999999';
 export const POST_MOVING_OPACITY = 0.5;
+
+export const IDEA_TAG: Partial<TagModel> = {
+  name: 'Idea',
+  color: '#5bc2cb',
+};
+export const QUESTION_TAG: Partial<TagModel> = {
+  name: 'Question',
+  color: '#e6a129',
+};
+export const NEEDS_ATTENTION_TAG: Partial<TagModel> = {
+  name: 'Needs Attention',
+  color: '#f8391d',
+  specialAttributes: {
+    borderColor: '#f8391d',
+    borderWidth: POST_TAGGED_BORDER_THICKNESS,
+  },
+};
+
+export const DEFAULT_TAGS: Partial<TagModel>[] = [
+  IDEA_TAG,
+  QUESTION_TAG,
+  NEEDS_ATTENTION_TAG,
+];

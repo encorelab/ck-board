@@ -77,6 +77,11 @@ export class PermissionsModel {
   public allowTracing!: boolean;
 }
 
+export enum BoardScope {
+  PROJECT_SHARED = 'PROJECT_SHARED',
+  PROJECT_PERSONAL = 'PROJECT_PERSONAL',
+}
+
 @modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })
 export class BoardModel {
   @prop({ required: true })
@@ -86,13 +91,13 @@ export class BoardModel {
   public boardID!: string;
 
   @prop({ required: true })
-  public teacherID!: string;
+  public ownerID!: string;
 
   @prop({ required: true })
   public name!: string;
 
-  @prop({ required: true })
-  public members!: string[];
+  @prop({ enum: BoardScope, type: String, required: true })
+  public scope!: BoardScope;
 
   @prop({ required: false, type: () => TaskModel })
   public task?: TaskModel;

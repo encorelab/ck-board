@@ -27,7 +27,7 @@ import {
   SocketEvent,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
-import { Board, BoardPermissions } from 'src/app/models/board';
+import { Board, BoardPermissions, BoardScope } from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
@@ -81,6 +81,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   mode: Mode = Mode.EDIT;
   modeType = Mode;
   Role: typeof Role = Role;
+  BoardScope: typeof BoardScope = BoardScope;
 
   showList = false;
   showBuckets = false;
@@ -500,7 +501,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   openSettingsDialog() {
     this._openDialog(ConfigurationModalComponent, {
-      projectID: this.projectID,
+      project: this.project,
       board: this.board,
       update: (board: Board, removed = false) => {
         const previousBoard = this.board;
@@ -602,6 +603,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openTaskDialog() {
+    if (!this.board.task) return;
+
     const title = this.board.task.title
       ? this.board.task.title
       : 'No task created!';

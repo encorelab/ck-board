@@ -27,6 +27,16 @@
           <span>Copy Embeddable Board URL</span>
         </mat-chip>
       </div>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.allowTracing"
+          >Allow tracing of board activity
+        </mat-checkbox>
+      </p>
+      <p>
+        <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent"
+          >Display task description when board is opened
+          </mat-checkbox>
+      </p>
       <div>
         <mat-label style="font-weight: bold"
           >Initial Zoom: {{ initialZoom }}%</mat-label
@@ -40,19 +50,8 @@
           thumbLabel
         ></mat-slider>
       </div>
-      <div style="display: flex; justify-content: space-between;">
-        <p>
-          <mat-checkbox [(ngModel)]="permissions.allowTracing"
-            >Allow tracing of board activity
-          </mat-checkbox>
-        </p>
-        <p>
-          <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent"
-            >Display task description when board is opened
-            </mat-checkbox>
-        </p>
-      </div>
-      <h1 class="section-title">Voting</h1>
+      
+      <h2 class="section-title">Voting</h2>
       <div>
         <mat-label style="font-weight: bold"
           >Maximum Upvotes Per Student: {{ upvoteLimit }}</mat-label
@@ -65,18 +64,15 @@
           [(ngModel)]="upvoteLimit"
           thumbLabel
         ></mat-slider>
+        <mat-chip class="config-button" mat-raised-button color="warn" (click)="openVoteDeleteDialog()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" >clear_all</mat-icon>
+          <span style="width: 100%;text-align: center;">
+          Clear Votes
+          </span>
+        </mat-chip>
       </div>
-      <mat-chip 
-        class="chip"
-        mat-raised-button color="warn"
-        (click)="openVoteDeleteDialog()"
-        selected
-      >
-        <mat-icon class="chip-icon">clear_all</mat-icon>
-        <span>Clear Votes</span>
-      </mat-chip>
-      
-      <h1 class="section-title">Background</h1>
+
+      <h2 class="section-title">Background</h2>
       <div class="image-form">
         <div class="container">
           <mat-chip
@@ -134,26 +130,25 @@
           </div>
         </div>
       </div>
-      <h1 class="section-title">Clear/Delete Board</h1>
-      <div class="container">
-        <mat-chip
-          class="chip"
-          color="warn"
-          selected
-          (click)="handleClearBoard()"
-        >
-          <mat-icon class="chip-icon">clear_all</mat-icon>
-          <span>Clear Board</span>
+      <h2 class="section-title">Content Settings</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr;">
+        <mat-chip class="config-button" *ngIf="board.scope === BoardScope.PROJECT_PERSONAL" mat-raised-button color="accent" (click)="copyConfiguration()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">file_copy</mat-icon>
+          <span style="width: 100%; text-align: center; font-size: smaller;">
+            Copy Configuration to all Personal {{isTeacherPersonalBoard ? 'Teacher' : 'Student'}} Boards
+          </span>
         </mat-chip>
-
-        <mat-chip
-          class="chip"
-          color="warn"
-          selected
-          (click)="handleDeleteBoard()"
-        >
-          <mat-icon class="chip-icon">delete</mat-icon>
-          <span>Delete Board</span>
+        <mat-chip class="config-button" mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
+          <span style="width: 100%;text-align: center;">
+          Clear Board
+          </span>
+        </mat-chip>
+        <mat-chip class="config-button" mat-raised-button color="warn" (click)="handleDeleteBoard()" style="text-align: center" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
+          <span style="width: 100%;text-align: center;">
+          Delete Board
+          </span>
         </mat-chip>
       </div>
     </mat-tab>
@@ -260,7 +255,7 @@
       </button>
       <button
         mat-button
-        [disabled]="newTagColor == tagDefaultColor"
+        [disabled]="newTagColor === tagDefaultColor"
         color="primary"
         (click)="resetColor()"
       >

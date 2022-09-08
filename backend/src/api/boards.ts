@@ -13,7 +13,10 @@ const validateAccess = (
   user: UserModel
 ) => {
   const scope = board.scope;
-  if (
+  const isTeacher = project.teacherIDs.includes(user.userID);
+  if (!isTeacher && !board.visible) {
+    return false;
+  } else if (
     scope == BoardScope.PROJECT_SHARED &&
     project.members.includes(user.userID)
   ) {
@@ -23,10 +26,7 @@ const validateAccess = (
     board.ownerID == user.userID
   ) {
     return true;
-  } else if (
-    scope == BoardScope.PROJECT_PERSONAL &&
-    project.teacherIDs.includes(user.userID)
-  ) {
+  } else if (scope == BoardScope.PROJECT_PERSONAL && isTeacher) {
     return true;
   }
 
@@ -58,6 +58,7 @@ router.post('/:id', async (req, res) => {
     tags,
     initialZoom,
     upvoteLimit,
+    visible,
   } = req.body;
 
   const board: Partial<BoardModel> = Object.assign(
@@ -69,7 +70,8 @@ router.post('/:id', async (req, res) => {
     bgImage === undefined ? null : { bgImage },
     tags === undefined ? null : { tags },
     initialZoom === undefined ? null : { initialZoom },
-    upvoteLimit === undefined ? null : { upvoteLimit }
+    upvoteLimit === undefined ? null : { upvoteLimit },
+    visible === undefined ? true : { visible }
   );
 
   const updatedBoard = await dalBoard.update(id, board);

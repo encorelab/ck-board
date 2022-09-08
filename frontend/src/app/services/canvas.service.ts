@@ -7,7 +7,7 @@ import Post, { PostType } from '../models/post';
 import { Tag } from '../models/tag';
 import { DistributionWorkflow } from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
-import { FabricUtils } from '../utils/FabricUtils';
+import { FabricUtils, ImageSettings } from '../utils/FabricUtils';
 import { generateUniqueID } from '../utils/Utils';
 import { BoardService } from './board.service';
 import { BucketService } from './bucket.service';
@@ -52,6 +52,19 @@ export class CanvasService {
   async createBucketPost(bucketID: string, post: Post): Promise<Post> {
     const savedPost = await this.postService.create(post);
     await this.bucketService.add(bucketID, post.postID);
+
+    return savedPost;
+  }
+
+  async createListPost(post: Post) {
+    const savedPost = await this.postService.create(post);
+    this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
+    for (const tag of post.tags) {
+      this.socketService.emit(SocketEvent.POST_TAG_ADD, {
+        tag,
+        post: savedPost,
+      });
+    }
 
     return savedPost;
   }
@@ -127,8 +140,10 @@ export class CanvasService {
     const result = await this.commentService.add(comment);
 
     let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
-    existing = this.fabricUtils.setCommentCount(existing, result.count);
-    this.fabricUtils._canvas.requestRenderAll();
+    if (existing) {
+      existing = this.fabricUtils.setCommentCount(existing, result.count);
+      this.fabricUtils._canvas.requestRenderAll();
+    }
 
     const post = await this.postService.get(result.comment.postID);
 
@@ -147,8 +162,10 @@ export class CanvasService {
     this.socketService.emit(SocketEvent.POST_COMMENT_REMOVE, result.comment);
     if (parseInt(result.count) != -1) {
       let existing = this.fabricUtils.getObjectFromId(postID);
-      existing = this.fabricUtils.setCommentCount(existing, result.count);
-      this.fabricUtils._canvas.requestRenderAll();
+      if (existing) {
+        existing = this.fabricUtils.setCommentCount(existing, result.count);
+        this.fabricUtils._canvas.requestRenderAll();
+      }
     }
   }
 
@@ -158,7 +175,14 @@ export class CanvasService {
 
     const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
     if (!fabricObject) {
-      return await this.postService.update(post.postID, { tags: tags });
+      const savedPost = await this.postService.update(post.postID, {
+        tags: tags,
+      });
+      this.socketService.emit(SocketEvent.POST_TAG_ADD, {
+        tag,
+        post: savedPost,
+      });
+      return savedPost;
     }
 
     if (tag.specialAttributes) {
@@ -167,7 +191,6 @@ export class CanvasService {
         tag
       );
     }
-
     const savedPost = await this.postService.update(post.postID, update);
 
     this.socketService.emit(SocketEvent.POST_TAG_ADD, { tag, post: savedPost });
@@ -188,7 +211,12 @@ export class CanvasService {
 
     const fabricObject = this.fabricUtils.getObjectFromId(post.postID);
     if (!fabricObject) {
-      return await this.postService.update(post.postID, update);
+      const savedPost = await this.postService.update(post.postID, update);
+      this.socketService.emit(SocketEvent.POST_TAG_REMOVE, {
+        tag,
+        post: savedPost,
+      });
+      return savedPost;
     }
 
     if (tag.specialAttributes) {
@@ -257,6 +285,23 @@ export class CanvasService {
         });
       });
     }
+  }
+
+  async updateBoardImageSettings(
+    boardID: string,
+    imgSettings: ImageSettings
+  ): Promise<Board> {
+    const oldBoard = await this.boardService.get(boardID);
+    const url = oldBoard.bgImage?.url;
+
+    if (url) {
+      const board: Board = await this.boardService.update(boardID, {
+        bgImage: { url, imgSettings },
+      });
+      this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
+      return board;
+    }
+    return oldBoard;
   }
 
   async updateBoardPermissions(

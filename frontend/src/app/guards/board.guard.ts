@@ -41,6 +41,16 @@ export class BoardGuard implements CanActivate {
       }
     }
 
+    const isVisibleBoard = this.isVisibleBoard();
+    if (!isVisibleBoard) {
+      this.router.navigate(['/error'], {
+        state: {
+          code: 403,
+          message: 'You do not have access to this board!',
+        },
+      });
+    }
+
     if (this.board.scope == BoardScope.PROJECT_PERSONAL) {
       const user = this.userService.user;
       if (user?.role == Role.TEACHER || this.board.ownerID == user?.userID) {
@@ -71,5 +81,10 @@ export class BoardGuard implements CanActivate {
     }
 
     return this.board != undefined;
+  }
+
+  isVisibleBoard() {
+    const user = this.userService.user;
+    return user?.role === Role.TEACHER || this.board.visible;
   }
 }

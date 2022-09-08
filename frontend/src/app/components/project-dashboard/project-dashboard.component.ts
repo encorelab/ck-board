@@ -13,6 +13,7 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { UserService } from 'src/app/services/user.service';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { SocketService } from 'src/app/services/socket.service';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -41,6 +42,7 @@ export class ProjectDashboardComponent implements OnInit {
     public boardService: BoardService,
     public projectService: ProjectService,
     public userService: UserService,
+    public socketService: SocketService,
     public dialog: MatDialog,
     private router: Router
   ) {}
@@ -60,9 +62,8 @@ export class ProjectDashboardComponent implements OnInit {
     boards.forEach((board) => {
       if (board.scope == BoardScope.PROJECT_PERSONAL) {
         const isTeacher = this.project.teacherIDs.includes(board.ownerID);
-        isTeacher
-          ? this.teacherPersonalBoards.push(board)
-          : this.studentPersonalBoards.push(board);
+        if (isTeacher) this.teacherPersonalBoards.push(board);
+        else this.studentPersonalBoards.push(board);
       } else if (board.scope == BoardScope.PROJECT_SHARED) {
         this.sharedBoards.push(board);
       }
@@ -115,6 +116,13 @@ export class ProjectDashboardComponent implements OnInit {
         updateProjectName: this.updateProjectName,
       },
     });
+  }
+
+  toggleBoardVisibility(event: any, board: Board) {
+    event.stopPropagation();
+    if (board.visible) this.socketService.disconnectAll(board.boardID);
+    this.boardService.update(board.boardID, { visible: !board.visible });
+    board.visible = !board.visible;
   }
 
   openGroupDialog() {

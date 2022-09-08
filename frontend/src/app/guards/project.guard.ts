@@ -9,7 +9,7 @@ import { AuthGuard } from './auth.guard';
 import { ProjectService } from '../services/project.service';
 import { BoardService } from '../services/board.service';
 import { UserService } from '../services/user.service';
-import { AuthUser } from '../models/user';
+import { Role, AuthUser } from '../models/user';
 
 @Injectable({
   providedIn: 'root',

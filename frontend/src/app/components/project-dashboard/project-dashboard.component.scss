@@ -21,3 +21,20 @@
 #shared-chip {
   background-color: #8EC8E1;
 }
+
+.board-card-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.board-card-title {
+  margin-bottom: 0;
+  align-items: center;
+  min-width: 0;
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

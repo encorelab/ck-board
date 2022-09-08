@@ -15,6 +15,8 @@ export class ToolbarComponent implements OnInit {
   @Input()
   embedded = false;
 
+  showLogout = false;
+
   constructor(private userService: UserService, private router: Router) {}
 
   ngOnInit(): void {}

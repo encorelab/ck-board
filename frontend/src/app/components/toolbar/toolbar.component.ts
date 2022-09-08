@@ -15,7 +15,7 @@ export class ToolbarComponent implements OnInit {
   @Input()
   embedded = false;
 
-  showLogout = true;
+  showLogout = false;
 
   constructor(private userService: UserService, private router: Router) {}
 

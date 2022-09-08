@@ -17,6 +17,6 @@
     {{ user.username }}
   </button>
   <mat-menu #menu="matMenu">
-    <button *ngIf="showLogout" mat-menu-item (click)="signOut()">Log Out</button>
+    <button [disabled]="showLogout" mat-menu-item (click)="signOut()">Log Out</button>
   </mat-menu>
 </mat-toolbar>

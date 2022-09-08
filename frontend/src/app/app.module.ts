@@ -51,7 +51,10 @@ import { AutofocusDirective } from './autofocus.directive';
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 import { NgxImageCompressService } from 'ngx-image-compress';
 
-const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
+const config: SocketIoConfig = {
+  url: 'https://ck-board-staging.herokuapp.com',
+  options: {},
+};
 
 export function tokenGetter() {
   return localStorage.getItem('access_token');
@@ -93,15 +96,18 @@ export function tokenGetter() {
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
+    AngularFireModule.initializeApp(
+      environment.firebaseConfig,
+      'ck-board-staging'
+    ),
     AngularFirestoreModule,
     AngularFireAuthModule,
     FormsModule,
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
-        allowedDomains: ['localhost:8001'],
-        disallowedRoutes: ['localhost:8001/api/auth'],
+        allowedDomains: ['https://ck-board-staging.herokuapp.com'],
+        disallowedRoutes: ['https://ck-board-staging.herokuapp.com/api/auth'],
       },
     }),
     SocketIoModule.forRoot(config),

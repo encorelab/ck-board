@@ -1,7 +1,10 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
-import User from 'src/app/models/user';
 import Post, { PostType, DisplayAttributes } from 'src/app/models/post';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { BucketService } from 'src/app/services/bucket.service';
@@ -15,6 +18,11 @@ import {
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from '../../utils/converters';
 import { Tag } from 'src/app/models/tag';
+import {
+  AddPostComponent,
+  AddPostDialog,
+} from 'src/app/components/add-post-modal/add-post.component';
+import User from 'src/app/models/user';
 import Upvote from 'src/app/models/upvote';
 
 @Component({
@@ -42,6 +50,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
 
   constructor(
     public dialogRef: MatDialogRef<ListModalComponent>,
+    public dialog: MatDialog,
     public bucketService: BucketService,
     public postService: PostService,
     public canvasService: CanvasService,
@@ -196,6 +205,27 @@ export class ListModalComponent implements OnInit, OnDestroy {
     } else {
       this.filteredPosts = this.posts;
     }
+  }
+
+  openAddPostDialog() {
+    const dialogData: AddPostDialog = {
+      type: PostType.LIST,
+      spawnPosition: {
+        top: 150,
+        left: 150,
+      },
+      board: this.board,
+      user: this.user,
+      onComplete: async (post: Post) => {
+        const htmlPost = await this.converters.toHTMLPost(post);
+        this.posts.push(htmlPost);
+        this.filterPosts();
+      },
+    };
+    this.dialog.open(AddPostComponent, {
+      width: '500px',
+      data: dialogData,
+    });
   }
 
   async movePostToBoard(postID: string) {

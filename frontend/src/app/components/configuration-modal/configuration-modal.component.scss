@@ -3,21 +3,32 @@
   padding-bottom: 20px;
 }
 
+.section-title {
+  margin: 20px 0px 10px;
+}
+
+.board-name-form {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+  gap: 30px;
+  align-items: center;
+}
+
+.board-name-form > .chip {
+  margin-top: -1.6em; // account for margin + padding from form field
+}
+
 .mat-radio-button ~ .mat-radio-button {
   margin-left: 16px;
 }
 
-.config-button-layout{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  @media (min-width: breakpoint('md', 'min')) {
-    grid-template-columns: 1fr;
-    max-width: breakpoint('lg', 'min');
-  }
+.chip {
+  width: 45%;
 }
 
-.config-button{
-  margin:5px
+.chip > span {
+  margin: auto;
 }
 
 .chip-icon {
@@ -30,8 +41,24 @@
 .image-form {
   display: flex;
   flex-direction: column;
-  width: fit-content;
   margin-top: 15px;
+}
+
+.bg-position {
+  display: flex;
+  flex-direction: column;
+}
+
+.bg-position-form {
+  margin-top: 15px;
+  display: inline-flex;
+  gap: 20px;
+}
+
+.container {
+  width: 100%;
+  display: inline-flex;
+  gap: 30px;
 }
 
 .image-form > * {

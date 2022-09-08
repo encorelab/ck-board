@@ -9,7 +9,7 @@ import { AuthGuard } from './auth.guard';
 import { ProjectService } from '../services/project.service';
 import { BoardService } from '../services/board.service';
 import { UserService } from '../services/user.service';
-import { AuthUser } from '../models/user';
+import { Role, AuthUser } from '../models/user';
 
 @Injectable({
   providedIn: 'root',
@@ -63,6 +63,15 @@ export class ProjectGuard implements CanActivate {
           state: { code: 404, message: 'This board does not exist!' },
         });
       }
+      const isVisibleBoard = this.isVisibleBoard();
+      if (!isVisibleBoard) {
+        this.router.navigate(['/error'], {
+          state: {
+            code: 403,
+            message: 'You do not have access to this board!',
+          },
+        });
+      }
     }
 
     return true;
@@ -76,6 +85,11 @@ export class ProjectGuard implements CanActivate {
   async isValidBoard(boardID: string) {
     this.board = await this.boardService.get(boardID);
     return this.board !== null;
+  }
+
+  isVisibleBoard() {
+    const user = this.userService.user;
+    return user?.role === Role.TEACHER || this.board.visible;
   }
 
   isProjectMember(): boolean {

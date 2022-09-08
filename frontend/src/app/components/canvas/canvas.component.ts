@@ -131,6 +131,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent],
       [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
       [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
+      [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
     ]);
   }
 
@@ -189,8 +190,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handlePostCreateEvent = (post: Post) => {
-    const fabricPost = new FabricPostComponent(post);
-    this.canvas.add(fabricPost);
+    if (post.type === PostType.BOARD) {
+      const fabricPost = new FabricPostComponent(post);
+      this.canvas.add(fabricPost);
+    }
   };
 
   handlePostUpdateEvent = (post: Post) => {
@@ -349,6 +352,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
   handleBoardClearEvent = (ids: string[]) => {
     ids.forEach((id) => {
       this.handlePostDeleteEvent(id);
+    });
+  };
+
+  handleBoardConnEvent = () => {
+    if (this.user.role === Role.TEACHER) return;
+    this.router.navigate(['/error'], {
+      state: {
+        code: 403,
+        message: 'You do not have access to this board!',
+      },
     });
   };
 

@@ -159,7 +159,7 @@ export const createUser = async (
   }
 };
 
-export const getRole = (role: string = ''): Role => {
+export const getRole = (role = ''): Role => {
   if (role.toUpperCase() === Role.TEACHER) {
     return Role.TEACHER;
   } else {
@@ -209,6 +209,7 @@ export const signInUserWithSso = async (
   }
   const sessionToken = generateSessionToken(userModel);
   sessionToken.redirectUrl = redirectUrl;
+  console.log(redirectUrl);
   return res.status(200).send(sessionToken);
 };
 

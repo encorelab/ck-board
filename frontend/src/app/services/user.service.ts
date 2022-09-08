@@ -60,6 +60,7 @@ export class UserService {
       .toPromise()
       .then((response: any) => {
         window.location.href = `${response.scoreSsoEndpoint}?sig=${response.sig}&sso=${response.sso}&redirectUrl=${attemptedUrl}`;
+        console.log(window.location.href);
         return false;
       });
   }

@@ -91,6 +91,7 @@ router.get('/sso/login/:sso/:sig', async (req, res) => {
     const payload = Buffer.from(sso, 'base64').toString('ascii');
     const paramMap: Map<string, string> = getParamMap(payload);
     const nonce = paramMap.get('nonce');
+    console.log('ho');
     if (nonce != null && (await isValidNonce(nonce))) {
       return signInUserWithSso(paramMap, res);
     } else {

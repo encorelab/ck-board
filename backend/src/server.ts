@@ -33,7 +33,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../../frontend/dist/ck-board')));
 
 app.get('/*', function (req, res) {
-  res.sendFile(__dirname + '/frontend/dist/ck-board/index.html');
+  res.sendFile(__dirname + '../../frontend/dist/ck-board/index.html');
 });
 
 const server = http.createServer(app);

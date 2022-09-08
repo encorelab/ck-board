@@ -30,7 +30,6 @@ export class ForbiddenError extends ClientError {
   }
 }
 
-
 export class NotFoundError extends ClientError {
   constructor(message: string) {
     super(message);
@@ -46,4 +45,4 @@ export default {
   UnauthorizedError,
   ForbiddenError,
   NotFoundError,
-}
+};

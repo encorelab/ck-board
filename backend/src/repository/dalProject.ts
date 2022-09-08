@@ -29,7 +29,7 @@ export const addStudent = async (code: string, userID: string) => {
   await project.updateOne({ $push: { members: userID } });
 
   return project;
-}
+};
 
 export const addTeacher = async (code: string, userID: string) => {
   const project = await Project.findOne({ teacherJoinCode: code });
@@ -39,7 +39,7 @@ export const addTeacher = async (code: string, userID: string) => {
   await project.updateOne({ $push: { teacherIDs: userID, members: userID } });
 
   return project;
-}
+};
 
 export const create = async (project: ProjectModel) => {
   try {

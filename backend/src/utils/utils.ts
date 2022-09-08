@@ -14,20 +14,20 @@ export function getDefaultBoardPermissions(): PermissionsModel {
     showAuthorNameTeacher: true,
     showBucketStudent: true,
     showSnackBarStudent: true,
-    allowTracing: false
-  }
+    allowTracing: false,
+  };
 }
 
 export function getDefaultBoardTags(boardID: string): TagModel[] {
   const defaultTags: Partial<TagModel>[] = DEFAULT_TAGS;
 
-  return defaultTags.map(tag => {
+  return defaultTags.map((tag) => {
     return {
       boardID,
-      tagID: (new mongo.ObjectId()).toString(),
+      tagID: new mongo.ObjectId().toString(),
       name: tag.name!,
       color: tag.color!,
-      specialAttributes: tag.specialAttributes
-    }
-  })
+      specialAttributes: tag.specialAttributes,
+    };
+  });
 }

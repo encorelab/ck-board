@@ -12,4 +12,4 @@ export class InternalServerError extends ServerError {
 
 export default {
   InternalServerError,
-}
+};

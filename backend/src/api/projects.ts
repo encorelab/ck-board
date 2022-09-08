@@ -39,6 +39,7 @@ router.post('/', async (req, res) => {
       tags: getDefaultBoardTags(boardID),
       initialZoom: 100,
       upvoteLimit: 5,
+      visible: true,
     });
     savedProject = await savedProject.updateOne({ boards: [board.boardID] });
   }
@@ -75,6 +76,7 @@ router.post('/join', async (req, res) => {
         tags: getDefaultBoardTags(boardID),
         initialZoom: 100,
         upvoteLimit: 5,
+        visible: true,
       });
       project = await Project.findOneAndUpdate(
         { projectID: project.projectID },

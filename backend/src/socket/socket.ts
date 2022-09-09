@@ -1,3 +1,4 @@
+import { Server } from 'http';
 import * as socketIO from 'socket.io';
 import { SocketEvent } from '../constants';
 import events from './events';
@@ -23,16 +24,17 @@ class Socket {
    * Initializes websocket server which will listen for users
    * joining boards and handle all board events.
    *
+   * @param server the http server
    * @returns void
    */
-  init() {
-    const io = new socketIO.Server(8000, {
+  init(server: Server) {
+    const io = new socketIO.Server(server, {
       cors: {
         origin: '*',
       },
     });
 
-    console.log('Socket server running at ' + 8000);
+    console.log('Socket server running...');
 
     io.on('connection', (socket) => {
       this._socket = socket;

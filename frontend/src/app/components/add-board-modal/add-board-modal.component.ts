@@ -9,6 +9,7 @@ import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
 import { BoardPermissions } from 'src/app/models/board';
+import { QuestionAuthoringType } from 'src/app/models/post';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -21,6 +22,7 @@ export class AddBoardModalComponent implements OnInit {
   boardID: string;
 
   permissions: BoardPermissions;
+  questionAuthoringType: QuestionAuthoringType;
 
   boardName = '';
 
@@ -108,6 +110,7 @@ export class AddBoardModalComponent implements OnInit {
           ? { url: this.bgImgURL, imgSettings: this.bgImgSettings }
           : null,
         permissions: this.permissions,
+        questionAuthoringType: this.questionAuthoringType,
         members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),
         initialZoom: this.initialZoom,

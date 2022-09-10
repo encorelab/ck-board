@@ -1,5 +1,6 @@
 import { ImageSettings } from '../utils/FabricUtils';
 import { Tag } from './tag';
+import { QuestionAuthoringType } from './post';
 
 export class BoardBackgroundImage {
   url: string;
@@ -32,6 +33,7 @@ export class Board {
   task: BoardTask;
   bgImage: BoardBackgroundImage | null;
   permissions: BoardPermissions;
+  questionAuthoringType: QuestionAuthoringType;
   members: string[];
   tags: Tag[];
   initialZoom = 100;

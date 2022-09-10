@@ -3,7 +3,12 @@ import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
-import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
+import Post, {
+  DisplayAttributes,
+  PostType,
+  QuestionAuthoringType,
+  MultipleChoiceOptions,
+} from 'src/app/models/post';
 import { Tag } from 'src/app/models/tag';
 import User from 'src/app/models/user';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -34,6 +39,9 @@ export interface AddPostDialog {
 export class AddPostComponent {
   user: User;
   board: Board;
+  questionAuthoringType: QuestionAuthoringType;
+  newMultipleChoiceOptionTest = '';
+  multipleChoiceOptions: MultipleChoiceOptions[];
 
   title = '';
   message = '';
@@ -56,6 +64,7 @@ export class AddPostComponent {
   ) {
     this.user = data.user;
     this.board = data.board;
+    this.questionAuthoringType = data.board.questionAuthoringType;
     this.tagOptions = data.board.tags.filter(
       (n) => !this.tags.map((b) => b.name).includes(n.name)
     );
@@ -74,6 +83,11 @@ export class AddPostComponent {
     }
 
     this.tagOptions.push(tag);
+  }
+
+  addMultipleChoiceButton(event, multipleChoiceOption) {
+    event.stopPropagation();
+    //
   }
 
   async addPost() {
@@ -98,6 +112,7 @@ export class AddPostComponent {
       userID: this.user.userID,
       boardID: this.board.boardID,
       type: PostType.BOARD,
+      questionAuthoringType: this.questionAuthoringType,
       title: this.title,
       author: this.user.username,
       desc: this.message,
@@ -117,6 +132,7 @@ export class AddPostComponent {
       boardID: this.board.boardID,
       author: this.user.username,
       type: PostType.BUCKET,
+      questionAuthoringType: this.questionAuthoringType,
       title: this.title,
       desc: this.message,
       tags: this.tags,
@@ -133,6 +149,7 @@ export class AddPostComponent {
       boardID: this.board.boardID,
       author: this.user.username,
       type: PostType.LIST,
+      questionAuthoringType: this.questionAuthoringType,
       title: this.title,
       desc: this.message,
       tags: this.tags,

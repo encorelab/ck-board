@@ -239,6 +239,7 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       userID: this.user.userID,
       boardID: this.board.boardID,
       type: PostType.BOARD,
+      questionAuthoringType: this.board.questionAuthoringType,
       title: htmlPost.post.title,
       author: this.user.username,
       desc: htmlPost.post.desc,

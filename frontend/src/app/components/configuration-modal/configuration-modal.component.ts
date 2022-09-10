@@ -29,6 +29,7 @@ export class ConfigurationModalComponent {
   boardID: string;
   projectID: string;
   boardName: string;
+  questionAuthoringType: string;
 
   currentBgImage: any;
   newCompressedImage: any;

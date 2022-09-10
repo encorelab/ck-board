@@ -12,6 +12,17 @@ export class DisplayAttributes {
   opacity?: number;
 }
 
+export class MultipleChoiceOptions {
+  optionTitle!: string;
+  correct!: boolean;
+  formuala?: boolean;
+}
+
+export enum QuestionAuthoringType {
+  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
+  OPEN_RESPONSE = 'OPEN_RESPONSE',
+}
+
 export enum PostType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
@@ -24,9 +35,10 @@ export default class Post {
   boardID: string;
 
   type: PostType;
-
+  questionAuthoringType: QuestionAuthoringType;
   title: string;
   desc: string;
+  multipleChoice?: MultipleChoiceOptions[];
   author: string;
   tags: Tag[];
 

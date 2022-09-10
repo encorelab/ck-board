@@ -16,20 +16,82 @@
       Title is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>
-  <mat-form-field appearance="fill" style="width: 100%">
-    <mat-label>Message</mat-label>
-    <textarea
-      [formControl]="msgControl"
-      [errorStateMatcher]="matcher"
-      matInput
-      rows="5"
-      cols="40"
-      [(ngModel)]="message"
-    ></textarea>
-    <mat-error *ngIf="message && message.length > 1000">
-      Message is <strong>too long!</strong>
-    </mat-error>
-  </mat-form-field>
+
+  <div *ngIf="questionAuthoringType === 'OPEN_RESPONSE'" >
+    <mat-form-field appearance="fill" style="width: 100%">
+      <mat-label>Add open response question prompt</mat-label>
+      <textarea
+        [formControl]="msgControl"
+        [errorStateMatcher]="matcher"
+        matInput
+        rows="5"
+        cols="40"
+        [(ngModel)]="message"
+      ></textarea>
+      <mat-error *ngIf="message && message.length > 1000">
+        Message is <strong>too long!</strong>
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <div *ngIf="questionAuthoringType === 'MULTIPLE_CHOICE'" style="position: relative;">
+    <div>
+      <mat-form-field 
+        appearance="outline"
+        style="width: 85%"
+      >
+        <mat-label>New Multiple Choice Option</mat-label>
+        <input matInput [(ngModel)]="newMultipleChoiceOptionTest" (keyup.enter)="addMultipleChoiceButton()" />
+      </mat-form-field>
+      <mat-chip>
+        <button
+          style="margin-left: 10px;"
+          mat-mini-fab
+          color="accent"
+          matTooltip="Add Multiple Choice Option"
+          matTooltipPosition="before"
+          (click)="addMultipleChoiceButton()"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </mat-chip>
+    </div>
+    
+
+
+
+
+    <!-- <div *ngFor="let option of [0, 1, 2, 3]">
+      <mat-form-field
+        appearance="outline"
+        style="width: 100%"
+      >
+        <mat-label>Option {{option}}</mat-label>
+        <input
+          matInput
+          required
+          minlength="1"
+        />
+      </mat-form-field>
+    </div>
+    <mat-chip>
+      <button
+        mat-mini-fab
+        color="accent"
+        matTooltip="Add Multiple Choice Option"
+        matTooltipPosition="before"
+        (click)="addMultipleChoiceButton()"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    </mat-chip> -->
+  </div>
+
+
+
+
+
+
   <mat-form-field class="tag-form" appearance="standard">
     <mat-chip-list #chipList>
       <mat-chip style="background-color: #78c2c0" [matMenuTriggerFor]="menu1">

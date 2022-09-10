@@ -6,6 +6,7 @@ import {
   setGlobalOptions,
 } from '@typegoose/typegoose';
 import { TagModel } from './Tag';
+import { QuestionAuthoringType } from './Post';
 
 setGlobalOptions({ options: { allowMixed: Severity.ALLOW } });
 
@@ -79,6 +80,9 @@ export class BoardModel {
 
   @prop({ required: true, type: () => PermissionsModel })
   public permissions!: PermissionsModel;
+
+  @prop({ enum: QuestionAuthoringType, type: String, required: true })
+  public questionAuthoringType!: QuestionAuthoringType;
 
   @prop({ required: false, type: () => BgImageModel })
   public bgImage?: BgImageModel;

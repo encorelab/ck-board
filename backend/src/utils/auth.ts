@@ -159,7 +159,7 @@ export const createUser = async (
   }
 };
 
-export const getRole = (role: string = ''): Role => {
+export const getRole = (role = ''): Role => {
   if (role.toUpperCase() === Role.TEACHER) {
     return Role.TEACHER;
   } else {

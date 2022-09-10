@@ -2,6 +2,13 @@
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Board">
+      <h2>Board Type</h2>
+      <mat-radio-group 
+        [(ngModel)]="questionAuthoringType"
+      >
+        <mat-radio-button value="MULTIPLE_CHOICE">Multiple Choice</mat-radio-button>
+        <mat-radio-button value="OPEN_RESPONSE">Open Response</mat-radio-button>
+      </mat-radio-group>
       <mat-form-field
         appearance="outline"
         style="width: 100%; margin-top: 20px"
@@ -195,7 +202,8 @@
       (taskMessage && !taskTitle.trim()) ||
       (taskTitle && !taskTitle.trim()) ||
       boardNameInput.invalid ||
-      projectInput.invalid
+      projectInput.invalid ||
+      !questionAuthoringType
     "
     (click)="handleDialogSubmit()"
   >

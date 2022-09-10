@@ -1,10 +1,26 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 import { TagModel } from './Tag';
 
+export enum QuestionAuthoringType {
+  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
+  OPEN_RESPONSE = 'OPEN_RESPONSE',
+}
+
 export enum PostType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
   LIST = 'LIST',
+}
+
+export class MultipleChoiceOptions {
+  @prop({ required: true })
+  public optionTitle!: string;
+
+  @prop({ required: true })
+  public correct!: boolean;
+
+  @prop({ required: false })
+  public formuala?: boolean;
 }
 
 export class Position {
@@ -49,11 +65,17 @@ export class PostModel {
   @prop({ enum: PostType, type: String, required: true })
   public type!: PostType;
 
+  @prop({ enum: QuestionAuthoringType, type: String, required: true })
+  public questionAuthoringType!: QuestionAuthoringType;
+
   @prop({ required: true })
   public title!: string;
 
   @prop({ required: false })
   public desc?: string;
+
+  @prop({ required: false, type: () => [MultipleChoiceOptions] })
+  public multipleChoice?: MultipleChoiceOptions[];
 
   @prop({ required: true })
   public author!: string;

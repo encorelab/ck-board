@@ -19,7 +19,7 @@ export class AddProjectModalComponent implements OnInit {
     enabled: false,
     bgImage: null,
   };
-  membershipDisabledEditable: boolean;
+  membershipDisabledEditable: boolean = false;
 
   constructor(
     public dialogRef: MatDialogRef<AddProjectModalComponent>,

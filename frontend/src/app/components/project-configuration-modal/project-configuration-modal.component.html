@@ -15,19 +15,19 @@
         <div mat-subheader>Membership Settings</div>
         <mat-checkbox [(ngModel)]="membershipDisabledEditable" #tooltip="matTooltip"
             matTooltip="When activated, no users can join this project.">
-          Restrict users from joining this project.
+          Restrict users from joining this project
         </mat-checkbox>
         <div mat-subheader>Invite Codes</div>
         <div style="display: flex; flex-direction: column; row-gap: 10px;">
           <button mat-raised-button color="accent" [cdkCopyToClipboard]="project.studentJoinCode" #tooltip="matTooltip"
             matTooltip="Press to Copy to Clipboard">
             <mat-icon>file_copy</mat-icon>
-            Student Invite Code - {{project.studentJoinCode}}
+            Copy Student Invite Code - {{project.studentJoinCode}}
           </button>
           <button mat-raised-button color="accent" [cdkCopyToClipboard]="project.teacherJoinCode" #tooltip="matTooltip"
             matTooltip="Press to Copy to Clipboard">
             <mat-icon>file_copy</mat-icon>
-            Teacher Invite Code - {{project.teacherJoinCode}}
+            Copy Teacher Invite Code - {{project.teacherJoinCode}}
           </button>
         </div>
         <div mat-subheader *ngIf="members">Current Members ({{members.length}})</div>

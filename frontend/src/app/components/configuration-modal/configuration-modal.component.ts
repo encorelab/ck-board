@@ -126,6 +126,7 @@ export class ConfigurationModalComponent {
       this.data.update(board);
       this.currentBgImage = board.bgImage;
       if (board.bgImage) {
+        this.bgImgSettings = board.bgImage.imgSettings;
         this.backgroundPosX = board.bgImage.imgSettings.left;
         this.backgroundPosY = board.bgImage.imgSettings.top;
         this.backgroundScale = board.bgImage

@@ -27,7 +27,7 @@ import {
   SocketEvent,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
-import { Board, BoardPermissions } from 'src/app/models/board';
+import { Board, BoardPermissions, BoardScope } from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
@@ -83,6 +83,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   mode: Mode = Mode.EDIT;
   modeType = Mode;
   Role: typeof Role = Role;
+  BoardScope: typeof BoardScope = BoardScope;
 
   showList = false;
   showBuckets = false;
@@ -133,6 +134,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent],
       [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
       [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
+      [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
     ]);
   }
 
@@ -191,8 +193,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handlePostCreateEvent = (post: Post) => {
-    const fabricPost = new FabricPostComponent(post);
-    this.canvas.add(fabricPost);
+    if (post.type === PostType.BOARD) {
+      const fabricPost = new FabricPostComponent(post);
+      this.canvas.add(fabricPost);
+    }
   };
 
   handlePostUpdateEvent = (post: Post) => {
@@ -354,6 +358,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   };
 
+  handleBoardConnEvent = () => {
+    if (this.user.role === Role.TEACHER) return;
+    this.router.navigate(['/error'], {
+      state: {
+        code: 403,
+        message: 'You do not have access to this board!',
+      },
+    });
+  };
+
   showBucketsModal() {
     this._openDialog(
       BucketsModalComponent,
@@ -489,7 +503,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   openSettingsDialog() {
     this._openDialog(ConfigurationModalComponent, {
-      projectID: this.projectID,
+      project: this.project,
       board: this.board,
       update: (board: Board, removed = false) => {
         const previousBoard = this.board;
@@ -591,6 +605,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openTaskDialog() {
+    if (!this.board.task) return;
+
     const title = this.board.task.title
       ? this.board.task.title
       : 'No task created!';

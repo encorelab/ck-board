@@ -107,7 +107,12 @@ export class TodoListModalComponent implements OnInit {
           message:
             'This will permanently delete the selected Todo Items. Are you sure you want to do this?',
           handleConfirm: async () => {
-            await this.deleteTodoItems();
+            for (let i = 0; i < this.selection.selected.length; i++) {
+              await this.todoItemService.remove(
+                this.selection.selected[i].todoItemID
+              );
+            }
+            await this.getTodoItems();
           },
         },
       });
@@ -133,7 +138,6 @@ export class TodoListModalComponent implements OnInit {
           const data = this.dataSource.data;
           data.push(todoItem);
           this.dataSource.data = data;
-          await this.todoItemService.sendReminder();
         },
       },
     });
@@ -148,7 +152,6 @@ export class TodoListModalComponent implements OnInit {
         todoItem: todoItem,
         onComplete: async () => {
           await this.getTodoItems();
-          await this.todoItemService.sendReminder();
         },
       },
     });
@@ -163,7 +166,6 @@ export class TodoListModalComponent implements OnInit {
         restoreTodoItem: todoItem,
         onComplete: async () => {
           await this.getTodoItems();
-          await this.todoItemService.sendReminder();
         },
       },
     });

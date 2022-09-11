@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import { TodoItemService } from '../../services/todoItem.service';
 
 @Component({
   selector: 'app-login',
@@ -17,11 +16,7 @@ export class LoginComponent {
 
   invalidCredentials = false;
 
-  constructor(
-    private userService: UserService,
-    private router: Router,
-    private todoItemService: TodoItemService
-  ) {
+  constructor(private userService: UserService, private router: Router) {
     if (this.userService.loggedIn) this.router.navigate(['/dashboard']);
   }
 
@@ -36,7 +31,6 @@ export class LoginComponent {
           this.router.navigate([redirectUrl]);
         } else {
           this.router.navigate(['dashboard']);
-          await this.todoItemService.sendReminder();
         }
       })
       .catch(() => {

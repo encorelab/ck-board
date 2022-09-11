@@ -2,7 +2,7 @@
 <div style="position: relative;">
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Todo List">
-      <div class="mat-elevation-z3" style="overflow-y:auto;max-height:500px;margin-top:15px">
+      <div class="mat-elevation-z3 table_style">
         <table mat-table [dataSource]="dataSource" class="table">
           <ng-container matColumnDef="select">
             <th mat-header-cell *matHeaderCellDef>
@@ -73,7 +73,7 @@
 
     </mat-tab>
     <mat-tab label="Completed Tasks">
-      <div class="mat-elevation-z3" style="overflow-y:auto;max-height:500px;margin-top:15px">
+      <div class="mat-elevation-z3 table_style">
         <table mat-table [dataSource]="completedItemsDataSource" class="table">
           <ng-container matColumnDef="task-title">
             <th mat-header-cell *matHeaderCellDef> Task Title </th>

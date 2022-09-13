@@ -4,6 +4,14 @@
     <span style="flex: 1 1 auto"></span>
     <button
       mat-icon-button
+      *ngIf="user && user.role === Role.STUDENT"
+      (click)="openTodoList()"
+      matTooltip="Todo List"
+    >
+      <mat-icon>assignment</mat-icon>
+    </button>
+    <button
+      mat-icon-button
       [matMenuTriggerFor]="addMenu"
       *ngIf="user && user.role === Role.TEACHER"
       matTooltip="Create Board"
@@ -27,6 +35,28 @@
       matTooltip="Adjust Settings"
     >
       <mat-icon>settings</mat-icon>
+    </button>
+    <div *ngIf="project">
+      <app-project-notification-dropdown
+        [user]="user"
+        [project]="project"
+      ></app-project-notification-dropdown>
+    </div>
+    <button
+      *ngIf="user && user.role == Role.TEACHER"
+      mat-icon-button
+      (click)="openGroupDialog()"
+      matTooltip="Manage Groups"
+    >
+      <mat-icon>group_work</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      *ngIf="user && user.role === Role.TEACHER"
+      (click)="openProjectTodoList()"
+      matTooltip="View All Todo Lists"
+    >
+      <mat-icon>assignment_ind</mat-icon>
     </button>
     <button
     *ngIf="user && user.role === Role.TEACHER"

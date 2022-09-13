@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
-
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -11,8 +10,10 @@ import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.compo
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
+import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
 import { UserService } from 'src/app/services/user.service';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { ProjectTodoListModalComponent } from '../project-todo-list-modal/project-todo-list-modal.component';
 import { SocketService } from 'src/app/services/socket.service';
 
 @Component({
@@ -114,6 +115,25 @@ export class ProjectDashboardComponent implements OnInit {
       data: {
         project: this.project,
         updateProjectName: this.updateProjectName,
+      },
+    });
+  }
+
+  openTodoList() {
+    this.dialog.open(TodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+        user: this.user,
+      },
+    });
+  }
+
+  openProjectTodoList() {
+    this.dialog.open(ProjectTodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
       },
     });
   }

@@ -46,6 +46,8 @@ export class PostModalComponent {
   author: User | undefined;
   buckets: any[];
 
+  PostType: typeof PostType = PostType;
+
   title: string;
   editingTitle: string;
   desc: string;
@@ -295,7 +297,7 @@ export class PostModalComponent {
       originalPostID: this.post.postID,
       newPostID: newPost.postID,
       personalBoardID: personalBoard.boardID,
-    }
+    };
     if (newPost) {
       this.socketService.emit(SocketEvent.PERSONAL_BOARD_ADD_POST, postInput);
       this.openSnackBar('Successfully copied to your Personal Board');

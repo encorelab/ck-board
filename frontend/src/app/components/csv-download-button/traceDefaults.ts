@@ -129,5 +129,5 @@ export default [
   {
     value: 'personalBoardSavedPostID',
     default: '',
-  }
+  },
 ];

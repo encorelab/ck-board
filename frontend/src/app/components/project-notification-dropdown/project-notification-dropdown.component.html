@@ -1,4 +1,4 @@
-<button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Board Notifications">
+<button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="Project Notifications">
   <mat-icon
     *ngIf="notifications && notifications.length > 0; else elseBlock"
     matBadge="{{ notifications.length }}"
@@ -10,7 +10,6 @@
   <div *ngIf="notifications && notifications.length > 0; else matMenuElse">
     <button
       mat-menu-item
-      (click)="openPost(notification)"
       *ngFor="let notification of notifications.reverse()"
       style="white-space: unset; line-height: normal"
     >

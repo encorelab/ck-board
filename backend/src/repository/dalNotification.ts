@@ -1,8 +1,16 @@
-import Notification, { NotificationModel } from '../models/Notification';
+import {
+  NotificationModel,
+  Notification,
+  BoardNotification,
+  ProjectNotification,
+  BoardNotificationModel,
+  ProjectNotificationModel,
+  NotificationType,
+} from '../models/Notification';
 
 export const getByUserAndBoard = async (user: string, board: string) => {
   try {
-    const notifications = await Notification.find({
+    const notifications = await BoardNotification.find({
       userID: user,
       boardID: board,
     });
@@ -12,36 +20,74 @@ export const getByUserAndBoard = async (user: string, board: string) => {
   }
 };
 
-export const create = async (notification: NotificationModel) => {
+export const getByUserAndProject = async (user: string, project: string) => {
   try {
-    const savedNotification = await Notification.create(notification);
-    return savedNotification;
+    const notifications = await ProjectNotification.find({
+      userID: user,
+      projectID: project,
+    });
+    return notifications;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const create = async (
+  type: NotificationType,
+  notification: BoardNotificationModel | ProjectNotificationModel
+) => {
+  try {
+    if (type === NotificationType.BOARD) {
+      const savedNotification = await BoardNotification.create(notification);
+      return savedNotification;
+    } else {
+      const savedNotification = await ProjectNotification.create(notification);
+      return savedNotification;
+    }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
 export const update = async (
+  type: NotificationType,
   id: string,
-  notification: Partial<NotificationModel>
+  notification: Partial<BoardNotificationModel | ProjectNotificationModel>
 ) => {
   try {
-    const updatedNotif = await Notification.findOneAndUpdate(
-      { notificationID: id },
-      notification,
-      {
-        new: true,
-      }
-    );
-    return updatedNotif;
+    if (type === NotificationType.BOARD) {
+      const updatedNotification = await BoardNotification.findOneAndUpdate(
+        { notificationID: id },
+        notification,
+        {
+          new: true,
+        }
+      );
+      return updatedNotification;
+    } else if (type === NotificationType.PROJECT) {
+      const updatedNotification = await ProjectNotification.findOneAndUpdate(
+        { notificationID: id },
+        notification,
+        {
+          new: true,
+        }
+      );
+      return updatedNotification;
+    }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
-export const remove = async (id: string) => {
+export const remove = async (type: NotificationType, id: string) => {
   try {
-    return await Notification.findOneAndDelete({ notificationID: id });
+    if (type === NotificationType.BOARD) {
+      return await BoardNotification.findOneAndDelete({ notificationID: id });
+    } else if (type === NotificationType.PROJECT) {
+      return await ProjectNotification.findOneAndDelete({
+        notificationID: id,
+      });
+    }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -49,7 +95,7 @@ export const remove = async (id: string) => {
 
 export const removeByBoard = async (boardID: string) => {
   try {
-    const deletedNotifications = await Notification.deleteMany({
+    const deletedNotifications = await BoardNotification.deleteMany({
       boardID: boardID,
     });
     return deletedNotifications;
@@ -60,6 +106,7 @@ export const removeByBoard = async (boardID: string) => {
 
 const dalNotification = {
   getByUserAndBoard,
+  getByUserAndProject,
   create,
   update,
   remove,

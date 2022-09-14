@@ -1,0 +1,106 @@
+<h1 mat-dialog-title>Todo List</h1>
+<div style="position: relative;">
+  <mat-tab-group dynamicHeight animationDuration="0ms">
+    <mat-tab label="Todo List">
+      <div class="mat-elevation-z3 table_style">
+        <table mat-table [dataSource]="dataSource" class="table">
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-checkbox 
+                (change)="$event ? masterToggle() : null"
+                [checked]="selection.hasValue() && isAllSelected()"
+                [indeterminate]="selection.hasValue() && !isAllSelected()">
+              </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <mat-checkbox 
+                (click)="$event.stopPropagation()"
+                (change)="$event ? selection.toggle(row) : null"
+                [checked]="selection.isSelected(row)">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+      
+          <ng-container matColumnDef="task-title">
+            <th mat-header-cell *matHeaderCellDef> Task Title </th>
+            <td mat-cell *matCellDef="let todo"> {{todo.title}} </td>
+          </ng-container>
+      
+      
+          <ng-container matColumnDef="deadline">
+            <th mat-header-cell *matHeaderCellDef> Deadline </th>
+            <td mat-cell *matCellDef="let todo"> {{todo.deadline.date}} @ {{todo.deadline.time}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="edit">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let todo">
+              <button mat-icon-button (click)="editTodoItem(todo)" matTooltip="Edit Task">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+      
+          <tr mat-header-row *matHeaderRowDef="displayColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayColumns;"></tr>
+        </table>
+      </div>
+      <mat-chip-list style="display: flex; margin-top: 10px; height:60px">
+        <mat-chip mat-raised-button color="accent" (click)="completeTodoItems()" style="text-align: center; margin-right: 10px;" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
+          <span style="width: 100%;text-align: center;">
+            Mark as Completed
+          </span>
+        </mat-chip>
+
+        <mat-chip mat-raised-button color="warn" (click)="handleDeleteTodoItems()" style="text-align: center; margin-right: 10px;" selected>
+          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
+          <span style="width: 100%;text-align: center;">
+            Delete Todo Items
+          </span>
+        </mat-chip>
+        <button
+          mat-mini-fab
+          color="accent"
+          matTooltip="Add Todo Item"
+          matTooltipPosition="before"
+          class="addTodoItemButton"
+          (click)="openAddTodoItemModal()"
+        >
+          <mat-icon class="addTodoItemIcon">add</mat-icon>
+        </button>
+      </mat-chip-list>
+
+    </mat-tab>
+    <mat-tab label="Completed Tasks">
+      <div class="mat-elevation-z3 table_style">
+        <table mat-table [dataSource]="completedItemsDataSource" class="table">
+          <ng-container matColumnDef="task-title">
+            <th mat-header-cell *matHeaderCellDef> Task Title </th>
+            <td mat-cell *matCellDef="let todo"> {{todo.title}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="completion-date">
+            <th mat-header-cell *matHeaderCellDef> Completion Date </th>
+            <td mat-cell *matCellDef="let todo"> {{todo.deadline.date}} @ {{todo.deadline.time}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="options">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let todo">
+              <button mat-icon-button (click)="restoreTodoItem(todo)" matTooltip="Restore Task">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+      
+          <tr mat-header-row *matHeaderRowDef="completedDisplayColums"></tr>
+          <tr mat-row *matRowDef="let row; columns: completedDisplayColums;"></tr>
+        </table>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Close</button>
+</div>

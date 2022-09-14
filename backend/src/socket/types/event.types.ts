@@ -24,6 +24,12 @@ export type PostStopMoveEventInput = {
   top: number;
 };
 
+export type PersonalBoardAddPostEventInput = {
+  originalPostID: string;
+  newPostID: string;
+  personalBoardID: string;
+}
+
 export type BucketEventInput = {
   bucketID: string;
   posts: string[];

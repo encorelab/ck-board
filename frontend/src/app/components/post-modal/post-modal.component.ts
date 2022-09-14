@@ -271,11 +271,10 @@ export class PostModalComponent {
   }
 
   async savePostToPersonalBoard() {
-    console.log('uere');
     const personalBoard = await this.boardService.getPersonal(
       this.project.projectID
     );
-    console.log(personalBoard);
+
     if (!personalBoard) return;
 
     const post: Post = {
@@ -290,12 +289,17 @@ export class PostModalComponent {
       displayAttributes: this.post.displayAttributes,
     };
 
-    console.log(post);
-
     const newPost = await this.postService.create(post);
-    console.log(newPost);
-    if (newPost)
+
+    const postInput = {
+      originalPostID: this.post.postID,
+      newPostID: newPost.postID,
+      personalBoardID: personalBoard.boardID,
+    }
+    if (newPost) {
+      this.socketService.emit(SocketEvent.PERSONAL_BOARD_ADD_POST, postInput);
       this.openSnackBar('Successfully copied to your Personal Board');
+    }
   }
 
   async handleUpvoteClick() {

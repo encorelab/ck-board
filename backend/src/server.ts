@@ -16,14 +16,15 @@ import workflows from './api/workflows';
 import auth from './api/auth';
 import trace from './api/trace';
 import groups from './api/groups';
+import todoItems from './api/todoItem';
 import { isAuthenticated } from './utils/auth';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
 const dbUsername = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
-const dbName = process.env.DB_NAME;
 const dbUrl = process.env.DB_URL;
+const dbName = process.env.DB_NAME;
 const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/notifications', isAuthenticated, notifications);
 app.use('/api/groups', isAuthenticated, groups);
 app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
+app.use('/api/todoItems', isAuthenticated, todoItems);
 
 mongoose
   .connect(dbURI)

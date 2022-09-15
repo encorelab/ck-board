@@ -12,7 +12,8 @@
     </mat-tab>
     <mat-tab label="Members">
       <mat-list>
-        <div mat-subheader>Invite Code: {{ data.project.joinCode }}</div>
+        <div mat-subheader>Student Invite Code: {{ data.project.studentJoinCode }}</div>
+        <div mat-subheader>Teacher Invite Code: {{ data.project.teacherJoinCode }}</div>
         <div mat-subheader>Current Members</div>
         <mat-list-item *ngFor="let member of members">
           <mat-icon mat-list-icon>person</mat-icon>

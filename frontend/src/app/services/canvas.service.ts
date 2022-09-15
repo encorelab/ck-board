@@ -7,7 +7,7 @@ import Post, { PostType } from '../models/post';
 import { Tag } from '../models/tag';
 import { DistributionWorkflow } from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
-import { FabricUtils } from '../utils/FabricUtils';
+import { FabricUtils, ImageSettings } from '../utils/FabricUtils';
 import { generateUniqueID } from '../utils/Utils';
 import { BoardService } from './board.service';
 import { BucketService } from './bucket.service';
@@ -285,6 +285,23 @@ export class CanvasService {
         });
       });
     }
+  }
+
+  async updateBoardImageSettings(
+    boardID: string,
+    imgSettings: ImageSettings
+  ): Promise<Board> {
+    const oldBoard = await this.boardService.get(boardID);
+    const url = oldBoard.bgImage?.url;
+
+    if (url) {
+      const board: Board = await this.boardService.update(boardID, {
+        bgImage: { url, imgSettings },
+      });
+      this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
+      return board;
+    }
+    return oldBoard;
   }
 
   async updateBoardPermissions(

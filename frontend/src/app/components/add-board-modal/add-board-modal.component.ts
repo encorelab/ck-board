@@ -8,6 +8,7 @@ import { Tag } from 'src/app/models/tag';
 import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
+
 import { BoardPermissions } from 'src/app/models/board';
 import { QuestionAuthoringType } from 'src/app/models/post';
 
@@ -25,6 +26,7 @@ export class AddBoardModalComponent implements OnInit {
   questionAuthoringType: QuestionAuthoringType;
 
   boardName = '';
+  boardScope = BoardScope.PROJECT_SHARED;
 
   bgImgURL: any = null;
   bgImgSettings: ImageSettings;
@@ -39,6 +41,9 @@ export class AddBoardModalComponent implements OnInit {
   newTagColor: any = TAG_DEFAULT_COLOR;
 
   initialZoom = 100;
+  backgroundSize = 100;
+  backgroundPosX = 0;
+  backgroundPosY = 0;
   upvoteLimit = 5;
 
   projects: Project[];
@@ -100,8 +105,9 @@ export class AddBoardModalComponent implements OnInit {
       {
         projectID: this.selectedProject,
         boardID: this.boardID,
-        teacherID: this.data.user.userID,
+        ownerID: this.data.user.userID,
         name: this.boardName,
+        scope: this.boardScope,
         task: {
           title: this.taskTitle,
           message: this.taskMessage,
@@ -111,10 +117,10 @@ export class AddBoardModalComponent implements OnInit {
           : null,
         permissions: this.permissions,
         questionAuthoringType: this.questionAuthoringType,
-        members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),
         initialZoom: this.initialZoom,
         upvoteLimit: this.upvoteLimit,
+        visible: true,
       },
       this.selectedProject
     );

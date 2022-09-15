@@ -8,8 +8,7 @@ import { Tag } from 'src/app/models/tag';
 import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
-
-import { BoardPermissions } from 'src/app/models/board';
+import { BoardPermissions, BoardScope } from 'src/app/models/board';
 import { QuestionAuthoringType } from 'src/app/models/post';
 
 @Component({

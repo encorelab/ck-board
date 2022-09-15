@@ -51,7 +51,7 @@ export const isAuthenticated = async (
     }
 
     const token = req.headers.authorization.replace('Bearer ', '');
-    verify(token, getJWTSecret()) as Token;
+    res.locals.user = verify(token, getJWTSecret()) as Token;
 
     next();
   } catch (e) {

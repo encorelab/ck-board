@@ -18,6 +18,28 @@
         </mat-error>
       </mat-form-field>
     </mat-tab>
+    <mat-tab label="Personal Boards">
+      <div style="margin-top: 20px">
+        <mat-checkbox [(ngModel)]="personalBoardSetting.enabled" #tooltip="matTooltip"
+          matTooltip="All future project members will have a personal board assigned to them. These boards
+          will be private and only visible to teachers and the assigned member.">
+          Create Personal Boards for Project Members
+        </mat-checkbox>
+        <div *ngIf="personalBoardSetting.enabled" style="margin-top: 20px;">
+          <mat-chip-list>
+            <mat-chip *ngIf="personalBoardSetting.bgImage">
+              Image Saved!
+              <mat-icon class="cancel" (click)="removeBgImg()">cancel</mat-icon>
+            </mat-chip>
+            <mat-chip *ngIf="!personalBoardSetting.bgImage" (click)="compressFile()" color="primary" selected #tooltip="matTooltip"
+            matTooltip="All personal boards created will be equipped with the uploaded background image, by default.">
+              <mat-icon class="chip-icon">upload</mat-icon>
+              Upload Default Background Image For Personal Boards
+            </mat-chip>
+          </mat-chip-list>
+        </div>
+      </div>
+    </mat-tab>
   </mat-tab-group>
 </div>
 <div mat-dialog-actions>

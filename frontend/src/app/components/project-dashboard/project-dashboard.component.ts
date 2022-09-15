@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Board } from 'src/app/models/board';
+import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
-
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -11,8 +10,11 @@ import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.compo
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
+import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
 import { UserService } from 'src/app/services/user.service';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { ProjectTodoListModalComponent } from '../project-todo-list-modal/project-todo-list-modal.component';
+import { SocketService } from 'src/app/services/socket.service';
 
 @Component({
   selector: 'app-project-dashboard',
@@ -20,18 +22,28 @@ import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-g
   styleUrls: ['./project-dashboard.component.scss'],
 })
 export class ProjectDashboardComponent implements OnInit {
-  boards: Board[] = [];
+  showSharedBoards = true;
+  showStudentPersonalBoards = true;
+  showTeacherPersonalBoards = true;
+
+  teacherPersonalBoards: Board[] = [];
+  studentPersonalBoards: Board[] = [];
+  sharedBoards: Board[] = [];
+
   project: Project;
   user: AuthUser;
+  teachers: AuthUser[];
   projectID: string;
   yourProjects: Project[] = [];
 
   Role: typeof Role = Role;
+  BoardScope: typeof BoardScope = BoardScope;
 
   constructor(
     public boardService: BoardService,
     public projectService: ProjectService,
     public userService: UserService,
+    public socketService: SocketService,
     public dialog: MatDialog,
     private router: Router
   ) {}
@@ -47,13 +59,16 @@ export class ProjectDashboardComponent implements OnInit {
 
   async getBoards() {
     this.project = await this.projectService.get(this.projectID);
-    await this.getUsersProjects(this.user.userID);
-    const tempBoards: Board[] = [];
-    for (const boardID of this.project.boards) {
-      const board = await this.boardService.get(boardID);
-      tempBoards.push(board);
-    }
-    this.boards = tempBoards;
+    const boards = await this.boardService.getByProject(this.projectID);
+    boards.forEach((board) => {
+      if (board.scope == BoardScope.PROJECT_PERSONAL) {
+        const isTeacher = this.project.teacherIDs.includes(board.ownerID);
+        if (isTeacher) this.teacherPersonalBoards.push(board);
+        else this.studentPersonalBoards.push(board);
+      } else if (board.scope == BoardScope.PROJECT_SHARED) {
+        this.sharedBoards.push(board);
+      }
+    });
   }
 
   async getUsersProjects(id) {
@@ -104,6 +119,32 @@ export class ProjectDashboardComponent implements OnInit {
     });
   }
 
+  openTodoList() {
+    this.dialog.open(TodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+        user: this.user,
+      },
+    });
+  }
+
+  openProjectTodoList() {
+    this.dialog.open(ProjectTodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+      },
+    });
+  }
+
+  toggleBoardVisibility(event: any, board: Board) {
+    event.stopPropagation();
+    if (board.visible) this.socketService.disconnectAll(board.boardID);
+    this.boardService.update(board.boardID, { visible: !board.visible });
+    board.visible = !board.visible;
+  }
+
   openGroupDialog() {
     this.dialog.open(ManageGroupModalComponent, {
       data: {
@@ -121,7 +162,7 @@ export class ProjectDashboardComponent implements OnInit {
     this.dialog.open(ConfigurationModalComponent, {
       width: '700px',
       data: {
-        projectID: this.projectID,
+        project: this.project,
         board: await this.boardService.get(boardID),
         update: async (updatedBoard: Board, removed = false) => {
           if (removed || updatedBoard.name !== board.name) {

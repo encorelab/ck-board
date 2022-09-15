@@ -1,18 +1,17 @@
 import { Router } from 'express';
-import { mongo, Mongoose } from 'mongoose';
-import { NotFoundError } from '../errors/client.errors';
-import { InternalServerError } from '../errors/server.errors';
+import { mongo } from 'mongoose';
 import { BoardScope } from '../models/Board';
-import Project, { ProjectModel } from '../models/Project';
-import { Role, UserModel } from '../models/User';
+import { ProjectModel } from '../models/Project';
+import { UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
 import dalProject from '../repository/dalProject';
-import { getErrorMessage } from '../utils/errors';
 import {
   getDefaultBoardPermissions,
   getDefaultBoardTags,
-} from '../utils/utils';
+} from '../utils/board.helpers';
 import { QuestionAuthoringType } from '../models/Post';
+import { ApplicationError } from '../errors/base.errors';
+import { addUserToProject } from '../utils/project.helpers';
 
 const router = Router();
 
@@ -54,43 +53,10 @@ router.post('/join', async (req, res) => {
   const user: UserModel = res.locals.user;
 
   try {
-    let project;
-    if (user.role === Role.STUDENT) {
-      project = await dalProject.addStudent(code, user.userID);
-    } else if (user.role === Role.TEACHER) {
-      project = await dalProject.addTeacher(code, user.userID);
-    } else {
-      return res.status(500).end('No role associated with user!');
-    }
-
-    if (project.personalBoardSetting.enabled) {
-      const image = project.personalBoardSetting.bgImage;
-      const boardID = new mongo.ObjectId().toString();
-      const board = await dalBoard.create({
-        projectID: project.projectID,
-        boardID: boardID,
-        ownerID: user.userID,
-        name: `${user.username}'s Personal Board`,
-        scope: BoardScope.PROJECT_PERSONAL,
-        task: undefined,
-        permissions: getDefaultBoardPermissions(),
-        questionAuthoringType: QuestionAuthoringType.OPEN_RESPONSE,
-        bgImage: image,
-        tags: getDefaultBoardTags(boardID),
-        initialZoom: 100,
-        upvoteLimit: 5,
-        visible: true,
-      });
-      project = await Project.findOneAndUpdate(
-        { projectID: project.projectID },
-        { $push: { boards: boardID } },
-        { new: true }
-      );
-    }
-
+    const project = await addUserToProject(user, code);
     return res.status(200).json(project);
   } catch (e) {
-    if (e instanceof NotFoundError)
+    if (e instanceof ApplicationError)
       return res.status(e.statusCode).end(e.message);
     return res.status(500).end('Internal Server Error');
   }
@@ -98,13 +64,14 @@ router.post('/join', async (req, res) => {
 
 router.post('/:id', async (req, res) => {
   const id = req.params.id;
-  const { name, members, boards } = req.body;
+  const { name, members, boards, membershipDisabled } = req.body;
 
   const project: Partial<ProjectModel> = Object.assign(
     {},
     name === null ? null : { name },
     members === null ? null : { members },
-    boards === null ? null : { boards }
+    boards === null ? null : { boards },
+    membershipDisabled === null ? null : { membershipDisabled }
   );
 
   const updatedProject = await dalProject.update(id, project);

@@ -111,7 +111,6 @@ export class AddBoardModalComponent implements OnInit {
           : null,
         permissions: this.permissions,
         questionAuthoringType: this.questionAuthoringType,
-        members: [this.userService.user?.userID],
         tags: this.tags.concat(this.defaultTags),
         initialZoom: this.initialZoom,
         upvoteLimit: this.upvoteLimit,

@@ -13,7 +13,10 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Post from 'src/app/models/post';
+import Post, {
+  QuestionAuthoringType,
+  MultipleChoiceOptions,
+} from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
@@ -23,7 +26,10 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { UserService } from 'src/app/services/user.service';
 import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
+import { SnackbarService } from 'src/app/services/snackbar.service';
+import { AddPostComponent } from '../add-post-modal/add-post.component';
 import Upvote from 'src/app/models/upvote';
+import { BoardService } from 'src/app/services/board.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -40,6 +46,11 @@ export class PostModalComponent {
   post: Post;
   author: User | undefined;
   buckets: any[];
+  questionAuthoringType: QuestionAuthoringType;
+  multipleChoiceOptions: MultipleChoiceOptions[] | undefined = [];
+  selectedMultipleChoice: MultipleChoiceOptions;
+  isMultipleChoiceSelected = false;
+  submitMultipleChoiceAnswer = false;
 
   title: string;
   editingTitle: string;
@@ -81,10 +92,13 @@ export class PostModalComponent {
     public canvasService: CanvasService,
     public userService: UserService,
     public fabricUtils: FabricUtils,
+    public snackbarService: SnackbarService,
+    public boardService: BoardService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
+    this.questionAuthoringType = data.post.questionAuthoringType;
     this.showComments = data?.commentPress ? true : false;
     this.postService.get(data.post.postID).then(async (p: Post) => {
       this.post = p;
@@ -106,6 +120,12 @@ export class PostModalComponent {
         this.data.post.userID == this.user.userID ||
         this.user.role == Role.TEACHER;
       this.author = await this.userService.getOneById(p.userID);
+      this.questionAuthoringType = p.questionAuthoringType;
+      if (
+        this.questionAuthoringType === QuestionAuthoringType.MULTIPLE_CHOICE
+      ) {
+        this.multipleChoiceOptions = p.multipleChoice;
+      }
     });
     this.commentService.getCommentsByPost(data.post.postID).then((data) => {
       data.forEach((comment) => {
@@ -166,7 +186,11 @@ export class PostModalComponent {
   }
 
   toggleEdit() {
-    this.isEditing = !this.isEditing;
+    if (this.questionAuthoringType === QuestionAuthoringType.MULTIPLE_CHOICE) {
+      this.editMultipleChoicePost();
+    } else {
+      this.isEditing = !this.isEditing;
+    }
   }
 
   toggleComments() {
@@ -304,6 +328,58 @@ export class PostModalComponent {
   gotoPostView() {
     this.dialogRef.updateSize('95vw');
     this.expandedUpvotesView = false;
+  }
+
+  answerMultipleChoice() {
+    this.submitMultipleChoiceAnswer = true;
+    if (this.isMultipleChoiceSelected && this.selectedMultipleChoice) {
+      if (this.selectedMultipleChoice.correct) {
+        this.snackbarService.queueSnackbar('Correct Answer!');
+      } else {
+        this.snackbarService.queueSnackbar('Incorrect, Try Again.');
+      }
+    }
+  }
+  selectMultipleChoice(event, multipleChoice) {
+    event.stopPropagation();
+    this.submitMultipleChoiceAnswer = false;
+    this.isMultipleChoiceSelected = true;
+    this.selectedMultipleChoice = multipleChoice;
+  }
+
+  async editMultipleChoicePost() {
+    this.dialog.open(AddPostComponent, {
+      width: '800px',
+      autoFocus: false,
+      data: {
+        type: this.post.type,
+        board: await this.boardService.get(this.post.boardID),
+        user: this.user,
+        spawnPosition: {
+          top: this.post.displayAttributes?.position?.top
+            ? this.post.displayAttributes?.position.top
+            : 150,
+          left: this.post.displayAttributes?.position?.left
+            ? this.post.displayAttributes?.position.top
+            : 150,
+        },
+        editingPost: this.post,
+        onComplete: async (post: Partial<Post>) => {
+          this.socketService.emit(SocketEvent.POST_UPDATE, post);
+          if (post.title) {
+            this.title = post.title;
+            this.post.title = post.title;
+            this.editingTitle = linkifyStr(post.title, {
+              defaultProtocol: 'https',
+              target: '_blank',
+            });
+          }
+          if (post.tags) this.tags = post.tags;
+          if (post.multipleChoice)
+            this.multipleChoiceOptions = post.multipleChoice;
+        },
+      },
+    });
   }
 
   private _votingLocked(): boolean {

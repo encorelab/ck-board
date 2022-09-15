@@ -15,7 +15,7 @@ export class DisplayAttributes {
 export class MultipleChoiceOptions {
   optionTitle!: string;
   correct!: boolean;
-  formuala?: boolean;
+  formula?: boolean;
 }
 
 export enum QuestionAuthoringType {

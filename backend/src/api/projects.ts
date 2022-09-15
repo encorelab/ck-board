@@ -12,6 +12,7 @@ import {
   getDefaultBoardPermissions,
   getDefaultBoardTags,
 } from '../utils/utils';
+import { QuestionAuthoringType } from '../models/Post';
 
 const router = Router();
 
@@ -36,6 +37,7 @@ router.post('/', async (req, res) => {
       task: undefined,
       permissions: getDefaultBoardPermissions(),
       bgImage: image,
+      questionAuthoringType: QuestionAuthoringType.OPEN_RESPONSE,
       tags: getDefaultBoardTags(boardID),
       initialZoom: 100,
       upvoteLimit: 5,
@@ -72,6 +74,7 @@ router.post('/join', async (req, res) => {
         scope: BoardScope.PROJECT_PERSONAL,
         task: undefined,
         permissions: getDefaultBoardPermissions(),
+        questionAuthoringType: QuestionAuthoringType.OPEN_RESPONSE,
         bgImage: image,
         tags: getDefaultBoardTags(boardID),
         initialZoom: 100,

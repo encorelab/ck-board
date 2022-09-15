@@ -7,17 +7,34 @@
         style="width: 100%; margin-top: 20px"
       >
         <mat-label>Project Name</mat-label>
-        <input matInput [(ngModel)]="projectName" />
+        <input matInput [(ngModel)]="nameEditable" />
       </mat-form-field>
     </mat-tab>
     <mat-tab label="Members">
       <mat-list>
-        <div mat-subheader>Student Invite Code: {{ data.project.studentJoinCode }}</div>
-        <div mat-subheader>Teacher Invite Code: {{ data.project.teacherJoinCode }}</div>
-        <div mat-subheader>Current Members</div>
+        <div mat-subheader>Membership Settings</div>
+        <mat-checkbox [(ngModel)]="membershipDisabledEditable" #tooltip="matTooltip"
+            matTooltip="When activated, no users can join this project.">
+          Restrict users from joining this project
+        </mat-checkbox>
+        <div mat-subheader>Invite Codes</div>
+        <div style="display: flex; flex-direction: column; row-gap: 10px;">
+          <button mat-raised-button color="accent" [cdkCopyToClipboard]="project.studentJoinCode" #tooltip="matTooltip"
+            matTooltip="Press to Copy to Clipboard">
+            <mat-icon>file_copy</mat-icon>
+            Copy Student Invite Code - {{project.studentJoinCode}}
+          </button>
+          <button mat-raised-button color="accent" [cdkCopyToClipboard]="project.teacherJoinCode" #tooltip="matTooltip"
+            matTooltip="Press to Copy to Clipboard">
+            <mat-icon>file_copy</mat-icon>
+            Copy Teacher Invite Code - {{project.teacherJoinCode}}
+          </button>
+        </div>
+        <div mat-subheader *ngIf="members">Current Members ({{members.length}})</div>
         <mat-list-item *ngFor="let member of members">
-          <mat-icon mat-list-icon>person</mat-icon>
-          <div mat-line>{{ member }}</div>
+          <mat-icon *ngIf="member.role === Role.TEACHER" mat-list-icon>school</mat-icon>
+          <mat-icon *ngIf="member.role === Role.STUDENT" mat-list-icon>person</mat-icon>
+          <div mat-line>{{ member.username }}</div>
         </mat-list-item>
         <mat-divider></mat-divider>
       </mat-list>

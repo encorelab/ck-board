@@ -37,6 +37,9 @@ export class ProjectModel {
 
   @prop({ required: true, type: () => PersonalBoardSetting })
   public personalBoardSetting!: PersonalBoardSetting;
+
+  @prop({ required: true })
+  public membershipDisabled!: boolean;
 }
 
 export default getModelForClass(ProjectModel);

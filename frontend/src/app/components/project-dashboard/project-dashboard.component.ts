@@ -105,18 +105,13 @@ export class ProjectDashboardComponent implements OnInit {
     }
   };
 
-  updateProjectName = (projectID: string, name: string) => {
-    this.project.name = name;
-    this.projectService.update(projectID, { name: name });
-  };
-
   openSettingsDialog() {
-    this.dialog.open(ProjectConfigurationModalComponent, {
-      data: {
-        project: this.project,
-        updateProjectName: this.updateProjectName,
-      },
-    });
+    this.dialog
+      .open(ProjectConfigurationModalComponent, {
+        data: { project: this.project },
+      })
+      .afterClosed()
+      .subscribe((p: Project) => (this.project = p));
   }
 
   openTodoList() {

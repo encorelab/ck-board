@@ -15,7 +15,7 @@
       <button
         mat-icon-button
         matTooltip="Save post to personal board"
-        *ngIf="project?.personalBoardSetting?.enabled && post.type === PostType.BOARD"
+        *ngIf="project?.personalBoardSetting?.enabled && post?.type === PostType.BOARD && data.board.scope === 'PROJECT_SHARED'"
         (click)="savePostToPersonalBoard()"
       >
         <mat-icon>star_border</mat-icon>

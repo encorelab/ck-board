@@ -48,10 +48,10 @@
       </button>
     </mat-card-header>
     <mat-card-content>
-      <p *ngIf="questionAuthoringType === 'OPEN_RESPONSE'" style="overflow-wrap: break-word" [innerHTML]="editingDesc">
+      <p style="overflow-wrap: break-word" [innerHTML]="editingDesc">
         {{ editingDesc }}
       </p>
-      <div *ngIf="questionAuthoringType === 'MULTIPLE_CHOICE'">
+      <div *ngIf="postCreationType === 'MULTIPLE_CHOICE'">
         <mat-card 
           *ngFor="let multipleChoice of multipleChoiceOptions"
           style="display:flex;margin: 10px 0;padding: 10px;justify-content:space-between"
@@ -142,7 +142,7 @@
       Title is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>
-  <mat-form-field *ngIf="isEditing && questionAuthoringType === 'OPEN_RESPONSE'" appearance="outline" style="width: 100%">
+  <mat-form-field *ngIf="isEditing && postCreationType === 'OPEN_RESPONSE_MESSAGE'" appearance="outline" style="width: 100%">
     <mat-label>Description</mat-label>
     <textarea
       [formControl]="descControl"
@@ -156,9 +156,6 @@
       Description is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>
-  <div *ngIf="isEditing && questionAuthoringType === 'MULTIPLE_CHOICE'">
-    
-  </div>
   <div mat-dialog-actions>
     <button
       *ngIf="isEditing"

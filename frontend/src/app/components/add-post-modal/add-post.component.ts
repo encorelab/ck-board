@@ -2,12 +2,12 @@ import { T } from '@angular/cdk/keycodes';
 import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Board } from 'src/app/models/board';
+import { Board, BoardType } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
 import Post, {
   DisplayAttributes,
   PostType,
-  QuestionAuthoringType,
+  PostCreationType,
   MultipleChoiceOptions,
 } from 'src/app/models/post';
 import { Tag } from 'src/app/models/tag';
@@ -40,11 +40,12 @@ export interface AddPostDialog {
 export class AddPostComponent {
   user: User;
   board: Board;
-  questionAuthoringType: QuestionAuthoringType;
+  boardType: BoardType;
   newMultipleChoiceOptionTest = '';
   multipleChoiceOptions: MultipleChoiceOptions[] = [];
   correctMultipleChoiceSelected = false;
   editingPost: Post | undefined;
+  postCreationType: PostCreationType = PostCreationType.OPEN_RESPONSE_MESSAGE;
 
   title = '';
   message = '';
@@ -67,9 +68,10 @@ export class AddPostComponent {
   ) {
     this.user = data.user;
     this.board = data.board;
-    this.questionAuthoringType = data.board.questionAuthoringType;
+    this.boardType = data.board.type;
     this.editingPost = data.editingPost;
     if (this.editingPost) {
+      this.postCreationType = PostCreationType.MULTIPLE_CHOICE;
       this.title = this.editingPost.title;
       this.multipleChoiceOptions = this.editingPost.multipleChoice
         ? this.editingPost.multipleChoice
@@ -136,12 +138,10 @@ export class AddPostComponent {
         !(this.multipleChoiceOptions.length >= 2) ||
         !this.correctMultipleChoiceSelected
       );
-    } else if (
-      this.questionAuthoringType == QuestionAuthoringType.MULTIPLE_CHOICE
-    ) {
+    } else if (this.postCreationType == PostCreationType.MULTIPLE_CHOICE) {
       return (
         !this.titleControl.valid ||
-        !this.msgControl.valid ||
+        !this.message ||
         !(this.multipleChoiceOptions.length >= 2) ||
         !this.correctMultipleChoiceSelected
       );
@@ -172,7 +172,7 @@ export class AddPostComponent {
       userID: this.user.userID,
       boardID: this.board.boardID,
       type: PostType.BOARD,
-      questionAuthoringType: this.questionAuthoringType,
+      postCreationType: this.postCreationType,
       multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       author: this.user.username,
@@ -193,7 +193,7 @@ export class AddPostComponent {
       boardID: this.board.boardID,
       author: this.user.username,
       type: PostType.BUCKET,
-      questionAuthoringType: this.questionAuthoringType,
+      postCreationType: this.postCreationType,
       multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       desc: this.message,
@@ -211,7 +211,7 @@ export class AddPostComponent {
       boardID: this.board.boardID,
       author: this.user.username,
       type: PostType.LIST,
-      questionAuthoringType: this.questionAuthoringType,
+      postCreationType: this.postCreationType,
       multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       desc: this.message,

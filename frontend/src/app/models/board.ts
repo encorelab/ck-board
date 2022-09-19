@@ -1,6 +1,5 @@
 import { ImageSettings } from '../utils/FabricUtils';
 import { Tag } from './tag';
-import { QuestionAuthoringType } from './post';
 
 export class BoardBackgroundImage {
   url: string;
@@ -30,6 +29,11 @@ export enum BoardScope {
   PROJECT_PERSONAL = 'PROJECT_PERSONAL',
 }
 
+export enum BoardType {
+  BRAINSTORMING = 'BRAINSTORMING',
+  QUESTION_AUTHORING = 'QUESTION_AUTHORING',
+}
+
 export class Board {
   projectID: string;
   boardID: string;
@@ -39,7 +43,7 @@ export class Board {
   task: BoardTask;
   bgImage: BoardBackgroundImage | null;
   permissions: BoardPermissions;
-  questionAuthoringType: QuestionAuthoringType;
+  type: BoardType;
   tags: Tag[];
   initialZoom = 100;
   upvoteLimit = 5;

@@ -6,7 +6,6 @@ import {
   setGlobalOptions,
 } from '@typegoose/typegoose';
 import { TagModel } from './Tag';
-import { QuestionAuthoringType } from './Post';
 
 setGlobalOptions({ options: { allowMixed: Severity.ALLOW } });
 
@@ -83,6 +82,11 @@ export enum BoardScope {
   PROJECT_PERSONAL = 'PROJECT_PERSONAL',
 }
 
+export enum BoardType {
+  BRAINSTORMING = 'BRAINSTORMING',
+  QUESTION_AUTHORING = 'QUESTION_AUTHORING',
+}
+
 @modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })
 export class BoardModel {
   @prop({ required: true })
@@ -106,8 +110,8 @@ export class BoardModel {
   @prop({ required: true, type: () => PermissionsModel })
   public permissions!: PermissionsModel;
 
-  @prop({ enum: QuestionAuthoringType, type: String, required: true })
-  public questionAuthoringType!: QuestionAuthoringType;
+  @prop({ enum: BoardType, type: String, required: true })
+  public type!: BoardType;
 
   @prop({ required: false, type: () => BgImageModel })
   public bgImage?: BgImageModel;

@@ -18,9 +18,9 @@ export class MultipleChoiceOptions {
   formula?: boolean;
 }
 
-export enum QuestionAuthoringType {
+export enum PostCreationType {
   MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
-  OPEN_RESPONSE = 'OPEN_RESPONSE',
+  OPEN_RESPONSE_MESSAGE = 'OPEN_RESPONSE_MESSAGE',
 }
 
 export enum PostType {
@@ -35,7 +35,7 @@ export default class Post {
   boardID: string;
 
   type: PostType;
-  questionAuthoringType: QuestionAuthoringType;
+  postCreationType: PostCreationType;
   title: string;
   desc: string;
   multipleChoice?: MultipleChoiceOptions[];

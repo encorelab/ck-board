@@ -1,6 +1,25 @@
 <h1 mat-dialog-title *ngIf="!editingPost">Add Post</h1>
 <h1 mat-dialog-title *ngIf="editingPost">Update Post</h1>
 <div mat-dialog-content>
+  <div style="margin-bottom: 10px">
+    <mat-radio-group 
+      *ngIf="boardType === 'QUESTION_AUTHORING' && !editingPost"
+      [(ngModel)]="postCreationType"
+    >
+      <mat-radio-button 
+        style="margin-left: 10px" 
+        value="OPEN_RESPONSE_MESSAGE"
+      >
+        Open Response
+      </mat-radio-button>
+      <mat-radio-button 
+        style="margin-left: 10px" 
+        value="MULTIPLE_CHOICE"
+      >
+        Multiple Choice
+      </mat-radio-button>
+    </mat-radio-group>
+  </div>
   <mat-form-field appearance="fill" style="width: 100%">
     <mat-label>Title</mat-label>
     <input
@@ -18,9 +37,14 @@
     </mat-error>
   </mat-form-field>
 
-  <div *ngIf="questionAuthoringType === 'OPEN_RESPONSE'" >
+  <div *ngIf="postCreationType === 'OPEN_RESPONSE_MESSAGE'" >
     <mat-form-field appearance="fill" style="width: 100%">
-      <mat-label>Add open response question prompt</mat-label>
+      <mat-label *ngIf="boardType === 'QUESTION_AUTHORING'">
+        Add open response question prompt
+      </mat-label>
+      <mat-label *ngIf="boardType === 'BRAINSTORMING'">
+        Message
+      </mat-label>
       <textarea
         [formControl]="msgControl"
         [errorStateMatcher]="matcher"
@@ -35,8 +59,26 @@
     </mat-form-field>
   </div>
 
-  <div *ngIf="questionAuthoringType === 'MULTIPLE_CHOICE'" style="position: relative;">
+  <div *ngIf="postCreationType === 'MULTIPLE_CHOICE'" style="position: relative;">
     <div>
+      <mat-form-field appearance="fill" style="width: 100%">
+        <mat-label >
+          Multiple Choice Question Prompt
+        </mat-label>
+        <input
+          name="message"
+          [formControl]="msgControl"
+          [errorStateMatcher]="matcher"
+          matInput
+          [(ngModel)]="message"
+        />
+        <mat-error *ngIf="!message">
+          Question Prompt is <strong>required</strong> 
+        </mat-error>
+        <mat-error *ngIf="message && message.length > 1000">
+          Prompt is <strong>too long!</strong>
+        </mat-error>
+      </mat-form-field>
       <mat-form-field 
         appearance="outline"
         style="width: 90%"

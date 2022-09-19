@@ -4,19 +4,19 @@
     <mat-tab label="Board">
       <h2 style="margin-top: 20px">Question Authoring Type</h2>
       <mat-radio-group 
-        [(ngModel)]="questionAuthoringType"
+        [(ngModel)]="boardType"
       >
         <mat-radio-button 
           style="margin-left: 10px" 
-          value="MULTIPLE_CHOICE"
+          value="QUESTION_AUTHORING"
         >
-          Multiple Choice
+          Question Authoring
         </mat-radio-button>
         <mat-radio-button 
           style="margin-left: 10px" 
-          value="OPEN_RESPONSE"
+          value="BRAINSTORMING"
         >
-          Open Response
+          Brainstorming
         </mat-radio-button>
       </mat-radio-group>
       <mat-form-field
@@ -213,7 +213,7 @@
       (taskTitle && !taskTitle.trim()) ||
       boardNameInput.invalid ||
       projectInput.invalid ||
-      !questionAuthoringType
+      !boardType
     "
     (click)="handleDialogSubmit()"
   >

@@ -14,7 +14,7 @@ import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Post, {
-  QuestionAuthoringType,
+  PostCreationType,
   MultipleChoiceOptions,
 } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
@@ -46,7 +46,7 @@ export class PostModalComponent {
   post: Post;
   author: User | undefined;
   buckets: any[];
-  questionAuthoringType: QuestionAuthoringType;
+  postCreationType: PostCreationType;
   multipleChoiceOptions: MultipleChoiceOptions[] | undefined = [];
   selectedMultipleChoice: MultipleChoiceOptions;
   isMultipleChoiceSelected = false;
@@ -98,7 +98,7 @@ export class PostModalComponent {
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
-    this.questionAuthoringType = data.post.questionAuthoringType;
+    this.postCreationType = data.post.postCreationType;
     this.showComments = data?.commentPress ? true : false;
     this.postService.get(data.post.postID).then(async (p: Post) => {
       this.post = p;
@@ -120,10 +120,8 @@ export class PostModalComponent {
         this.data.post.userID == this.user.userID ||
         this.user.role == Role.TEACHER;
       this.author = await this.userService.getOneById(p.userID);
-      this.questionAuthoringType = p.questionAuthoringType;
-      if (
-        this.questionAuthoringType === QuestionAuthoringType.MULTIPLE_CHOICE
-      ) {
+      this.postCreationType = p.postCreationType;
+      if (this.postCreationType === PostCreationType.MULTIPLE_CHOICE) {
         this.multipleChoiceOptions = p.multipleChoice;
       }
     });
@@ -186,7 +184,7 @@ export class PostModalComponent {
   }
 
   toggleEdit() {
-    if (this.questionAuthoringType === QuestionAuthoringType.MULTIPLE_CHOICE) {
+    if (this.postCreationType === PostCreationType.MULTIPLE_CHOICE) {
       this.editMultipleChoicePost();
     } else {
       this.isEditing = !this.isEditing;

@@ -334,7 +334,7 @@ export class PostModalComponent {
       if (this.selectedMultipleChoice.correct) {
         this.snackbarService.queueSnackbar('Correct Answer!');
       } else {
-        this.snackbarService.queueSnackbar('Incorrect, Try Again.');
+        this.snackbarService.queueSnackbar('Incorrect, please try again.');
       }
     }
   }

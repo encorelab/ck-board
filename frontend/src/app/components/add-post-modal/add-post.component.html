@@ -46,16 +46,23 @@
         Message
       </mat-label>
       <textarea
-        [formControl]="msgControl"
+        [formControl]="boardType === 'BRAINSTORMING' ? msgControl : questionPromptControl"
         [errorStateMatcher]="matcher"
         matInput
         rows="5"
         cols="40"
         [(ngModel)]="message"
       ></textarea>
-      <mat-error *ngIf="message && message.length > 1000">
+      <mat-error *ngIf="boardType === 'QUESTION_AUTHORING' && !message">
+        Question Prompt is <strong>required</strong>
+      </mat-error>
+      <mat-error *ngIf="boardType === 'BRAINSTORMING' && message && message.length > 1000">
         Message is <strong>too long!</strong>
       </mat-error>
+      <mat-error *ngIf="boardType === 'QUESTION_AUTHORING' && message && message.length > 1000">
+        Question Prompt is <strong>too long!</strong>
+      </mat-error>
+
     </mat-form-field>
   </div>
 
@@ -67,7 +74,7 @@
         </mat-label>
         <input
           name="message"
-          [formControl]="msgControl"
+          [formControl]="questionPromptControl"
           [errorStateMatcher]="matcher"
           matInput
           [(ngModel)]="message"
@@ -79,34 +86,44 @@
           Prompt is <strong>too long!</strong>
         </mat-error>
       </mat-form-field>
-      <mat-form-field 
-        appearance="outline"
-        style="width: 90%"
-      >
-        <mat-label>New Multiple Choice Option</mat-label>
-        <input 
-          matInput 
-          [(ngModel)]="newMultipleChoiceOptionTest" 
-        />
-        <mat-error *ngIf="!newMultipleChoiceOptionTest"> Option is <strong>required</strong> </mat-error>
-        <mat-error *ngIf="newMultipleChoiceOptionTest && newMultipleChoiceOptionTest.length > 50">
-          Option is <strong>too long!</strong>
-        </mat-error>
-      </mat-form-field>
-      <button
-        mat-mini-fab
-        *ngIf="multipleChoiceOptions.length < 6"
-        style="margin: 0 10px;"
-        color="accent"
-        [disabled]="!newMultipleChoiceOptionTest || multipleChoiceOptions.length > 50"
-        matTooltip="Add Multiple Choice Option"
-        matTooltipPosition="before"
-        (click)="addMultipleChoiceButton()"
-      >
-        <mat-icon>add</mat-icon>
-      </button>
+      <div style="display:flex;text-align: center">
+        <mat-form-field 
+          appearance="outline"
+          style="width: 100%"
+        >
+          <mat-label>New Multiple Choice Option</mat-label>
+          <input 
+            matInput 
+            [(ngModel)]="newMultipleChoiceOptionTest" 
+          />
+          <mat-hint
+            class="mat-error"
+            *ngIf="multipleChoiceOptions.length < 2"
+          >
+            Multiple Choice Options required.
+          </mat-hint>
+        </mat-form-field>
+        <button
+          mat-mini-fab
+          *ngIf="multipleChoiceOptions.length < 6"
+          style="margin: 0 10px;"
+          color="accent"
+          [disabled]="!newMultipleChoiceOptionTest || multipleChoiceOptions.length > 6"
+          matTooltip="Add Multiple Choice Option"
+          matTooltipPosition="before"
+          (click)="addMultipleChoiceButton()"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
     </div>
     <div>
+      <mat-hint
+        class="mat-error"
+        *ngIf="multipleChoiceOptions.length > 1 && !correctMultipleChoiceSelected"
+        >
+          Select correct multiple choice option.
+        </mat-hint>
       <mat-card 
         *ngFor="let multipleChoice of multipleChoiceOptions" 
         style="display:flex;margin: 10px;padding: 10px;justify-content:space-between"

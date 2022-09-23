@@ -58,6 +58,11 @@ export class AddPostComponent {
     Validators.maxLength(50),
   ]);
   msgControl = new FormControl('', [Validators.maxLength(1000)]);
+  questionPromptControl = new FormControl('', [
+    Validators.required,
+    Validators.maxLength(1000),
+  ]);
+
   matcher = new MyErrorStateMatcher();
 
   constructor(
@@ -136,15 +141,22 @@ export class AddPostComponent {
         !this.titleControl.valid ||
         !this.msgControl.valid ||
         !(this.multipleChoiceOptions.length >= 2) ||
-        !this.correctMultipleChoiceSelected
+        !this.correctMultipleChoiceSelected ||
+        !this.questionPromptControl.valid
       );
     } else if (this.postCreationType == PostCreationType.MULTIPLE_CHOICE) {
       return (
         !this.titleControl.valid ||
         !this.message ||
         !(this.multipleChoiceOptions.length >= 2) ||
-        !this.correctMultipleChoiceSelected
+        !this.correctMultipleChoiceSelected ||
+        !this.questionPromptControl.valid
       );
+    } else if (
+      this.boardType === BoardType.QUESTION_AUTHORING &&
+      this.postCreationType == PostCreationType.OPEN_RESPONSE_MESSAGE
+    ) {
+      return !this.titleControl.valid || !this.questionPromptControl.valid;
     } else {
       return !this.titleControl.valid || !this.msgControl.valid;
     }

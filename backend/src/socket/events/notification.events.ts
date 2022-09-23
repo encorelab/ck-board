@@ -28,7 +28,6 @@ class NotificationCreate {
     notification: BoardNotificationModel | ProjectNotificationModel
   ) {
     const id = SocketManager.Instance.get(notification.userID);
-    console.log(notification);
     if (id) {
       if (notification.type === NotificationType.BOARD) {
         socket.broadcast

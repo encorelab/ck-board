@@ -13,16 +13,17 @@ import {
 } from '@angular/material/dialog';
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
 import { Board } from 'src/app/models/board';
+import { Tag } from 'src/app/models/tag';
 import Bucket from 'src/app/models/bucket';
 import { Group } from 'src/app/models/group';
 import {
   Container,
   ContainerType,
   DistributionWorkflow,
+  DistributionWorkflowType,
   TaskAction,
   TaskActionType,
   TaskWorkflow,
-  Workflow,
   WorkflowType,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
@@ -47,7 +48,9 @@ export class CreateWorkflowModalComponent implements OnInit {
   buckets: Bucket[];
   boardBuckets: Bucket[];
   workflows: any[] = [];
-  tags: string[];
+  tags: Tag[];
+  upvoteLimit: number;
+  selectedTag: string;
 
   bucketName = '';
   workflowName = '';
@@ -63,6 +66,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   distributionSource: Board | Bucket;
   distributionDestinations: (Bucket | Board)[];
   postsPerBucket: number;
+  distributionWorkflowType: DistributionWorkflowType;
+  removeFromSource = false;
 
   // Fields for task workflow creation
   groupOptions: Group[] = [];
@@ -80,8 +85,13 @@ export class CreateWorkflowModalComponent implements OnInit {
   workflowNameFormControl = new FormControl('valid', [Validators.required]);
   sourceFormControl = new FormControl('valid', [Validators.required]);
   destinationFormControl = new FormControl('valid', [Validators.required]);
+
   groupsFormControl = new FormControl('valid', [Validators.required]);
   promptFormControl = new FormControl('valid', [Validators.required]);
+
+  workflowTypeFormControl = new FormControl('valid', [Validators.required]);
+  removeFromSourceFormControl = new FormControl('valid', [Validators.required]);
+
   tagsFormControl = new FormControl();
 
   matcher = new MyErrorStateMatcher();
@@ -106,6 +116,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.board = this.data.board;
     this.tags = this.data.board.tags;
     this.loadGroups();
+    this.upvoteLimit = this.data.board.upvoteLimit;
     this.loadBucketsBoards();
     this.loadWorkflows();
   }
@@ -129,7 +140,7 @@ export class CreateWorkflowModalComponent implements OnInit {
         this.boardBuckets = this.boardBuckets.concat(buckets);
         this.sourceOptions.push(this.board);
       });
-    this.boardService.getMultiple(this.data.project.boards).then((data) => {
+    this.boardService.getMultipleBy(this.data.project.boards).then((data) => {
       data.forEach((board: Board) => {
         if (board.boardID != this.board.boardID) this.destOptions.push(board);
       });
@@ -142,6 +153,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       workflows.forEach((workflow) => {
         this.workflows.push(workflow);
       });
+      console.log(this.workflows);
     });
   }
 
@@ -189,6 +201,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.workflowService.createDistribution(workflow).then(async () => {
       await this.loadWorkflows();
       this.selected.setValue(2);
+      this._clearWorkflowForm();
     });
   }
 
@@ -199,6 +212,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.workflowService.createTask(workflow).then(async () => {
       await this.loadWorkflows();
       this.selected.setValue(2);
+      this._clearWorkflowForm();
     });
   }
 
@@ -256,6 +270,16 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.snackbarService.queueSnackbar(message);
   }
 
+  _clearWorkflowForm() {
+    this.workflowNameFormControl.reset();
+    this.sourceFormControl.reset();
+    this.destinationFormControl.reset();
+    this.tagsFormControl.reset();
+    this.workflowTypeFormControl.reset();
+    this.removeFromSourceFormControl.reset();
+    this.removeFromSource = false;
+  }
+
   _isBoard(object: Board | Bucket): object is Board {
     return (object as Board).tags !== undefined;
   }
@@ -270,13 +294,31 @@ export class CreateWorkflowModalComponent implements OnInit {
     return (
       this.workflowNameFormControl.valid &&
       this.sourceFormControl.valid &&
-      this.destinationFormControl.valid &&
-      this._ppbSelected()
+      this.destinationFormControl.valid
     );
   }
 
   _ppbSelected(): boolean {
     return this.postsPerBucket != null && this.postsPerBucket > 0;
+  }
+
+  _distributionWorkflowTypeSelected() {
+    return (
+      (this.distributionWorkflowType === DistributionWorkflowType.RANDOM &&
+        this.postsPerBucket > 0) ||
+      (this.distributionWorkflowType === DistributionWorkflowType.UPVOTES &&
+        this.upvoteLimit) ||
+      (this.distributionWorkflowType === DistributionWorkflowType.TAG &&
+        this.selectedTag)
+    );
+  }
+
+  _distributionWorkflowTypeData() {
+    if (this.distributionWorkflowType === DistributionWorkflowType.RANDOM)
+      return this.postsPerBucket;
+    else if (this.distributionWorkflowType === DistributionWorkflowType.UPVOTES)
+      return this.upvoteLimit;
+    else return this.selectedTag;
   }
 
   _assembleDistributionWorkflow(): DistributionWorkflow {
@@ -289,7 +331,11 @@ export class CreateWorkflowModalComponent implements OnInit {
       name: this.workflowName,
       source: this._mapToContainer(this.distributionSource),
       destinations: this._mapToContainers(this.distributionDestinations),
-      postsPerDestination: this.postsPerBucket,
+      distributionWorkflowType: {
+        type: this.distributionWorkflowType,
+        data: this._distributionWorkflowTypeData(),
+      },
+      removeFromSource: this.removeFromSource,
     };
 
     return workflow;

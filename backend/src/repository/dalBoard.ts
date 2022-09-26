@@ -19,18 +19,21 @@ export const getById = async (id: string) => {
   }
 };
 
-export const getMultipleByIds = async (ids: string[]) => {
+export const getMultipleByIds = async (
+  ids: string[],
+  filter?: Partial<BoardModel>
+) => {
   try {
-    const boards = await Board.find({ boardID: { $in: ids } });
+    const boards = await Board.find({ boardID: { $in: ids }, filter });
     return boards;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
-export const getByUserId = async (id: string) => {
+export const getByProject = async (projectID: string) => {
   try {
-    const boards = await Board.find({ members: id });
+    const boards = await Board.find({ projectID });
     return boards;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -52,6 +55,14 @@ export const update = async (id: string, board: Partial<BoardModel>) => {
       new: true,
     });
     return updatedBoard;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const updateMany = async (ids: string[], board: Partial<BoardModel>) => {
+  try {
+    await Board.updateMany({ boardID: ids }, board);
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -84,9 +95,10 @@ export const remove = async (id: string) => {
 const dalBoard = {
   getById,
   getMultipleByIds,
-  getByUserId,
+  getByProject,
   create,
   update,
+  updateMany,
   remove,
 };
 

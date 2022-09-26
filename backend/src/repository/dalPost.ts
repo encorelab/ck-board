@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { BucketModel } from '../models/Bucket';
-import Post, { PostModel } from '../models/Post';
+import Post, { PostModel, PostType } from '../models/Post';
 import dalBucket from './dalBucket';
 import dalComment from './dalComment';
 import dalVote from './dalVote';
@@ -23,9 +23,14 @@ export const getManyById = async (ids: string[]) => {
   }
 };
 
-export const getByBoard = async (boardID: string) => {
+export const getByBoard = async (boardID: string, type?: any) => {
   try {
-    const posts = await Post.find({ boardID });
+    let posts;
+    if (type) {
+      posts = await Post.find({ boardID: boardID, type: type });
+    } else {
+      posts = await Post.find({ boardID });
+    }
     return posts;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));

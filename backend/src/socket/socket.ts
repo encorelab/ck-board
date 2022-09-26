@@ -63,6 +63,11 @@ class Socket {
           this._socketManager.removeBySocketId(this._socket.id);
         }
       });
+
+      socket.on('disconnectAll', async (room: string) => {
+        io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
+        io.in(room).disconnectSockets(true);
+      });
     });
   }
 
@@ -100,6 +105,7 @@ class Socket {
   private _listenForEvents(io: socketIO.Server, socket: socketIO.Socket) {
     events.map((event) =>
       socket.on(event.type, async (data) => {
+        console.log(event.type);
         const result = await event.handleEvent(data);
         return await event.handleResult(io, socket, result as never);
       })

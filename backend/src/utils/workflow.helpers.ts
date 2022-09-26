@@ -3,7 +3,12 @@ import { DocumentType } from '@typegoose/typegoose';
 import { KeyStringAny } from '@typegoose/typegoose/lib/types';
 import { Document, mongo } from 'mongoose';
 import { PostModel, PostType } from '../models/Post';
-import { Container, ContainerType, WorkflowModel, WorkflowType } from '../models/Workflow';
+import {
+  Container,
+  ContainerType,
+  WorkflowModel,
+  WorkflowType,
+} from '../models/Workflow';
 import dalBucket from '../repository/dalBucket';
 import dalPost from '../repository/dalPost';
 import { convertPostsFromID } from './converter';
@@ -31,7 +36,7 @@ export const shuffle = <T>(array: T[]) => {
   return array;
 };
 
-export const distribute = async <T>(items: T[], n: number): Promise<T[][]> => {
+export const distribute = async <T>(items: T[], n: any): Promise<T[][]> => {
   if (n == 0) return [];
 
   const split: T[][] = [];
@@ -63,7 +68,10 @@ export const cloneManyToBoard = (
   return posts.map((post) => cloneToBoard(board, post));
 };
 
-export const movePostsToDestination = async (destination: Container, posts: string[]) => {
+export const movePostsToDestination = async (
+  destination: Container,
+  posts: string[]
+) => {
   if (destination.type == ContainerType.BOARD) {
     const originals: PostModel[] = await convertPostsFromID(posts);
     const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
@@ -71,7 +79,21 @@ export const movePostsToDestination = async (destination: Container, posts: stri
   } else {
     await dalBucket.addPost(destination.id, posts);
   }
-}
+};
+
+export const removePostFromSource = async (
+  source: Container,
+  posts: string[]
+) => {
+  if (source.type == ContainerType.BOARD) {
+    for (let i = 0; i < posts.length; i++) {
+      await dalPost.update(posts[i], { type: PostType.LIST });
+    }
+  } else {
+    await dalBucket.removePost(source.id, posts);
+  }
+  return posts;
+};
 
 const helpers = [isDistribution, shuffle, distribute];
 

@@ -10,6 +10,8 @@ import { ProjectService } from 'src/app/services/project.service';
 import { Project } from 'src/app/models/project';
 import { AddProjectModalComponent } from '../add-project-modal/add-project-modal.component';
 import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
+import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -40,14 +42,32 @@ export class DashboardComponent implements OnInit {
     );
   }
 
-  getUsersProjects(id) {
-    return this.projectService.getByUserID(id).then((projects) => {
-      this.yourProjects = this.yourProjects.concat(projects);
-    });
+  async getUsersProjects(id: string) {
+    const projects = await this.projectService.getByUserID(id);
+    this.yourProjects = projects;
   }
 
-  handleProjectClick(projectID) {
+  handleProjectClick(projectID: string) {
     this.router.navigate(['project/' + projectID]);
+  }
+
+  async handleDeleteProject(project: Project) {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message:
+          'This will permanently delete this project and all related content. Are you sure you want to do this?',
+        handleConfirm: async () => {
+          const deletedProject = await this.projectService.remove(
+            project.projectID
+          );
+          if (deletedProject) {
+            await this.getUsersProjects(this.user.userID);
+          }
+        },
+      },
+    });
   }
 
   openCreateBoardDialog() {
@@ -78,6 +98,22 @@ export class DashboardComponent implements OnInit {
         user: this.user,
       },
     });
+  }
+
+  openProjectConfigDialog(project: Project) {
+    this.dialog
+      .open(ProjectConfigurationModalComponent, {
+        maxWidth: 1280,
+        width: '700px',
+        data: { project: project },
+      })
+      .afterClosed()
+      .subscribe((p: Project) => {
+        this.yourProjects = this.yourProjects.filter(
+          (yp) => yp.projectID !== p.projectID
+        );
+        this.yourProjects.push(p);
+      });
   }
 
   createBoard = (board: Board, selectedProjectID: string) => {

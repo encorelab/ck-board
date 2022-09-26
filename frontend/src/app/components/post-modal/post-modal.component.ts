@@ -193,7 +193,10 @@ export class PostModalComponent {
 
   async onUpdate() {
     this.editingTitle = this.title;
-    this.editingDesc = this.desc;
+    this.editingDesc = linkifyStr(this.desc, {
+      defaultProtocol: 'https',
+      target: '_blank',
+    });
 
     const update: Partial<Post> = {
       postID: this.post.postID,

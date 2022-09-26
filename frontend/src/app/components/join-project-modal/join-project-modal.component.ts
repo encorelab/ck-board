@@ -26,30 +26,14 @@ export class JoinProjectModalComponent implements OnInit {
 
   joinProject() {
     this.projectService
-      .getByJoinCode(this.inputCode)
+      .joinProject(this.inputCode)
       .then((project) => {
-        if (project) {
-          const members: string[] = project.members;
-          const userID = this.userService.user!.userID;
-          if (members.includes(userID)) {
-            this.showError('You already joined this board!');
-          } else {
-            members.push(userID);
-            this.projectService
-              .update(project.projectID, { members: members })
-              .then((_) => {
-                this.dialogRef.close();
-                this.router.navigate(['project/' + project.projectID]);
-              })
-              .catch((_) =>
-                this.showError('Something went wrong trying to join!')
-              );
-          }
-        } else {
-          this.showError('Invalid Code!');
-        }
+        this.dialogRef.close();
+        this.router.navigate(['project/' + project.projectID]);
       })
-      .catch((_) => this.showError('Please try again!'));
+      .catch((e) => {
+        this.showError(e.error);
+      });
   }
 
   onNoClick(): void {

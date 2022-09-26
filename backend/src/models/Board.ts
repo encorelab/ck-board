@@ -1,5 +1,13 @@
-import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import {
+  prop,
+  getModelForClass,
+  modelOptions,
+  Severity,
+  setGlobalOptions,
+} from '@typegoose/typegoose';
 import { TagModel } from './Tag';
+
+setGlobalOptions({ options: { allowMixed: Severity.ALLOW } });
 
 export class TaskModel {
   @prop({ required: false })
@@ -9,12 +17,32 @@ export class TaskModel {
   public message?: string;
 }
 
+export class ImageSettings {
+  @prop({ required: false })
+  public top?: number;
+
+  @prop({ required: false })
+  public left?: number;
+
+  @prop({ required: false })
+  public width?: number;
+
+  @prop({ required: false })
+  public height?: number;
+
+  @prop({ required: false })
+  public scaleX?: number;
+
+  @prop({ required: false })
+  public scaleY?: number;
+}
+
 export class BgImageModel {
   @prop({ required: true })
   public url!: string;
 
   @prop({ required: false })
-  public imgSettings?: unknown;
+  public imgSettings?: ImageSettings;
 }
 
 export class PermissionsModel {
@@ -49,6 +77,11 @@ export class PermissionsModel {
   public allowTracing!: boolean;
 }
 
+export enum BoardScope {
+  PROJECT_SHARED = 'PROJECT_SHARED',
+  PROJECT_PERSONAL = 'PROJECT_PERSONAL',
+}
+
 @modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })
 export class BoardModel {
   @prop({ required: true })
@@ -58,13 +91,13 @@ export class BoardModel {
   public boardID!: string;
 
   @prop({ required: true })
-  public teacherID!: string;
+  public ownerID!: string;
 
   @prop({ required: true })
   public name!: string;
 
-  @prop({ required: true })
-  public members!: string[];
+  @prop({ enum: BoardScope, type: String, required: true })
+  public scope!: BoardScope;
 
   @prop({ required: false, type: () => TaskModel })
   public task?: TaskModel;
@@ -83,6 +116,9 @@ export class BoardModel {
 
   @prop({ required: true })
   public upvoteLimit!: number;
+
+  @prop({ required: true })
+  public visible!: boolean;
 }
 
 export default getModelForClass(BoardModel);

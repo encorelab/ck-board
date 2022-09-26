@@ -7,7 +7,7 @@ import Post, { PostType } from '../models/post';
 import { Tag } from '../models/tag';
 import { DistributionWorkflow, TaskWorkflow } from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
-import { FabricUtils } from '../utils/FabricUtils';
+import { FabricUtils, ImageSettings } from '../utils/FabricUtils';
 import { generateUniqueID } from '../utils/Utils';
 import { BoardService } from './board.service';
 import { BucketService } from './bucket.service';
@@ -56,6 +56,19 @@ export class CanvasService {
   async createBucketPost(bucketID: string, post: Post): Promise<Post> {
     const savedPost = await this.postService.create(post);
     await this.bucketService.add(bucketID, post.postID);
+
+    return savedPost;
+  }
+
+  async createListPost(post: Post) {
+    const savedPost = await this.postService.create(post);
+    this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
+    for (const tag of post.tags) {
+      this.socketService.emit(SocketEvent.POST_TAG_ADD, {
+        tag,
+        post: savedPost,
+      });
+    }
 
     return savedPost;
   }
@@ -162,7 +175,6 @@ export class CanvasService {
         tag
       );
     }
-
     const savedPost = await this.postService.update(post.postID, update);
 
     this.socketService.emit(SocketEvent.POST_TAG_ADD, {
@@ -255,6 +267,23 @@ export class CanvasService {
         });
       });
     }
+  }
+
+  async updateBoardImageSettings(
+    boardID: string,
+    imgSettings: ImageSettings
+  ): Promise<Board> {
+    const oldBoard = await this.boardService.get(boardID);
+    const url = oldBoard.bgImage?.url;
+
+    if (url) {
+      const board: Board = await this.boardService.update(boardID, {
+        bgImage: { url, imgSettings },
+      });
+      this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
+      return board;
+    }
+    return oldBoard;
   }
 
   async updateBoardPermissions(

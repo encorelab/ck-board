@@ -13,10 +13,18 @@ import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { Tag } from 'src/app/models/tag';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
-import { Board, BoardPermissions } from 'src/app/models/board';
+import { Project } from 'src/app/models/project';
+import { SnackbarService } from 'src/app/services/snackbar.service';
+import {
+  Board,
+  BoardScope,
+  BoardBackgroundImage,
+  BoardPermissions,
+} from 'src/app/models/board';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { ImageSettings } from 'src/app/utils/FabricUtils';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -26,9 +34,13 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 export class ConfigurationModalComponent {
   readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
+  project: Project;
+  board: Board;
+
   boardID: string;
-  projectID: string;
   boardName: string;
+
+  isTeacherPersonalBoard = false;
 
   currentBgImage: any;
   newCompressedImage: any;
@@ -45,6 +57,13 @@ export class ConfigurationModalComponent {
   initialZoom = 100;
   upvoteLimit = 5;
 
+  BoardScope: typeof BoardScope = BoardScope;
+
+  bgImgSettings: ImageSettings;
+  backgroundPosX;
+  backgroundPosY;
+  backgroundScale;
+
   members: string[] = [];
 
   constructor(
@@ -55,27 +74,31 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public upvoteService: UpvotesService,
     public canvasService: CanvasService,
+    public snackbarService: SnackbarService,
     public fileUploadService: FileUploadService,
     private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    this.projectID = data.projectID;
+    this.project = data.project;
+    this.board = data.board;
     this.boardID = data.board.boardID;
     this.boardName = data.board.name;
     this.currentBgImage = data.board.bgImage;
-    this.taskTitle = data.board.task.title;
-    this.taskMessage = data.board.task.message;
+    this.taskTitle = data.board.task?.title;
+    this.taskMessage = data.board.task?.message;
     this.tags = data.board.tags ?? [];
     this.permissions = data.board.permissions;
     this.initialZoom = data.board.initialZoom;
+    this.bgImgSettings = data.board.bgImage?.imgSettings;
+    this.backgroundPosX = this.bgImgSettings?.left;
+    this.backgroundPosY = this.bgImgSettings?.top;
+    this.backgroundScale = this.bgImgSettings
+      ? Math.round(this.bgImgSettings.scaleX * 100)
+      : 100;
     this.upvoteLimit = data.board.upvoteLimit;
-    data.board.members.map((id) => {
-      userService.getOneById(id).then((user) => {
-        if (user) {
-          this.members.push(user.username);
-        }
-      });
-    });
+    this.isTeacherPersonalBoard = this.project.teacherIDs.includes(
+      this.board.ownerID
+    );
   }
 
   addTag() {
@@ -101,7 +124,29 @@ export class ConfigurationModalComponent {
         this.newCompressedImage
       );
       this.data.update(board);
+      this.currentBgImage = board.bgImage;
+      if (board.bgImage) {
+        this.bgImgSettings = board.bgImage.imgSettings;
+        this.backgroundPosX = board.bgImage.imgSettings.left;
+        this.backgroundPosY = board.bgImage.imgSettings.top;
+        this.backgroundScale = board.bgImage
+          ? Math.round(board.bgImage.imgSettings.scaleX * 100)
+          : 100;
+      }
     });
+  }
+
+  async updateBoardImageSettings(): Promise<Board> {
+    this.bgImgSettings.top = this.backgroundPosY;
+    this.bgImgSettings.left = this.backgroundPosX;
+    this.bgImgSettings.scaleX = this.backgroundScale / 100;
+    this.bgImgSettings.scaleY = this.backgroundScale / 100;
+
+    const board: Board = await this.canvasService.updateBoardImageSettings(
+      this.boardID,
+      this.bgImgSettings
+    );
+    return board;
   }
 
   async removeImage() {
@@ -130,10 +175,13 @@ export class ConfigurationModalComponent {
       this.boardID,
       this.upvoteLimit
     );
+
+    if (this.currentBgImage) board = await this.updateBoardImageSettings();
+
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,
     });
-    this.data.update(board);
+    await this.data.update(board);
     this.dialogRef.close();
   }
 
@@ -164,7 +212,8 @@ export class ConfigurationModalComponent {
           const board = await this.boardService.remove(this.boardID);
           if (board) {
             this.dialogRef.close();
-            this.router.navigate(['project/' + this.projectID]);
+            this.router.navigate(['project/' + this.project.projectID]);
+            await this.data.update(board, true);
           }
         },
       },
@@ -195,5 +244,23 @@ export class ConfigurationModalComponent {
   copyToClipboard() {
     const url = window.location.href + '?embedded=true';
     navigator.clipboard.writeText(url);
+  }
+
+  async copyConfiguration() {
+    let boards = await this.boardService.getMultipleBy(this.project.boards, {
+      scope: BoardScope.PROJECT_PERSONAL,
+    });
+    boards = boards.filter((b) => {
+      if (this.isTeacherPersonalBoard) {
+        return this.project.teacherIDs.includes(b.ownerID);
+      } else {
+        return !this.project.teacherIDs.includes(b.ownerID);
+      }
+    });
+
+    await this.boardService.copyConfiguration(
+      this.boardID,
+      boards.map((b) => b.boardID)
+    );
   }
 }

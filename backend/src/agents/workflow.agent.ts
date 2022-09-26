@@ -2,8 +2,8 @@
 import { BeAnObject } from '@typegoose/typegoose/lib/types';
 import { Document } from 'mongoose';
 import { BucketModel } from '../models/Bucket';
-import { PostModel } from '../models/Post';
 import { GroupTaskModel, GroupTaskStatus } from '../models/GroupTask';
+import { PostModel, PostType } from '../models/Post';
 import {
   ContainerType,
   DistributionWorkflowModel,
@@ -11,11 +11,14 @@ import {
   TaskActionType,
   TaskWorkflowModel,
   WorkflowModel,
+  DistributionWorkflowType,
+  Container,
 } from '../models/Workflow';
 import dalBucket from '../repository/dalBucket';
 import dalPost from '../repository/dalPost';
 import dalWorkflow from '../repository/dalWorkflow';
 import dalGroupTask, { GroupTaskExpanded } from '../repository/dalGroupTask';
+import dalVote from '../repository/dalVote';
 import { convertPostsFromID } from '../utils/converter';
 import {
   isDistribution,
@@ -23,13 +26,13 @@ import {
   cloneManyToBoard,
   distribute,
   shuffle,
+  removePostFromSource,
 } from '../utils/workflow.helpers';
 import { mongo } from 'mongoose';
 import Socket from '../socket/socket';
 import { SocketEvent } from '../constants';
 
 class WorkflowManager {
-
   private static _instance: WorkflowManager;
 
   private runningWorkflows: WorkflowModel[];
@@ -44,43 +47,55 @@ class WorkflowManager {
 
   async run(workflow: Document<any, BeAnObject, any> & WorkflowModel) {
     if (isDistribution<DistributionWorkflowModel>(workflow)) {
-      this._runDistributionWorkflow(workflow);
+      this.runDistributionWorkflow(workflow);
     } else if (isTask<TaskWorkflowModel>(workflow)) {
-      await this._runTaskWorkflow(workflow);
+      await this.runTaskWorkflow(workflow);
       this.runningWorkflows.push(workflow);
     }
   }
 
-  async updateTask(userId: string, postId: string, type: TaskActionType, delta: number) {
-    const rawTasks: GroupTaskModel[] = await dalGroupTask.getByUserAndPost(userId, postId);
-    const tasks: GroupTaskExpanded[] = await dalGroupTask.expandGroupTasks(rawTasks);
+  async runDistributionWorkflow(workflow: DistributionWorkflowModel) {
+    const { source, destinations, removeFromSource } = workflow;
+    let posts;
+    if (
+      workflow.distributionWorkflowType.type === DistributionWorkflowType.RANDOM
+    ) {
+      posts = this.randomDistributionWorkflow(
+        workflow,
+        source,
+        destinations,
+        removeFromSource
+      );
+    } else if (
+      workflow.distributionWorkflowType.type === DistributionWorkflowType.TAG
+    ) {
+      posts = this.tagDistributionWorkflow(
+        workflow,
+        source,
+        destinations,
+        removeFromSource
+      );
+    } else if (
+      workflow.distributionWorkflowType.type ===
+      DistributionWorkflowType.UPVOTES
+    ) {
+      posts = this.upvoteDistributionWorkflow(
+        workflow,
+        source,
+        destinations,
+        removeFromSource
+      );
+    }
 
-    const updatedTasks = (await Promise.all<any[]>(tasks.flatMap(async task => {
-      const workflow = await dalWorkflow.getById(task.workflow.workflowID);
-      if (!workflow || !isTask<TaskWorkflowModel>(workflow)) return [];
-      
-      const progress = task.groupTask.progress.get(postId);
-      if (!progress) return [];
+    await dalWorkflow.updateDistribution(workflow.workflowID, {
+      active: false,
+    });
 
-      const action = progress.find((a) => a.type === type);
-      if (workflow && action) {
-        const newAmountReq = action.amountRequired + delta;
-        const limit = workflow.requiredActions.find((a) => a.type === type);
-        if (limit && !(newAmountReq > limit.amountRequired || newAmountReq < 0)) {
-          action.amountRequired = newAmountReq;
-          return task;
-        }
-      }
-      return [];
-    }))).flat();
-
-    await dalGroupTask.updateMany(updatedTasks.map(u => u.groupTask));
-    
-    Socket.Instance.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, updatedTasks, true);
+    return posts;
   }
 
-  private async _runDistributionWorkflow(workflow: DistributionWorkflowModel) {
-    const { source, destinations } = workflow;
+  async runTaskWorkflow(taskWorkflow: TaskWorkflowModel) {
+    const { source, assignedGroups } = taskWorkflow;
     let sourcePosts;
 
     if (source.type == ContainerType.BOARD) {
@@ -93,7 +108,157 @@ class WorkflowManager {
 
     const split: string[][] = await distribute(
       shuffle(sourcePosts),
-      workflow.postsPerDestination
+      sourcePosts.length / taskWorkflow.assignedGroups.length
+    );
+
+    const commentAction = taskWorkflow.requiredActions.find(
+      (a) => a.type == TaskActionType.COMMENT
+    );
+    const tagAction = taskWorkflow.requiredActions.find(
+      (a) => a.type == TaskActionType.TAG
+    );
+    const actions: TaskAction[] = [];
+    if (commentAction)
+      actions.push({
+        type: TaskActionType.COMMENT,
+        amountRequired: commentAction.amountRequired,
+      });
+    if (tagAction)
+      actions.push({
+        type: TaskActionType.TAG,
+        amountRequired: tagAction.amountRequired,
+      });
+
+    if (assignedGroups.length > 0) {
+      for (let i = 0; i < assignedGroups.length; i++) {
+        const assignedGroup = assignedGroups[i];
+        const posts = split[i] ?? [];
+
+        const progress: Map<string, TaskAction[]> = new Map<
+          string,
+          TaskAction[]
+        >();
+        posts.forEach((post) => {
+          progress.set(post, actions);
+        });
+
+        const groupTask: GroupTaskModel = {
+          groupTaskID: new mongo.ObjectId().toString(),
+          groupID: assignedGroup,
+          workflowID: taskWorkflow.workflowID,
+          posts: posts,
+          progress: progress,
+          status: GroupTaskStatus.INACTIVE,
+        };
+
+        await dalGroupTask.create(groupTask);
+      }
+    }
+  }
+
+  async tagDistributionWorkflow(
+    workflow: DistributionWorkflowModel,
+    source: Container,
+    destinations: Container[],
+    removeFromSource: boolean
+  ) {
+    let sourcePosts: PostModel[] = [];
+    const filteredPosts: string[] = [];
+    if (source.type == ContainerType.BOARD) {
+      sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
+      sourcePosts.forEach((post) => {
+        post.tags.forEach((tag) => {
+          if (tag.tagID === workflow.distributionWorkflowType.data.tagID) {
+            filteredPosts.push(post.postID);
+          }
+        });
+      });
+    } else {
+      const bucket: BucketModel | null = await dalBucket.getById(source.id);
+      if (bucket) {
+        for (let i = 0; i < bucket.posts.length; i++) {
+          const post = await dalPost.getById(bucket.posts[i]);
+          post?.tags.forEach((tag) => {
+            if (tag.tagID === workflow.distributionWorkflowType.data.tagID) {
+              filteredPosts.push(post?.postID);
+            }
+          });
+        }
+      }
+    }
+
+    for (let i = 0; i < destinations.length; i++) {
+      const destination = destinations[i];
+      if (destination.type == ContainerType.BOARD) {
+        const originals: PostModel[] = await convertPostsFromID(filteredPosts);
+        const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
+        await dalPost.createMany(copied);
+      } else {
+        await dalBucket.addPost(destination.id, filteredPosts);
+      }
+    }
+
+    if (removeFromSource) {
+      return removePostFromSource(source, filteredPosts);
+    }
+  }
+
+  async upvoteDistributionWorkflow(
+    workflow: DistributionWorkflowModel,
+    source: Container,
+    destinations: Container[],
+    removeFromSource: boolean
+  ) {
+    let sourcePosts;
+    const filteredPosts: string[] = [];
+    if (source.type == ContainerType.BOARD) {
+      sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
+      sourcePosts = sourcePosts.map((p) => p.postID);
+    } else {
+      const bucket: BucketModel | null = await dalBucket.getById(source.id);
+      sourcePosts = bucket ? bucket.posts : [];
+    }
+
+    for (let i = 0; i < sourcePosts.length; i++) {
+      const upvotes = await dalVote.getAmountByPost(sourcePosts[i]);
+      if (upvotes >= workflow.distributionWorkflowType.data) {
+        filteredPosts.push(sourcePosts[i]);
+      }
+    }
+
+    for (let i = 0; i < destinations.length; i++) {
+      const destination = destinations[i];
+      if (destination.type == ContainerType.BOARD) {
+        const originals: PostModel[] = await convertPostsFromID(filteredPosts);
+        const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
+        await dalPost.createMany(copied);
+      } else {
+        await dalBucket.addPost(destination.id, filteredPosts);
+      }
+    }
+
+    if (removeFromSource) {
+      return removePostFromSource(source, filteredPosts);
+    }
+  }
+
+  async randomDistributionWorkflow(
+    workflow: DistributionWorkflowModel,
+    source: Container,
+    destinations: Container[],
+    removeFromSource: boolean
+  ) {
+    let sourcePosts;
+    if (source.type == ContainerType.BOARD) {
+      sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
+      sourcePosts = sourcePosts.map((p) => p.postID);
+    } else {
+      const bucket: BucketModel | null = await dalBucket.getById(source.id);
+      sourcePosts = bucket ? bucket.posts : [];
+    }
+    const split: string[][] = await distribute(
+      shuffle(sourcePosts),
+      workflow.distributionWorkflowType.data
     );
 
     for (let i = 0; i < destinations.length; i++) {
@@ -109,56 +274,58 @@ class WorkflowManager {
       }
     }
 
-    return await dalWorkflow.updateDistribution(workflow.workflowID, {
-      active: false,
-    });
+    if (removeFromSource) {
+      return removePostFromSource(source, sourcePosts);
+    }
   }
 
-  private async _runTaskWorkflow(taskWorkflow: TaskWorkflowModel) {
-    const { source, assignedGroups } = taskWorkflow;
-    let sourcePosts;
-  
-    if (source.type == ContainerType.BOARD) {
-      sourcePosts = await dalPost.getByBoard(source.id);
-      sourcePosts = sourcePosts.map((p) => p.postID);
-    } else {
-      const bucket: BucketModel | null = await dalBucket.getById(source.id);
-      sourcePosts = bucket ? bucket.posts : []; 
-    }
-  
-    const split: string[][] = await distribute(
-      shuffle(sourcePosts),
-      sourcePosts.length / taskWorkflow.assignedGroups.length
+  async updateTask(
+    userId: string,
+    postId: string,
+    type: TaskActionType,
+    delta: number
+  ) {
+    const rawTasks: GroupTaskModel[] = await dalGroupTask.getByUserAndPost(
+      userId,
+      postId
     );
-  
-    const commentAction = taskWorkflow.requiredActions.find(a => a.type == TaskActionType.COMMENT)
-    const tagAction = taskWorkflow.requiredActions.find(a => a.type == TaskActionType.TAG)
-    const actions: TaskAction[] = []
-    if (commentAction) actions.push({ type: TaskActionType.COMMENT, amountRequired: commentAction.amountRequired });
-    if (tagAction) actions.push({ type: TaskActionType.TAG, amountRequired: tagAction.amountRequired })
+    const tasks: GroupTaskExpanded[] = await dalGroupTask.expandGroupTasks(
+      rawTasks
+    );
 
-    if (assignedGroups.length > 0) {
-      for (let i = 0; i < assignedGroups.length; i++) {
-        const assignedGroup = assignedGroups[i];
-        const posts = split[i] ?? [];
+    const updatedTasks = (
+      await Promise.all<any[]>(
+        tasks.flatMap(async (task) => {
+          const workflow = await dalWorkflow.getById(task.workflow.workflowID);
+          if (!workflow || !isTask<TaskWorkflowModel>(workflow)) return [];
 
-        const progress: Map<string, TaskAction[]> = new Map<string, TaskAction[]>();
-        posts.forEach(post => {
-          progress.set(post, actions)
-        });
+          const progress = task.groupTask.progress.get(postId);
+          if (!progress) return [];
 
-        const groupTask: GroupTaskModel = {
-          groupTaskID: new mongo.ObjectId().toString(),
-          groupID: assignedGroup,
-          workflowID: taskWorkflow.workflowID,
-          posts: posts,
-          progress: progress,
-          status: GroupTaskStatus.INACTIVE,
-        };
-  
-        await dalGroupTask.create(groupTask);
-      }
-    }
+          const action = progress.find((a) => a.type === type);
+          if (workflow && action) {
+            const newAmountReq = action.amountRequired + delta;
+            const limit = workflow.requiredActions.find((a) => a.type === type);
+            if (
+              limit &&
+              !(newAmountReq > limit.amountRequired || newAmountReq < 0)
+            ) {
+              action.amountRequired = newAmountReq;
+              return task;
+            }
+          }
+          return [];
+        })
+      )
+    ).flat();
+
+    await dalGroupTask.updateMany(updatedTasks.map((u) => u.groupTask));
+
+    Socket.Instance.emit(
+      SocketEvent.WORKFLOW_PROGRESS_UPDATE,
+      updatedTasks,
+      true
+    );
   }
 }
 

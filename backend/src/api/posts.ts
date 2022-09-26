@@ -13,8 +13,9 @@ router.get('/:id', async (req, res) => {
 
 router.get('/boards/:id', async (req, res) => {
   const id = req.params.id;
+  const { type } = req.query;
 
-  const posts = await dalPost.getByBoard(id);
+  const posts = await dalPost.getByBoard(id, type);
   res.json(posts);
 });
 

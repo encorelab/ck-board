@@ -3,6 +3,17 @@ export enum ContainerType {
   BUCKET = 'BUCKET',
 }
 
+export enum DistributionWorkflowType {
+  RANDOM = 'RANDOM',
+  TAG = 'TAG',
+  UPVOTES = 'UPVOTES',
+}
+
+export class DistributionWorkflowTypeModel {
+  type: DistributionWorkflowType;
+  data: any;
+}
+
 export class Container {
   type: ContainerType;
   id: string;
@@ -64,7 +75,8 @@ export class Workflow {
 }
 
 export class DistributionWorkflow extends Workflow {
-  postsPerDestination: number;
+  distributionWorkflowType: DistributionWorkflowTypeModel;
+  removeFromSource: boolean;
 }
 
 export class TaskWorkflow extends Workflow {

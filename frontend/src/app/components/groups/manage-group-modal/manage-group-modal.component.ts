@@ -22,7 +22,7 @@ export class ManageGroupModalComponent implements OnInit {
   groups: Group[] = [];
   selectedGroups: Group[] = [];
   updatedGroups: Group[];
-  showEdit: boolean = false;
+  showEdit = false;
   editGroup: Group;
 
   groupNameControl = new FormControl('', [Validators.required]);

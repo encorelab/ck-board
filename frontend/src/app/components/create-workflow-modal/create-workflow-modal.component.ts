@@ -12,7 +12,7 @@ import {
   MatDialog,
 } from '@angular/material/dialog';
 import { MatSnackBarConfig } from '@angular/material/snack-bar';
-import { Board } from 'src/app/models/board';
+import { Board, BoardScope } from 'src/app/models/board';
 import { Tag } from 'src/app/models/tag';
 import Bucket from 'src/app/models/bucket';
 import { Group } from 'src/app/models/group';
@@ -140,11 +140,15 @@ export class CreateWorkflowModalComponent implements OnInit {
         this.boardBuckets = this.boardBuckets.concat(buckets);
         this.sourceOptions.push(this.board);
       });
-    this.boardService.getMultipleBy(this.data.project.boards).then((data) => {
-      data.forEach((board: Board) => {
-        if (board.boardID != this.board.boardID) this.destOptions.push(board);
+    this.boardService
+      .getMultipleBy(this.data.project.boards, {
+        scope: BoardScope.PROJECT_PERSONAL,
+      })
+      .then((data) => {
+        data.forEach((board: Board) => {
+          if (board.boardID != this.board.boardID) this.destOptions.push(board);
+        });
       });
-    });
   }
 
   async loadWorkflows(): Promise<void> {
@@ -251,15 +255,24 @@ export class CreateWorkflowModalComponent implements OnInit {
   ): Promise<void> {
     e.stopPropagation();
 
-    if (this._isTaskWorkflow(workflow)) {
-      await this.workflowService.removeTask(workflow.workflowID);
-    } else {
-      await this.workflowService.removeDistribution(workflow.workflowID);
-    }
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to delete this workflow?',
+        handleConfirm: async () => {
+          if (this._isTaskWorkflow(workflow)) {
+            await this.workflowService.removeTask(workflow.workflowID);
+          } else {
+            await this.workflowService.removeDistribution(workflow.workflowID);
+          }
 
-    this.workflows = this.workflows.filter(
-      (w) => w.workflowID !== workflow.workflowID
-    );
+          this.workflows = this.workflows.filter(
+            (w) => w.workflowID !== workflow.workflowID
+          );
+        },
+      },
+    });
   }
 
   onNoClick(): void {

@@ -142,7 +142,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       });
     this.boardService
       .getMultipleBy(this.data.project.boards, {
-        scope: BoardScope.PROJECT_PERSONAL,
+        scope: BoardScope.PROJECT_SHARED,
       })
       .then((data) => {
         data.forEach((board: Board) => {

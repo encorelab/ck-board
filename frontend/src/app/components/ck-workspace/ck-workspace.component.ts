@@ -177,6 +177,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
 
     this.posts = this.posts.filter((p) => p.post.postID !== post.post.postID);
+    this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
   }
 
   async markComplete(): Promise<void> {
@@ -334,6 +335,14 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           found.post = post;
         }
       })
+    );
+    this.listeners.push(
+      this.socketService.listen(
+        SocketEvent.WORKFLOW_POST_SUBMIT,
+        (postID: string) => {
+          this.posts = this.posts.filter((p) => p.post.postID != postID);
+        }
+      )
     );
     this.listeners.push(
       interval(30 * 1000).subscribe(async () => {

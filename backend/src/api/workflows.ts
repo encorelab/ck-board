@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
 import WorkflowManager from '../agents/workflow.agent';
+import { SocketEvent } from '../constants';
 import { GroupTaskModel, GroupTaskStatus } from '../models/GroupTask';
+import { PostType } from '../models/Post';
 import {
   DistributionWorkflowModel,
   TaskWorkflowModel,
@@ -10,16 +12,17 @@ import {
 import dalGroupTask from '../repository/dalGroupTask';
 import dalPost from '../repository/dalPost';
 import dalWorkflow from '../repository/dalWorkflow';
+import Socket from '../socket/socket';
 import { movePostsToDestination } from '../utils/workflow.helpers';
 
 const router = Router();
 
 /**
- * 
- * 
+ *
+ *
  * DISTRIBUTION WORKFLOW API
- * 
- * 
+ *
+ *
  */
 
 /**
@@ -38,7 +41,7 @@ router.post('/distribution', async (req, res) => {
 /**
  * Runs a distribution workflow.
  */
- router.post('/distribution/:id', async (req, res) => {
+router.post('/distribution/:id', async (req, res) => {
   const id: string = req.params.id;
 
   const workflow = await dalWorkflow.updateDistribution(id, {
@@ -107,11 +110,11 @@ router.delete('/distribution/:id', async (req, res) => {
 });
 
 /**
- * 
- * 
+ *
+ *
  * TASK WORKFLOW API
- * 
- * 
+ *
+ *
  */
 
 /**
@@ -127,7 +130,7 @@ router.post('/task', async (req, res) => {
 /**
  * Runs a task workflow.
  */
- router.post('/task/:id', async (req, res) => {
+router.post('/task/:id', async (req, res) => {
   const id: string = req.params.id;
 
   const workflow = await dalWorkflow.updateTask(id, {
@@ -153,7 +156,7 @@ router.put('/task/:id', async (req, res) => {
     destinations,
     prompt,
     requiredActions,
-    assignedGroups
+    assignedGroups,
   } = req.body;
 
   const workflow: Partial<TaskWorkflowModel> = Object.assign(
@@ -178,14 +181,18 @@ router.get('/task/boards/:id', async (req, res) => {
   const id = req.params.id;
   const active = req.query.active == 'true';
 
-  const workflows = await dalWorkflow.getByBoardId(WorkflowType.TASK, id, active);
+  const workflows = await dalWorkflow.getByBoardId(
+    WorkflowType.TASK,
+    id,
+    active
+  );
   res.status(200).json(workflows);
 });
 
 /**
  * Delete an existing task workflow.
  */
- router.delete('/task/:id', async (req, res) => {
+router.delete('/task/:id', async (req, res) => {
   const id = req.params.id;
 
   await dalWorkflow.remove(WorkflowType.TASK, id);
@@ -194,18 +201,18 @@ router.get('/task/boards/:id', async (req, res) => {
 });
 
 /**
- * 
- * 
+ *
+ *
  * GROUP TASK API
- * 
- * 
+ *
+ *
  */
 
 /**
  * Get a workflow's group task for one group.
  */
- router.get('/task/:workflowID/groupTask/group/:groupID', async (req, res) => {
-  const {workflowID, groupID} = req.params;
+router.get('/task/:workflowID/groupTask/group/:groupID', async (req, res) => {
+  const { workflowID, groupID } = req.params;
   const representation = req.query.representation as string;
 
   const groupTask = await dalGroupTask.getByWorkflowGroup(workflowID, groupID);
@@ -221,13 +228,17 @@ router.get('/task/boards/:id', async (req, res) => {
 /**
  * Get all groups tasks for a workflow.
  */
- router.get('/task/:workflowID/groupTask', async (req, res) => {
-  const {workflowID} = req.params;
+router.get('/task/:workflowID/groupTask', async (req, res) => {
+  const { workflowID } = req.params;
   const representation = req.query.representation as string;
 
-  const groupTasks: GroupTaskModel[] = await dalGroupTask.getAllByWorkflowId(workflowID);
+  const groupTasks: GroupTaskModel[] = await dalGroupTask.getAllByWorkflowId(
+    workflowID
+  );
   if (representation == 'expanded') {
-    return res.status(200).json(await dalGroupTask.expandGroupTasks(groupTasks));
+    return res
+      .status(200)
+      .json(await dalGroupTask.expandGroupTasks(groupTasks));
   }
 
   res.status(200).json(groupTasks);
@@ -237,12 +248,14 @@ router.get('/task/boards/:id', async (req, res) => {
  * Get all groups tasks for a user by board.
  */
 router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
-  const {boardID, userID} = req.params;
+  const { boardID, userID } = req.params;
   const representation = req.query.representation as string;
 
   const groupTasks = await dalGroupTask.getByBoardAndUser(boardID, userID);
   if (representation == 'expanded') {
-    return res.status(200).json(await dalGroupTask.expandGroupTasks(groupTasks));
+    return res
+      .status(200)
+      .json(await dalGroupTask.expandGroupTasks(groupTasks));
   }
 
   res.status(200).json(groupTasks);
@@ -251,15 +264,15 @@ router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
 /**
  * Update a group task.
  */
- router.post('/task/groupTask/:groupTaskID', async (req, res) => {
-  const {groupTaskID} = req.params;
-  const {actions, posts, status} = req.body;
-  
+router.post('/task/groupTask/:groupTaskID', async (req, res) => {
+  const { groupTaskID } = req.params;
+  const { actions, posts, status } = req.body;
+
   const update: Partial<GroupTaskModel> = Object.assign(
     {},
     actions === null ? null : { actions },
     posts === null ? null : { posts },
-    status === null ? null : { status },
+    status === null ? null : { status }
   );
 
   const updatedGroupTask = await dalGroupTask.update(groupTaskID, update);
@@ -269,28 +282,33 @@ router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
 /**
  * Submit post from group task.
  */
- router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
-  const {groupTaskID} = req.params;
-  const {post} = req.body;
-  
+router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
+  const { groupTaskID } = req.params;
+  const { post } = req.body;
+
   const groupTask = await dalGroupTask.getById(groupTaskID);
-  if (!groupTask) return res.status(404).end('No group task with id: ' + groupTaskID);
+  if (!groupTask)
+    return res.status(404).end('No group task with id: ' + groupTaskID);
 
   const workflow = await dalWorkflow.getById(groupTask.workflowID);
-  if (!workflow) return res.status(404).end('No workflow with id: ' + groupTask.workflowID);
+  if (!workflow)
+    return res.status(404).end('No workflow with id: ' + groupTask.workflowID);
 
   const session = await mongoose.startSession();
   session.startTransaction();
-  
+
   try {
     // Remove post from group task
-    const updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, [post]);
+    const updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, [
+      post,
+    ]);
 
-    // Remove post from source and move to destination
+    // Copy post to destination and make source post of type "LIST"
     const destination = workflow.destinations[0];
     await movePostsToDestination(destination, [post]);
-    await dalPost.remove(post);
+    await dalPost.update(post, { type: PostType.LIST });
 
+    Socket.Instance.emit(SocketEvent.WORKFLOW_POST_SUBMIT, post, true);
     return res.status(200).json(updatedGroupTask);
   } catch (e) {
     return res.status(500).end('Unable to submit post!');
@@ -302,10 +320,12 @@ router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
 /**
  * Mark group task as complete.
  */
- router.post('/task/groupTask/:groupTaskID/complete', async (req, res) => {
-  const {groupTaskID} = req.params;
-  
-  const updatedGroupTask = await dalGroupTask.update(groupTaskID, { status: GroupTaskStatus.COMPLETE });
+router.post('/task/groupTask/:groupTaskID/complete', async (req, res) => {
+  const { groupTaskID } = req.params;
+
+  const updatedGroupTask = await dalGroupTask.update(groupTaskID, {
+    status: GroupTaskStatus.COMPLETE,
+  });
   res.status(200).json(updatedGroupTask);
 });
 

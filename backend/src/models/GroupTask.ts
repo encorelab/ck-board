@@ -20,7 +20,7 @@ export class GroupTaskModel {
 
   @prop({ required: true })
   public posts!: string[];
-  
+
   @prop({ required: true, type: () => [TaskAction] })
   public progress!: Map<string, TaskAction[]>;
 

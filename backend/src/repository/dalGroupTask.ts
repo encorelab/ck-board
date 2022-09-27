@@ -10,19 +10,21 @@ export interface GroupTaskExpanded {
   workflow: TaskWorkflowModel;
 }
 
-export const expandGroupTask = async (task: GroupTaskModel): Promise<GroupTaskExpanded> => {
+export const expandGroupTask = async (
+  task: GroupTaskModel
+): Promise<GroupTaskExpanded> => {
   const workflow = await dalWorkflow.getById(task.workflowID);
 
   if (!workflow || !isTask<TaskWorkflowModel>(workflow))
-      throw new Error(
-        `No task workflow associated with group task (id: ${task.groupTaskID})`
-      );
+    throw new Error(
+      `No task workflow associated with group task (id: ${task.groupTaskID})`
+    );
 
   return {
-      groupTask: task,
-      workflow: workflow
-    };
-}
+    groupTask: task,
+    workflow: workflow,
+  };
+};
 
 export const expandGroupTasks = async (
   tasks: GroupTaskModel[]
@@ -38,7 +40,7 @@ export const expandGroupTasks = async (
 
     return {
       groupTask: task,
-      workflow: workflow
+      workflow: workflow,
     };
   });
 };
@@ -63,25 +65,33 @@ export const getAllByGroupId = async (id: string) => {
 
 export const getByUserAndPost = async (user: string, post: string) => {
   try {
-    const groups = (await dalGroup.getByUserId(user)).map(g => g.groupID);
-    const groupTasks = await GroupTask.find({ groupID: { $in: groups }, posts: post });
+    const groups = (await dalGroup.getByUserId(user)).map((g) => g.groupID);
+    const groupTasks = await GroupTask.find({
+      groupID: { $in: groups },
+      posts: post,
+    });
     return groupTasks;
   } catch (err) {
     throw new Error('500');
   }
-}
+};
 
 export const getByBoardAndUser = async (board: string, user: string) => {
   try {
-    const groups = (await dalGroup.getByUserId(user)).map(g => g.groupID);
-    const workflows = (await dalWorkflow.getAllByBoardId(board)).map(g => g.workflowID);
-    const groupTasks = await GroupTask.find({ groupID: { $in: groups }, workflowID: { $in: workflows } });
+    const groups = (await dalGroup.getByUserId(user)).map((g) => g.groupID);
+    const workflows = (await dalWorkflow.getAllByBoardId(board)).map(
+      (g) => g.workflowID
+    );
+    const groupTasks = await GroupTask.find({
+      groupID: { $in: groups },
+      workflowID: { $in: workflows },
+    });
 
     return groupTasks;
   } catch (err) {
     throw new Error('500');
   }
-}
+};
 
 export const getAllByWorkflowId = async (id: string) => {
   try {
@@ -92,14 +102,17 @@ export const getAllByWorkflowId = async (id: string) => {
   }
 };
 
-export const getByWorkflowGroup = async (workflowID: string, groupID: string) => {
+export const getByWorkflowGroup = async (
+  workflowID: string,
+  groupID: string
+) => {
   try {
     const groupTask = await GroupTask.findOne({ workflowID, groupID });
     return groupTask;
   } catch (err) {
     throw new Error('500');
   }
-}
+};
 
 export const create = async (groupTask: GroupTaskModel) => {
   try {
@@ -124,7 +137,7 @@ export const removeByWorkflow = async (workflowID: string) => {
   } catch (err) {
     throw new Error('500');
   }
-}
+};
 
 // Create specific function for marking tasks as complete? Or just do through update?
 
@@ -144,19 +157,19 @@ export const update = async (
   }
 };
 
-export const updateMany = async (
-  groupTasks: GroupTaskModel[]
-) => {
+export const updateMany = async (groupTasks: GroupTaskModel[]) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    return await Promise.all(groupTasks.map(async groupTask => {
-      return await GroupTask.findOneAndUpdate(
-        { groupTaskID: groupTask.groupTaskID },
-        groupTask,
-        { new: true }
-      );
-    }));
+    return await Promise.all(
+      groupTasks.map(async (groupTask) => {
+        return await GroupTask.findOneAndUpdate(
+          { groupTaskID: groupTask.groupTaskID },
+          groupTask,
+          { new: true }
+        );
+      })
+    );
   } catch (err) {
     throw new Error('500');
   } finally {
@@ -170,7 +183,7 @@ export const removePosts = async (id: string, posts: string[]) => {
   try {
     return await GroupTask.findOneAndUpdate(
       { groupTaskID: id },
-      { $pull: { posts: { $in: posts } }},
+      { $pull: { posts: { $in: posts } } },
       { new: true }
     );
   } catch (err) {

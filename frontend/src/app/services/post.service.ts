@@ -20,7 +20,7 @@ export class PostService {
   getAll(postIDs: string[]): Promise<Post[]> {
     return this.http.post<Post[]>('posts/many', { postIDs }).toPromise();
   }
-  
+
   getAllByBoard(
     boardID: string,
     opts?: Options,

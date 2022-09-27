@@ -47,7 +47,7 @@ router.post('/:id', async (req, res) => {
   const groupTask: Partial<GroupTaskModel> = Object.assign(
     {},
     posts === null ? null : { posts },
-    status === null ? null : { status }, 
+    status === null ? null : { status }
   );
 
   const updatedGroupTask = await dalGroupTask.update(id, groupTask);

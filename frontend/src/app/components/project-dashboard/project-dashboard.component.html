@@ -80,7 +80,7 @@
     </div>
     <ng-container *ngIf="user.role === Role.TEACHER">
       <div>
-        <button class="subheader-button" mat-button (click)="showSharedBoards = !showSharedBoards">
+        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showSharedBoards = !showSharedBoards">
           Shared Project Boards ({{ sharedBoards.length }})
           <mat-icon>{{ showSharedBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
@@ -143,11 +143,11 @@
         </div>
       </div>
       <div>
-        <button class="subheader-button" mat-button (click)="showStudentPersonalBoards = !showStudentPersonalBoards">
+        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showStudentPersonalBoards = !showStudentPersonalBoards">
           Student Personal Boards ({{ studentPersonalBoards.length }})
           <mat-icon>{{ showStudentPersonalBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <div *ngIf="showStudentPersonalBoards" style="padding: 10px 0px">
+        <div *ngIf="project && showStudentPersonalBoards && project.personalBoardSetting.enabled" style="padding: 10px 0px">
           <div class="cards">
             <ng-container *ngFor="let board of studentPersonalBoards">
               <mat-card
@@ -186,11 +186,11 @@
         </div>
       </div>
       <div>
-        <button class="subheader-button" mat-button (click)="showTeacherPersonalBoards = !showTeacherPersonalBoards">
+        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showTeacherPersonalBoards = !showTeacherPersonalBoards">
           Teacher Personal Boards ({{ teacherPersonalBoards.length }})
           <mat-icon>{{ showTeacherPersonalBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <div *ngIf="showTeacherPersonalBoards" style="padding: 10px 0px">
+        <div *ngIf="project && showTeacherPersonalBoards && project.personalBoardSetting.enabled" style="padding: 10px 0px">
           <div class="cards">
             <ng-container *ngFor="let board of teacherPersonalBoards">
               <mat-card
@@ -249,9 +249,6 @@
         </div>
       </div>
     </ng-container>
-
-
-
 
     <ng-container *ngIf="user.role === Role.STUDENT">
       <div class="cards">

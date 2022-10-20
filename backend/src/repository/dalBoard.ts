@@ -42,7 +42,11 @@ export const getByProject = async (projectID: string) => {
 
 export const getPersonal = async (projectID: string, ownerID: string) => {
   try {
-    const board = await Board.findOne({ ownerID, projectID, scope: BoardScope.PROJECT_PERSONAL });
+    const board = await Board.findOne({
+      ownerID,
+      projectID,
+      scope: BoardScope.PROJECT_PERSONAL,
+    });
     return board;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));

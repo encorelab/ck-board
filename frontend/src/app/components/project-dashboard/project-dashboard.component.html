@@ -4,6 +4,14 @@
     <span style="flex: 1 1 auto"></span>
     <button
       mat-icon-button
+      *ngIf="user && user.role === Role.STUDENT"
+      (click)="openTodoList()"
+      matTooltip="Todo List"
+    >
+      <mat-icon>assignment</mat-icon>
+    </button>
+    <button
+      mat-icon-button
       [matMenuTriggerFor]="addMenu"
       *ngIf="user && user.role === Role.TEACHER"
       matTooltip="Create Board"
@@ -28,6 +36,28 @@
     >
       <mat-icon>settings</mat-icon>
     </button>
+    <div *ngIf="project">
+      <app-project-notification-dropdown
+        [user]="user"
+        [project]="project"
+      ></app-project-notification-dropdown>
+    </div>
+    <button
+      *ngIf="user && user.role == Role.TEACHER"
+      mat-icon-button
+      (click)="openGroupDialog()"
+      matTooltip="Manage Groups"
+    >
+      <mat-icon>group_work</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      *ngIf="user && user.role === Role.TEACHER"
+      (click)="openProjectTodoList()"
+      matTooltip="View All Todo Lists"
+    >
+      <mat-icon>assignment_ind</mat-icon>
+    </button>
     <button
     *ngIf="user && user.role === Role.TEACHER"
     mat-icon-button
@@ -50,7 +80,7 @@
     </div>
     <ng-container *ngIf="user.role === Role.TEACHER">
       <div>
-        <button class="subheader-button" mat-button (click)="showSharedBoards = !showSharedBoards">
+        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showSharedBoards = !showSharedBoards">
           Shared Project Boards ({{ sharedBoards.length }})
           <mat-icon>{{ showSharedBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
@@ -113,11 +143,11 @@
         </div>
       </div>
       <div>
-        <button class="subheader-button" mat-button (click)="showStudentPersonalBoards = !showStudentPersonalBoards">
+        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showStudentPersonalBoards = !showStudentPersonalBoards">
           Student Personal Boards ({{ studentPersonalBoards.length }})
           <mat-icon>{{ showStudentPersonalBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <div *ngIf="showStudentPersonalBoards" style="padding: 10px 0px">
+        <div *ngIf="project && showStudentPersonalBoards && project.personalBoardSetting.enabled" style="padding: 10px 0px">
           <div class="cards">
             <ng-container *ngFor="let board of studentPersonalBoards">
               <mat-card
@@ -156,11 +186,11 @@
         </div>
       </div>
       <div>
-        <button class="subheader-button" mat-button (click)="showTeacherPersonalBoards = !showTeacherPersonalBoards">
+        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showTeacherPersonalBoards = !showTeacherPersonalBoards">
           Teacher Personal Boards ({{ teacherPersonalBoards.length }})
           <mat-icon>{{ showTeacherPersonalBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <div *ngIf="showTeacherPersonalBoards" style="padding: 10px 0px">
+        <div *ngIf="project && showTeacherPersonalBoards && project.personalBoardSetting.enabled" style="padding: 10px 0px">
           <div class="cards">
             <ng-container *ngFor="let board of teacherPersonalBoards">
               <mat-card
@@ -219,9 +249,6 @@
         </div>
       </div>
     </ng-container>
-
-
-
 
     <ng-container *ngIf="user.role === Role.STUDENT">
       <div class="cards">

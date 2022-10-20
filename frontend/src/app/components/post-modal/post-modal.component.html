@@ -184,8 +184,8 @@
       *ngIf="showComments && canStudentComment"
     >
       <mat-label>Add Comment</mat-label>
-      <input matInput [appAutofocus]="showComments" [(ngModel)]="newComment" (keyup.enter)="addComment()" />
-      <button color="primary" matSuffix mat-button (click)="addComment()">
+      <input matInput [appAutofocus]="showComments" [(ngModel)]="newComment" (keyup.enter)="newComment ? addComment(): ''" />
+      <button [disabled]="!newComment" color="primary" matSuffix mat-button (click)="addComment()">
         Comment!
       </button>
     </mat-form-field>

@@ -16,6 +16,7 @@ import workflows from './api/workflows';
 import auth from './api/auth';
 import trace from './api/trace';
 import groups from './api/groups';
+import todoItems from './api/todoItem';
 import { isAuthenticated } from './utils/auth';
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use('/api/notifications', isAuthenticated, notifications);
 app.use('/api/groups', isAuthenticated, groups);
 app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
+app.use('/api/todoItems', isAuthenticated, todoItems);
 
 mongoose
   .connect(dbURI)

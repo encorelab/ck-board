@@ -23,7 +23,7 @@ export class LoginComponent {
   onLogin() {
     this.userService
       .login(this.email, this.password)
-      .then(() => {
+      .then(async () => {
         this.invalidCredentials = false;
         const redirectUrl = this.userService.redirectUrl;
         this.userService.redirectUrl = null;

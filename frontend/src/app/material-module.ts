@@ -23,6 +23,10 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatSliderModule } from '@angular/material/slider';
+import { ClipboardModule } from '@angular/cdk/clipboard';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatTableModule } from '@angular/material/table';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 
@@ -50,6 +54,10 @@ import { NgModule } from '@angular/core';
     MatSnackBarModule,
     MatBadgeModule,
     MatSliderModule,
+    ClipboardModule,
+    MatTableModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     BrowserAnimationsModule,
   ],
   exports: [
@@ -78,6 +86,10 @@ import { NgModule } from '@angular/core';
     MatSnackBarModule,
     MatBadgeModule,
     MatSliderModule,
+    ClipboardModule,
+    MatTableModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     BrowserAnimationsModule,
   ],
 })

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Board, { BoardModel } from '../models/Board';
+import Board, { BoardModel, BoardScope } from '../models/Board';
 import dalTrace from './dalTrace';
 import dalPost from './dalPost';
 import dalWorkflow from './dalWorkflow';
@@ -35,6 +35,19 @@ export const getByProject = async (projectID: string) => {
   try {
     const boards = await Board.find({ projectID });
     return boards;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getPersonal = async (projectID: string, ownerID: string) => {
+  try {
+    const board = await Board.findOne({
+      ownerID,
+      projectID,
+      scope: BoardScope.PROJECT_PERSONAL,
+    });
+    return board;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -96,6 +109,7 @@ const dalBoard = {
   getById,
   getMultipleByIds,
   getByProject,
+  getPersonal,
   create,
   update,
   updateMany,

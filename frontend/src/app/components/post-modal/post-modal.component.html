@@ -12,11 +12,19 @@
       <ng-template #elseBlock>
         <mat-card-subtitle>Anonymous</mat-card-subtitle>
       </ng-template>
+      <button
+        mat-icon-button
+        matTooltip="Save post to personal board"
+        *ngIf="project?.personalBoardSetting?.enabled && post?.type === PostType.BOARD && data.board.scope === 'PROJECT_SHARED'"
+        (click)="savePostToPersonalBoard()"
+      >
+        <mat-icon>star_border</mat-icon>
+      </button>
       <button mat-icon-button [matMenuTriggerFor]="bucketMenu">
         <mat-icon>library_add</mat-icon>
       </button>
       <mat-menu #bucketMenu="matMenu">
-        <div mat-menu-item *ngIf="buckets && buckets.length == 0">
+        <div mat-menu-item *ngIf="buckets && buckets.length === 0">
           No buckets available.
         </div>
         <div
@@ -90,7 +98,7 @@
             <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
           </mat-chip>
           <mat-menu #menu1="matMenu">
-            <div mat-menu-item *ngIf="tagOptions && tagOptions.length == 0">
+            <div mat-menu-item *ngIf="tagOptions && tagOptions.length === 0">
               No tags available.
             </div>
             <div

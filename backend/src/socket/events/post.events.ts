@@ -13,6 +13,7 @@ import dalComment from '../../repository/dalComment';
 import dalPost from '../../repository/dalPost';
 import postTrace from '../trace/post.trace';
 import {
+  PersonalBoardAddPostEventInput,
   PostStopMoveEventInput,
   PostTagEventInput,
   SocketPayload,
@@ -269,6 +270,26 @@ class PostRead {
   }
 }
 
+class PersonalBoardAddPost {
+  static type: SocketEvent = SocketEvent.PERSONAL_BOARD_ADD_POST;
+
+  static async handleEvent(
+    input: SocketPayload<PersonalBoardAddPostEventInput>
+  ): Promise<PersonalBoardAddPostEventInput> {
+    if (input.trace.allowTracing)
+      await postTrace.personalBoardAddPost(input, this.type);
+    return input.eventData;
+  }
+
+  static async handleResult(
+    io: Server,
+    socket: Socket,
+    result: PostTagEventInput
+  ) {
+    io.to(socket.data.room).emit(this.type, result);
+  }
+}
+
 const postEvents = [
   PostCreate,
   PostUpdate,
@@ -282,6 +303,7 @@ const postEvents = [
   PostTagAdd,
   PostTagRemove,
   PostRead,
+  PersonalBoardAddPost,
 ];
 
 export default postEvents;

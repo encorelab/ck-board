@@ -14,13 +14,7 @@ import { Tag } from 'src/app/models/tag';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { Project } from 'src/app/models/project';
-import { SnackbarService } from 'src/app/services/snackbar.service';
-import {
-  Board,
-  BoardScope,
-  BoardBackgroundImage,
-  BoardPermissions,
-} from 'src/app/models/board';
+import { Board, BoardScope, BoardPermissions } from 'src/app/models/board';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
@@ -74,7 +68,6 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public upvoteService: UpvotesService,
     public canvasService: CanvasService,
-    public snackbarService: SnackbarService,
     public fileUploadService: FileUploadService,
     private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any

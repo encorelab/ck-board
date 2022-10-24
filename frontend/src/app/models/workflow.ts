@@ -1,3 +1,5 @@
+import { Group } from './group';
+
 export enum ContainerType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
@@ -61,6 +63,7 @@ export class GroupTask {
 export class ExpandedGroupTask {
   groupTask: GroupTask;
   workflow: TaskWorkflow;
+  group: Group;
 }
 
 export class Workflow {

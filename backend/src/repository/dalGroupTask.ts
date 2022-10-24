@@ -4,10 +4,12 @@ import dalGroup from './dalGroup';
 import dalWorkflow from './dalWorkflow';
 import { TaskWorkflowModel } from '../models/Workflow';
 import { isTask } from '../utils/workflow.helpers';
+import { GroupModel } from '../models/Group';
 
 export interface GroupTaskExpanded {
   groupTask: GroupTaskModel;
   workflow: TaskWorkflowModel;
+  group: GroupModel;
 }
 
 export const expandGroupTask = async (
@@ -20,9 +22,14 @@ export const expandGroupTask = async (
       `No task workflow associated with group task (id: ${task.groupTaskID})`
     );
 
+  const group = await dalGroup.getById(task.groupID);
+  if (!group)
+    throw new Error(`No group associated with group id: ${task.groupID}`);
+
   return {
     groupTask: task,
     workflow: workflow,
+    group: group,
   };
 };
 
@@ -31,18 +38,25 @@ export const expandGroupTasks = async (
 ): Promise<GroupTaskExpanded[]> => {
   const workflows = await dalWorkflow.getByIds(tasks.map((u) => u.workflowID));
 
-  return tasks.map((task) => {
-    const workflow = workflows.find((u) => u.workflowID == task.workflowID);
-    if (!workflow || !isTask<TaskWorkflowModel>(workflow))
-      throw new Error(
-        `No task workflow associated with group task (id: ${task.groupTaskID})`
-      );
+  return await Promise.all(
+    tasks.map(async (task) => {
+      const workflow = workflows.find((u) => u.workflowID == task.workflowID);
+      if (!workflow || !isTask<TaskWorkflowModel>(workflow))
+        throw new Error(
+          `No task workflow associated with group task (id: ${task.groupTaskID})`
+        );
 
-    return {
-      groupTask: task,
-      workflow: workflow,
-    };
-  });
+      const group = await dalGroup.getById(task.groupID);
+      if (!group)
+        throw new Error(`No group associated with group id: ${task.groupID}`);
+
+      return {
+        groupTask: task,
+        workflow: workflow,
+        group: group,
+      };
+    })
+  );
 };
 
 export const getById = async (id: string) => {

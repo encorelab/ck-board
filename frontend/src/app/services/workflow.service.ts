@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   DistributionWorkflow,
-  ExpandedGroupTask,
   GroupTask,
   GroupTaskEntity,
   GroupTaskType,

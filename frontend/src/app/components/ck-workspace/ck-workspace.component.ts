@@ -10,7 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
-import { AuthUser, Role } from 'src/app/models/user';
+import User, { AuthUser, Role } from 'src/app/models/user';
 import {
   ExpandedGroupTask,
   GroupTask,
@@ -68,6 +68,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   averageGroupProgress: number;
   listeners: Subscription[] = [];
   posts: HTMLPost[] = [];
+  members: User[] = [];
 
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
@@ -156,6 +157,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     const posts = await this.postService.getAll(postIDs);
     this.posts = await this.converters.toHTMLPosts(posts);
+    this.members = await this.userService.getMultipleByIds(
+      groupTask.group.members
+    );
     this._startListening();
   }
 
@@ -164,6 +168,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.currentGroupProgress = 0;
     this.averageGroupProgress = 0;
     this.posts = [];
+    this.members = [];
     this.listeners.map((l) => l.unsubscribe());
   }
 

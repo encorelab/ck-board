@@ -9,6 +9,7 @@ import {
   getDefaultBoardPermissions,
   getDefaultBoardTags,
 } from '../utils/board.helpers';
+import { BoardType } from '../models/Board';
 import { ApplicationError } from '../errors/base.errors';
 import { addUserToProject } from '../utils/project.helpers';
 
@@ -35,6 +36,7 @@ router.post('/', async (req, res) => {
       task: undefined,
       permissions: getDefaultBoardPermissions(),
       bgImage: image,
+      type: BoardType.BRAINSTORMING,
       tags: getDefaultBoardTags(boardID),
       initialZoom: 100,
       upvoteLimit: 5,

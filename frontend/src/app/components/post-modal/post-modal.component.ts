@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import {
   MatDialog,
@@ -13,7 +13,11 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Post, { ContentType, MultipleChoiceOptions } from 'src/app/models/post';
+import Post, {
+  ContentType,
+  MultipleChoiceOptions,
+  PostType,
+} from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
@@ -23,10 +27,12 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { UserService } from 'src/app/services/user.service';
 import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
-import { SnackbarService } from 'src/app/services/snackbar.service';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import Upvote from 'src/app/models/upvote';
 import { BoardService } from 'src/app/services/board.service';
+import { SnackbarService } from 'src/app/services/snackbar.service';
+import { Project } from 'src/app/models/project';
+import { ProjectService } from 'src/app/services/project.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -40,6 +46,7 @@ export class PostModalComponent {
   tagOptions: Tag[] = [];
 
   user: User;
+  project: Project;
   post: Post;
   author: User | undefined;
   buckets: any[];
@@ -48,6 +55,8 @@ export class PostModalComponent {
   selectedMultipleChoice: MultipleChoiceOptions;
   isMultipleChoiceSelected = false;
   submitMultipleChoiceAnswer = false;
+
+  PostType: typeof PostType = PostType;
 
   title: string;
   editingTitle: string;
@@ -86,6 +95,7 @@ export class PostModalComponent {
     public postService: PostService,
     public bucketService: BucketService,
     public socketService: SocketService,
+    public projectService: ProjectService,
     public canvasService: CanvasService,
     public userService: UserService,
     public fabricUtils: FabricUtils,
@@ -157,6 +167,12 @@ export class PostModalComponent {
       (isStudent && data.board.permissions.showAuthorNameStudent) ||
       (isTeacher && data.board.permissions.showAuthorNameTeacher);
     this.postColor = POST_COLOR;
+  }
+
+  ngOnInit(): void {
+    this.projectService.get(this.data.board.projectID).then((project) => {
+      this.project = project;
+    });
   }
 
   close(): void {
@@ -275,6 +291,40 @@ export class PostModalComponent {
     });
   }
 
+  async savePostToPersonalBoard() {
+    const personalBoard = await this.boardService.getPersonal(
+      this.project.projectID
+    );
+
+    if (!personalBoard) return;
+
+    const post: Post = {
+      postID: generateUniqueID(),
+      userID: this.user.userID,
+      boardID: personalBoard.boardID,
+      type: PostType.BOARD,
+      contentType: this.contentType,
+      multipleChoice: this.multipleChoiceOptions,
+      title: this.title,
+      author: this.user.username,
+      desc: this.desc,
+      tags: this.tags,
+      displayAttributes: this.post.displayAttributes,
+    };
+
+    const newPost = await this.postService.create(post);
+
+    const postInput = {
+      originalPostID: this.post.postID,
+      newPostID: newPost.postID,
+      personalBoardID: personalBoard.boardID,
+    };
+    if (newPost) {
+      this.socketService.emit(SocketEvent.PERSONAL_BOARD_ADD_POST, postInput);
+      this.openSnackBar('Successfully copied to your Personal Board');
+    }
+  }
+
   async handleUpvoteClick() {
     if (this._votingLocked())
       return this._setError(getErrorMessage('Voting is disabled!'));
@@ -375,6 +425,10 @@ export class PostModalComponent {
         },
       },
     });
+  }
+
+  openSnackBar(message: string) {
+    this.snackbarService.queueSnackbar(message);
   }
 
   private _votingLocked(): boolean {

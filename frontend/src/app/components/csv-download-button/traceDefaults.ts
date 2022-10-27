@@ -122,4 +122,12 @@ export default [
     value: 'postRead',
     default: 0,
   },
+  {
+    value: 'postAddedToPersonalBoardID',
+    default: '',
+  },
+  {
+    value: 'personalBoardSavedPostID',
+    default: '',
+  },
 ];

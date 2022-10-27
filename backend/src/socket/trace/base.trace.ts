@@ -27,6 +27,8 @@ export const createTrace = async (
       projectName: project.name,
       boardID: board.boardID,
       boardName: board.name,
+      boardType: board.type,
+      boardContext: board.scope,
       agentUserID: user.userID,
       agentUserName: user.username,
       clientTimestamp: new Date(traceContext.clientTimestamp),

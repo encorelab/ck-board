@@ -12,11 +12,19 @@
       <ng-template #elseBlock>
         <mat-card-subtitle>Anonymous</mat-card-subtitle>
       </ng-template>
+      <button
+        mat-icon-button
+        matTooltip="Save post to personal board"
+        *ngIf="project?.personalBoardSetting?.enabled && post?.type === PostType.BOARD && data.board.scope === 'PROJECT_SHARED'"
+        (click)="savePostToPersonalBoard()"
+      >
+        <mat-icon>star_border</mat-icon>
+      </button>
       <button mat-icon-button [matMenuTriggerFor]="bucketMenu">
         <mat-icon>library_add</mat-icon>
       </button>
       <mat-menu #bucketMenu="matMenu">
-        <div mat-menu-item *ngIf="buckets && buckets.length == 0">
+        <div mat-menu-item *ngIf="buckets && buckets.length === 0">
           No buckets available.
         </div>
         <div
@@ -51,21 +59,36 @@
       <p style="overflow-wrap: break-word" [innerHTML]="editingDesc">
         {{ editingDesc }}
       </p>
-      <div *ngIf="postCreationType === 'MULTIPLE_CHOICE'">
-        <mat-card 
+      <div *ngIf="contentType === 'MULTIPLE_CHOICE'">
+        <mat-card
           *ngFor="let multipleChoice of multipleChoiceOptions"
-          style="display:flex;margin: 10px 0;padding: 10px;justify-content:space-between"
-          [ngStyle]="{ 'background-color': isMultipleChoiceSelected && selectedMultipleChoice === multipleChoice ? submitMultipleChoiceAnswer ? multipleChoice.correct ? '#39e75f' : '#ff0000' : '#D3D3D3' : 'white'}"
+          style="
+            display: flex;
+            margin: 10px 0;
+            padding: 10px;
+            justify-content: space-between;
+          "
+          [ngStyle]="{
+            'background-color':
+              isMultipleChoiceSelected &&
+              selectedMultipleChoice === multipleChoice
+                ? submitMultipleChoiceAnswer
+                  ? multipleChoice.correct
+                    ? '#39e75f'
+                    : '#ff0000'
+                  : '#D3D3D3'
+                : 'white'
+          }"
           (click)="selectMultipleChoice($event, multipleChoice)"
         >
-          <mat-card-title style="font-size: small;margin:auto 0;">
+          <mat-card-title style="font-size: small; margin: auto 0">
             {{ multipleChoice.optionTitle }}
           </mat-card-title>
         </mat-card>
-        <mat-chip 
-          color="primary" 
-          selected 
-          [disabled]="!isMultipleChoiceSelected" 
+        <mat-chip
+          color="primary"
+          selected
+          [disabled]="!isMultipleChoiceSelected"
           (click)="answerMultipleChoice()"
         >
           Check Answer
@@ -78,7 +101,7 @@
         [ngStyle]="isUpvoted() && { color: '#4f47ff' }"
         (click)="handleUpvoteClick()"
       >
-        <mat-icon style="transform: scale(2);">arrow_drop_up</mat-icon>
+        <mat-icon style="transform: scale(2)">arrow_drop_up</mat-icon>
       </button>
       <button
         mat-icon-button
@@ -88,7 +111,7 @@
         {{ upvotes.length }}
       </button>
       <button mat-icon-button (click)="handleDownvoteClick()">
-        <mat-icon style="transform: scale(2);">arrow_drop_down</mat-icon>
+        <mat-icon style="transform: scale(2)">arrow_drop_down</mat-icon>
       </button>
     </mat-card-actions>
     <mat-card-actions style="margin-bottom: -1.25em">
@@ -110,7 +133,7 @@
             <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
           </mat-chip>
           <mat-menu #menu1="matMenu">
-            <div mat-menu-item *ngIf="tagOptions && tagOptions.length == 0">
+            <div mat-menu-item *ngIf="tagOptions && tagOptions.length === 0">
               No tags available.
             </div>
             <div
@@ -142,7 +165,11 @@
       Title is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>
-  <mat-form-field *ngIf="isEditing && postCreationType === 'OPEN_RESPONSE_MESSAGE'" appearance="outline" style="width: 100%">
+  <mat-form-field
+    *ngIf="isEditing && contentType === 'OPEN_RESPONSE_MESSAGE'"
+    appearance="outline"
+    style="width: 100%"
+  >
     <mat-label>Description</mat-label>
     <textarea
       [formControl]="descControl"
@@ -166,7 +193,7 @@
       Update
     </button>
     <button *ngIf="isEditing" mat-button (click)="toggleEdit()">Cancel</button>
-  </div> 
+  </div>
   <div class="comment-area" *ngIf="!isEditing">
     <div class="comments-header">
       <button class="comment-toggler" mat-button (click)="toggleComments()">
@@ -176,15 +203,20 @@
     </div>
     <div class="comment-box" *ngIf="showComments">
       <mat-card class="comment" *ngFor="let comment of comments">
-        <mat-card-title style="font-size: small">{{
-          comment.author
-        }}
-        <button mat-icon-button class="comment-delete" 
-        *ngIf="(showEditDelete && canEditDelete) || comment.userID === user.userID" 
-        (click)="deleteComment(comment)">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </mat-card-title>
+        <mat-card-title style="font-size: small"
+          >{{ comment.author }}
+          <button
+            mat-icon-button
+            class="comment-delete"
+            *ngIf="
+              (showEditDelete && canEditDelete) ||
+              comment.userID === user.userID
+            "
+            (click)="deleteComment(comment)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-card-title>
         <mat-card-content>
           {{ comment.comment }}
         </mat-card-content>
@@ -196,8 +228,8 @@
       *ngIf="showComments && canStudentComment"
     >
       <mat-label>Add Comment</mat-label>
-      <input matInput [appAutofocus]="showComments" [(ngModel)]="newComment" (keyup.enter)="addComment()" />
-      <button color="primary" matSuffix mat-button (click)="addComment()">
+      <input matInput [appAutofocus]="showComments" [(ngModel)]="newComment" (keyup.enter)="newComment ? addComment(): ''" />
+      <button [disabled]="!newComment" color="primary" matSuffix mat-button (click)="addComment()">
         Comment!
       </button>
     </mat-form-field>

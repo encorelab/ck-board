@@ -18,7 +18,7 @@ export class MultipleChoiceOptions {
   formula?: boolean;
 }
 
-export enum PostCreationType {
+export enum ContentType {
   MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
   OPEN_RESPONSE_MESSAGE = 'OPEN_RESPONSE_MESSAGE',
 }
@@ -35,7 +35,7 @@ export default class Post {
   boardID: string;
 
   type: PostType;
-  postCreationType: PostCreationType;
+  contentType: ContentType;
   title: string;
   desc: string;
   multipleChoice?: MultipleChoiceOptions[];

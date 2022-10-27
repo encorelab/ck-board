@@ -123,14 +123,14 @@
             [(ngModel)]="distributionWorkflowType"
             [formControl]="workflowTypeFormControl"
           >
-              <mat-radio-button value="RANDOM">Random</mat-radio-button>
-              <mat-radio-button value="TAG">Tag</mat-radio-button>
-              <mat-radio-button value="UPVOTES">Upvotes</mat-radio-button>
+              <mat-radio-button value="RANDOM">Randomly distribute</mat-radio-button>
+              <mat-radio-button value="TAG">Copy all with specified tag</mat-radio-button>
+              <mat-radio-button value="UPVOTES">Copy all with min # upvotes</mat-radio-button>
           </mat-radio-group>
           <div style="margin:20px 0">
             <section *ngIf="distributionWorkflowType === 'RANDOM'">
               <mat-form-field class="example-full-width" appearance="fill">
-                <mat-label>Posts Per Bucket/Board:</mat-label>
+                <mat-label>Posts per Destination</mat-label>
                 <input type="number" min="0" [(ngModel)]="postsPerBucket" matInput >
               </mat-form-field>
               <mat-error *ngIf="postsPerBucket <= 0">

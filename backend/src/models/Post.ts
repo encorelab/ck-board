@@ -1,7 +1,7 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 import { TagModel } from './Tag';
 
-export enum PostCreationType {
+export enum ContentType {
   MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
   OPEN_RESPONSE_MESSAGE = 'OPEN_RESPONSE_MESSAGE',
 }
@@ -65,8 +65,8 @@ export class PostModel {
   @prop({ enum: PostType, type: String, required: true })
   public type!: PostType;
 
-  @prop({ enum: PostCreationType, type: String, required: true })
-  public postCreationType!: PostCreationType;
+  @prop({ enum: ContentType, type: String, required: true })
+  public contentType!: ContentType;
 
   @prop({ required: true })
   public title!: string;

@@ -13,10 +13,7 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { PostService } from 'src/app/services/post.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Post, {
-  PostCreationType,
-  MultipleChoiceOptions,
-} from 'src/app/models/post';
+import Post, { ContentType, MultipleChoiceOptions } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { SocketEvent } from 'src/app/utils/constants';
 import { POST_COLOR } from 'src/app/utils/constants';
@@ -46,7 +43,7 @@ export class PostModalComponent {
   post: Post;
   author: User | undefined;
   buckets: any[];
-  postCreationType: PostCreationType;
+  contentType: ContentType;
   multipleChoiceOptions: MultipleChoiceOptions[] | undefined = [];
   selectedMultipleChoice: MultipleChoiceOptions;
   isMultipleChoiceSelected = false;
@@ -98,7 +95,7 @@ export class PostModalComponent {
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
-    this.postCreationType = data.post.postCreationType;
+    this.contentType = data.post.contentType;
     this.showComments = data?.commentPress ? true : false;
     this.postService.get(data.post.postID).then(async (p: Post) => {
       this.post = p;
@@ -120,8 +117,8 @@ export class PostModalComponent {
         this.data.post.userID == this.user.userID ||
         this.user.role == Role.TEACHER;
       this.author = await this.userService.getOneById(p.userID);
-      this.postCreationType = p.postCreationType;
-      if (this.postCreationType === PostCreationType.MULTIPLE_CHOICE) {
+      this.contentType = p.contentType;
+      if (this.contentType === ContentType.MULTIPLE_CHOICE) {
         this.multipleChoiceOptions = p.multipleChoice;
       }
     });
@@ -184,7 +181,7 @@ export class PostModalComponent {
   }
 
   toggleEdit() {
-    if (this.postCreationType === PostCreationType.MULTIPLE_CHOICE) {
+    if (this.contentType === ContentType.MULTIPLE_CHOICE) {
       this.editMultipleChoicePost();
     } else {
       this.isEditing = !this.isEditing;

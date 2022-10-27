@@ -7,7 +7,7 @@ import Bucket from 'src/app/models/bucket';
 import Post, {
   DisplayAttributes,
   PostType,
-  PostCreationType,
+  ContentType,
   MultipleChoiceOptions,
 } from 'src/app/models/post';
 import { Tag } from 'src/app/models/tag';
@@ -45,7 +45,7 @@ export class AddPostComponent {
   multipleChoiceOptions: MultipleChoiceOptions[] = [];
   correctMultipleChoiceSelected = false;
   editingPost: Post | undefined;
-  postCreationType: PostCreationType = PostCreationType.OPEN_RESPONSE_MESSAGE;
+  contentType: ContentType = ContentType.OPEN_RESPONSE_MESSAGE;
 
   title = '';
   message = '';
@@ -76,7 +76,7 @@ export class AddPostComponent {
     this.boardType = data.board.type;
     this.editingPost = data.editingPost;
     if (this.editingPost) {
-      this.postCreationType = PostCreationType.MULTIPLE_CHOICE;
+      this.contentType = ContentType.MULTIPLE_CHOICE;
       this.title = this.editingPost.title;
       this.multipleChoiceOptions = this.editingPost.multipleChoice
         ? this.editingPost.multipleChoice
@@ -144,7 +144,7 @@ export class AddPostComponent {
         !this.correctMultipleChoiceSelected ||
         !this.questionPromptControl.valid
       );
-    } else if (this.postCreationType == PostCreationType.MULTIPLE_CHOICE) {
+    } else if (this.contentType == ContentType.MULTIPLE_CHOICE) {
       return (
         !this.titleControl.valid ||
         !this.message ||
@@ -154,7 +154,7 @@ export class AddPostComponent {
       );
     } else if (
       this.boardType === BoardType.QUESTION_AUTHORING &&
-      this.postCreationType == PostCreationType.OPEN_RESPONSE_MESSAGE
+      this.contentType == ContentType.OPEN_RESPONSE_MESSAGE
     ) {
       return !this.titleControl.valid || !this.questionPromptControl.valid;
     } else {
@@ -184,7 +184,7 @@ export class AddPostComponent {
       userID: this.user.userID,
       boardID: this.board.boardID,
       type: PostType.BOARD,
-      postCreationType: this.postCreationType,
+      contentType: this.contentType,
       multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       author: this.user.username,
@@ -205,7 +205,7 @@ export class AddPostComponent {
       boardID: this.board.boardID,
       author: this.user.username,
       type: PostType.BUCKET,
-      postCreationType: this.postCreationType,
+      contentType: this.contentType,
       multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       desc: this.message,
@@ -223,7 +223,7 @@ export class AddPostComponent {
       boardID: this.board.boardID,
       author: this.user.username,
       type: PostType.LIST,
-      postCreationType: this.postCreationType,
+      contentType: this.contentType,
       multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       desc: this.message,

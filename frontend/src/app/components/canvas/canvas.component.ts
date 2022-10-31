@@ -618,6 +618,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     ]);
   }
 
+  openCkMonitor() {
+    this.router.navigate([
+      `/project/${this.projectID}/board/${this.boardID}/monitor`,
+    ]);
+  }
+
   openTaskDialog() {
     if (!this.board.task) return;
 

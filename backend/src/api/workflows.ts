@@ -237,7 +237,6 @@ router.get('/task/:workflowID/groupTask', async (req, res) => {
   const groupTasks: GroupTaskModel[] = await dalGroupTask.getAllByWorkflowId(
     workflowID
   );
-  console.log(groupTasks);
   if (representation == 'expanded') {
     return res
       .status(200)

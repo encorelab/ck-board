@@ -22,117 +22,48 @@
   </app-toolbar>
   <mat-sidenav-container class="drawer-container">
     <mat-sidenav #drawer mode="side" opened [fixedInViewport]="true" [fixedTopGap]="64" style="position: fixed">
-      <div *ngIf="activeGroupTasks">
-        <mat-list>
-          <ng-container *ngIf="showActive">
-            <mat-list-item *ngFor="let workflow of taskWorkflows">
-              <mat-icon matListIcon>timeline</mat-icon>
-              <h3 matLine> {{workflow.name}} </h3>
-              <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
-              <span style="flex: 1 1 auto"></span>
-              <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
-              <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
-            </mat-list-item>
-          </ng-container>
-          <!-- <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
-            Pending Tasks ({{ inactiveGroupTasks.length }})
-            <mat-icon>{{ showInactive ? 'expand_less' : 'expand_more' }}</mat-icon>
-          </button>
-          <ng-container *ngIf="showInactive">
-            <mat-list-item *ngFor="let task of inactiveGroupTasks">
-              <mat-icon matListIcon>timeline</mat-icon>
-              <h3 matLine> {{task.group.name}}: {{task.workflow.name}} </h3>
-              <p matLine class="list-task-prompt"> {{task.workflow.prompt}} </p>
-              <span style="flex: 1 1 auto"></span>
-              <button mat-raised-button color="primary" style="margin-left: 10px;" (click)="begin(task)">Begin Task</button>
-            </mat-list-item>
-          </ng-container>
-          <mat-divider></mat-divider>
-          <button class="subheader-button" mat-button (click)="showActive = !showActive">
-            Active Tasks ({{ activeGroupTasks.length }})
-            <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
-          </button>
-          <ng-container *ngIf="showActive">
-            <mat-list-item *ngFor="let task of activeGroupTasks">
-              <mat-icon matListIcon>timeline</mat-icon>
-              <h3 matLine> {{task.group.name}}: {{task.workflow.name}} </h3>
-              <p matLine class="list-task-prompt"> {{task.workflow.prompt}} </p>
-              <span style="flex: 1 1 auto"></span>
-              <button *ngIf="(runningGroupTask && runningGroupTask.groupTask.groupTaskID !== task.groupTask.groupTaskID) || (!runningGroupTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(task)">Resume Task</button>
-              <button *ngIf="runningGroupTask && runningGroupTask.groupTask.groupTaskID === task.groupTask.groupTaskID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
-            </mat-list-item>
-          </ng-container>
-          <mat-divider></mat-divider>
-          <button class="subheader-button" mat-button (click)="showCompleted = !showCompleted">
-            Completed Tasks ({{ completeGroupTasks.length }})
-            <mat-icon>{{ showCompleted ? 'expand_less' : 'expand_more' }}</mat-icon>
-          </button>
-          <ng-container *ngIf="showCompleted">
-            <mat-list-item *ngFor="let task of completeGroupTasks">
-              <mat-icon matListIcon>timeline</mat-icon>
-              <h3 matLine> {{task.group.name}}: {{task.workflow.name}} </h3>
-              <p matLine class="list-task-prompt"> {{task.workflow.prompt}} </p>
-              <span style="flex: 1 1 auto"></span>
-              <button *ngIf="(runningGroupTask && runningGroupTask.groupTask.groupTaskID !== task.groupTask.groupTaskID) || (!runningGroupTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(task)">Monitor Task</button>
-              <button *ngIf="runningGroupTask && runningGroupTask.groupTask.groupTaskID === task.groupTask.groupTaskID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
-            </mat-list-item>
-          </ng-container>
-          <mat-divider></mat-divider> -->
-        </mat-list>
-      </div>
+      <mat-list>
+        <mat-list-item *ngFor="let workflow of taskWorkflows">
+          <mat-icon matListIcon>timeline</mat-icon>
+          <h3 matLine> {{workflow.name}} </h3>
+          <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
+          <span style="flex: 1 1 auto"></span>
+          <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
+          <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+        </mat-list-item>
+      </mat-list>
     </mat-sidenav>
     <mat-sidenav-content>
       <div class="heading no-workflow-select" *ngIf="!runningTask">
         No task selected!
       </div>
       <div style="display: flex; flex-direction: row;">
-        <!-- <div class="heading no-posts" *ngIf="runningGroupTask && (!posts || posts.length === 0)">
-          No posts to review!
-        </div> -->
-        <!-- <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask && posts && posts.length > 0">
-          <ng-template swiperSlide *ngFor="let htmlPost of posts">
-            <div (click)="$event.stopPropagation();" style="display: flex; flex-direction: column; gap: 10px;">
-              <app-html-post (click)="$event.stopPropagation();" [post]="htmlPost" style="width: 360px; height: 100%;"></app-html-post>
-              <div style="display: flex; flex-direction: row;">
-                <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Previous</button>
-                <button (click)="submitPost(htmlPost)" mat-raised-button color="primary" [disabled]="runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE || !postSubmittable(htmlPost)" style="width: 30%; margin: 0px 5px;">Submit</button>
-                <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Next</button>
-              </div>
-            </div>
-          </ng-template>
-        </swiper> -->
         <div *ngIf="runningTask">
-          <mat-card class="example-card" style="width: 450px; margin: 10px 10px 0 0">
+          <mat-card class="example-card" style="width: 500px; margin: 20px 20px 10px 10px">
             <mat-card-title>Task Progress</mat-card-title>
+            <div class="mat-elevation-z3 table_style">
+              <table mat-table [dataSource]="runningTaskTableData" class="table">
+
+                <ng-container matColumnDef="group-name">
+                  <th mat-header-cell *matHeaderCellDef> Group Name </th>
+                  <td mat-cell *matCellDef="let group"> {{group.groupName}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="members">
+                  <th mat-header-cell *matHeaderCellDef> Members </th>
+                  <td mat-cell *matCellDef="let group"> {{group.groupMembers.toString()}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="progress">
+                  <th mat-header-cell *matHeaderCellDef> Progress </th>
+                  <td mat-cell *matCellDef="let group"> {{group.progress}} % </td>
+                </ng-container>
 
             
-            <!-- <mat-card-content>
-              <p>{{ runningGroupTask.workflow.prompt }} </p>
-              <section>
-                <h5>Actions Required:</h5>
-                <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
-                  <li *ngIf="hasCommentRequirement(runningGroupTask)">Comment on each post at least once!</li>
-                  <li *ngIf="hasTagRequirement(runningGroupTask)">Tag each post at least once!</li>
-                </ul>
-              </section>
-            </mat-card-content>
-            <div style="margin-bottom: 10px;">
-              <label class="example-margin">Your Group's Progress</label>
-              <mat-progress-bar mode="determinate" [value]="currentGroupProgress"></mat-progress-bar>
+                <tr mat-header-row *matHeaderRowDef="displayColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayColumns;"></tr>
+              </table>
             </div>
-            <div>
-              <label class="example-margin">Avg. Group's Progress</label>
-              <mat-progress-bar mode="determinate" [value]="averageGroupProgress" color="accent"></mat-progress-bar>
-            </div>
-            <div style="padding: 20px 0 20px 0;">
-              <button mat-raised-button color="primary" [disabled]="!taskSubmittable(runningGroupTask)" (click)="markComplete()">Mark Task Complete</button>
-            </div>
-            <section>
-              <h4>Group Members:</h4>
-              <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
-                <li *ngFor="let member of members">{{member.username}}</li>
-              </ul>
-            </section> -->
           </mat-card>
         </div>
         <div *ngIf="runningTask">
@@ -149,26 +80,17 @@
               </section>
             </mat-card-content>
             <div style="margin-bottom: 10px;">
-              <label class="example-margin">Max Group's Progress</label>
+              <label class="example-margin">Max Progress</label>
               <mat-progress-bar mode="determinate" [value]="maxGroupProgress"></mat-progress-bar>
             </div>
             <div>
-              <label class="example-margin">Avg. Group's Progress</label>
+              <label class="example-margin">Avg Progress</label>
               <mat-progress-bar mode="determinate" [value]="averageGroupProgress" color="accent"></mat-progress-bar>
             </div>
             <div>
-              <label class="example-margin">Min Group's Progress</label>
+              <label class="example-margin">Min Progress</label>
               <mat-progress-bar mode="determinate" [value]="minGroupProgress" color="accent"></mat-progress-bar>
             </div>
-            <!-- <div style="padding: 20px 0 20px 0;">
-              <button mat-raised-button color="primary" [disabled]="!taskSubmittable(runningGroupTask)" (click)="markComplete()">Mark Task Complete</button>
-            </div> -->
-            <!-- <section>
-              <h4>Group Members:</h4>
-              <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
-                <li *ngFor="let member of members">{{member.username}}</li>
-              </ul>
-            </section> -->
           </mat-card>
         </div>
       </div>

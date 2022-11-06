@@ -37,9 +37,15 @@ import { SocketEvent } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
 import { interval, Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { MatTableDataSource } from '@angular/material/table';
 
-// install Swiper modules
 SwiperCore.use([EffectCards]);
+
+interface MonitorData {
+  groupName: string;
+  groupMembers: string[];
+  progress: string;
+}
 
 @Component({
   selector: 'app-ck-monitor',
@@ -50,28 +56,19 @@ SwiperCore.use([EffectCards]);
 export class CkMonitorComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
 
-  showInactive = true;
-  showActive = true;
-  showCompleted = false;
-
   user: AuthUser;
   group: Group;
 
   project: Project;
   board: Board;
-
-  inactiveGroupTasks: ExpandedGroupTask[] = [];
-  activeGroupTasks: ExpandedGroupTask[] = [];
-  completeGroupTasks: ExpandedGroupTask[] = [];
-  expandedBoardTasks: ExpandedGroupTask[][] = [];
   taskWorkflows: TaskWorkflow[] = [];
   taskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<
     TaskWorkflow,
     ExpandedGroupTask[]
   >();
 
-  runningGroupTask: ExpandedGroupTask | null;
   runningTask: TaskWorkflow | null;
+  runningTaskTableData: MatTableDataSource<MonitorData>;
   currentGroupProgress: number;
   averageGroupProgress: number;
   maxGroupProgress: number;
@@ -83,6 +80,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
+
+  displayColumns: string[] = ['group-name', 'members', 'progress'];
 
   constructor(
     public userService: UserService,
@@ -123,123 +122,64 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     );
 
     this.taskWorkflows = await this.workflowService.getTask(boardID);
-    console.log(this.taskWorkflows);
 
     for (let i = 0; i < this.taskWorkflows.length; i++) {
-      console.log(this.taskWorkflows[i]);
       const groupTasks = await this.workflowService.getGroupTasksByWorkflow(
         this.taskWorkflows[i].workflowID,
         'expanded'
       );
-      // groupTasks.sort((a, b) => a.groupTask.progress)
+      groupTasks.sort((a, b) =>
+        this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
+      );
       this.taskWorkflowGroupMap.set(this.taskWorkflows[i], groupTasks);
     }
-    console.log(this.taskWorkflowGroupMap);
-
-    // const boardTasks = await this.workflowService.getTask(boardID);
-    // for (let i = 0; i < boardTasks.length; i++) {
-    //   this.expandedBoardTasks.push(
-    //     await this.workflowService.getGroupTasksByWorkflow(
-    //       boardTasks[i].workflowID,
-    //       'expanded'
-    //     )
-    //   );
-    // }
-    // console.log(this.expandedBoardTasks);
-    // console.log(boardTasks);
-
-    // const tasks = await this.workflowService.getGroupTasks(boardID, 'expanded');
-    // tasks.forEach((t) => {
-    //   if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
-    //     this.inactiveGroupTasks.push(t);
-    //   } else if (t.groupTask.status == GroupTaskStatus.ACTIVE) {
-    //     this.activeGroupTasks.push(t);
-    //   } else if (t.groupTask.status == GroupTaskStatus.COMPLETE) {
-    //     this.completeGroupTasks.push(t);
-    //   }
-    // });
-    // console.log(tasks);
-
     this.socketService.connect(this.user.userID, this.board.boardID);
     return true;
   }
 
-  async begin(expandedGroupTask: ExpandedGroupTask): Promise<void> {
-    const groupTask = expandedGroupTask.groupTask;
-    groupTask.status = GroupTaskStatus.ACTIVE;
-    await this.workflowService.updateGroupTask(groupTask.groupTaskID, {
-      status: GroupTaskStatus.ACTIVE,
-    });
-
-    this.inactiveGroupTasks = this.inactiveGroupTasks.filter(
-      (g) => g.groupTask.groupTaskID !== groupTask.groupTaskID
-    );
-    this.activeGroupTasks.push(expandedGroupTask);
-    // this.view(expandedGroupTask);
-  }
-
   async view(task: TaskWorkflow): Promise<void> {
     this.runningTask = task;
-    //   this.runningGroupTask = groupTask;
     const progressData = await this._calcAverageProgress(
       this.taskWorkflowGroupMap.get(this.runningTask)
     );
     this.minGroupProgress = progressData[0];
     this.averageGroupProgress = progressData[1];
     this.maxGroupProgress = progressData[2];
-
-    //   let postIDs: string[] = [];
-    //   if (groupTask.groupTask.status == GroupTaskStatus.COMPLETE) {
-    //     postIDs = postIDs.concat(Object.keys(groupTask.groupTask.progress));
-    //   } else {
-    //     postIDs = postIDs.concat(groupTask.groupTask.posts);
-    //   }
-
-    //   const posts = await this.postService.getAll(postIDs);
-    //   this.posts = await this.converters.toHTMLPosts(posts);
-    //   this.members = await this.userService.getMultipleByIds(
-    //     groupTask.group.members
-    //   );
+    await this.updateRunningTaskDataSource(task);
     this._startListening();
+  }
+
+  async updateRunningTaskDataSource(workflow: TaskWorkflow): Promise<void> {
+    const groupTasks = this.taskWorkflowGroupMap.get(workflow);
+    const groupTasksTableFormat: MonitorData[] = [];
+    if (groupTasks) {
+      for (let i = 0; i < groupTasks.length; i++) {
+        const groupMembers: string[] = [];
+        for (let j = 0; j < groupTasks[i].group.members.length; j++) {
+          groupMembers.push(
+            (await this.userService.getOneById(groupTasks[i].group.members[j]))
+              .username
+          );
+        }
+        groupTasksTableFormat.push({
+          groupName: groupTasks[i].group.name,
+          progress: this._calcGroupProgress(groupTasks[i]).toFixed(2),
+          groupMembers: groupMembers,
+        });
+      }
+    }
+    this.runningTaskTableData = new MatTableDataSource<MonitorData>(
+      groupTasksTableFormat
+    );
   }
 
   close(): void {
     this.runningTask = null;
-    this.currentGroupProgress = 0;
+    this.runningTaskTableData = new MatTableDataSource<MonitorData>();
+    this.minGroupProgress = 0;
     this.averageGroupProgress = 0;
-    this.posts = [];
-    this.members = [];
+    this.maxGroupProgress = 0;
     this.listeners.map((l) => l.unsubscribe());
-  }
-
-  async submitPost(post: HTMLPost): Promise<void> {
-    if (!this.runningGroupTask) return;
-
-    const task: GroupTask = this.runningGroupTask.groupTask;
-    this.runningGroupTask.groupTask = await this.workflowService.submitPost(
-      task.groupTaskID,
-      post.post.postID
-    );
-
-    this.posts = this.posts.filter((p) => p.post.postID !== post.post.postID);
-    this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
-  }
-
-  async markComplete(): Promise<void> {
-    if (!this.runningGroupTask) return;
-
-    const task: GroupTask = this.runningGroupTask.groupTask;
-    this.runningGroupTask.groupTask =
-      await this.workflowService.updateGroupTask(task.groupTaskID, {
-        status: GroupTaskStatus.COMPLETE,
-      });
-
-    this.activeGroupTasks = this.activeGroupTasks.filter(
-      (g) => g.groupTask.groupTaskID !== task.groupTaskID
-    );
-    this.completeGroupTasks.push(this.runningGroupTask);
-
-    this.close();
   }
 
   showBucketsModal(): void {
@@ -264,30 +204,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     });
   }
 
-  postSubmittable(post: HTMLPost): boolean {
-    if (!this.runningGroupTask) return false;
-
-    const progress = this.runningGroupTask.groupTask.progress;
-    const postProgress = progress[post.post.postID];
-
-    if (!postProgress) return false;
-
-    const amountRequired = postProgress.reduce(
-      (sum: number, a: TaskAction) => sum + a.amountRequired,
-      0
-    );
-
-    return amountRequired == 0;
-  }
-
-  taskSubmittable(groupTask: ExpandedGroupTask): boolean {
-    return (
-      this.currentGroupProgress == 100 &&
-      groupTask.groupTask.posts.length == 0 &&
-      groupTask.groupTask.status == GroupTaskStatus.ACTIVE
-    );
-  }
-
   hasCommentRequirement(runningTask: TaskWorkflow): boolean {
     return (
       runningTask.requiredActions.find(
@@ -307,94 +223,30 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.listeners.push(
       this.socketService.listen(
         SocketEvent.WORKFLOW_PROGRESS_UPDATE,
-        (updates) => {
+        async (updates) => {
           const found = updates.find(
-            (u) =>
-              u.groupTask.groupTaskID ==
-              this.runningGroupTask?.groupTask.groupTaskID
+            (u) => u.workflow.workflowID == this.runningTask?.workflowID
           );
           if (found) {
-            this.runningGroupTask = found;
-            this.currentGroupProgress = this._calcGroupProgress(
-              this.runningGroupTask
+            const groupTasks =
+              await this.workflowService.getGroupTasksByWorkflow(
+                found.workflow.workflowID,
+                'expanded'
+              );
+            groupTasks.sort((a, b) =>
+              this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
             );
+            this.taskWorkflowGroupMap.set(found.workflow, groupTasks);
+            this.runningTask = found.workflow;
+            const progressData = await this._calcAverageProgress(groupTasks);
+            await this.updateRunningTaskDataSource(found.workflow);
+            this.minGroupProgress = progressData[0];
+            this.averageGroupProgress = progressData[1];
+            this.maxGroupProgress = progressData[2];
           }
         }
       )
     );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result) => {
-        const found = this.posts.find(
-          (p) => p.post.postID == result.upvote.postID
-        );
-        if (found) {
-          found.upvotes.push(result.upvote);
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result) => {
-        const found = this.posts.find(
-          (p) => p.post.postID == result.upvote.postID
-        );
-        if (found) {
-          found.upvotes = found.upvotes.filter(
-            (upvote) => upvote.upvoteID != result.upvote.upvoteID
-          );
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result) => {
-        const found = this.posts.find(
-          (p) => p.post.postID == result.comment.postID
-        );
-        if (found) {
-          found.comments += 1;
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_COMMENT_REMOVE, (result) => {
-        const found = this.posts.find(
-          (p) => p.post.postID == result.comment.postID
-        );
-        if (found) {
-          found.comments -= 1;
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post }) => {
-        const found = this.posts.find((p) => p.post.postID == post.postID);
-        if (found) {
-          found.post = post;
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post }) => {
-        const found = this.posts.find((p) => p.post.postID == post.postID);
-        if (found) {
-          found.post = post;
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(
-        SocketEvent.WORKFLOW_POST_SUBMIT,
-        (postID: string) => {
-          this.posts = this.posts.filter((p) => p.post.postID != postID);
-        }
-      )
-    );
-    // this.listeners.push(
-    //   interval(30 * 1000).subscribe(async () => {
-    //     this.averageGroupProgress = await this._calcAverageProgress(
-    //       this.runningGroupTask
-    //     )[1];
-    //   })
-    // );
   }
 
   ngOnDestroy(): void {
@@ -436,13 +288,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     tasks: ExpandedGroupTask[] | undefined
   ): Promise<number[]> {
     if (!tasks) return [0, 0, 0];
-
-    // const tasks: ExpandedGroupTask[] =
-    //   await this.workflowService.getGroupTasksByWorkflow(
-    //     task.workflow.workflowID,
-    //     'expanded'
-    //   );
-
     let totalProgress = 0;
     let _min = Infinity;
     let _max = -1 * Infinity;

@@ -229,7 +229,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handleWorkflowPost = (postID: string): void => {
-    console.log(postID);
     this.handlePostDeleteEvent(postID);
   };
 

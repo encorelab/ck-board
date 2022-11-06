@@ -6,7 +6,7 @@
         <mat-icon>task</mat-icon>
       </button>
       <span style="flex: 1 1 auto"></span>
-      <button mat-icon-button>
+      <button mat-icon-button *ngIf="user.role === Role.TEACHER">
         <mat-icon (click)="openCkMonitor()" matTooltip="CK Monitor">av_timer</mat-icon>
       </button>
       <button mat-icon-button>

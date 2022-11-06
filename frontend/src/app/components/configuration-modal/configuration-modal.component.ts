@@ -33,6 +33,7 @@ export class ConfigurationModalComponent {
 
   boardID: string;
   boardName: string;
+  questionAuthoringType: string;
 
   isTeacherPersonalBoard = false;
 

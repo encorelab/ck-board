@@ -2,9 +2,16 @@
   width: 100%;
 }
 
-.cancel {
+.cancel, .correct {
   padding-left: 10px;
   width: 12px;
   height: 15px;
   font-size: medium;
+}
+
+.addMultipleChoiceButton{
+  float: right;
+  position: absolute; 
+  right: 0; 
+  margin: 10px 10px;
 }

@@ -1,7 +1,7 @@
 import { mongo } from 'mongoose';
 import { ForbiddenError, UnauthorizedError } from '../errors/client.errors';
 import { InternalServerError } from '../errors/server.errors';
-import { BoardScope } from '../models/Board';
+import { BoardScope, BoardType } from '../models/Board';
 import Project, { ProjectModel } from '../models/Project';
 import { Role, UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
@@ -44,6 +44,7 @@ export async function addUserToProject(
       scope: BoardScope.PROJECT_PERSONAL,
       task: undefined,
       permissions: getDefaultBoardPermissions(),
+      type: BoardType.BRAINSTORMING,
       bgImage: image,
       tags: getDefaultBoardTags(boardID),
       initialZoom: 100,

@@ -1,6 +1,8 @@
+import { UnauthorizedError } from '../errors/client.errors';
 import Project, { ProjectModel } from '../models/Project';
 import mongoose from 'mongoose';
 import dalBoard from './dalBoard';
+import { Role } from '../models/User';
 
 export const getById = async (id: string) => {
   try {
@@ -20,13 +22,36 @@ export const getByUserId = async (id: string) => {
   }
 };
 
-export const getByJoinCode = async (code: string) => {
+export const getByJoinCode = async (code: string, role: Role) => {
   try {
-    const project = await Project.findOne({ joinCode: code });
-    return project;
+    if (role == Role.STUDENT) {
+      return await Project.findOne({ studentJoinCode: code });
+    } else {
+      return await Project.findOne({ teacherJoinCode: code });
+    }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
+};
+
+export const addStudent = async (code: string, userID: string) => {
+  const project = await Project.findOne({ studentJoinCode: code });
+  if (!project) {
+    throw new UnauthorizedError('Invalid Join Code!');
+  }
+  await project.updateOne({ $push: { members: userID } });
+
+  return project;
+};
+
+export const addTeacher = async (code: string, userID: string) => {
+  const project = await Project.findOne({ teacherJoinCode: code });
+  if (!project) {
+    throw new UnauthorizedError('Invalid Join Code!');
+  }
+  await project.updateOne({ $push: { teacherIDs: userID, members: userID } });
+
+  return project;
 };
 
 export const create = async (project: ProjectModel) => {
@@ -88,6 +113,8 @@ const dalProject = {
   getByUserId,
   getByJoinCode,
   create,
+  addStudent,
+  addTeacher,
   update,
   removeBoard,
   remove,

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Board, { BoardModel } from '../models/Board';
+import Board, { BoardModel, BoardScope } from '../models/Board';
 import dalTrace from './dalTrace';
 import dalPost from './dalPost';
 import dalWorkflow from './dalWorkflow';
@@ -19,19 +19,35 @@ export const getById = async (id: string) => {
   }
 };
 
-export const getMultipleByIds = async (ids: string[]) => {
+export const getMultipleByIds = async (
+  ids: string[],
+  filter?: Partial<BoardModel>
+) => {
   try {
-    const boards = await Board.find({ boardID: { $in: ids } });
+    const boards = await Board.find({ ...filter, boardID: { $in: ids } });
     return boards;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
-export const getByUserId = async (id: string) => {
+export const getByProject = async (projectID: string) => {
   try {
-    const boards = await Board.find({ members: id });
+    const boards = await Board.find({ projectID });
     return boards;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getPersonal = async (projectID: string, ownerID: string) => {
+  try {
+    const board = await Board.findOne({
+      ownerID,
+      projectID,
+      scope: BoardScope.PROJECT_PERSONAL,
+    });
+    return board;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -52,6 +68,14 @@ export const update = async (id: string, board: Partial<BoardModel>) => {
       new: true,
     });
     return updatedBoard;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const updateMany = async (ids: string[], board: Partial<BoardModel>) => {
+  try {
+    await Board.updateMany({ boardID: ids }, board);
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -84,9 +108,11 @@ export const remove = async (id: string) => {
 const dalBoard = {
   getById,
   getMultipleByIds,
-  getByUserId,
+  getByProject,
+  getPersonal,
   create,
   update,
+  updateMany,
   remove,
 };
 

@@ -27,7 +27,7 @@ import {
   SocketEvent,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
-import { Board, BoardPermissions } from 'src/app/models/board';
+import { Board, BoardPermissions, BoardScope } from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
@@ -51,6 +51,8 @@ import { TraceService } from 'src/app/services/trace.service';
 import { DistributionWorkflow } from 'src/app/models/workflow';
 import Upvote from 'src/app/models/upvote';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
+import { ProjectTodoListModalComponent } from '../project-todo-list-modal/project-todo-list-modal.component';
 
 @Component({
   selector: 'app-canvas',
@@ -81,6 +83,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   mode: Mode = Mode.EDIT;
   modeType = Mode;
   Role: typeof Role = Role;
+  BoardScope: typeof BoardScope = BoardScope;
 
   showList = false;
   showBuckets = false;
@@ -131,6 +134,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent],
       [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent],
       [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
+      [SocketEvent.WORKFLOW_POST_SUBMIT, this.handleWorkflowPost],
       [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
     ]);
   }
@@ -224,6 +228,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   };
 
+  handleWorkflowPost = (postID: string): void => {
+    console.log(postID);
+    this.handlePostDeleteEvent(postID);
+  };
+
   handlePostStartMoveEvent = (post: Post) => {
     let obj = this.fabricUtils.getObjectFromId(post.postID);
     obj = this.fabricUtils.setFillColor(obj, POST_MOVING_FILL);
@@ -281,8 +290,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   handlePostCommentRemoveEvent = (result: any) => {
     let existing = this.fabricUtils.getObjectFromId(result.comment.postID);
-    existing = this.fabricUtils.setCommentCount(existing, result.amount);
-    this.canvas.requestRenderAll();
+    if (existing) {
+      existing = this.fabricUtils.setCommentCount(existing, result.amount);
+      this.canvas.requestRenderAll();
+    }
   };
 
   handlePostTagAddEvent = ({ post, tag }) => {
@@ -500,7 +511,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   openSettingsDialog() {
     this._openDialog(ConfigurationModalComponent, {
-      projectID: this.projectID,
+      project: this.project,
       board: this.board,
       update: (board: Board, removed = false) => {
         const previousBoard = this.board;
@@ -601,7 +612,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
       (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher;
   }
 
+  openWorkspace() {
+    this.router.navigate([
+      `/project/${this.projectID}/board/${this.boardID}/workspace`,
+    ]);
+  }
+
   openTaskDialog() {
+    if (!this.board.task) return;
+
     const title = this.board.task.title
       ? this.board.task.title
       : 'No task created!';
@@ -973,6 +992,25 @@ export class CanvasComponent implements OnInit, OnDestroy {
     return () => {
       subscription.unsubscribe();
     };
+  }
+
+  openTodoList() {
+    this.dialog.open(TodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+        user: this.user,
+      },
+    });
+  }
+
+  openProjectTodoList() {
+    this.dialog.open(ProjectTodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
+      },
+    });
   }
 
   private _openDialog(

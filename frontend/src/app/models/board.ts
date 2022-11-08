@@ -24,15 +24,26 @@ export class BoardPermissions {
   allowTracing: boolean;
 }
 
+export enum BoardScope {
+  PROJECT_SHARED = 'PROJECT_SHARED',
+  PROJECT_PERSONAL = 'PROJECT_PERSONAL',
+}
+
+export enum BoardType {
+  BRAINSTORMING = 'BRAINSTORMING',
+  QUESTION_AUTHORING = 'QUESTION_AUTHORING',
+}
+
 export class Board {
   projectID: string;
   boardID: string;
-  teacherID: string;
+  ownerID: string;
   name: string;
+  scope: BoardScope;
   task: BoardTask;
   bgImage: BoardBackgroundImage | null;
   permissions: BoardPermissions;
-  members: string[];
+  type: BoardType;
   tags: Tag[];
   initialZoom = 100;
   upvoteLimit = 5;

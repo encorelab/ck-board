@@ -36,6 +36,12 @@ export const getErrorMessage = (error: unknown) => {
   return String(error);
 };
 
+export const getErrorStatus = (error: unknown) => {
+  if (error instanceof HttpErrorResponse) return error.status;
+
+  return 500;
+};
+
 const utils = [getErrorMessage, shuffle, generateCode, generateUniqueID];
 
 export default utils;

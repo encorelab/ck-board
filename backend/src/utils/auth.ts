@@ -8,6 +8,9 @@ import { NonceModel } from '../models/Nonce';
 import dalNonce from '../repository/dalNonce';
 import dalProject from '../repository/dalProject';
 import { ProjectModel } from '../models/Project';
+import { NotFoundError } from '../errors/client.errors';
+import { addUserToProject } from './project.helpers';
+import { ApplicationError } from '../errors/base.errors';
 
 export interface Token {
   email: string;
@@ -51,7 +54,7 @@ export const isAuthenticated = async (
     }
 
     const token = req.headers.authorization.replace('Bearer ', '');
-    verify(token, getJWTSecret()) as Token;
+    res.locals.user = verify(token, getJWTSecret()) as Token;
 
     next();
   } catch (e) {
@@ -180,16 +183,16 @@ export const getProjectIdFromUrl = (url: string): string | null => {
 export const joinProjectIfNecessary = async (
   userModel: UserModel,
   projectID: string
-): Promise<ProjectModel | null> => {
+): Promise<ProjectModel> => {
   const project = await dalProject.getById(projectID);
   if (project != null) {
-    const members: string[] = project.members;
-    if (!members.includes(userModel.userID)) {
-      members.push(userModel.userID);
-      return await dalProject.update(projectID, project);
-    }
+    const joinCode =
+      getRole(userModel.role) == Role.STUDENT
+        ? project.studentJoinCode
+        : project.teacherJoinCode;
+    return await addUserToProject(userModel, joinCode);
   }
-  return null;
+  throw new NotFoundError(`Project with ID: ${projectID} not found!`);
 };
 
 export const signInUserWithSso = async (
@@ -205,7 +208,13 @@ export const signInUserWithSso = async (
   const redirectUrl = paramMap.get('redirect-url') ?? '';
   const projectID = getProjectIdFromUrl(redirectUrl);
   if (projectID != null) {
-    await joinProjectIfNecessary(userModel, projectID);
+    try {
+      await joinProjectIfNecessary(userModel, projectID);
+    } catch (e) {
+      if (e instanceof ApplicationError)
+        return res.status(e.statusCode).end(e.message);
+      return res.status(500).end('Internal Server Error');
+    }
   }
   const sessionToken = generateSessionToken(userModel);
   sessionToken.redirectUrl = redirectUrl;

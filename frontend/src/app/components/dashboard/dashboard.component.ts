@@ -100,18 +100,20 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  updateProjectName = (project: Project, projectID: string, name: string) => {
-    this.projectService.update(projectID, { name: name });
-    project.name = name;
-  };
-
   openProjectConfigDialog(project: Project) {
-    this.dialog.open(ProjectConfigurationModalComponent, {
-      data: {
-        project: project,
-        updateProjectName: this.updateProjectName,
-      },
-    });
+    this.dialog
+      .open(ProjectConfigurationModalComponent, {
+        maxWidth: 1280,
+        width: '700px',
+        data: { project: project },
+      })
+      .afterClosed()
+      .subscribe((p: Project) => {
+        this.yourProjects = this.yourProjects.filter(
+          (yp) => yp.projectID !== p.projectID
+        );
+        this.yourProjects.push(p);
+      });
   }
 
   createBoard = (board: Board, selectedProjectID: string) => {

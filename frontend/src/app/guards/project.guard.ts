@@ -10,6 +10,8 @@ import { ProjectService } from '../services/project.service';
 import { BoardService } from '../services/board.service';
 import { UserService } from '../services/user.service';
 import { Role, AuthUser } from '../models/user';
+import { Project } from '../models/project';
+import { getErrorMessage, getErrorStatus } from '../utils/Utils';
 
 @Injectable({
   providedIn: 'root',
@@ -31,13 +33,13 @@ export class ProjectGuard implements CanActivate {
     _state: RouterStateSnapshot
   ): Promise<boolean> {
     const projectID = next.params.projectID;
-    const boardID = next.params.boardID;
 
     const isValidProject = await this.isValidProject(projectID);
     if (!isValidProject) {
       this.router.navigate(['/error'], {
         state: { code: 404, message: 'This project does not exist!' },
       });
+      return false;
     }
 
     const isMember = this.isProjectMember();
@@ -46,29 +48,12 @@ export class ProjectGuard implements CanActivate {
         (await this.userService.isSsoEnabled()) &&
         this.userService.user != null
       ) {
-        this.addProjectMember(this.project, this.userService.user);
+        await this.addProjectMember(this.project, this.userService.user);
       } else {
         this.router.navigate(['/error'], {
           state: {
             code: 403,
             message: 'You do not have access to this project!',
-          },
-        });
-      }
-    }
-    if (boardID) {
-      const isValidBoard = await this.isValidBoard(boardID);
-      if (!isValidBoard) {
-        this.router.navigate(['/error'], {
-          state: { code: 404, message: 'This board does not exist!' },
-        });
-      }
-      const isVisibleBoard = this.isVisibleBoard();
-      if (!isVisibleBoard) {
-        this.router.navigate(['/error'], {
-          state: {
-            code: 403,
-            message: 'You do not have access to this board!',
           },
         });
       }
@@ -82,16 +67,6 @@ export class ProjectGuard implements CanActivate {
     return this.project !== null;
   }
 
-  async isValidBoard(boardID: string) {
-    this.board = await this.boardService.get(boardID);
-    return this.board !== null;
-  }
-
-  isVisibleBoard() {
-    const user = this.userService.user;
-    return user?.role === Role.TEACHER || this.board.visible;
-  }
-
   isProjectMember(): boolean {
     const user = this.userService.user;
 
@@ -102,9 +77,21 @@ export class ProjectGuard implements CanActivate {
     return false;
   }
 
-  addProjectMember(project: any, user: AuthUser) {
-    const members: string[] = project.members;
-    members.push(user!.userID);
-    this.projectService.update(project.projectID, { members: members });
+  async addProjectMember(project: any, user: AuthUser): Promise<void> {
+    const code =
+      user.role == Role.STUDENT
+        ? project.studentJoinCode
+        : project.teacherJoinCode;
+
+    try {
+      await this.projectService.joinProject(code);
+    } catch (e) {
+      this.router.navigate(['/error'], {
+        state: {
+          code: getErrorStatus(e),
+          message: getErrorMessage(e),
+        },
+      });
+    }
   }
 }

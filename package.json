@@ -2,5 +2,9 @@
   "scripts": {
     "heroku-prebuild": "cd frontend && npm install --legacy-peer-deps && npm run build && cd ../backend && npm install --production=false && npm run build",
     "start": "cd backend && npm start"
+  },
+  "engines": {
+    "node": "16.14.2",
+    "npm": "8.5.0"
   }
 }

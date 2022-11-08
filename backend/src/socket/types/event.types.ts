@@ -16,12 +16,19 @@ export interface SocketPayload<T> {
 export type PostTagEventInput = {
   post: PostModel;
   tag: TagModel;
+  userId: string;
 };
 
 export type PostStopMoveEventInput = {
   postID: string;
   left: number;
   top: number;
+};
+
+export type PersonalBoardAddPostEventInput = {
+  originalPostID: string;
+  newPostID: string;
+  personalBoardID: string;
 };
 
 export type BucketEventInput = {

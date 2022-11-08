@@ -7,6 +7,7 @@ class Socket {
   private static _instance: Socket;
 
   private _socketManager: SocketManager;
+  private _io: socketIO.Server | null = null;
   private _socket: socketIO.Socket | null = null;
   private _currentRoom: string | null = null;
 
@@ -31,6 +32,7 @@ class Socket {
         origin: '*',
       },
     });
+    this._io = io;
 
     console.log('Socket server running at ' + 8000);
 
@@ -74,16 +76,23 @@ class Socket {
    *
    * @param event the type of event being emitted
    * @param eventData data associated with event
+   * @param toSender send event to room and sender
    * @returns void
    */
-  emit(event: SocketEvent, eventData: unknown): void {
+  emit(event: SocketEvent, eventData: unknown, toSender = false): void {
     if (this._socket == null) {
       throw new Error('Socket not initialized. Please invoke init() first.');
     } else if (this._currentRoom == null) {
       throw new Error('Socket not connected to any rooms.');
+    } else if (this._io == null) {
+      throw new Error('IO not initialized. Please invoke init() first.');
     }
 
-    this._socket.to(this._currentRoom).emit(event, eventData);
+    if (toSender) {
+      this._io.to(this._currentRoom).emit(event, eventData);
+    } else {
+      this._socket.to(this._currentRoom).emit(event, eventData);
+    }
   }
 
   /**

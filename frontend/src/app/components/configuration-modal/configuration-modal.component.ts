@@ -14,13 +14,7 @@ import { Tag } from 'src/app/models/tag';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { Project } from 'src/app/models/project';
-import { SnackbarService } from 'src/app/services/snackbar.service';
-import {
-  Board,
-  BoardScope,
-  BoardBackgroundImage,
-  BoardPermissions,
-} from 'src/app/models/board';
+import { Board, BoardScope, BoardPermissions } from 'src/app/models/board';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
@@ -39,6 +33,7 @@ export class ConfigurationModalComponent {
 
   boardID: string;
   boardName: string;
+  questionAuthoringType: string;
 
   isTeacherPersonalBoard = false;
 
@@ -74,7 +69,6 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public upvoteService: UpvotesService,
     public canvasService: CanvasService,
-    public snackbarService: SnackbarService,
     public fileUploadService: FileUploadService,
     private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -126,6 +120,7 @@ export class ConfigurationModalComponent {
       this.data.update(board);
       this.currentBgImage = board.bgImage;
       if (board.bgImage) {
+        this.bgImgSettings = board.bgImage.imgSettings;
         this.backgroundPosX = board.bgImage.imgSettings.left;
         this.backgroundPosY = board.bgImage.imgSettings.top;
         this.backgroundScale = board.bgImage

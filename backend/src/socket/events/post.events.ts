@@ -13,11 +13,14 @@ import dalComment from '../../repository/dalComment';
 import dalPost from '../../repository/dalPost';
 import postTrace from '../trace/post.trace';
 import {
+  PersonalBoardAddPostEventInput,
   PostStopMoveEventInput,
   PostTagEventInput,
   SocketPayload,
 } from '../types/event.types';
 import dalVote from '../../repository/dalVote';
+import WorkflowManager from '../../agents/workflow.agent';
+import { TaskActionType } from '../../models/Workflow';
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
@@ -109,10 +112,12 @@ class PostUpvoteAdd {
   static type: SocketEvent = SocketEvent.POST_UPVOTE_ADD;
 
   static async handleEvent(input: SocketPayload<UpvoteModel>): Promise<object> {
-    const upvoteAmount = await dalVote.getAmountByPost(input.eventData.postID);
+    const upvote = input.eventData;
+
+    const upvoteAmount = await dalVote.getAmountByPost(upvote.postID);
     if (input.trace.allowTracing) await postTrace.upvoteAdd(input, this.type);
 
-    return { upvote: input.eventData, amount: upvoteAmount };
+    return { upvote: upvote, amount: upvoteAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
@@ -124,10 +129,13 @@ class PostUpvoteRemove {
   static type: SocketEvent = SocketEvent.POST_UPVOTE_REMOVE;
 
   static async handleEvent(input: SocketPayload<UpvoteModel>): Promise<object> {
-    const upvoteAmount = await dalVote.getAmountByPost(input.eventData.postID);
+    const upvote = input.eventData;
+
+    const upvoteAmount = await dalVote.getAmountByPost(upvote.postID);
     if (input.trace.allowTracing)
       await postTrace.upvoteRemove(input, this.type);
-    return { upvote: input.eventData, amount: upvoteAmount };
+
+    return { upvote: upvote, amount: upvoteAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
@@ -141,16 +149,24 @@ class PostCommentAdd {
   static async handleEvent(
     input: SocketPayload<CommentModel>
   ): Promise<object> {
+    const comment = input.eventData;
     const commentAmount = await dalComment.getAmountByPost(
       input.eventData.postID
     );
     if (input.trace.allowTracing) await postTrace.commentAdd(input, this.type);
 
-    return { comment: input.eventData, amount: commentAmount };
+    WorkflowManager.Instance.updateTask(
+      comment.userID,
+      comment.postID,
+      TaskActionType.COMMENT,
+      -1
+    );
+
+    return { comment: comment, amount: commentAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 
@@ -160,16 +176,22 @@ class PostCommentRemove {
   static async handleEvent(
     input: SocketPayload<CommentModel>
   ): Promise<object> {
-    const commentAmount = await dalComment.getAmountByPost(
-      input.eventData.postID
-    );
+    const comment = input.eventData;
+    const commentAmount = await dalComment.getAmountByPost(comment.postID);
     await postTrace.commentRemove(input, this.type);
 
-    return { comment: input.eventData, amount: commentAmount };
+    WorkflowManager.Instance.updateTask(
+      comment.userID,
+      comment.postID,
+      TaskActionType.COMMENT,
+      1
+    );
+
+    return { comment: comment, amount: commentAmount };
   }
 
   static async handleResult(io: Server, socket: Socket, result: object) {
-    socket.to(socket.data.room).emit(this.type, result);
+    io.to(socket.data.room).emit(this.type, result);
   }
 }
 
@@ -179,8 +201,18 @@ class PostTagAdd {
   static async handleEvent(
     input: SocketPayload<PostTagEventInput>
   ): Promise<PostTagEventInput> {
+    const tag = input.eventData;
+
     if (input.trace.allowTracing) await postTrace.tagAdd(input, this.type);
-    return input.eventData;
+
+    WorkflowManager.Instance.updateTask(
+      tag.userId,
+      tag.post.postID,
+      TaskActionType.TAG,
+      -1
+    );
+
+    return tag;
   }
 
   static async handleResult(
@@ -198,8 +230,18 @@ class PostTagRemove {
   static async handleEvent(
     input: SocketPayload<PostTagEventInput>
   ): Promise<PostTagEventInput> {
+    const tag = input.eventData;
+
     if (input.trace.allowTracing) await postTrace.tagRemove(input, this.type);
-    return input.eventData;
+
+    WorkflowManager.Instance.updateTask(
+      tag.userId,
+      tag.post.postID,
+      TaskActionType.TAG,
+      1
+    );
+
+    return tag;
   }
 
   static async handleResult(
@@ -228,6 +270,26 @@ class PostRead {
   }
 }
 
+class PersonalBoardAddPost {
+  static type: SocketEvent = SocketEvent.PERSONAL_BOARD_ADD_POST;
+
+  static async handleEvent(
+    input: SocketPayload<PersonalBoardAddPostEventInput>
+  ): Promise<PersonalBoardAddPostEventInput> {
+    if (input.trace.allowTracing)
+      await postTrace.personalBoardAddPost(input, this.type);
+    return input.eventData;
+  }
+
+  static async handleResult(
+    io: Server,
+    socket: Socket,
+    result: PostTagEventInput
+  ) {
+    io.to(socket.data.room).emit(this.type, result);
+  }
+}
+
 const postEvents = [
   PostCreate,
   PostUpdate,
@@ -241,6 +303,7 @@ const postEvents = [
   PostTagAdd,
   PostTagRemove,
   PostRead,
+  PersonalBoardAddPost,
 ];
 
 export default postEvents;

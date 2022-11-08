@@ -8,7 +8,7 @@ import { Tag } from 'src/app/models/tag';
 import Utils, { generateUniqueID } from 'src/app/utils/Utils';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { fabric } from 'fabric';
-import { BoardPermissions, BoardScope } from 'src/app/models/board';
+import { BoardPermissions, BoardScope, BoardType } from 'src/app/models/board';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -21,6 +21,7 @@ export class AddBoardModalComponent implements OnInit {
   boardID: string;
 
   permissions: BoardPermissions;
+  boardType: BoardType;
 
   boardName = '';
   boardScope = BoardScope.PROJECT_SHARED;
@@ -113,6 +114,7 @@ export class AddBoardModalComponent implements OnInit {
           ? { url: this.bgImgURL, imgSettings: this.bgImgSettings }
           : null,
         permissions: this.permissions,
+        type: this.boardType,
         tags: this.tags.concat(this.defaultTags),
         initialZoom: this.initialZoom,
         upvoteLimit: this.upvoteLimit,

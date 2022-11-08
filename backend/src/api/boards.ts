@@ -130,6 +130,22 @@ router.get('/projects/:projectID', async (req, res) => {
   res.status(200).json(validated);
 });
 
+router.get('/personal/:projectID', async (req, res) => {
+  const projectID: string = req.params.projectID;
+  const user: UserModel = res.locals.user;
+
+  const board = await dalBoard.getPersonal(projectID, user.userID);
+  if (!board) return res.status(404).end('Board not found');
+
+  const project = await dalProject.getById(projectID);
+  if (!project) return res.status(406).end('No project associated with board!');
+
+  const validated = validateAccess(project, board, user);
+  if (!validated) return res.status(403).end('Access to board is forbidden!');
+
+  return res.status(200).json(board);
+});
+
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 

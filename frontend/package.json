@@ -39,6 +39,7 @@
     "ngx-socket-io": "^4.2.0",
     "prettier": "^2.6.2",
     "rxjs": "~6.6.0",
+    "swiper": "^8.2.6",
     "rxjs-pausable": "^1.0.0",
     "tslib": "^2.1.0",
     "uuid": "^8.3.2",

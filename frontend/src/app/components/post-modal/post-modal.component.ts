@@ -29,12 +29,30 @@ import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import Upvote from 'src/app/models/upvote';
+import { Board } from 'src/app/models/board';
 import { BoardService } from 'src/app/services/board.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
+
+export enum PostModalEvent {
+  POST_UPVOTE = 'POST_UPVOTE',
+  POST_DOWNVOTE = 'POST_DOWNVOTE',
+  POST_ADD_COMMENT = 'POST_ADD_COMMENT',
+  POST_REMOVE_COMMENT = 'POST_REMOVE_COMMENT',
+  POST_ADD_TAG = 'POST_ADD_TAG',
+  POST_REMOVE_TAG = 'POST_REMOVE_TAG',
+}
+
+export class PostModalData {
+  post!: Post;
+  user!: User;
+  board!: Board;
+  commentPress?: boolean;
+  eventHandlers?: Map<PostModalEvent, Function>;
+}
 
 @Component({
   selector: 'app-post-modal',
@@ -101,7 +119,7 @@ export class PostModalComponent {
     public fabricUtils: FabricUtils,
     public snackbarService: SnackbarService,
     public boardService: BoardService,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: PostModalData
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;

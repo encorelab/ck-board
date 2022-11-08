@@ -24,7 +24,7 @@ export const getMultipleByIds = async (
   filter?: Partial<BoardModel>
 ) => {
   try {
-    const boards = await Board.find({ boardID: { $in: ids }, filter });
+    const boards = await Board.find({ ...filter, boardID: { $in: ids } });
     return boards;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));

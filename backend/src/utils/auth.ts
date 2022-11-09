@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { sign, verify } from 'jsonwebtoken';
+import JWTR from 'jwt-redis';
 import { Role, UserModel } from '../models/User';
 import { v4 as uuidv4 } from 'uuid';
 import hmacSHA256 from 'crypto-js/hmac-sha256';
@@ -9,11 +9,49 @@ import dalNonce from '../repository/dalNonce';
 import dalProject from '../repository/dalProject';
 import { ProjectModel } from '../models/Project';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const redis = require('redis');
+
 export interface Token {
   email: string;
   username: string;
   userID: string;
   role: string;
+}
+
+export class JWT {
+  private static _instance: JWT;
+
+  private _jwtr: JWTR | null = null;
+
+  private constructor() {
+    const redisClient = redis.createClient();
+    redisClient.on('connect', () => {
+      this._jwtr = new JWTR(redisClient);
+    });
+  }
+
+  public async sign(userModel: UserModel) {
+    const user = userToToken(userModel);
+    const token = await this._jwtr?.sign(user, getJWTSecret(), {
+      expiresIn: '2h',
+    });
+    const expiresAt = addHours(2);
+
+    return { user, token, expiresAt };
+  }
+
+  public async verify(token: string) {
+    return (await this._jwtr?.verify(token, getJWTSecret())) as Token;
+  }
+
+  public async destroy(token: string) {
+    return await this._jwtr?.destroy(token);
+  }
+
+  public static get Instance() {
+    return this._instance || (this._instance = new this());
+  }
 }
 
 export const addHours = (numOfHours: number, date = new Date()) => {
@@ -51,7 +89,7 @@ export const isAuthenticated = async (
     }
 
     const token = req.headers.authorization.replace('Bearer ', '');
-    res.locals.user = verify(token, getJWTSecret()) as Token;
+    res.locals.user = (await JWT.Instance.verify(token)) as Token;
 
     next();
   } catch (e) {
@@ -159,7 +197,7 @@ export const createUser = async (
   }
 };
 
-export const getRole = (role: string = ''): Role => {
+export const getRole = (role = ''): Role => {
   if (role.toUpperCase() === Role.TEACHER) {
     return Role.TEACHER;
   } else {
@@ -207,14 +245,16 @@ export const signInUserWithSso = async (
   if (projectID != null) {
     await joinProjectIfNecessary(userModel, projectID);
   }
-  const sessionToken = generateSessionToken(userModel);
+  const sessionToken = await generateSessionToken(userModel);
   sessionToken.redirectUrl = redirectUrl;
   return res.status(200).send(sessionToken);
 };
 
-export const generateSessionToken = (userModel: UserModel): any => {
+export const generateSessionToken = async (
+  userModel: UserModel
+): Promise<any> => {
   const user = userToToken(userModel);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = await JWT.Instance.sign(userModel);
   const expiresAt = addHours(2);
   return { token, user, expiresAt };
 };

@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { sign } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import dalUser from '../repository/dalUser';
 import {
@@ -12,6 +11,7 @@ import {
   isCorrectHashedSsoPayload,
   isSsoEnabled,
   isValidNonce,
+  JWT,
   signInUserWithSso,
   userToToken,
 } from '../utils/auth';
@@ -37,7 +37,7 @@ router.post('/login', async (req, res) => {
   }
 
   const user = userToToken(foundUser);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = await JWT.Instance.sign(foundUser);
   const expiresAt = addHours(2);
 
   res.status(200).send({ token, user, expiresAt });
@@ -52,10 +52,21 @@ router.post('/register', async (req, res) => {
   const savedUser = await dalUser.create(body);
 
   const user = userToToken(savedUser);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = await JWT.Instance.sign(savedUser);
   const expiresAt = addHours(2);
 
   res.status(200).send({ token, user, expiresAt });
+});
+
+router.post('/logout', isAuthenticated, async (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(400).end('No authorization header found!');
+  }
+
+  const token = req.headers.authorization.replace('Bearer ', '');
+  await JWT.Instance.destroy(token);
+
+  res.status(200).send({ token });
 });
 
 router.post('/multiple', async (req, res) => {

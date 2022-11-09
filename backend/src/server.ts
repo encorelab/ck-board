@@ -16,7 +16,7 @@ import workflows from './api/workflows';
 import auth from './api/auth';
 import trace from './api/trace';
 import groups from './api/groups';
-import { isAuthenticated } from './utils/auth';
+import { isAuthenticated, JWT } from './utils/auth';
 dotenv.config();
 
 const port = process.env.PORT || 8001;

@@ -77,10 +77,16 @@ export class UserService {
       });
   }
 
-  logout() {
-    localStorage.removeItem('user');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('expires_at');
+  async logout(): Promise<boolean> {
+    return this.http
+      .post<TokenResponse>('auth/logout', {})
+      .toPromise()
+      .then(() => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('expires_at');
+        return true;
+      });
   }
 
   update(id: string, user: Partial<User>) {

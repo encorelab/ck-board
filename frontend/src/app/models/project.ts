@@ -14,4 +14,5 @@ export class Project {
   studentJoinCode: string;
   teacherJoinCode: string;
   personalBoardSetting: PersonalBoardSetting;
+  membershipDisabled: boolean;
 }

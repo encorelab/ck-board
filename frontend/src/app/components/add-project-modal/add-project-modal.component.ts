@@ -19,6 +19,7 @@ export class AddProjectModalComponent implements OnInit {
     enabled: false,
     bgImage: null,
   };
+  membershipDisabledEditable = false;
 
   constructor(
     public dialogRef: MatDialogRef<AddProjectModalComponent>,
@@ -54,6 +55,7 @@ export class AddProjectModalComponent implements OnInit {
       studentJoinCode: generateCode(5).toString(),
       teacherJoinCode: generateCode(5).toString(),
       personalBoardSetting: this.personalBoardSetting,
+      membershipDisabled: this.membershipDisabledEditable,
     });
     this.dialogRef.close();
   }

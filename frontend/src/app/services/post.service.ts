@@ -17,6 +17,10 @@ export class PostService {
     return this.http.get<Post>('posts/' + postID).toPromise();
   }
 
+  getAll(postIDs: string[]): Promise<Post[]> {
+    return this.http.post<Post[]>('posts/many', { postIDs }).toPromise();
+  }
+
   getAllByBoard(
     boardID: string,
     opts?: Options,
@@ -41,7 +45,7 @@ export class PostService {
   }
 
   update(postID: string, value: Partial<Post>): Promise<Post> {
-    return this.http.post<Post>('posts/' + postID, value).toPromise();
+    return this.http.put<Post>('posts/' + postID, value).toPromise();
   }
 
   remove(id: string): Promise<Post> {

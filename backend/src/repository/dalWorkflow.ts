@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import {
   WorkflowModel,
   Workflow,
@@ -5,6 +6,25 @@ import {
   DistributionWorkflow,
   TaskWorkflow,
 } from '../models/Workflow';
+import dalGroupTask from './dalGroupTask';
+
+export const getById = async (id: string) => {
+  try {
+    const workflow = await Workflow.findOne({ workflowID: id });
+    return workflow;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getByIds = async (ids: string[]) => {
+  try {
+    const workflows = await Workflow.find({ workflowID: { $in: ids } });
+    return workflows;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
 
 export const getAllByBoardId = async (id: string) => {
   try {
@@ -15,12 +35,22 @@ export const getAllByBoardId = async (id: string) => {
   }
 };
 
-export const getByBoardId = async (type: WorkflowType, id: string) => {
+export const getByBoardId = async (
+  type: WorkflowType,
+  boardID: string,
+  active?: boolean
+) => {
   try {
+    const query = Object.assign(
+      {},
+      boardID === null ? null : { boardID },
+      active === null ? null : { active }
+    );
+
     if (type == WorkflowType.DISTRIBUTION) {
-      return await DistributionWorkflow.find({ boardID: id });
+      return await DistributionWorkflow.find(query);
     } else if (type == WorkflowType.TASK) {
-      return await TaskWorkflow.find({ boardID: id });
+      return await TaskWorkflow.find(query);
     }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -68,14 +98,21 @@ export const updateTask = async (
 };
 
 export const remove = async (type: WorkflowType, id: string) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
+    let deleted;
     if (type == WorkflowType.DISTRIBUTION) {
-      return await DistributionWorkflow.findOneAndDelete({ workflowID: id });
+      deleted = await DistributionWorkflow.findOneAndDelete({ workflowID: id });
     } else if (type == WorkflowType.TASK) {
-      return await TaskWorkflow.findOneAndDelete({ workflowID: id });
+      deleted = await TaskWorkflow.findOneAndDelete({ workflowID: id });
     }
+    await dalGroupTask.removeByWorkflow(id);
+    return deleted;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
+  } finally {
+    session.endSession();
   }
 };
 
@@ -88,6 +125,8 @@ export const removeByBoard = async (boardID: string) => {
 };
 
 const dalWorkflow = {
+  getById,
+  getByIds,
   getAllByBoardId,
   getByBoardId,
   create,

@@ -16,6 +16,7 @@ export interface SocketPayload<T> {
 export type PostTagEventInput = {
   post: PostModel;
   tag: TagModel;
+  userId: string;
 };
 
 export type PostStopMoveEventInput = {

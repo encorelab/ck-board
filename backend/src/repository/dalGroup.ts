@@ -27,6 +27,15 @@ export const getByProjectId = async (projectID: string) => {
   }
 };
 
+export const getByProjectUser = async (projectID: string, userID: string) => {
+  try {
+    const group = await Group.findOne({ projectID, members: userID });
+    return group;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const create = async (group: GroupModel) => {
   try {
     const savedGroup = await Group.create(group);
@@ -88,6 +97,7 @@ const dalGroup = {
   getById,
   getByUserId,
   getByProjectId,
+  getByProjectUser,
   create,
   addUser,
   remove,

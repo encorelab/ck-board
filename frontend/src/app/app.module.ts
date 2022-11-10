@@ -16,6 +16,7 @@ import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
 import { ColorPickerModule } from 'ngx-color-picker';
+import { SwiperModule } from 'swiper/angular';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component';
@@ -43,6 +44,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
 import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
+import { CkWorkspaceComponent } from './components/ck-workspace/ck-workspace.component';
 import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
 import { MoveGroupMembersComponent } from './components/groups/move-group-members/move-group-members.component';
 
@@ -88,6 +90,7 @@ export function tokenGetter() {
     ConfirmModalComponent,
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
+    CkWorkspaceComponent,
     ManageGroupModalComponent,
     MoveGroupMembersComponent,
     AutofocusDirective,
@@ -116,6 +119,7 @@ export function tokenGetter() {
     BrowserAnimationsModule,
     ReactiveFormsModule,
     ColorPickerModule,
+    SwiperModule,
     MaterialModule,
     DragDropModule,
   ],
@@ -129,7 +133,10 @@ export function tokenGetter() {
       provide: MatDialogRef,
       useValue: {},
     },
-    NgxImageCompressService,
+    {
+      provide: NgxImageCompressService,
+      useValue: {},
+    },
   ],
   bootstrap: [AppComponent],
 })

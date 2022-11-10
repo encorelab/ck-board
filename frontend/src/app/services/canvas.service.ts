@@ -57,6 +57,7 @@ export class CanvasService {
     const savedPost = await this.postService.create(post);
     await this.bucketService.add(bucketID, post.postID);
 
+    this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
     return savedPost;
   }
 

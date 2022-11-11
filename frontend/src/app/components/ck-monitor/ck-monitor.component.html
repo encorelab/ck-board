@@ -23,14 +23,60 @@
   <mat-sidenav-container class="drawer-container">
     <mat-sidenav #drawer mode="side" opened [fixedInViewport]="true" [fixedTopGap]="64" style="position: fixed">
       <mat-list>
-        <mat-list-item *ngFor="let workflow of taskWorkflows">
-          <mat-icon matListIcon>timeline</mat-icon>
-          <h3 matLine> {{workflow.name}} </h3>
-          <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
-          <span style="flex: 1 1 auto"></span>
-          <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
-          <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
-        </mat-list-item>
+        <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
+          Pending Tasks ({{ inactiveTaskWorkflows.length }})
+          <mat-icon>{{ showInactive ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        <ng-container *ngIf="showInactive">
+          <mat-list-item *ngFor="let workflow of inactiveTaskWorkflows">
+            <mat-icon matListIcon>timeline</mat-icon>
+            <h3 matLine> {{workflow.name}} </h3>
+            <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
+            <p matLine class="list-task-prompt"> 
+              Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
+            </p>
+            <span style="flex: 1 1 auto"></span>
+            <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
+            <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+          </mat-list-item>
+        </ng-container>
+        <mat-divider></mat-divider>
+        <button class="subheader-button" mat-button (click)="showActive = !showActive">
+          Active Tasks ({{ activeTaskWorkflows.length }})
+          <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        <ng-container *ngIf="showActive">
+          <mat-list-item *ngFor="let workflow of activeTaskWorkflows">
+            <mat-icon matListIcon>timeline</mat-icon>
+            <h3 matLine> {{workflow.name}} </h3>
+            <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
+            <p matLine class="list-task-prompt"> 
+              Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
+            </p>
+            <span style="flex: 1 1 auto"></span>
+            <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
+            <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+          </mat-list-item>
+        </ng-container>
+        <mat-divider></mat-divider>
+        <button class="subheader-button" mat-button (click)="showCompleted = !showCompleted">
+          Completed Tasks ({{ completeTaskWorkflows.length }})
+          <mat-icon>{{ showCompleted ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        <ng-container *ngIf="showCompleted">
+          <mat-list-item *ngFor="let workflow of completeTaskWorkflows">
+            <mat-icon matListIcon>timeline</mat-icon>
+            <h3 matLine> {{workflow.name}} </h3>
+            <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
+            <p matLine class="list-task-prompt"> 
+              Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
+            </p>
+            <span style="flex: 1 1 auto"></span>
+            <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
+            <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+          </mat-list-item>
+        </ng-container>
+        <mat-divider></mat-divider>
       </mat-list>
     </mat-sidenav>
     <mat-sidenav-content>
@@ -51,7 +97,7 @@
 
                 <ng-container matColumnDef="members">
                   <th mat-header-cell *matHeaderCellDef> Members </th>
-                  <td mat-cell *matCellDef="let group"> {{group.groupMembers.toString()}}</td>
+                  <td mat-cell *matCellDef="let group"> {{group.groupMembers.join(', ')}}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="progress">

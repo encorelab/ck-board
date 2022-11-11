@@ -13,11 +13,9 @@ import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
   ExpandedGroupTask,
-  GroupTask,
-  GroupTaskStatus,
-  TaskAction,
   TaskActionType,
   TaskWorkflow,
+  GroupTaskStatus,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -61,10 +59,23 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
   project: Project;
   board: Board;
+
+  showInactive = true;
+  showActive = true;
+  showCompleted = false;
+
   taskWorkflows: TaskWorkflow[] = [];
+  inactiveTaskWorkflows: TaskWorkflow[] = [];
+  activeTaskWorkflows: TaskWorkflow[] = [];
+  completeTaskWorkflows: TaskWorkflow[] = [];
+
   taskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<
     TaskWorkflow,
     ExpandedGroupTask[]
+  >();
+  taskWorkflowGroupNameMap: Map<TaskWorkflow, string[]> = new Map<
+    TaskWorkflow,
+    string[]
   >();
 
   runningTask: TaskWorkflow | null;
@@ -121,7 +132,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       this.user.userID
     );
 
-    this.taskWorkflows = await this.workflowService.getTask(boardID);
+    this.taskWorkflows = await this.workflowService.getActiveTasks(boardID);
 
     for (let i = 0; i < this.taskWorkflows.length; i++) {
       const groupTasks = await this.workflowService.getGroupTasksByWorkflow(
@@ -132,6 +143,26 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
       );
       this.taskWorkflowGroupMap.set(this.taskWorkflows[i], groupTasks);
+      this.taskWorkflowGroupNameMap.set(
+        this.taskWorkflows[i],
+        groupTasks.map((group) => group.group.name)
+      );
+      let activeCount = 0,
+        completedCount = 0;
+
+      for (let i = 0; groupTasks && i < groupTasks.length; i++) {
+        activeCount += Number(
+          groupTasks[i].groupTask.status == GroupTaskStatus.ACTIVE
+        );
+        completedCount += Number(
+          groupTasks[i].groupTask.status == GroupTaskStatus.COMPLETE
+        );
+      }
+      if (!activeCount && !completedCount)
+        this.inactiveTaskWorkflows.push(this.taskWorkflows[i]);
+      else if (completedCount == groupTasks?.length)
+        this.completeTaskWorkflows.push(this.taskWorkflows[i]);
+      else this.activeTaskWorkflows.push(this.taskWorkflows[i]);
     }
     this.socketService.connect(this.user.userID, this.board.boardID);
     return true;

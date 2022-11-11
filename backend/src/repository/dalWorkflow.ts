@@ -44,7 +44,7 @@ export const getByBoardId = async (
     const query = Object.assign(
       {},
       boardID === null ? null : { boardID },
-      active === null
+      active === null ? null : { active }
     );
 
     if (type == WorkflowType.DISTRIBUTION) {

@@ -7,7 +7,8 @@
       </button>
       <span style="flex: 1 1 auto"></span>
       <button mat-icon-button *ngIf="user.role === Role.TEACHER">
-        <mat-icon (click)="openCkMonitor()" matTooltip="CK Monitor">av_timer</mat-icon>
+        
+        <mat-icon (click)="openCkMonitor()" matTooltip="CK Monitor"><span class="material-symbols-outlined">monitoring</span></mat-icon>
       </button>
       <button mat-icon-button>
         <mat-icon (click)="openWorkspace()" matTooltip="CK Workspace">check_box</mat-icon>

@@ -35,7 +35,8 @@ router.post('/many', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const id = req.params.id;
-  const { type, title, desc, tags, displayAttributes } = req.body;
+  const { type, title, desc, tags, displayAttributes, multipleChoice } =
+    req.body;
 
   const post: Partial<PostModel> = Object.assign(
     {},
@@ -43,6 +44,7 @@ router.put('/:id', async (req, res) => {
     title === null ? null : { title },
     desc === null ? null : { desc },
     tags === null ? null : { tags },
+    multipleChoice === null ? null : { multipleChoice },
     displayAttributes === null ? null : { displayAttributes }
   );
 

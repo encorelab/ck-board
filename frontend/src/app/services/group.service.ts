@@ -16,6 +16,12 @@ export class GroupService {
     return this.http.get<Group[]>('groups/user/' + userID).toPromise();
   }
 
+  getByUserAndProject(userID: string, projectID: string): Promise<Group[]> {
+    return this.http
+      .get<Group[]>(`groups/user/${userID}/project/${projectID}`)
+      .toPromise();
+  }
+
   getByProjectId(projectID: string): Promise<Group[]> {
     return this.http.get<Group[]>('groups/project/' + projectID).toPromise();
   }

@@ -1,7 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
-import { TodoItem } from 'src/app/models/todoItem';
+import { GroupService } from 'src/app/services/group.service';
+import { TodoItem, TodoItemType } from 'src/app/models/todoItem';
+import { Group } from 'src/app/models/group';
 import { FormControl, Validators } from '@angular/forms';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
@@ -27,6 +29,10 @@ export class AddTodoListModalComponent implements OnInit {
     Validators.required,
     Validators.maxLength(50),
   ]);
+  todoItemTypeFormControl = new FormControl('valid', [Validators.required]);
+  todoItemTypes: TodoItemType[] = [];
+  selectedGroup: Group;
+  userGroups: Group[];
 
   matcher = new MyErrorStateMatcher();
 
@@ -38,6 +44,7 @@ export class AddTodoListModalComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<AddTodoListModalComponent>,
     public todoItemService: TodoItemService,
+    public groupService: GroupService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.projectID = data.projectID;
@@ -50,13 +57,21 @@ export class AddTodoListModalComponent implements OnInit {
       this.timeHour = parseInt(time[0]);
       this.timeMinute = parseInt(time[1]);
       this.timePeriod = time[2].split(' ')[1];
+      this.todoItemTypes = data.todoItem.type;
     } else if (data.restoreTodoItem) {
       this.restoring = true;
       this.taskTitle = data.restoreTodoItem.title;
+      this.todoItemTypes = data.restoreTodoItem.type;
     }
   }
 
-  ngOnInit(): void {}
+  async ngOnInit(): Promise<void> {
+    this.userGroups = await this.groupService.getByUserAndProject(
+      this.userID,
+      this.projectID
+    );
+    if (this.data.group) this.selectedGroup = this.data.group;
+  }
 
   async createTodoItem() {
     const todoItem: TodoItem = {
@@ -64,8 +79,10 @@ export class AddTodoListModalComponent implements OnInit {
       projectID: this.projectID,
       userID: this.userID,
       title: this.taskTitle,
+      groupID: this.selectedGroup?.groupID,
       completed: false,
       overdue: false,
+      type: this.todoItemTypes,
       notifications: [],
       deadline: {
         date: this.taskDeadlineDate.toDateString(),
@@ -85,6 +102,8 @@ export class AddTodoListModalComponent implements OnInit {
   async updateTodoItem() {
     const todoItem: Partial<TodoItem> = {
       title: this.taskTitle,
+      groupID: this.selectedGroup?.groupID,
+      type: this.todoItemTypes,
       deadline: {
         date: this.taskDeadlineDate.toDateString(),
         time: `${this.timeHour}:${String(this.timeMinute).padStart(
@@ -105,6 +124,8 @@ export class AddTodoListModalComponent implements OnInit {
       title: this.taskTitle,
       completed: false,
       overdue: false,
+      groupID: this.selectedGroup?.groupID,
+      type: this.todoItemTypes,
       deadline: {
         date: this.taskDeadlineDate.toDateString(),
         time: `${this.timeHour}:${String(this.timeMinute).padStart(

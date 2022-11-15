@@ -21,7 +21,9 @@ export const getLastModifiedPost = async (
 };
 
 export const getAllTrace = async (projectID: string) => {
-  return Trace.find({ projectID: projectID }).sort({ updatedAt: -1 }).limit(1000);
+  return Trace.find({ projectID: projectID })
+    .sort({ updatedAt: -1 })
+    .limit(1000);
 };
 
 export const removeByBoard = async (boardID: string) => {

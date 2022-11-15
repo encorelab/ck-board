@@ -1,6 +1,6 @@
 <div>
   <app-toolbar *ngIf="user && project && board" [user]="user" style="width: 100%;">
-    <span *ngIf="board">CK Workspace - {{ this.board.name }}</span>
+    <span *ngIf="board">CK Monitor - {{ this.board.name }}</span>
     <span style="flex: 1 1 auto"></span>
     <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
       <mat-icon>keyboard_return</mat-icon>

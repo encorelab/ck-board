@@ -99,7 +99,7 @@ export enum EXPANDED_TODO_TYPE {
 
 export enum TODO_TYPE_COLORS {
   COGNITION = '#5bc2cb',
-  SEL = '#f8391d',
+  SEL = '#f67280',
   BEHAVIOURAL = '#e6a129',
   CLASS = '#88B04B',
 }

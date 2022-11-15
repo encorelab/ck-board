@@ -42,10 +42,10 @@
       info
     </mat-icon>
     <mat-form-field appearance="fill" style="float: right">
-      <mat-label>Select Group</mat-label>
+      <mat-label>(If Groupwork) Select Group</mat-label>
       <mat-select
-      [(ngModel)]="selectedGroup"
-      [errorStateMatcher]="matcher"
+        [(ngModel)]="selectedGroup"
+        [errorStateMatcher]="matcher"
       >
         <mat-option *ngFor="let group of userGroups" [value]="group">
           {{ group.name }}

@@ -22,10 +22,10 @@
     <mat-form-field appearance="fill">
       <mat-label>Select Type..</mat-label>
       <mat-select
-      [(ngModel)]="todoItemTypes"
-      [formControl]="todoItemTypeFormControl"
-      [errorStateMatcher]="matcher"
-      multiple
+        [(ngModel)]="todoItemTypes"
+        [formControl]="todoItemTypeFormControl"
+        [errorStateMatcher]="matcher"
+        multiple
       >
         <mat-option value="COGNITION">Cognitive strategies</mat-option>
         <mat-option value="SEL">Social-emotional learning supports</mat-option>
@@ -35,9 +35,10 @@
     </mat-form-field>
     <mat-icon 
       style="margin-left: 15px;" 
-      matTooltipClass="multiline-tooltip"
       matTooltip="Cognitive engagement strategies (i.e., learning strategies for memorization, recall, application of knowledge)
+
       Social-emotional learning supports (i.e., supports for developing your math identity, positive motivation, emotional awareness, stress management, relationships, or critical/creative thinking)
+
       Behavioural engagement practices (practices for improving learning engagement, i.e., note-taking, asking questions, generating/sharing ideas, or discussing ideas with peers)" >
       info
     </mat-icon>
@@ -50,6 +51,7 @@
         <mat-option *ngFor="let group of userGroups" [value]="group">
           {{ group.name }}
         </mat-option>
+        <mat-option [value]="">None</mat-option>
       </mat-select>
     </mat-form-field>
   </div>

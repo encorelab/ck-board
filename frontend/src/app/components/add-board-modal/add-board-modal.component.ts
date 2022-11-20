@@ -21,7 +21,7 @@ export class AddBoardModalComponent implements OnInit {
   boardID: string;
 
   permissions: BoardPermissions;
-  boardType: BoardType;
+  boardType: BoardType = BoardType.BRAINSTORMING;
 
   boardName = '';
   boardScope = BoardScope.PROJECT_SHARED;

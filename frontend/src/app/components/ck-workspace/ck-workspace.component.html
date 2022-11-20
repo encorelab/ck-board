@@ -82,7 +82,11 @@
         <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask && posts && posts.length > 0">
           <ng-template swiperSlide *ngFor="let htmlPost of posts">
             <div (click)="$event.stopPropagation();" style="display: flex; flex-direction: column; gap: 10px;">
-              <app-html-post (click)="$event.stopPropagation();" [post]="htmlPost" style="width: 360px; height: 100%;"></app-html-post>
+              <app-html-post 
+                (click)="$event.stopPropagation();" 
+                [post]="htmlPost" [disableDownload]="true" 
+                style="width: 360px; height: 100%;">
+              </app-html-post>
               <div style="display: flex; flex-direction: row;">
                 <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Previous</button>
                 <button (click)="submitPost(htmlPost)" mat-raised-button color="primary" [disabled]="runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE || !postSubmittable(htmlPost)" style="width: 30%; margin: 0px 5px;">Submit</button>
@@ -113,7 +117,19 @@
               <mat-progress-bar mode="determinate" [value]="averageGroupProgress" color="accent"></mat-progress-bar>
             </div>
             <div style="padding: 20px 0 20px 0;">
-              <button mat-raised-button color="primary" [disabled]="!taskSubmittable(runningGroupTask)" (click)="markComplete()">Mark Task Complete</button>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                [disabled]="!taskSubmittable(runningGroupTask)" 
+                (click)="markComplete()"
+              >
+                <span 
+                  matTooltip="You must first submit each post" 
+                  [matTooltipDisabled]="taskSubmittable(runningGroupTask) || runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE"
+                >
+                  Mark Task Complete
+                </span>
+              </button>
             </div>
             <section>
               <h4>Group Members:</h4>

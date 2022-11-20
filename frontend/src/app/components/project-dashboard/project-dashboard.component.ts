@@ -23,8 +23,8 @@ import { SocketService } from 'src/app/services/socket.service';
 })
 export class ProjectDashboardComponent implements OnInit {
   showSharedBoards = true;
-  showStudentPersonalBoards = true;
-  showTeacherPersonalBoards = true;
+  showStudentPersonalBoards = false;
+  showTeacherPersonalBoards = false;
 
   teacherPersonalBoards: Board[] = [];
   studentPersonalBoards: Board[] = [];

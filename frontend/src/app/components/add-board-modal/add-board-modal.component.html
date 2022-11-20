@@ -2,21 +2,21 @@
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Board">
-      <h2 style="margin-top: 20px">Question Authoring Type</h2>
+      <h2 style="margin-top: 20px">Board Type</h2>
       <mat-radio-group 
         [(ngModel)]="boardType"
       >
         <mat-radio-button 
           style="margin-left: 10px" 
-          value="QUESTION_AUTHORING"
-        >
-          Question Authoring
-        </mat-radio-button>
-        <mat-radio-button 
-          style="margin-left: 10px" 
           value="BRAINSTORMING"
         >
           Brainstorming
+        </mat-radio-button>
+        <mat-radio-button 
+          style="margin-left: 10px" 
+          value="QUESTION_AUTHORING"
+        >
+          Question Authoring
         </mat-radio-button>
       </mat-radio-group>
       <mat-form-field

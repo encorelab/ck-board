@@ -165,7 +165,7 @@ export class ConfigurationModalComponent {
     let board: Board;
     board = await this.canvasService.updateBoardName(
       this.boardID,
-      this.boardName
+      this.boardName.trim()
     );
     board = await this.canvasService.updateBoardTask(
       this.boardID,

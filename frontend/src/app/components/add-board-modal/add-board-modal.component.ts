@@ -104,7 +104,7 @@ export class AddBoardModalComponent implements OnInit {
         projectID: this.selectedProject,
         boardID: this.boardID,
         ownerID: this.data.user.userID,
-        name: this.boardName,
+        name: this.boardName.trim(),
         scope: this.boardScope,
         task: {
           title: this.taskTitle,

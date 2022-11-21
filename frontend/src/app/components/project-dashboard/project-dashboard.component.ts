@@ -160,8 +160,16 @@ export class ProjectDashboardComponent implements OnInit {
         project: this.project,
         board: await this.boardService.get(boardID),
         update: async (updatedBoard: Board, removed = false) => {
-          if (removed || updatedBoard.name !== board.name) {
-            await this.getBoards();
+          if (removed) {
+            this.sharedBoards = this.sharedBoards.filter(
+              (b) => b.boardID !== updatedBoard.boardID
+            );
+            this.studentPersonalBoards = this.studentPersonalBoards.filter(
+              (b) => b.boardID !== updatedBoard.boardID
+            );
+            this.teacherPersonalBoards = this.teacherPersonalBoards.filter(
+              (b) => b.boardID !== updatedBoard.boardID
+            );
           }
           if (updatedBoard.name !== board.name) {
             board.name = updatedBoard.name;
@@ -181,7 +189,15 @@ export class ProjectDashboardComponent implements OnInit {
         handleConfirm: async () => {
           const deletedBoard = await this.boardService.remove(board.boardID);
           if (deletedBoard) {
-            await this.getBoards();
+            this.sharedBoards = this.sharedBoards.filter(
+              (b) => b.boardID !== deletedBoard.boardID
+            );
+            this.studentPersonalBoards = this.studentPersonalBoards.filter(
+              (b) => b.boardID !== deletedBoard.boardID
+            );
+            this.teacherPersonalBoards = this.teacherPersonalBoards.filter(
+              (b) => b.boardID !== deletedBoard.boardID
+            );
           }
         },
       },

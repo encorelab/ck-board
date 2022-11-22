@@ -46,6 +46,7 @@
       <mat-label>(If Groupwork) Select Group</mat-label>
       <mat-select
         [(ngModel)]="selectedGroup"
+        [(value)]="selectedGroup"
         [errorStateMatcher]="matcher"
       >
         <mat-option *ngFor="let group of userGroups" [value]="group">

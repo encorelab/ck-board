@@ -58,18 +58,10 @@ export class AddTodoListModalComponent implements OnInit {
       this.timeMinute = parseInt(time[1]);
       this.timePeriod = time[2].split(' ')[1];
       this.todoItemTypes = data.todoItem.type;
-      if (this.data.group) {
-        this.selectedGroup = data.group;
-        console.log(this.selectedGroup);
-      }
     } else if (data.restoreTodoItem) {
       this.restoring = true;
       this.taskTitle = data.restoreTodoItem.title;
       this.todoItemTypes = data.restoreTodoItem.type;
-      if (this.data.group) {
-        this.selectedGroup = data.group;
-        console.log(this.selectedGroup);
-      }
     }
   }
 
@@ -78,6 +70,11 @@ export class AddTodoListModalComponent implements OnInit {
       this.userID,
       this.projectID
     );
+    if (this.data.group) {
+      this.selectedGroup = this.userGroups.find(
+        (g) => g.groupID === this.data.group.groupID
+      );
+    }
   }
 
   async createTodoItem() {
@@ -87,7 +84,7 @@ export class AddTodoListModalComponent implements OnInit {
       projectID: this.projectID,
       userID: this.userID,
       title: this.taskTitle,
-      groupID: this.selectedGroup ? this.selectedGroup.groupID : "",
+      groupID: this.selectedGroup ? this.selectedGroup.groupID : '',
       completed: false,
       overdue: false,
       type: this.todoItemTypes,
@@ -111,7 +108,7 @@ export class AddTodoListModalComponent implements OnInit {
     console.log(this.selectedGroup);
     const todoItem: Partial<TodoItem> = {
       title: this.taskTitle,
-      groupID: this.selectedGroup ? this.selectedGroup.groupID : "",
+      groupID: this.selectedGroup ? this.selectedGroup.groupID : '',
       type: this.todoItemTypes,
       deadline: {
         date: this.taskDeadlineDate.toDateString(),
@@ -133,7 +130,7 @@ export class AddTodoListModalComponent implements OnInit {
       title: this.taskTitle,
       completed: false,
       overdue: false,
-      groupID: this.selectedGroup ? this.selectedGroup.groupID : "",
+      groupID: this.selectedGroup ? this.selectedGroup.groupID : '',
       type: this.todoItemTypes,
       deadline: {
         date: this.taskDeadlineDate.toDateString(),

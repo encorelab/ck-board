@@ -45,6 +45,16 @@ export class UserService {
       });
   }
 
+  async logout(): Promise<boolean> {
+    return this.http
+      .post<TokenResponse>('auth/logout', {})
+      .toPromise()
+      .then(() => {
+        this.clearLocalStorage();
+        return true;
+      });
+  }
+
   async isSsoEnabled(): Promise<boolean> {
     return this.http
       .get('auth/is-sso-enabled')
@@ -77,24 +87,18 @@ export class UserService {
       });
   }
 
-  async logout(): Promise<boolean> {
-    return this.http
-      .post<TokenResponse>('auth/logout', {})
-      .toPromise()
-      .then(() => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('expires_at');
-        return true;
-      });
-  }
-
   update(id: string, user: Partial<User>) {
     return this.http.post('auth/' + id, user).toPromise();
   }
 
   delete(id: string) {
     return this.http.delete('auth/' + id).toPromise();
+  }
+
+  clearLocalStorage(): void {
+    localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('expires_at');
   }
 
   public get loggedIn(): boolean {

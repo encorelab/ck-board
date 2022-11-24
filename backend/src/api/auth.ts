@@ -5,17 +5,16 @@ import {
   addHours,
   generateHashedSsoPayload,
   generateSsoPayload,
-  getJWTSecret,
   getParamMap,
   isAuthenticated,
   isCorrectHashedSsoPayload,
   isSsoEnabled,
   isValidNonce,
-  JWT,
   signInUserWithSso,
   userToToken,
 } from '../utils/auth';
 import { UserModel } from '../models/User';
+import { addToken, destroyToken, sign } from '../utils/jwt';
 
 const router = Router();
 
@@ -37,9 +36,10 @@ router.post('/login', async (req, res) => {
   }
 
   const user = userToToken(foundUser);
-  const token = await JWT.Instance.sign(foundUser);
+  const token = sign(user);
   const expiresAt = addHours(2);
 
+  await addToken(foundUser.userID, token);
   res.status(200).send({ token, user, expiresAt });
 });
 
@@ -52,9 +52,10 @@ router.post('/register', async (req, res) => {
   const savedUser = await dalUser.create(body);
 
   const user = userToToken(savedUser);
-  const token = await JWT.Instance.sign(savedUser);
+  const token = sign(user);
   const expiresAt = addHours(2);
 
+  await addToken(savedUser.userID, token);
   res.status(200).send({ token, user, expiresAt });
 });
 
@@ -64,9 +65,9 @@ router.post('/logout', isAuthenticated, async (req, res) => {
   }
 
   const token = req.headers.authorization.replace('Bearer ', '');
-  await JWT.Instance.destroy(token);
+  await destroyToken(res.locals.user.userID, token);
 
-  res.status(200).send({ token });
+  res.status(200).end();
 });
 
 router.post('/multiple', async (req, res) => {

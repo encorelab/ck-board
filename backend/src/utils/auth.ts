@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import JWTR from 'jwt-redis';
 import { Role, UserModel } from '../models/User';
 import { v4 as uuidv4 } from 'uuid';
 import hmacSHA256 from 'crypto-js/hmac-sha256';
@@ -11,9 +10,7 @@ import { ProjectModel } from '../models/Project';
 import { NotFoundError } from '../errors/client.errors';
 import { addUserToProject } from './project.helpers';
 import { ApplicationError } from '../errors/base.errors';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const redis = require('redis');
+import { checkToken, sign, verify } from './jwt';
 
 export interface Token {
   email: string;
@@ -21,46 +18,6 @@ export interface Token {
   userID: string;
   role: string;
 }
-
-export class JWT {
-  private static _instance: JWT;
-
-  private _jwtr: JWTR | null = null;
-
-  private constructor() {
-    const redisClient = redis.createClient();
-    redisClient.on('connect', () => {
-      this._jwtr = new JWTR(redisClient);
-    });
-  }
-
-  public async sign(userModel: UserModel) {
-    const user = userToToken(userModel);
-    const token = await this._jwtr?.sign(user, getJWTSecret(), {
-      expiresIn: '2h',
-    });
-    const expiresAt = addHours(2);
-
-    return { user, token, expiresAt };
-  }
-
-  public async verify(token: string) {
-    return (await this._jwtr?.verify(token, getJWTSecret())) as Token;
-  }
-
-  public async destroy(token: string) {
-    return await this._jwtr?.destroy(token);
-  }
-
-  public static get Instance() {
-    return this._instance || (this._instance = new this());
-  }
-}
-
-export const addHours = (numOfHours: number, date = new Date()) => {
-  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
-  return date;
-};
 
 export const getJWTSecret = (): string => {
   const secret = process.env.JWT_SECRET;
@@ -70,6 +27,11 @@ export const getJWTSecret = (): string => {
   }
 
   return secret;
+};
+
+export const addHours = (numOfHours: number, date = new Date()) => {
+  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
+  return date;
 };
 
 export const userToToken = (user: UserModel): Token => {
@@ -92,11 +54,15 @@ export const isAuthenticated = async (
     }
 
     const token = req.headers.authorization.replace('Bearer ', '');
-    res.locals.user = (await JWT.Instance.verify(token)) as Token;
+    res.locals.user = verify(token);
+
+    const cachedToken = await checkToken(res.locals.user.userID, token);
+    if (cachedToken == null || cachedToken == 'invalid' || cachedToken == 'nil')
+      return res.status(401).end('Invalid token!');
 
     next();
   } catch (e) {
-    return res.status(403).end('Unable to authenticate!');
+    return res.status(401).end('Unable to authenticate!');
   }
 };
 
@@ -259,11 +225,9 @@ export const signInUserWithSso = async (
   return res.status(200).send(sessionToken);
 };
 
-export const generateSessionToken = async (
-  userModel: UserModel
-): Promise<any> => {
+export const generateSessionToken = (userModel: UserModel): any => {
   const user = userToToken(userModel);
-  const token = await JWT.Instance.sign(userModel);
+  const token = sign(userModel);
   const expiresAt = addHours(2);
   return { token, user, expiresAt };
 };

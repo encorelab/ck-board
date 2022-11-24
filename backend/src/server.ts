@@ -18,6 +18,7 @@ import trace from './api/trace';
 import groups from './api/groups';
 import todoItems from './api/todoItem';
 import { isAuthenticated } from './utils/auth';
+import redis from './utils/redis';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -31,6 +32,11 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 const server = http.createServer(app);
+
+(async () => {
+  await redis.connect();
+  return redis;
+})();
 
 const socket = Socket.Instance;
 socket.init();

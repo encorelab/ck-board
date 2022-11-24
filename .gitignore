@@ -1,2 +1,3 @@
 # Ignore all node_modules folders
 node_modules
+dump.rdb

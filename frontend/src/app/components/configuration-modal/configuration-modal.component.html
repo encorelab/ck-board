@@ -232,7 +232,7 @@
             [ngStyle]="{ 'background-color': tag.color }"
           >
             {{ tag.name }}
-            <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
+            <mat-icon *ngIf="tag?.specialAttributes?.borderWidth !== _POST_TAGGED_BORDER_THICKNESS" class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
           </mat-chip>
         </mat-chip-list>
       </div>

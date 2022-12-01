@@ -32,7 +32,9 @@ export class TodoItemService {
   }
 
   getByProject(projectID: string): Promise<TodoItem[]> {
-    return this.http.get<TodoItem[]>(`todoItems/project/${projectID}`).toPromise();
+    return this.http
+      .get<TodoItem[]>(`todoItems/project/${projectID}`)
+      .toPromise();
   }
 
   create(todoItem: TodoItem): Promise<TodoItem> {

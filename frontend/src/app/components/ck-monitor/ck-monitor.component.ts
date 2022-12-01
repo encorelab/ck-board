@@ -3,7 +3,6 @@ import {
   Component,
   OnDestroy,
   OnInit,
-  AfterViewInit,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -41,6 +40,7 @@ import { TodoItem } from 'src/app/models/todoItem';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
+import { FormControl, FormGroup } from '@angular/forms';
 
 SwiperCore.use([EffectCards]);
 
@@ -102,15 +102,28 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   members: User[] = [];
 
   todoIsVisible: Boolean = false;
-  todoItems: TodoItem[] = []; 
+  todoItems: TodoItem[] = [];
   todoDataSource = new MatTableDataSource<TodoItemDisplay>();
 
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
 
+  range = new FormGroup({
+    start: new FormControl(null),
+    end: new FormControl(null),
+  });
+
   displayColumns: string[] = ['group-name', 'members', 'progress'];
-  todoColumns: string[] = ['name', 'goal', 'type', 'status', 'deadline', 'rubric-score', 'completion-notes']
+  todoColumns: string[] = [
+    'name',
+    'goal',
+    'type',
+    'status',
+    'deadline',
+    'rubric-score',
+    'completion-notes',
+  ];
 
   constructor(
     public userService: UserService,
@@ -138,9 +151,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         default: {
           return sorting.nestedCaseInsensitive(data, sortHeaderId);
         }
-        
       }
-    }
+    };
   }
 
   @ViewChild(MatSort) set matSort(sort: MatSort) {
@@ -209,7 +221,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   }
 
   async updateTodoItemDataSource(): Promise<void> {
-    this.todoItems.forEach(item => {
+    const data: TodoItemDisplay[] = [];
+    this.todoItems.forEach((item) => {
       const date = new Date(item.deadline.date);
       const formattedDate = date.toLocaleDateString('en-CA');
       const todo: TodoItemDisplay = {
@@ -217,9 +230,28 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         goal: item.title,
         deadline: formattedDate,
         completed: item.completed,
-        overdue: item.overdue
-      }
-      this.todoDataSource.data.push(todo);
+        overdue: item.overdue,
+      };
+      data.push(todo);
+    });
+
+    this.todoDataSource.data = data;
+  }
+
+  clearTodoFilter(): void {
+    this.updateTodoItemDataSource();
+    this.range.reset();
+  }
+
+  filterTodosByDeadline(start: Date, end: Date): void {
+    if (!start || !end) return;
+    this.updateTodoItemDataSource();
+    this.todoDataSource.data = this.todoDataSource.data.filter((item) => {
+      const date = new Date(item.deadline);
+      const adjustedDate = new Date(
+        date.getTime() + Math.abs(date.getTimezoneOffset() * 60000)
+      );
+      return adjustedDate <= end && adjustedDate >= start;
     });
   }
 

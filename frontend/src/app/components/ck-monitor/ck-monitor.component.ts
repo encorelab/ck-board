@@ -33,7 +33,7 @@ import Converters from 'src/app/utils/converters';
 import { PostService } from 'src/app/services/post.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
-import { interval, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { TodoItem } from 'src/app/models/todoItem';
@@ -66,6 +66,9 @@ class TodoItemDisplay {
 })
 export class CkMonitorComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
+  @ViewChild(MatSort) set matSort(sort: MatSort) {
+    this.todoDataSource.sort = sort;
+  }
 
   user: AuthUser;
   group: Group;
@@ -104,17 +107,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   todoIsVisible: Boolean = false;
   todoItems: TodoItem[] = [];
   todoDataSource = new MatTableDataSource<TodoItemDisplay>();
-
-  Role: typeof Role = Role;
-  TaskActionType: typeof TaskActionType = TaskActionType;
-  GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
-
-  range = new FormGroup({
-    start: new FormControl(null),
-    end: new FormControl(null),
-  });
-
-  displayColumns: string[] = ['group-name', 'members', 'progress'];
   todoColumns: string[] = [
     'name',
     'goal',
@@ -124,6 +116,17 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     'rubric-score',
     'completion-notes',
   ];
+
+  todoDeadlineRange = new FormGroup({
+    start: new FormControl(null),
+    end: new FormControl(null),
+  });
+
+  Role: typeof Role = Role;
+  TaskActionType: typeof TaskActionType = TaskActionType;
+  GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
+
+  displayColumns: string[] = ['group-name', 'members', 'progress'];
 
   constructor(
     public userService: UserService,
@@ -142,21 +145,11 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   ) {
     this.todoDataSource.sortingDataAccessor = (data, sortHeaderId) => {
       switch (sortHeaderId) {
-        case 'goal': {
-          return sorting.caseInsensitive(data, sortHeaderId);
-        }
-        case 'deadline': {
-          return sorting.caseInsensitive(data, sortHeaderId);
-        }
         default: {
           return sorting.nestedCaseInsensitive(data, sortHeaderId);
         }
       }
     };
-  }
-
-  @ViewChild(MatSort) set matSort(sort: MatSort) {
-    this.todoDataSource.sort = sort;
   }
 
   ngOnInit(): void {
@@ -222,25 +215,27 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
   async updateTodoItemDataSource(): Promise<void> {
     const data: TodoItemDisplay[] = [];
-    this.todoItems.forEach((item) => {
+
+    for (const item of this.todoItems) {
       const date = new Date(item.deadline.date);
       const formattedDate = date.toLocaleDateString('en-CA');
+      const name = await this.userService.getOneById(item.userID);
       const todo: TodoItemDisplay = {
-        name: item.userID,
+        name: name.username,
         goal: item.title,
         deadline: formattedDate,
         completed: item.completed,
         overdue: item.overdue,
       };
       data.push(todo);
-    });
+    }
 
     this.todoDataSource.data = data;
   }
 
   clearTodoFilter(): void {
     this.updateTodoItemDataSource();
-    this.range.reset();
+    this.todoDeadlineRange.reset();
   }
 
   filterTodosByDeadline(start: Date, end: Date): void {

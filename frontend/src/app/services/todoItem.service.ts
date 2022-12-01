@@ -31,6 +31,10 @@ export class TodoItemService {
     return this.http.get<TodoItem[]>(`todoItems/user/${userID}`).toPromise();
   }
 
+  getByProject(projectID: string): Promise<TodoItem[]> {
+    return this.http.get<TodoItem[]>(`todoItems/project/${projectID}`).toPromise();
+  }
+
   create(todoItem: TodoItem): Promise<TodoItem> {
     return this.http.post<TodoItem>(`todoItems/`, todoItem).toPromise();
   }

@@ -3,6 +3,7 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  AfterViewInit,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -36,6 +37,10 @@ import { SocketService } from 'src/app/services/socket.service';
 import { interval, Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { MatTableDataSource } from '@angular/material/table';
+import { TodoItem } from 'src/app/models/todoItem';
+import { TodoItemService } from 'src/app/services/todoItem.service';
+import { MatSort } from '@angular/material/sort';
+import sorting from 'src/app/utils/sorting';
 
 SwiperCore.use([EffectCards]);
 
@@ -43,6 +48,14 @@ interface MonitorData {
   groupName: string;
   groupMembers: string[];
   progress: string;
+}
+
+class TodoItemDisplay {
+  name: string;
+  goal: string;
+  deadline: string;
+  completed: boolean;
+  overdue: boolean;
 }
 
 @Component({
@@ -88,11 +101,16 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   posts: HTMLPost[] = [];
   members: User[] = [];
 
+  todoIsVisible: Boolean = false;
+  todoItems: TodoItem[] = []; 
+  todoDataSource = new MatTableDataSource<TodoItemDisplay>();
+
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
 
   displayColumns: string[] = ['group-name', 'members', 'progress'];
+  todoColumns: string[] = ['name', 'goal', 'type', 'status', 'deadline', 'rubric-score', 'completion-notes']
 
   constructor(
     public userService: UserService,
@@ -103,11 +121,31 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     public groupService: GroupService,
     public socketService: SocketService,
     public snackbarService: SnackbarService,
+    public todoItemService: TodoItemService,
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog
-  ) {}
+  ) {
+    this.todoDataSource.sortingDataAccessor = (data, sortHeaderId) => {
+      switch (sortHeaderId) {
+        case 'goal': {
+          return sorting.caseInsensitive(data, sortHeaderId);
+        }
+        case 'deadline': {
+          return sorting.caseInsensitive(data, sortHeaderId);
+        }
+        default: {
+          return sorting.nestedCaseInsensitive(data, sortHeaderId);
+        }
+        
+      }
+    }
+  }
+
+  @ViewChild(MatSort) set matSort(sort: MatSort) {
+    this.todoDataSource.sort = sort;
+  }
 
   ngOnInit(): void {
     this.user = this.userService.user!;
@@ -127,6 +165,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     this.board = await this.boardService.get(boardID);
     this.project = await this.projectService.get(projectID);
+    this.todoItems = await this.todoItemService.getByProject(projectID);
+    this.updateTodoItemDataSource();
     this.group = await this.groupService.getByProjectUser(
       projectID,
       this.user.userID
@@ -166,6 +206,21 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     }
     this.socketService.connect(this.user.userID, this.board.boardID);
     return true;
+  }
+
+  async updateTodoItemDataSource(): Promise<void> {
+    this.todoItems.forEach(item => {
+      const date = new Date(item.deadline.date);
+      const formattedDate = date.toLocaleDateString('en-CA');
+      const todo: TodoItemDisplay = {
+        name: item.userID,
+        goal: item.title,
+        deadline: formattedDate,
+        completed: item.completed,
+        overdue: item.overdue
+      }
+      this.todoDataSource.data.push(todo);
+    });
   }
 
   async view(task: TaskWorkflow): Promise<void> {

@@ -11,6 +11,11 @@
   color: grey;
 }
 
+.section-title {
+  padding: 10px 15px;
+  margin: 0px !important; 
+}
+
 .no-workflow-select {
   position: absolute; 
   top: 30%; 
@@ -98,3 +103,4 @@ mat-sidenav-content {
 .table {
   width: 100%;
 }
+

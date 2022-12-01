@@ -21,6 +21,17 @@ export const getByUserProject = async (userID: string, projectID: string) => {
   }
 };
 
+export const getByProject = async (projectID: string)  => {
+  try {
+    const todoItems = await TodoItem.find({
+      projectID: projectID
+    });
+    return todoItems;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '))
+  }
+};
+
 export const getByUser = async (userID: string) => {
   try {
     const todoItems = await TodoItem.find({ userID: userID });
@@ -66,6 +77,7 @@ const dalTodoItem = {
   getById,
   getByUserProject,
   getByUser,
+  getByProject,
   create,
   remove,
   update,

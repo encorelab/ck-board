@@ -165,7 +165,7 @@
               style="font-weight: 500"
               [ngStyle]="{'color': element.overdue? 'red' : (element.completed? 'green' : 'orange')}"
             >
-              {{element.overdue? 'Missed' : (element.completed? 'Complete' : 'Pending')}}
+              {{element.status}}
             </td>
           </ng-container>
 

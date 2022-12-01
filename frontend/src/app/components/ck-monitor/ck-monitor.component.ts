@@ -54,6 +54,7 @@ class TodoItemDisplay {
   name: string;
   goal: string;
   deadline: string;
+  status: string;
   completed: boolean;
   overdue: boolean;
 }
@@ -145,9 +146,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   ) {
     this.todoDataSource.sortingDataAccessor = (data, sortHeaderId) => {
       switch (sortHeaderId) {
-        case 'status': {
-          return sorting.caseInsensitive(data, sortHeaderId);
-        }
         default: {
           return sorting.nestedCaseInsensitive(data, sortHeaderId);
         }
@@ -224,12 +222,14 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       const formattedDate = date.toLocaleDateString('en-CA');
       const currentDate = new Date();
       const name = await this.userService.getOneById(item.userID);
+      const overdue = date < currentDate && !item.completed;
       const todo: TodoItemDisplay = {
         name: name.username,
         goal: item.title,
         deadline: formattedDate,
+        status: overdue ? 'Missed' : item.completed ? 'Complete' : 'Pending',
         completed: item.completed,
-        overdue: date < currentDate && !item.completed,
+        overdue: overdue,
       };
       data.push(todo);
     }

@@ -26,7 +26,7 @@ export class TodoListModalComponent implements OnInit {
   userGroups: Group[];
   personalTodoItems: TodoItem[];
   groupTodoItems: TodoItem[];
-  todoItemsSet: Set<TodoItem>;
+  todoItemsMap: Map<string, TodoItem>;
   personalDataSource: MatTableDataSource<TodoItem>;
   groupDataSource: MatTableDataSource<TodoItem>;
   groupIDtoGroupMap: object;
@@ -110,12 +110,14 @@ export class TodoListModalComponent implements OnInit {
       this.groupTodoItems.filter((todoItem: TodoItem) => !todoItem.completed)
     );
 
-    this.todoItemsSet = new Set(
-      this.personalTodoItems.concat(this.groupTodoItems)
+    this.todoItemsMap = new Map(
+      this.personalTodoItems.map((todo) => [todo.todoItemID, todo])
     );
 
     this.completedItemsDataSource = new MatTableDataSource<TodoItem>(
-      [...this.todoItemsSet].filter((todoItem: TodoItem) => todoItem.completed)
+      [...this.todoItemsMap.values()].filter(
+        (todoItem: TodoItem) => todoItem.completed
+      )
     );
   }
 

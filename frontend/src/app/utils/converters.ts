@@ -29,7 +29,7 @@ export default class Converters {
       author: author!.username,
       upvotes: upvotes,
       comments: comments.length,
-      bucketOnly: post.type == PostType.BUCKET,
+      bucketOnly: post.type != PostType.BOARD,
     };
   }
 

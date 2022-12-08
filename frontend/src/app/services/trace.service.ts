@@ -29,12 +29,12 @@ export class TraceService {
     this.traceContext.boardID = boardID;
     this.traceContext.projectID = projectID;
     this.traceContext.userID = this.userService.user?.userID || '';
-    this.traceContext.clientTimestamp = Date.now();
     this.board = await this.boardService.get(boardID);
     this.traceContext.allowTracing =
       this.board.permissions.allowTracing || false;
   }
   getTraceContext(): TraceContext {
+    this.traceContext.clientTimestamp = Date.now();
     return this.traceContext;
   }
   getTraceRecords(projectID: string) {

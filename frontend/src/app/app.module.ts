@@ -56,6 +56,7 @@ import { ProjectNotificationDropdownComponent } from './components/project-notif
 import { ProjectTodoListModalComponent } from './components/project-todo-list-modal/project-todo-list-modal.component';
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 import { NgxImageCompressService } from 'ngx-image-compress';
+import { CkMonitorComponent } from './components/ck-monitor/ck-monitor.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -99,6 +100,7 @@ export function tokenGetter() {
     ProjectNotificationDropdownComponent,
     ProjectTodoListModalComponent,
     SsoLoginComponent,
+    CkMonitorComponent,
   ],
   imports: [
     BrowserModule,

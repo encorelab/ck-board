@@ -1,4 +1,12 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { GroupModel } from './Group';
+
+export enum TodoItemType {
+  COGNITION = 'COGNITION',
+  SEL = 'SEL',
+  BEHAVIOURAL = 'BEHAVIOURAL',
+  CLASS = 'CLASS',
+}
 
 export class Deadline {
   @prop({ required: true })
@@ -21,6 +29,12 @@ export class TodoItemModel {
 
   @prop({ required: true })
   public title!: string;
+
+  @prop({ required: false })
+  public groupID!: string;
+
+  @prop({ required: true, type: String, enum: TodoItemType })
+  type!: TodoItemType[];
 
   @prop({ required: true })
   public completed!: boolean;

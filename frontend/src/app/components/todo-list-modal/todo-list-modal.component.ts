@@ -5,13 +5,16 @@ import {
   MatDialog,
 } from '@angular/material/dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
+import { GroupService } from 'src/app/services/group.service';
 import { TodoItem } from 'src/app/models/todoItem';
+import { EXPANDED_TODO_TYPE, TODO_TYPE_COLORS } from 'src/app/utils/constants';
 import { MatTableDataSource } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AddTodoListModalComponent } from '../add-todo-list-modal/add-todo-list-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { interval } from 'rxjs';
 import { PausableObservable, pausable } from 'rxjs-pausable';
+import { Group } from 'src/app/models/group';
 
 @Component({
   selector: 'app-todo-list-modal',
@@ -20,28 +23,52 @@ import { PausableObservable, pausable } from 'rxjs-pausable';
 })
 export class TodoListModalComponent implements OnInit {
   minDate: Date;
-  todoItems: TodoItem[];
+  userGroups: Group[];
+  personalTodoItems: TodoItem[];
+  groupTodoItems: TodoItem[];
+  todoItemsMap: Map<string, TodoItem>;
+  personalDataSource: MatTableDataSource<TodoItem>;
+  groupDataSource: MatTableDataSource<TodoItem>;
+  groupIDtoGroupMap: object;
+
   projectID: string;
   userID: string;
   displayColumns: string[];
+  displayGroupColumns: string[];
   completedDisplayColums: string[];
   selection = new SelectionModel<TodoItem>(true, []);
   pausable: PausableObservable<number>;
-  dataSource: MatTableDataSource<TodoItem>;
   completedItemsDataSource: MatTableDataSource<TodoItem>;
   CONFETTI_DELAY = 3400;
   CONFETTI_DURATION = 500;
+  todoItemTypes = EXPANDED_TODO_TYPE;
+  todoItemColors = TODO_TYPE_COLORS;
 
   constructor(
     public dialogRef: MatDialogRef<TodoListModalComponent>,
     public dialog: MatDialog,
     public todoItemService: TodoItemService,
+    public groupService: GroupService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.projectID = data.project.projectID;
     this.userID = data.user.userID;
-    this.displayColumns = ['select', 'task-title', 'deadline', 'edit'];
-    this.completedDisplayColums = ['task-title', 'completion-date', 'options'];
+    this.displayColumns = ['select', 'task-title', 'type', 'deadline', 'edit'];
+    this.displayGroupColumns = [
+      'select',
+      'task-title',
+      'type',
+      'group',
+      'deadline',
+      'edit',
+    ];
+    this.completedDisplayColums = [
+      'task-title',
+      'type',
+      'group',
+      'completion-date',
+      'options',
+    ];
   }
 
   async ngOnInit() {
@@ -54,30 +81,56 @@ export class TodoListModalComponent implements OnInit {
   }
 
   async getTodoItems() {
-    this.todoItems = await this.todoItemService.getByUserProject(
+    this.personalTodoItems = await this.todoItemService.getByUserProject(
       this.userID,
       this.projectID
     );
 
-    this.dataSource = new MatTableDataSource<TodoItem>(
-      this.todoItems.filter((todoItem: TodoItem) => !todoItem.completed)
+    this.userGroups = await this.groupService.getByUserAndProject(
+      this.userID,
+      this.projectID
+    );
+
+    this.groupIDtoGroupMap = this.userGroups.reduce(function (map, obj) {
+      map[obj.groupID] = obj;
+      return map;
+    }, {});
+
+    this.groupTodoItems = await this.todoItemService.getMultipleByGroup(
+      this.userGroups.map((group) => group.groupID)
+    );
+
+    this.personalDataSource = new MatTableDataSource<TodoItem>(
+      this.personalTodoItems.filter(
+        (todoItem: TodoItem) => !todoItem.completed && !todoItem.groupID
+      )
+    );
+
+    this.groupDataSource = new MatTableDataSource<TodoItem>(
+      this.groupTodoItems.filter((todoItem: TodoItem) => !todoItem.completed)
+    );
+
+    this.todoItemsMap = new Map(
+      this.personalTodoItems.map((todo) => [todo.todoItemID, todo])
     );
 
     this.completedItemsDataSource = new MatTableDataSource<TodoItem>(
-      this.todoItems.filter((todoItem: TodoItem) => todoItem.completed)
+      [...this.todoItemsMap.values()].filter(
+        (todoItem: TodoItem) => todoItem.completed
+      )
     );
   }
 
-  isAllSelected() {
+  isAllSelected(dataSource) {
     const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
+    const numRows = dataSource.data.length;
     return numSelected === numRows;
   }
 
-  masterToggle() {
-    this.isAllSelected()
+  masterToggle(dataSource) {
+    this.isAllSelected(dataSource)
       ? this.selection.clear()
-      : this.dataSource.data.forEach((row) => this.selection.select(row));
+      : dataSource.data.forEach((row) => this.selection.select(row));
   }
 
   async completeTodoItems() {
@@ -134,22 +187,32 @@ export class TodoListModalComponent implements OnInit {
         projectID: this.projectID,
         userID: this.userID,
         onComplete: async (todoItem: TodoItem) => {
-          this.todoItems.push(todoItem);
-          const data = this.dataSource.data;
+          let dataSource: MatTableDataSource<TodoItem>;
+          if (todoItem.groupID) {
+            this.groupTodoItems.push(todoItem);
+            dataSource = this.groupDataSource;
+          } else {
+            dataSource = this.personalDataSource;
+            this.personalTodoItems.push(todoItem);
+          }
+          const data = dataSource.data;
           data.push(todoItem);
-          this.dataSource.data = data;
+          dataSource.data = data;
         },
       },
     });
   }
 
-  editTodoItem(todoItem: TodoItem) {
+  async editTodoItem(todoItem: TodoItem) {
     this.dialog.open(AddTodoListModalComponent, {
       width: '600px',
       data: {
         projectID: this.projectID,
         userID: this.userID,
         todoItem: todoItem,
+        group: todoItem.groupID
+          ? await this.groupService.getById(todoItem.groupID)
+          : null,
         onComplete: async () => {
           await this.getTodoItems();
         },

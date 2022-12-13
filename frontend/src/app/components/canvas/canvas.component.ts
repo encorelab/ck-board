@@ -229,7 +229,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   };
 
   handleWorkflowPost = (postID: string): void => {
-    console.log(postID);
     this.handlePostDeleteEvent(postID);
   };
 
@@ -615,6 +614,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   openWorkspace() {
     this.router.navigate([
       `/project/${this.projectID}/board/${this.boardID}/workspace`,
+    ]);
+  }
+
+  openCkMonitor() {
+    this.router.navigate([
+      `/project/${this.projectID}/board/${this.boardID}/monitor`,
     ]);
   }
 

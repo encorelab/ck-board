@@ -33,9 +33,14 @@ import Converters from 'src/app/utils/converters';
 import { PostService } from 'src/app/services/post.service';
 import { SocketEvent } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
-import { interval, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { MatTableDataSource } from '@angular/material/table';
+import { TodoItem } from 'src/app/models/todoItem';
+import { TodoItemService } from 'src/app/services/todoItem.service';
+import { MatSort } from '@angular/material/sort';
+import sorting from 'src/app/utils/sorting';
+import { FormControl, FormGroup } from '@angular/forms';
 
 SwiperCore.use([EffectCards]);
 
@@ -43,6 +48,15 @@ interface MonitorData {
   groupName: string;
   groupMembers: string[];
   progress: string;
+}
+
+class TodoItemDisplay {
+  name: string;
+  goal: string;
+  deadline: string;
+  status: string;
+  completed: boolean;
+  overdue: boolean;
 }
 
 @Component({
@@ -53,6 +67,9 @@ interface MonitorData {
 })
 export class CkMonitorComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
+  @ViewChild(MatSort) set matSort(sort: MatSort) {
+    this.todoDataSource.sort = sort;
+  }
 
   user: AuthUser;
   group: Group;
@@ -88,6 +105,24 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   posts: HTMLPost[] = [];
   members: User[] = [];
 
+  todoIsVisible: Boolean = false;
+  todoItems: TodoItem[] = [];
+  todoDataSource = new MatTableDataSource<TodoItemDisplay>();
+  todoColumns: string[] = [
+    'name',
+    'goal',
+    'type',
+    'status',
+    'deadline',
+    'rubric-score',
+    'completion-notes',
+  ];
+
+  todoDeadlineRange = new FormGroup({
+    start: new FormControl(null),
+    end: new FormControl(null),
+  });
+
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
@@ -103,11 +138,20 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     public groupService: GroupService,
     public socketService: SocketService,
     public snackbarService: SnackbarService,
+    public todoItemService: TodoItemService,
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog
-  ) {}
+  ) {
+    this.todoDataSource.sortingDataAccessor = (data, sortHeaderId) => {
+      switch (sortHeaderId) {
+        default: {
+          return sorting.nestedCaseInsensitive(data, sortHeaderId);
+        }
+      }
+    };
+  }
 
   ngOnInit(): void {
     this.user = this.userService.user!;
@@ -127,6 +171,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     this.board = await this.boardService.get(boardID);
     this.project = await this.projectService.get(projectID);
+    this.todoItems = await this.todoItemService.getByProject(projectID);
+    this.updateTodoItemDataSource();
     this.group = await this.groupService.getByProjectUser(
       projectID,
       this.user.userID
@@ -166,6 +212,46 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     }
     this.socketService.connect(this.user.userID, this.board.boardID);
     return true;
+  }
+
+  async updateTodoItemDataSource(): Promise<void> {
+    const data: TodoItemDisplay[] = [];
+
+    for (const item of this.todoItems) {
+      const date = new Date(`${item.deadline.date} ${item.deadline.time}`);
+      const formattedDate = date.toLocaleDateString('en-CA');
+      const currentDate = new Date();
+      const name = await this.userService.getOneById(item.userID);
+      const overdue = date < currentDate && !item.completed;
+      const todo: TodoItemDisplay = {
+        name: name.username,
+        goal: item.title,
+        deadline: formattedDate,
+        status: overdue ? 'Missed' : item.completed ? 'Complete' : 'Pending',
+        completed: item.completed,
+        overdue: overdue,
+      };
+      data.push(todo);
+    }
+
+    this.todoDataSource.data = data;
+  }
+
+  clearTodoFilter(): void {
+    this.updateTodoItemDataSource();
+    this.todoDeadlineRange.reset();
+  }
+
+  filterTodosByDeadline(start: Date, end: Date): void {
+    if (!start || !end) return;
+    this.updateTodoItemDataSource();
+    this.todoDataSource.data = this.todoDataSource.data.filter((item) => {
+      const date = new Date(item.deadline);
+      const adjustedDate = new Date(
+        date.getTime() + Math.abs(date.getTimezoneOffset() * 60000)
+      );
+      return adjustedDate <= end && adjustedDate >= start;
+    });
   }
 
   async view(task: TaskWorkflow): Promise<void> {

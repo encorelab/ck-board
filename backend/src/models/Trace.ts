@@ -5,7 +5,7 @@ import {
   Severity,
 } from '@typegoose/typegoose';
 
-import { BoardType, BoardScope } from './Board';
+import { BoardType } from './Board';
 
 @modelOptions({
   schemaOptions: { collection: 'trace', timestamps: true },
@@ -27,8 +27,8 @@ export class TraceModel {
   @prop({ enum: BoardType, type: String, required: true })
   boardType!: BoardType;
 
-  @prop({ enum: BoardScope, type: String, required: true })
-  boardContext!: BoardScope;
+  @prop({ required: true })
+  boardContext!: string;
 
   @prop({ required: true })
   agentUserID!: string;

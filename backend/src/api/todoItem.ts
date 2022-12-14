@@ -42,7 +42,8 @@ router.post('/', async (req, res) => {
 router.post('/:id', async (req, res) => {
   const { id } = req.params;
 
-  const { title, deadline, completed, overdue, notifications } = req.body;
+  const { title, deadline, completed, overdue, notifications, type, groupID } =
+    req.body;
 
   const todoItem: Partial<TodoItemModel> = Object.assign(
     {},
@@ -50,11 +51,20 @@ router.post('/:id', async (req, res) => {
     deadline === null ? null : { deadline },
     completed === null ? null : { completed },
     overdue === null ? null : { overdue },
+    type === null ? null : { type },
+    groupID === null ? null : { groupID },
     notifications === null ? null : { notifications }
   );
 
   const updatedTodoItem = await dalTodoItem.update(id, todoItem);
   res.status(200).json(updatedTodoItem);
+});
+
+router.post('/group/multiple', async (req, res) => {
+  const ids = req.body;
+
+  const todoItems = await dalTodoItem.getByMultipleByGroup(ids);
+  res.status(200).json(todoItems);
 });
 
 router.delete('/:id', async (req, res) => {

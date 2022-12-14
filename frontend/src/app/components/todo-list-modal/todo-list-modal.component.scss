@@ -4,12 +4,26 @@
 
 .mat-column-task-title {
   padding-left: 16px;
-  font-size: 18px;
+  font-size: 16px;
+  margin-right: 16px;
+}
+
+.mat-column-group {
+  margin-right: 16px;
+  font-size: 16px;
+  padding-right: 16px;
+}
+
+.mat-column-type{
+  margin-right: 16px;
+  font-size: 16px;
+  margin: 10px 0;
 }
 
 .mat-column-deadline, .mat-column-completion-date {
   font-style: italic;
-  font-size: 18px;
+  font-size: 15px;
+  margin-right: 16px;
 }
 
 .addTodoItemButton{

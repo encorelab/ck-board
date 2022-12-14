@@ -93,4 +93,18 @@ export enum TODOITEM_NOTIFICATION {
   OVERDUE = 'OVERDUE',
 }
 
+export enum EXPANDED_TODO_TYPE {
+  COGNITION = 'Cognitive strategies',
+  SEL = 'Social-emotional learning supports',
+  BEHAVIOURAL = 'Behavioural engagement practices',
+  CLASS = 'Class-related work',
+}
+
+export enum TODO_TYPE_COLORS {
+  COGNITION = '#5bc2cb',
+  SEL = '#f67280',
+  BEHAVIOURAL = '#e6a129',
+  CLASS = '#88B04B',
+}
+
 export const TAG_DEFAULT_COLOR = '#c5c2b5';

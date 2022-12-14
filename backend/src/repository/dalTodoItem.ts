@@ -9,6 +9,15 @@ export const getById = async (id: string) => {
   }
 };
 
+export const getByMultipleByGroup = async (ids: string[]) => {
+  try {
+    const todoItems = await TodoItem.find({ groupID: { $in: ids } });
+    return todoItems;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const getByUserProject = async (userID: string, projectID: string) => {
   try {
     const todoItems = await TodoItem.find({
@@ -75,6 +84,7 @@ export const remove = async (id: string) => {
 
 const dalTodoItem = {
   getById,
+  getByMultipleByGroup,
   getByUserProject,
   getByUser,
   getByProject,

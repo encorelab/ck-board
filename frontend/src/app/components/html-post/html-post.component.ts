@@ -46,6 +46,7 @@ export interface HTMLPost {
 })
 export class HtmlPostComponent implements OnInit {
   @Input() post: HTMLPost;
+  @Input() disableDownload: boolean = false;
   @Output() movePostToBoardEvent = new EventEmitter<string>();
 
   exists = true;

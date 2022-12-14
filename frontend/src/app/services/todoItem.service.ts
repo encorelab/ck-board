@@ -37,6 +37,12 @@ export class TodoItemService {
       .toPromise();
   }
 
+  getMultipleByGroup(ids: string[]): Promise<TodoItem[]> {
+    return this.http
+      .post<TodoItem[]>('todoItems/group/multiple', ids)
+      .toPromise();
+  }
+
   create(todoItem: TodoItem): Promise<TodoItem> {
     return this.http.post<TodoItem>(`todoItems/`, todoItem).toPromise();
   }

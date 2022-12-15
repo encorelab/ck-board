@@ -426,6 +426,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
             new FabricPostComponent(post, {
               upvotes: upvotes.length,
               comments: comments.length,
+              author: 'Anonymous',
             })
           );
         }

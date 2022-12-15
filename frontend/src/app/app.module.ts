@@ -57,6 +57,7 @@ import { ProjectTodoListModalComponent } from './components/project-todo-list-mo
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 import { NgxImageCompressService } from 'ngx-image-compress';
 import { CkMonitorComponent } from './components/ck-monitor/ck-monitor.component';
+import { MatSortModule } from '@angular/material/sort';
 
 const config: SocketIoConfig = {
   url: 'https://ck-board.oise.utoronto.ca/',
@@ -127,6 +128,7 @@ export function tokenGetter() {
     SwiperModule,
     MaterialModule,
     DragDropModule,
+    MatSortModule,
   ],
   providers: [
     {

@@ -18,6 +18,13 @@ router.get('/user/:userID', async (req, res) => {
   res.status(200).json(todoItems);
 });
 
+router.get('/project/:projectID', async (req, res) => {
+  const { projectID } = req.params;
+
+  const todoItems = await dalTodoItem.getByProject(projectID);
+  res.status(200).json(todoItems);
+});
+
 router.get('/:userID/:projectID', async (req, res) => {
   const { userID, projectID } = req.params;
 

@@ -26,6 +26,14 @@ export default [
     default: '',
   },
   {
+    value: 'boardType',
+    default: '',
+  },
+  {
+    value: 'boardContext',
+    default: '',
+  },
+  {
     value: 'agentUserID',
     default: '',
   },

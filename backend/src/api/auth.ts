@@ -10,6 +10,7 @@ import {
   isCorrectHashedSsoPayload,
   isSsoEnabled,
   isValidNonce,
+  logoutSCORE,
   signInUserWithSso,
   userToToken,
 } from '../utils/auth';
@@ -67,6 +68,10 @@ router.post('/logout', isAuthenticated, async (req, res) => {
   const token = req.headers.authorization.replace('Bearer ', '');
   await destroyToken(res.locals.user.userID, token);
 
+  if (req.body.logoutSCORE) {
+    await logoutSCORE(req);
+  }
+
   res.status(200).end();
 });
 
@@ -83,12 +88,14 @@ router.get('/is-sso-enabled', async (req, res) => {
 });
 
 router.get('/sso/handshake', async (req, res) => {
-  const scoreSsoEndpoint = process.env.SCORE_SSO_ENDPOINT;
-  const payload = await generateSsoPayload();
-  const hashedPayload = generateHashedSsoPayload(payload);
-  if (!scoreSsoEndpoint) {
+  const ssoEndpoint = process.env.SCORE_SSO_ENDPOINT;
+  const scoreAddress = process.env.SCORE_SERVER_ADDRESS || 'http://localhost';
+  if (!ssoEndpoint) {
     throw new Error('No SCORE SSO endpoint environment variable defined!');
   }
+  const scoreSsoEndpoint = `${scoreAddress + ssoEndpoint}`;
+  const payload = await generateSsoPayload();
+  const hashedPayload = generateHashedSsoPayload(payload);
   res.status(200).send({
     scoreSsoEndpoint: scoreSsoEndpoint,
     sig: hashedPayload,

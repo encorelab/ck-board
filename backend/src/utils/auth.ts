@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import axios from 'axios';
 import { Role, UserModel } from '../models/User';
 import { v4 as uuidv4 } from 'uuid';
 import hmacSHA256 from 'crypto-js/hmac-sha256';
@@ -10,7 +11,7 @@ import { ProjectModel } from '../models/Project';
 import { NotFoundError } from '../errors/client.errors';
 import { addUserToProject } from './project.helpers';
 import { ApplicationError } from '../errors/base.errors';
-import { checkToken, sign, verify } from './jwt';
+import { addToken, checkToken, sign, verify } from './jwt';
 
 export interface Token {
   email: string;
@@ -222,12 +223,28 @@ export const signInUserWithSso = async (
   }
   const sessionToken = await generateSessionToken(userModel);
   sessionToken.redirectUrl = redirectUrl;
+  await addToken(sessionToken.user.userID, sessionToken.token);
+
   return res.status(200).send(sessionToken);
 };
 
 export const generateSessionToken = (userModel: UserModel): any => {
   const user = userToToken(userModel);
-  const token = sign(userModel);
+  const token = sign(user);
   const expiresAt = addHours(2);
   return { token, user, expiresAt };
+};
+
+export const logoutSCORE = async (req: Request) => {
+  const cookie = req.headers.cookie
+    ?.split(';')
+    .find((c) => c.startsWith('SESSION='));
+  const scoreAddress = process.env.SCORE_SERVER_ADDRESS || 'http://localhost';
+
+  return await axios.get(
+    `${scoreAddress + process.env.SCORE_LOGOUT_ENDPOINT}`,
+    {
+      headers: { Cookie: `${cookie};` },
+    }
+  );
 };

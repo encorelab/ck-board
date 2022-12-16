@@ -47,7 +47,11 @@ export class UserService {
 
   async logout(): Promise<boolean> {
     return this.http
-      .post<TokenResponse>('auth/logout', {})
+      .post<TokenResponse>(
+        'auth/logout',
+        { logoutSCORE: true },
+        { withCredentials: true }
+      )
       .toPromise()
       .then(() => {
         this.clearLocalStorage();

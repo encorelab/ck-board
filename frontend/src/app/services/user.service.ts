@@ -48,8 +48,8 @@ export class UserService {
   async logout(): Promise<boolean> {
     return this.http
       .post<TokenResponse>(
-        'auth/logout',
-        { logoutSCORE: true },
+        'auth/logout?score=true',
+        {},
         { withCredentials: true }
       )
       .toPromise()

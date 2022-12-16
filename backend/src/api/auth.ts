@@ -68,7 +68,7 @@ router.post('/logout', isAuthenticated, async (req, res) => {
   const token = req.headers.authorization.replace('Bearer ', '');
   await destroyToken(res.locals.user.userID, token);
 
-  if (req.body.logoutSCORE) {
+  if (req.query.score) {
     await logoutSCORE(req);
   }
 

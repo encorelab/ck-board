@@ -225,6 +225,12 @@ export const signInUserWithSso = async (
   sessionToken.redirectUrl = redirectUrl;
   await addToken(sessionToken.user.userID, sessionToken.token);
 
+  res.cookie('CK_SESSION', sessionToken.token, {
+    httpOnly: true,
+    domain: process.env.APP_DOMAIN || 'localhost',
+    expires: sessionToken.expiresAt,
+    secure: true,
+  });
   return res.status(200).send(sessionToken);
 };
 
@@ -236,15 +242,11 @@ export const generateSessionToken = (userModel: UserModel): any => {
 };
 
 export const logoutSCORE = async (req: Request) => {
-  const cookie = req.headers.cookie
-    ?.split(';')
-    .find((c) => c.trim().startsWith('SESSION='));
   const scoreAddress = process.env.SCORE_SERVER_ADDRESS || 'http://localhost';
-
   return await axios.get(
     `${scoreAddress + process.env.SCORE_LOGOUT_ENDPOINT}`,
     {
-      headers: { Cookie: `${cookie};` },
+      headers: { Cookie: `SESSION=${req.cookies['SESSION']};` },
     }
   );
 };

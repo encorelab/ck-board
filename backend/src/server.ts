@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -31,6 +32,7 @@ const dbName = process.env.DB_NAME;
 const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
 const app = express();
+app.use(cookieParser());
 app.use(
   cors({
     credentials: true,

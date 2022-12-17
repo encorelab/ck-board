@@ -20,7 +20,7 @@ export class UserService {
 
   async register(user: User) {
     return this.http
-      .post<TokenResponse>('auth/register', user)
+      .post<TokenResponse>('auth/register', user, { withCredentials: true })
       .toPromise()
       .then((result) => {
         localStorage.setItem('user', JSON.stringify(result.user));
@@ -32,10 +32,14 @@ export class UserService {
 
   async login(email: string, password: string): Promise<boolean> {
     return this.http
-      .post<TokenResponse>('auth/login', {
-        email: email,
-        password: password,
-      })
+      .post<TokenResponse>(
+        'auth/login',
+        {
+          email: email,
+          password: password,
+        },
+        { withCredentials: true }
+      )
       .toPromise()
       .then((result) => {
         localStorage.setItem('user', JSON.stringify(result.user));

@@ -5,6 +5,7 @@
     "axios": "^1.2.1",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "dotenv": "^16.0.0",
@@ -28,6 +29,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
     "@types/crypto-js": "^4.1.1",
     "@types/express": "^4.17.13",
     "@types/jsonwebtoken": "^8.5.8",

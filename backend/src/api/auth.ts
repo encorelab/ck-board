@@ -41,6 +41,13 @@ router.post('/login', async (req, res) => {
   const expiresAt = addHours(2);
 
   await addToken(foundUser.userID, token);
+
+  res.cookie('CK_SESSION', token, {
+    httpOnly: true,
+    domain: process.env.APP_DOMAIN || 'localhost',
+    expires: expiresAt,
+    secure: true,
+  });
   res.status(200).send({ token, user, expiresAt });
 });
 
@@ -57,6 +64,13 @@ router.post('/register', async (req, res) => {
   const expiresAt = addHours(2);
 
   await addToken(savedUser.userID, token);
+
+  res.cookie('CK_SESSION', token, {
+    httpOnly: true,
+    domain: process.env.APP_DOMAIN || 'localhost',
+    expires: expiresAt,
+    secure: true,
+  });
   res.status(200).send({ token, user, expiresAt });
 });
 

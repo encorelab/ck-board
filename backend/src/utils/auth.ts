@@ -238,7 +238,7 @@ export const generateSessionToken = (userModel: UserModel): any => {
 export const logoutSCORE = async (req: Request) => {
   const cookie = req.headers.cookie
     ?.split(';')
-    .find((c) => c.startsWith('SESSION='));
+    .find((c) => c.trim().startsWith('SESSION='));
   const scoreAddress = process.env.SCORE_SERVER_ADDRESS || 'http://localhost';
 
   return await axios.get(

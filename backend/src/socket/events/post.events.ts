@@ -160,10 +160,10 @@ class PostCommentRemove {
   static async handleEvent(
     input: SocketPayload<CommentModel>
   ): Promise<object> {
-    const commentAmount = await dalComment.getAmountByPost(
-      input.eventData.postID
-    );
-    await postTrace.commentRemove(input, this.type);
+    const comment = input.eventData;
+    const commentAmount = await dalComment.getAmountByPost(comment.postID);
+    if (input.trace.allowTracing)
+      await postTrace.commentRemove(input, this.type);
 
     return { comment: input.eventData, amount: commentAmount };
   }

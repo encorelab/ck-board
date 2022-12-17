@@ -24,8 +24,12 @@
         <mat-icon>library_add</mat-icon>
       </button>
       <mat-menu #bucketMenu="matMenu">
-        <div mat-menu-item *ngIf="buckets && buckets.length === 0">
-          No buckets available.
+        <div mat-menu-item (click)="$event.stopPropagation()">
+          <mat-checkbox
+            [checked]="post && post.type === PostType.BOARD"
+            (change)="updatePostContainer($event, PostType.BOARD, null)"
+            >{{ data.board.name }}</mat-checkbox
+          >
         </div>
         <div
           mat-menu-item
@@ -34,8 +38,8 @@
         >
           <mat-checkbox
             id="{{ bucket.bucketID }}"
-            [checked]="bucket.includesPost"
-            (change)="updateBucket($event)"
+            [checked]="bucketIncludesPost(bucket)"
+            (change)="updatePostContainer($event, PostType.BUCKET, bucket)"
             >{{ bucket.name }}</mat-checkbox
           >
         </div>

@@ -178,7 +178,8 @@ class PostCommentRemove {
   ): Promise<object> {
     const comment = input.eventData;
     const commentAmount = await dalComment.getAmountByPost(comment.postID);
-    await postTrace.commentRemove(input, this.type);
+    if (input.trace.allowTracing)
+      await postTrace.commentRemove(input, this.type);
 
     WorkflowManager.Instance.updateTask(
       comment.userID,

@@ -94,7 +94,7 @@ export class PostModalComponent {
     Validators.required,
     Validators.maxLength(50),
   ]);
-  descControl = new FormControl('', [Validators.maxLength(1000)]);
+  descControl = new FormControl('', [Validators.maxLength(2000)]);
   matcher = new MyErrorStateMatcher();
 
   newComment: string;

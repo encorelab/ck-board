@@ -57,10 +57,10 @@ export class AddPostComponent {
     Validators.required,
     Validators.maxLength(50),
   ]);
-  msgControl = new FormControl('', [Validators.maxLength(1000)]);
+  msgControl = new FormControl('', [Validators.maxLength(2000)]);
   questionPromptControl = new FormControl('', [
     Validators.required,
-    Validators.maxLength(1000),
+    Validators.maxLength(2000),
   ]);
 
   matcher = new MyErrorStateMatcher();

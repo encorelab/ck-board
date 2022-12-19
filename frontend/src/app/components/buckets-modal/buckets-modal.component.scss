@@ -14,3 +14,12 @@
   margin: 70px auto;
   background: transparent;
 }
+
+.header {
+  display: flex; 
+  flex-direction: row;
+}
+
+.header > mat-paginator:last-child {
+  margin-left: auto;
+}

@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import Post, { PostType } from '../models/post';
 
-interface Options {
+export interface Options {
   size: number;
   page: number;
 }
@@ -37,6 +37,18 @@ export class PostService {
 
     return this.http
       .get<Post[]>('posts/boards/' + boardID, { params })
+      .toPromise();
+  }
+
+  getAllByBucket(bucketID: string, opts?: Options): Promise<any> {
+    let params = new HttpParams();
+    if (opts) {
+      params = params.append('size', opts.size);
+      params = params.append('page', opts.page);
+    }
+
+    return this.http
+      .get<any>('posts/buckets/' + bucketID, { params })
       .toPromise();
   }
 

@@ -1,9 +1,15 @@
+import { T } from '@angular/cdk/keycodes';
 import { Component, Inject } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Board } from 'src/app/models/board';
+import { Board, BoardType } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
-import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
+import Post, {
+  DisplayAttributes,
+  PostType,
+  ContentType,
+  MultipleChoiceOptions,
+} from 'src/app/models/post';
 import { Tag } from 'src/app/models/tag';
 import User from 'src/app/models/user';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -15,7 +21,6 @@ import {
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import Utils, { generateUniqueID } from 'src/app/utils/Utils';
-import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 
 export interface AddPostDialog {
   type: PostType;
@@ -23,7 +28,8 @@ export interface AddPostDialog {
   board: Board;
   bucket?: Bucket;
   spawnPosition: { left: number; top: number };
-  onComplete?: (post: Post) => any;
+  onComplete?: (post: any) => any;
+  editingPost?: Post | undefined;
 }
 
 @Component({
@@ -34,6 +40,12 @@ export interface AddPostDialog {
 export class AddPostComponent {
   user: User;
   board: Board;
+  boardType: BoardType;
+  newMultipleChoiceOptionTest = '';
+  multipleChoiceOptions: MultipleChoiceOptions[] = [];
+  correctMultipleChoiceSelected = false;
+  editingPost: Post | undefined;
+  contentType: ContentType = ContentType.OPEN_RESPONSE_MESSAGE;
 
   title = '';
   message = '';
@@ -45,7 +57,12 @@ export class AddPostComponent {
     Validators.required,
     Validators.maxLength(50),
   ]);
-  msgControl = new FormControl('', [Validators.maxLength(1000)]);
+  msgControl = new FormControl('', [Validators.maxLength(2000)]);
+  questionPromptControl = new FormControl('', [
+    Validators.required,
+    Validators.maxLength(2000),
+  ]);
+
   matcher = new MyErrorStateMatcher();
 
   constructor(
@@ -56,6 +73,17 @@ export class AddPostComponent {
   ) {
     this.user = data.user;
     this.board = data.board;
+    this.boardType = data.board.type;
+    this.editingPost = data.editingPost;
+    if (this.editingPost) {
+      this.contentType = ContentType.MULTIPLE_CHOICE;
+      this.title = this.editingPost.title;
+      this.multipleChoiceOptions = this.editingPost.multipleChoice
+        ? this.editingPost.multipleChoice
+        : [];
+      this.tags = this.editingPost.tags;
+      this.correctMultipleChoiceSelected = true;
+    }
     this.tagOptions = data.board.tags.filter(
       (n) => !this.tags.map((b) => b.name).includes(n.name)
     );
@@ -74,6 +102,64 @@ export class AddPostComponent {
     }
 
     this.tagOptions.push(tag);
+  }
+
+  addMultipleChoiceButton() {
+    this.multipleChoiceOptions.push({
+      optionTitle: this.newMultipleChoiceOptionTest,
+      correct: false,
+      formula: false,
+    });
+    this.newMultipleChoiceOptionTest = '';
+  }
+
+  removeMultipleChoiceOption(event, option) {
+    event.stopPropagation();
+    const index = this.multipleChoiceOptions.indexOf(option);
+
+    if (index >= 0) {
+      if (this.multipleChoiceOptions[index].correct)
+        this.correctMultipleChoiceSelected = false;
+      this.multipleChoiceOptions.splice(index, 1);
+    }
+  }
+
+  multipleChoiceAnswer(event, option) {
+    event.stopPropagation();
+    this.correctMultipleChoiceSelected = true;
+    const index = this.multipleChoiceOptions.indexOf(option);
+    if (index >= 0) {
+      this.multipleChoiceOptions[index].correct = true;
+      for (let i = 0; i < this.multipleChoiceOptions.length; i++) {
+        if (i != index) this.multipleChoiceOptions[i].correct = false;
+      }
+    }
+  }
+  disabled() {
+    if (this.editingPost) {
+      return (
+        !this.titleControl.valid ||
+        !this.msgControl.valid ||
+        !(this.multipleChoiceOptions.length >= 2) ||
+        !this.correctMultipleChoiceSelected ||
+        !this.questionPromptControl.valid
+      );
+    } else if (this.contentType == ContentType.MULTIPLE_CHOICE) {
+      return (
+        !this.titleControl.valid ||
+        !this.message ||
+        !(this.multipleChoiceOptions.length >= 2) ||
+        !this.correctMultipleChoiceSelected ||
+        !this.questionPromptControl.valid
+      );
+    } else if (
+      this.boardType === BoardType.QUESTION_AUTHORING &&
+      this.contentType == ContentType.OPEN_RESPONSE_MESSAGE
+    ) {
+      return !this.titleControl.valid || !this.questionPromptControl.valid;
+    } else {
+      return !this.titleControl.valid || !this.msgControl.valid;
+    }
   }
 
   async addPost() {
@@ -98,6 +184,8 @@ export class AddPostComponent {
       userID: this.user.userID,
       boardID: this.board.boardID,
       type: PostType.BOARD,
+      contentType: this.contentType,
+      multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       author: this.user.username,
       desc: this.message,
@@ -117,6 +205,8 @@ export class AddPostComponent {
       boardID: this.board.boardID,
       author: this.user.username,
       type: PostType.BUCKET,
+      contentType: this.contentType,
+      multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       desc: this.message,
       tags: this.tags,
@@ -133,6 +223,8 @@ export class AddPostComponent {
       boardID: this.board.boardID,
       author: this.user.username,
       type: PostType.LIST,
+      contentType: this.contentType,
+      multipleChoice: this.multipleChoiceOptions,
       title: this.title,
       desc: this.message,
       tags: this.tags,
@@ -140,6 +232,21 @@ export class AddPostComponent {
     };
 
     return await this.canvasService.createListPost(post);
+  }
+
+  async updateMultipleChoicePost() {
+    if (this.editingPost) {
+      const update: Partial<Post> = {
+        postID: this.editingPost.postID,
+        title: this.title,
+        multipleChoice: this.multipleChoiceOptions,
+        tags: this.tags,
+      };
+      if (this.data.onComplete) {
+        this.data.onComplete(update);
+      }
+      this.dialogRef.close();
+    }
   }
 
   async handleDialogSubmit() {

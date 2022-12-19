@@ -1,5 +1,19 @@
-<h1 mat-dialog-title>Add Post</h1>
+<h1 mat-dialog-title *ngIf="!editingPost">Add Post</h1>
+<h1 mat-dialog-title *ngIf="editingPost">Update Post</h1>
 <div mat-dialog-content>
+  <div style="margin-bottom: 10px">
+    <mat-radio-group
+      *ngIf="boardType === 'QUESTION_AUTHORING' && !editingPost"
+      [(ngModel)]="contentType"
+    >
+      <mat-radio-button style="margin-left: 10px" value="OPEN_RESPONSE_MESSAGE">
+        Open Response
+      </mat-radio-button>
+      <mat-radio-button style="margin-left: 10px" value="MULTIPLE_CHOICE">
+        Multiple Choice
+      </mat-radio-button>
+    </mat-radio-group>
+  </div>
   <mat-form-field appearance="fill" style="width: 100%">
     <mat-label>Title</mat-label>
     <input
@@ -16,21 +30,137 @@
       Title is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>
-  <mat-form-field appearance="fill" style="width: 100%">
-    <mat-label>Message</mat-label>
-    <textarea
-      [formControl]="msgControl"
-      [errorStateMatcher]="matcher"
-      matInput
-      rows="5"
-      cols="40"
-      [(ngModel)]="message"
-    ></textarea>
-    <mat-error *ngIf="message && message.length > 1000">
-      Message is <strong>too long!</strong>
-    </mat-error>
-  </mat-form-field>
-  <mat-form-field class="tag-form" appearance="standard">
+
+  <div *ngIf="contentType === 'OPEN_RESPONSE_MESSAGE'">
+    <mat-form-field appearance="fill" style="width: 100%">
+      <mat-label *ngIf="boardType === 'QUESTION_AUTHORING'">
+        Add open response question prompt
+      </mat-label>
+      <mat-label *ngIf="boardType === 'BRAINSTORMING'"> Message </mat-label>
+      <textarea
+        [formControl]="
+          boardType === 'BRAINSTORMING' ? msgControl : questionPromptControl
+        "
+        [errorStateMatcher]="matcher"
+        matInput
+        rows="5"
+        cols="40"
+        [(ngModel)]="message"
+      ></textarea>
+      <mat-error *ngIf="boardType === 'QUESTION_AUTHORING' && !message">
+        Question Prompt is <strong>required</strong>
+      </mat-error>
+      <mat-error
+        *ngIf="
+          boardType === 'BRAINSTORMING' && message && message.length > 2000
+        "
+      >
+        Message is <strong>too long!</strong>
+      </mat-error>
+      <mat-error
+        *ngIf="
+          boardType === 'QUESTION_AUTHORING' && message && message.length > 2000
+        "
+      >
+        Question Prompt is <strong>too long!</strong>
+      </mat-error>
+    </mat-form-field>
+  </div>
+
+  <div *ngIf="contentType === 'MULTIPLE_CHOICE'" style="position: relative">
+    <div>
+      <mat-form-field appearance="fill" style="width: 100%">
+        <mat-label> Multiple Choice Question Prompt </mat-label>
+        <input
+          name="message"
+          [formControl]="questionPromptControl"
+          [errorStateMatcher]="matcher"
+          matInput
+          [(ngModel)]="message"
+        />
+        <mat-error *ngIf="!message">
+          Question Prompt is <strong>required</strong>
+        </mat-error>
+        <mat-error *ngIf="message && message.length > 2000">
+          Prompt is <strong>too long!</strong>
+        </mat-error>
+      </mat-form-field>
+      <div style="display: flex; text-align: center">
+        <mat-form-field appearance="outline" style="width: 100%">
+          <mat-label>New Multiple Choice Option</mat-label>
+          <input matInput [(ngModel)]="newMultipleChoiceOptionTest" />
+          <mat-hint class="mat-error" *ngIf="multipleChoiceOptions.length < 2">
+            Multiple Choice Options required.
+          </mat-hint>
+        </mat-form-field>
+        <button
+          mat-mini-fab
+          *ngIf="multipleChoiceOptions.length < 6"
+          style="margin: 0 10px"
+          color="accent"
+          [disabled]="
+            !newMultipleChoiceOptionTest || multipleChoiceOptions.length > 6
+          "
+          matTooltip="Add Multiple Choice Option"
+          matTooltipPosition="before"
+          (click)="addMultipleChoiceButton()"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div>
+      <mat-hint
+        class="mat-error"
+        *ngIf="
+          multipleChoiceOptions.length > 1 && !correctMultipleChoiceSelected
+        "
+      >
+        Select correct multiple choice option.
+      </mat-hint>
+      <mat-card
+        *ngFor="let multipleChoice of multipleChoiceOptions"
+        style="
+          display: flex;
+          margin: 10px;
+          padding: 10px;
+          justify-content: space-between;
+        "
+        [ngStyle]="{
+          'background-color': multipleChoice.correct ? '#39e75f' : 'white'
+        }"
+      >
+        <mat-card-title style="font-size: small; margin: auto 0">
+          {{ multipleChoice.optionTitle }}
+        </mat-card-title>
+        <div>
+          <button
+            mat-mini-fab
+            style="margin: 0 10px"
+            color="accent"
+            matTooltip="Delete"
+            matTooltipPosition="before"
+            (click)="removeMultipleChoiceOption($event, multipleChoice)"
+          >
+            <mat-icon class="editMultipleChoiceOptions"> delete </mat-icon>
+          </button>
+          <button
+            mat-mini-fab
+            style="margin: 0 10px"
+            color="accent"
+            matTooltip="Correct Option"
+            matTooltipPosition="before"
+            (click)="multipleChoiceAnswer($event, multipleChoice)"
+          >
+            <mat-icon class="editMultipleChoiceOptions">
+              check_circle_outline
+            </mat-icon>
+          </button>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+  <mat-form-field *ngIf="!editingPost" class="tag-form" appearance="standard">
     <mat-chip-list #chipList>
       <mat-chip style="background-color: #78c2c0" [matMenuTriggerFor]="menu1">
         Add Tag
@@ -61,12 +191,23 @@
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
   <button
+    *ngIf="!editingPost"
     type="submit"
-    [disabled]="!titleControl.valid || !msgControl.valid"
+    [disabled]="disabled()"
     mat-button
     (click)="handleDialogSubmit()"
     cdkFocusInitial
   >
     Add Post
+  </button>
+  <button
+    *ngIf="editingPost"
+    type="submit"
+    [disabled]="disabled()"
+    mat-button
+    (click)="updateMultipleChoicePost()"
+    cdkFocusInitial
+  >
+    Update Post
   </button>
 </div>

@@ -22,12 +22,28 @@ router.get('/user/:id', async (req, res) => {
   res.status(200).json(groups);
 });
 
+router.get('/user/:userID/project/:projectID', async (req, res) => {
+  const { userID, projectID } = req.params;
+
+  const groups = await dalGroup.getByUserAndProject(userID, projectID);
+
+  res.status(200).json(groups);
+});
+
 router.get('/project/:id', async (req, res) => {
   const { id } = req.params;
 
   const groups = await dalGroup.getByProjectId(id);
 
   res.status(200).json(groups);
+});
+
+router.get('/project/:projectID/user/:userID', async (req, res) => {
+  const { projectID, userID } = req.params;
+
+  const group = await dalGroup.getByProjectUser(projectID, userID);
+
+  res.status(200).json(group);
 });
 
 router.post('/', async (req, res) => {

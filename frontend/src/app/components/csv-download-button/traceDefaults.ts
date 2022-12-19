@@ -26,6 +26,14 @@ export default [
     default: '',
   },
   {
+    value: 'boardType',
+    default: '',
+  },
+  {
+    value: 'boardContext',
+    default: '',
+  },
+  {
     value: 'agentUserID',
     default: '',
   },
@@ -121,5 +129,13 @@ export default [
   {
     value: 'postRead',
     default: 0,
+  },
+  {
+    value: 'postAddedToPersonalBoardID',
+    default: '',
+  },
+  {
+    value: 'personalBoardSavedPostID',
+    default: '',
   },
 ];

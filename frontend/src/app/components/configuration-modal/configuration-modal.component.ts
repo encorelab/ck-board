@@ -11,20 +11,19 @@ import { UserService } from 'src/app/services/user.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { Tag } from 'src/app/models/tag';
-import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
+import {
+  TAG_DEFAULT_COLOR,
+  POST_TAGGED_BORDER_THICKNESS,
+  SocketEvent,
+} from 'src/app/utils/constants';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { Project } from 'src/app/models/project';
-import { SnackbarService } from 'src/app/services/snackbar.service';
-import {
-  Board,
-  BoardScope,
-  BoardBackgroundImage,
-  BoardPermissions,
-} from 'src/app/models/board';
+import { Board, BoardScope, BoardPermissions } from 'src/app/models/board';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ImageSettings } from 'src/app/utils/FabricUtils';
+import { SocketService } from 'src/app/services/socket.service';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -39,6 +38,7 @@ export class ConfigurationModalComponent {
 
   boardID: string;
   boardName: string;
+  questionAuthoringType: string;
 
   isTeacherPersonalBoard = false;
 
@@ -53,6 +53,7 @@ export class ConfigurationModalComponent {
   tags: Tag[];
   newTagText = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
+  _POST_TAGGED_BORDER_THICKNESS = POST_TAGGED_BORDER_THICKNESS;
 
   initialZoom = 100;
   upvoteLimit = 5;
@@ -63,6 +64,7 @@ export class ConfigurationModalComponent {
   backgroundPosX;
   backgroundPosY;
   backgroundScale;
+  tagsChanged = false;
 
   members: string[] = [];
 
@@ -74,8 +76,8 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public upvoteService: UpvotesService,
     public canvasService: CanvasService,
-    public snackbarService: SnackbarService,
     public fileUploadService: FileUploadService,
+    public socketService: SocketService,
     private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -101,18 +103,22 @@ export class ConfigurationModalComponent {
     );
   }
 
-  addTag() {
+  async addTag() {
+    this.tagsChanged = true;
     this.tags.push({
       tagID: generateUniqueID(),
       boardID: this.boardID,
       name: this.newTagText,
       color: this.newTagColor,
     });
+    await this.boardService.update(this.boardID, { tags: this.tags });
     this.newTagText = '';
   }
 
-  removeTag(tagRemove) {
+  async removeTag(tagRemove) {
+    this.tagsChanged = true;
     this.tags = this.tags.filter((tag) => tag != tagRemove);
+    await this.boardService.update(this.boardID, { tags: this.tags });
   }
 
   compressFile() {
@@ -159,7 +165,7 @@ export class ConfigurationModalComponent {
     let board: Board;
     board = await this.canvasService.updateBoardName(
       this.boardID,
-      this.boardName
+      this.boardName.trim()
     );
     board = await this.canvasService.updateBoardTask(
       this.boardID,
@@ -170,7 +176,6 @@ export class ConfigurationModalComponent {
       this.boardID,
       this.permissions
     );
-    board = await this.canvasService.updateBoardTags(this.boardID, this.tags);
     board = await this.canvasService.updateBoardUpvotes(
       this.boardID,
       this.upvoteLimit
@@ -183,6 +188,15 @@ export class ConfigurationModalComponent {
     });
     await this.data.update(board);
     this.dialogRef.close();
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    if (this.tagsChanged) {
+      this.socketService.emit(
+        SocketEvent.BOARD_TAGS_UPDATE,
+        await this.boardService.get(this.boardID)
+      );
+    }
   }
 
   async handleClearBoard() {

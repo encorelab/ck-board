@@ -10,6 +10,8 @@ import { ProjectService } from '../services/project.service';
 import { BoardService } from '../services/board.service';
 import { UserService } from '../services/user.service';
 import { Role, AuthUser } from '../models/user';
+import { Project } from '../models/project';
+import { getErrorMessage, getErrorStatus } from '../utils/Utils';
 
 @Injectable({
   providedIn: 'root',
@@ -46,7 +48,7 @@ export class ProjectGuard implements CanActivate {
         (await this.userService.isSsoEnabled()) &&
         this.userService.user != null
       ) {
-        this.addProjectMember(this.project, this.userService.user);
+        await this.addProjectMember(this.project, this.userService.user);
       } else {
         this.router.navigate(['/error'], {
           state: {
@@ -75,9 +77,21 @@ export class ProjectGuard implements CanActivate {
     return false;
   }
 
-  addProjectMember(project: any, user: AuthUser) {
-    const members: string[] = project.members;
-    members.push(user!.userID);
-    this.projectService.update(project.projectID, { members: members });
+  async addProjectMember(project: any, user: AuthUser): Promise<void> {
+    const code =
+      user.role == Role.STUDENT
+        ? project.studentJoinCode
+        : project.teacherJoinCode;
+
+    try {
+      await this.projectService.joinProject(code);
+    } catch (e) {
+      this.router.navigate(['/error'], {
+        state: {
+          code: getErrorStatus(e),
+          message: getErrorMessage(e),
+        },
+      });
+    }
   }
 }

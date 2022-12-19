@@ -27,7 +27,9 @@
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-var-requires": "off",
         "no-empty-function": "off",
+        "prefer-rest-params": "off",
         "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-inferrable-types": "off",
         "@angular-eslint/no-empty-lifecycle-method": "off",
         "@angular-eslint/directive-selector": [
           "error",

@@ -1,4 +1,5 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { GroupTaskModel } from './GroupTask';
 
 @modelOptions({ schemaOptions: { collection: 'groups', timestamps: true } })
 export class GroupModel {
@@ -9,10 +10,10 @@ export class GroupModel {
   public projectID!: string;
 
   @prop({ required: true })
-  public name!: string;
+  public members!: string[];
 
   @prop({ required: true })
-  public members!: string[];
+  public name!: string;
 }
 
 export default getModelForClass(GroupModel);

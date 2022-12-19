@@ -16,6 +16,7 @@ import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
 import { ColorPickerModule } from 'ngx-color-picker';
+import { SwiperModule } from 'swiper/angular';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component';
@@ -43,13 +44,20 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
 import { APIInterceptor } from './utils/interceptor';
 import { NotificationDropdownComponent } from './components/notification-dropdown/notification-dropdown.component';
 import { CsvDownloadButtonComponent } from './components/csv-download-button/csv-download-button.component';
+import { CkWorkspaceComponent } from './components/ck-workspace/ck-workspace.component';
 import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
 import { MoveGroupMembersComponent } from './components/groups/move-group-members/move-group-members.component';
 
 import { MatDialogRef } from '@angular/material/dialog';
 import { AutofocusDirective } from './autofocus.directive';
+import { TodoListModalComponent } from './components/todo-list-modal/todo-list-modal.component';
+import { AddTodoListModalComponent } from './components/add-todo-list-modal/add-todo-list-modal.component';
+import { ProjectNotificationDropdownComponent } from './components/project-notification-dropdown/project-notification-dropdown.component';
+import { ProjectTodoListModalComponent } from './components/project-todo-list-modal/project-todo-list-modal.component';
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 import { NgxImageCompressService } from 'ngx-image-compress';
+import { CkMonitorComponent } from './components/ck-monitor/ck-monitor.component';
+import { MatSortModule } from '@angular/material/sort';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -84,10 +92,16 @@ export function tokenGetter() {
     ConfirmModalComponent,
     NotificationDropdownComponent,
     CsvDownloadButtonComponent,
+    CkWorkspaceComponent,
     ManageGroupModalComponent,
     MoveGroupMembersComponent,
     AutofocusDirective,
+    TodoListModalComponent,
+    AddTodoListModalComponent,
+    ProjectNotificationDropdownComponent,
+    ProjectTodoListModalComponent,
     SsoLoginComponent,
+    CkMonitorComponent,
   ],
   imports: [
     BrowserModule,
@@ -108,8 +122,10 @@ export function tokenGetter() {
     BrowserAnimationsModule,
     ReactiveFormsModule,
     ColorPickerModule,
+    SwiperModule,
     MaterialModule,
     DragDropModule,
+    MatSortModule,
   ],
   providers: [
     {
@@ -121,7 +137,10 @@ export function tokenGetter() {
       provide: MatDialogRef,
       useValue: {},
     },
-    NgxImageCompressService,
+    {
+      provide: NgxImageCompressService,
+      useValue: {},
+    },
   ],
   bootstrap: [AppComponent],
 })

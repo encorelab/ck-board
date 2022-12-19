@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
-
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -11,8 +10,10 @@ import { AddBoardModalComponent } from '../add-board-modal/add-board-modal.compo
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
+import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
 import { UserService } from 'src/app/services/user.service';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { ProjectTodoListModalComponent } from '../project-todo-list-modal/project-todo-list-modal.component';
 import { SocketService } from 'src/app/services/socket.service';
 
 @Component({
@@ -22,8 +23,8 @@ import { SocketService } from 'src/app/services/socket.service';
 })
 export class ProjectDashboardComponent implements OnInit {
   showSharedBoards = true;
-  showStudentPersonalBoards = true;
-  showTeacherPersonalBoards = true;
+  showStudentPersonalBoards = false;
+  showTeacherPersonalBoards = false;
 
   teacherPersonalBoards: Board[] = [];
   studentPersonalBoards: Board[] = [];
@@ -104,16 +105,30 @@ export class ProjectDashboardComponent implements OnInit {
     }
   };
 
-  updateProjectName = (projectID: string, name: string) => {
-    this.project.name = name;
-    this.projectService.update(projectID, { name: name });
-  };
-
   openSettingsDialog() {
-    this.dialog.open(ProjectConfigurationModalComponent, {
+    this.dialog
+      .open(ProjectConfigurationModalComponent, {
+        data: { project: this.project },
+      })
+      .afterClosed()
+      .subscribe((p: Project) => (this.project = p));
+  }
+
+  openTodoList() {
+    this.dialog.open(TodoListModalComponent, {
+      width: '800px',
       data: {
         project: this.project,
-        updateProjectName: this.updateProjectName,
+        user: this.user,
+      },
+    });
+  }
+
+  openProjectTodoList() {
+    this.dialog.open(ProjectTodoListModalComponent, {
+      width: '800px',
+      data: {
+        project: this.project,
       },
     });
   }
@@ -145,8 +160,16 @@ export class ProjectDashboardComponent implements OnInit {
         project: this.project,
         board: await this.boardService.get(boardID),
         update: async (updatedBoard: Board, removed = false) => {
-          if (removed || updatedBoard.name !== board.name) {
-            await this.getBoards();
+          if (removed) {
+            this.sharedBoards = this.sharedBoards.filter(
+              (b) => b.boardID !== updatedBoard.boardID
+            );
+            this.studentPersonalBoards = this.studentPersonalBoards.filter(
+              (b) => b.boardID !== updatedBoard.boardID
+            );
+            this.teacherPersonalBoards = this.teacherPersonalBoards.filter(
+              (b) => b.boardID !== updatedBoard.boardID
+            );
           }
           if (updatedBoard.name !== board.name) {
             board.name = updatedBoard.name;
@@ -166,7 +189,15 @@ export class ProjectDashboardComponent implements OnInit {
         handleConfirm: async () => {
           const deletedBoard = await this.boardService.remove(board.boardID);
           if (deletedBoard) {
-            await this.getBoards();
+            this.sharedBoards = this.sharedBoards.filter(
+              (b) => b.boardID !== deletedBoard.boardID
+            );
+            this.studentPersonalBoards = this.studentPersonalBoards.filter(
+              (b) => b.boardID !== deletedBoard.boardID
+            );
+            this.teacherPersonalBoards = this.teacherPersonalBoards.filter(
+              (b) => b.boardID !== deletedBoard.boardID
+            );
           }
         },
       },

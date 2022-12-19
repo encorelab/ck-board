@@ -1,6 +1,11 @@
 @import "~swiper/css";
 @import "~swiper/css/effect-cards";
 
+.spinner {
+  margin: 70px auto;
+  background: transparent;
+}
+
 .list-task-prompt {
   color: gray;
 }

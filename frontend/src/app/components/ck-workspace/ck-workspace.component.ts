@@ -49,6 +49,8 @@ SwiperCore.use([EffectCards]);
 export class CkWorkspaceComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
 
+  loading = false;
+
   showInactive = true;
   showActive = true;
   showCompleted = false;
@@ -142,6 +144,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   async view(groupTask: ExpandedGroupTask): Promise<void> {
+    this.loading = true;
     this.runningGroupTask = groupTask;
     this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
     this.averageGroupProgress = await this._calcAverageProgress(
@@ -160,6 +163,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.members = await this.userService.getMultipleByIds(
       groupTask.group.members
     );
+    this.loading = false;
+
     this._startListening();
   }
 

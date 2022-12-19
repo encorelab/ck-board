@@ -84,7 +84,7 @@ export class UserService {
 
   async ssoLogin(sso: string | null, sig: string | null): Promise<boolean> {
     return this.http
-      .get(`auth/sso/login/${sso}/${sig}`)
+      .get(`auth/sso/login/${sso}/${sig}`, { withCredentials: true })
       .toPromise()
       .then((result: any) => {
         localStorage.setItem('user', JSON.stringify(result.user));

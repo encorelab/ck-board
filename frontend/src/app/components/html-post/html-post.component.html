@@ -12,7 +12,7 @@
     <div class="mat-title">{{ post.post.title }}</div>
     <button
       mat-icon-button
-      *ngIf="post.bucketOnly"
+      *ngIf="post.bucketOnly && !disableDownload"
       (click)="movePostToBoard(post.post.postID); $event.stopPropagation()"
       style="display: inline-block"
     >

@@ -52,14 +52,14 @@
       </mat-error>
       <mat-error
         *ngIf="
-          boardType === 'BRAINSTORMING' && message && message.length > 1000
+          boardType === 'BRAINSTORMING' && message && message.length > 2000
         "
       >
         Message is <strong>too long!</strong>
       </mat-error>
       <mat-error
         *ngIf="
-          boardType === 'QUESTION_AUTHORING' && message && message.length > 1000
+          boardType === 'QUESTION_AUTHORING' && message && message.length > 2000
         "
       >
         Question Prompt is <strong>too long!</strong>
@@ -81,7 +81,7 @@
         <mat-error *ngIf="!message">
           Question Prompt is <strong>required</strong>
         </mat-error>
-        <mat-error *ngIf="message && message.length > 1000">
+        <mat-error *ngIf="message && message.length > 2000">
           Prompt is <strong>too long!</strong>
         </mat-error>
       </mat-form-field>

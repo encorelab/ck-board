@@ -20,6 +20,44 @@
   </mat-form-field>
   <div>
     <mat-form-field appearance="fill">
+      <mat-label>Select Type..</mat-label>
+      <mat-select
+        [(ngModel)]="todoItemTypes"
+        [formControl]="todoItemTypeFormControl"
+        [errorStateMatcher]="matcher"
+        multiple
+      >
+        <mat-option value="COGNITION">Cognitive strategies</mat-option>
+        <mat-option value="SEL">Social-emotional learning supports</mat-option>
+        <mat-option value="BEHAVIOURAL">Behavioural engagement practices</mat-option>
+        <mat-option value="CLASS">Class-related work</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-icon 
+      style="margin-left: 15px;" 
+      matTooltip="Cognitive engagement strategies (i.e., learning strategies for memorization, recall, application of knowledge)
+
+      Social-emotional learning supports (i.e., supports for developing your math identity, positive motivation, emotional awareness, stress management, relationships, or critical/creative thinking)
+
+      Behavioural engagement practices (practices for improving learning engagement, i.e., note-taking, asking questions, generating/sharing ideas, or discussing ideas with peers)" >
+      info
+    </mat-icon>
+    <mat-form-field appearance="fill" style="float: right">
+      <mat-label>(If Groupwork) Select Group</mat-label>
+      <mat-select
+        [(ngModel)]="selectedGroup"
+        [(value)]="selectedGroup"
+        [errorStateMatcher]="matcher"
+      >
+        <mat-option *ngFor="let group of userGroups" [value]="group">
+          {{ group.name }}
+        </mat-option>
+        <mat-option [value]="">None</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div>
+    <mat-form-field appearance="fill">
       <mat-label>Choose a date</mat-label>
       <input matInput [min]="taskDeadlineDate" [matDatepicker]="picker" [(ngModel)]="taskDeadlineDate">
       <mat-hint>MM/DD/YYYY</mat-hint>
@@ -56,17 +94,17 @@
   <button mat-button (click)="onNoClick()">Close</button>
   <button 
     *ngIf="!editing && !restoring"
-    mat-button [disabled]="!taskTitleControl.valid " 
+    mat-button [disabled]="!taskTitleControl.valid || !todoItemTypeFormControl.valid" 
     (click)="createTodoItem()"
   >Create Todo Item</button>
   <button 
     *ngIf="editing"
-    mat-button [disabled]="!taskTitleControl.valid " 
+    mat-button [disabled]="!taskTitleControl.valid || !todoItemTypeFormControl.valid" 
     (click)="updateTodoItem()"
   >Update Todo Item</button>
   <button 
     *ngIf="restoring"
-    mat-button [disabled]="!taskTitleControl.valid " 
+    mat-button [disabled]="!taskTitleControl.valid || !todoItemTypeFormControl.valid" 
     (click)="restoreTodoItem()"
   >Restore Todo Item</button>
 </div>

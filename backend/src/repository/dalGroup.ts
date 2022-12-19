@@ -18,6 +18,18 @@ export const getByUserId = async (id: string) => {
   }
 };
 
+export const getByUserAndProject = async (
+  userID: string,
+  projectID: string
+) => {
+  try {
+    const groups = await Group.find({ members: userID, projectID: projectID });
+    return groups;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const getByProjectId = async (projectID: string) => {
   try {
     const groups = await Group.find({ projectID });
@@ -96,6 +108,7 @@ export const update = async (id: string, group: Partial<GroupModel>) => {
 const dalGroup = {
   getById,
   getByUserId,
+  getByUserAndProject,
   getByProjectId,
   getByProjectUser,
   create,

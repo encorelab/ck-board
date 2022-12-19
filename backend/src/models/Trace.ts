@@ -5,6 +5,8 @@ import {
   Severity,
 } from '@typegoose/typegoose';
 
+import { BoardType } from './Board';
+
 @modelOptions({
   schemaOptions: { collection: 'trace', timestamps: true },
   options: { allowMixed: Severity.ALLOW },
@@ -21,6 +23,12 @@ export class TraceModel {
 
   @prop({ required: true })
   boardName!: string;
+
+  @prop({ enum: BoardType, type: String, required: true })
+  boardType!: BoardType;
+
+  @prop({ required: true })
+  boardContext!: string;
 
   @prop({ required: true })
   agentUserID!: string;

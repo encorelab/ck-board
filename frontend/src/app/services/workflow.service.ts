@@ -67,7 +67,7 @@ export class WorkflowService {
 
   getTask(boardID: string): Promise<TaskWorkflow[]> {
     return this.http
-      .get<TaskWorkflow[]>('workflows/task/boards/' + boardID)
+      .get<TaskWorkflow[]>('workflows/task/boards/' + boardID + '?active=false')
       .toPromise();
   }
 

@@ -1,3 +1,4 @@
+import { BoardScope } from '../../models/Board';
 import { TraceModel } from '../../models/Trace';
 import dalBoard from '../../repository/dalBoard';
 import dalProject from '../../repository/dalProject';
@@ -27,6 +28,8 @@ export const createTrace = async (
       projectName: project.name,
       boardID: board.boardID,
       boardName: board.name,
+      boardType: board.type,
+      boardContext: boardScopeAsString(board.scope),
       agentUserID: user.userID,
       agentUserName: user.username,
       clientTimestamp: new Date(traceContext.clientTimestamp),
@@ -35,4 +38,9 @@ export const createTrace = async (
     };
     return trace;
   }
+};
+
+const boardScopeAsString = (type: BoardScope): string => {
+  if (type == BoardScope.PROJECT_PERSONAL) return 'PERSONAL_BOARD';
+  return 'COMMUNITY_BOARD';
 };

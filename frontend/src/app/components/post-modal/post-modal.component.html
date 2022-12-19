@@ -183,7 +183,7 @@
       cols="40"
       [(ngModel)]="desc"
     ></textarea>
-    <mat-error *ngIf="desc && desc.length > 1000">
+    <mat-error *ngIf="desc && desc.length > 2000">
       Description is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>

@@ -87,6 +87,8 @@ export const DEFAULT_TAGS: Partial<Tag>[] = [
   NEEDS_ATTENTION_TAG,
 ];
 
+export const TAG_DEFAULT_COLOR = '#c5c2b5';
+
 export enum TODOITEM_NOTIFICATION {
   INITIAL = 'INITIAL',
   SECONDARY = 'SECONDARY',
@@ -107,4 +109,4 @@ export enum TODO_TYPE_COLORS {
   CLASS = '#88B04B',
 }
 
-export const TAG_DEFAULT_COLOR = '#c5c2b5';
+export const TODO_TITLE_MAX_LENGTH = 100;

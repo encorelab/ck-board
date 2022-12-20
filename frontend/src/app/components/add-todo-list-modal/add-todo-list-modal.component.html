@@ -14,7 +14,7 @@
       [(ngModel)]="taskTitle"
     />
     <mat-error *ngIf="!taskTitle"> Task Title is <strong>required</strong> </mat-error>
-    <mat-error *ngIf="taskTitle && taskTitle.length > 50">
+    <mat-error *ngIf="taskTitle && taskTitle.length > TODO_TITLE_MAX_LENGTH">
       Task Title is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>

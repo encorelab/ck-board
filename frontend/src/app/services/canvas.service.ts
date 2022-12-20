@@ -74,9 +74,10 @@ export class CanvasService {
     return savedPost;
   }
 
-  async createBoardPostFromBucket(post: Post) {
+  async createBoardPostFromBucket(post: Post): Promise<Post> {
     const upvotes = await this.upvotesService.getUpvotesByPost(post.postID);
     const comments = await this.commentService.getCommentsByPost(post.postID);
+    post.type = PostType.BOARD;
 
     const fabricPost = new FabricPostComponent(post, {
       upvotes: upvotes.length,
@@ -86,21 +87,24 @@ export class CanvasService {
 
     this.fabricUtils._canvas.add(fabricPost);
     this.socketService.emit(SocketEvent.POST_CREATE, post);
+
+    return post;
   }
 
-  async clearPostsFromBoard(posts: Post[]) {
+  async clearPostsFromBoard(posts: Post[]): Promise<Post[]> {
     const updatedPosts: Post[] = [];
-    for (const post of posts) {
+    for await (const post of posts) {
       if (post.type == PostType.BOARD) {
-        updatedPosts.push(
-          await this.postService.update(post.postID, {
-            type: PostType.BUCKET,
-          })
-        );
+        const updatedPost = await this.postService.update(post.postID, {
+          type: PostType.BUCKET,
+        });
+        updatedPosts.push(updatedPost);
       }
     }
 
     this.socketService.emit(SocketEvent.BOARD_CLEAR, updatedPosts);
+
+    return updatedPosts;
   }
 
   async upvote(userID: string, post: string | Post) {

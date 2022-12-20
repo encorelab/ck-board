@@ -1,5 +1,5 @@
 <div>
-  <app-toolbar *ngIf="user && project && board" [user]="user">
+  <app-toolbar class="toolbar" *ngIf="user && project && board" [user]="user">
     <span *ngIf="board">CK Monitor - {{ this.board.name }}</span>
     <span style="flex: 1 1 auto"></span>
     <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">

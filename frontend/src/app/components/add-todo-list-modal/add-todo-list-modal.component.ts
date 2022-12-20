@@ -7,6 +7,7 @@ import { Group } from 'src/app/models/group';
 import { FormControl, Validators } from '@angular/forms';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
+import { TODO_TITLE_MAX_LENGTH } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-add-todo-list-modal',
@@ -27,7 +28,7 @@ export class AddTodoListModalComponent implements OnInit {
     .map((_, i) => i * 15);
   taskTitleControl = new FormControl('', [
     Validators.required,
-    Validators.maxLength(50),
+    Validators.maxLength(TODO_TITLE_MAX_LENGTH),
   ]);
   todoItemTypeFormControl = new FormControl('valid', [Validators.required]);
   todoItemTypes: TodoItemType[] = [];
@@ -40,6 +41,8 @@ export class AddTodoListModalComponent implements OnInit {
   userID: string;
   editing = false;
   restoring = false;
+
+  TODO_TITLE_MAX_LENGTH = TODO_TITLE_MAX_LENGTH;
 
   constructor(
     public dialogRef: MatDialogRef<AddTodoListModalComponent>,

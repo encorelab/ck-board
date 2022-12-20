@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
+import { NotFoundError } from '../errors/client.errors';
 import { BucketModel } from '../models/Bucket';
 import Post, { PostModel, PostType } from '../models/Post';
+import { Options } from '../utils/api.helpers';
 import dalBucket from './dalBucket';
 import dalComment from './dalComment';
 import dalVote from './dalVote';
@@ -32,6 +34,28 @@ export const getByBoard = async (boardID: string, type?: any) => {
       posts = await Post.find({ boardID });
     }
     return posts;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getByBucket = async (bucketID: string, opts?: Options) => {
+  try {
+    const bucket = await dalBucket.getById(bucketID);
+    if (!bucket)
+      throw new NotFoundError(`Bucket with ID: ${bucketID} not found!`);
+
+    let posts;
+    if (opts) {
+      const { size, page } = opts;
+      posts = await Post.find({ postID: bucket.posts })
+        .limit(size)
+        .skip(size * page);
+    } else {
+      posts = await Post.find({ postID: bucket.posts });
+    }
+    const count = await Post.find({ postID: bucket.posts }).count();
+    return { posts, count };
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -125,6 +149,7 @@ const formatAttributes = (post: Partial<PostModel>) => {
 const dalPost = {
   getById,
   getByBoard,
+  getByBucket,
   getManyById,
   create,
   createMany,

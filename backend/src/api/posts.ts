@@ -19,6 +19,24 @@ router.get('/boards/:id', async (req, res) => {
   res.json(posts);
 });
 
+router.get('/buckets/:id', async (req, res) => {
+  const id = req.params.id;
+  const { page, size } = req.query;
+
+  if (page && size) {
+    const pageNumber = parseInt(page.toString());
+    const sizeNumber = parseInt(size.toString());
+    const { posts, count } = await dalPost.getByBucket(id, {
+      page: pageNumber,
+      size: sizeNumber,
+    });
+    return res.status(200).json({ posts, count });
+  } else {
+    const { posts, count } = await dalPost.getByBucket(id);
+    return res.status(200).json({ posts, count });
+  }
+});
+
 router.post('/', async (req, res) => {
   const post: PostModel = req.body;
 

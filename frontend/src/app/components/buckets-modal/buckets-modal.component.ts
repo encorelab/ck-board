@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   MatDialog,
   MatDialogRef,
@@ -24,6 +24,7 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from 'src/app/utils/converters';
 import Upvote from 'src/app/models/upvote';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-buckets-modal',
@@ -31,11 +32,14 @@ import Upvote from 'src/app/models/upvote';
   styleUrls: ['./buckets-modal.component.scss'],
 })
 export class BucketsModalComponent implements OnInit, OnDestroy {
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+
   board: Board;
   user: User;
 
   buckets: any;
   activeBucket: any;
+  activeBucketName: string;
 
   posts: HTMLPost[];
 
@@ -45,6 +49,11 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
 
   Yoffset: number;
   Xoffset: number;
+
+  length = 0;
+  pageSize = 8;
+  pageSizeOptions: number[] = [4, 8, 12, 16];
+  pageEvent: PageEvent;
 
   constructor(
     public dialogRef: MatDialogRef<BucketsModalComponent>,
@@ -151,35 +160,39 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  fetchBuckets() {
+  fetchBuckets(): void {
     this.bucketService.getAllByBoard(this.board.boardID).then((buckets) => {
       this.buckets = buckets;
-      if (buckets.length > 0) {
-        this.activeBucket = this.buckets[0];
-        this.loadBucketPosts(this.activeBucket);
+      if (this.buckets.length > 0) {
+        this.loadBucket(this.buckets[0]);
       } else {
         this.loading = false;
       }
     });
   }
 
-  loadBucketPosts(bucket) {
+  loadBucket(bucket: any, event?: any): void {
+    this.activeBucket = bucket;
+    this.activeBucketName = bucket.name;
+    this.paginator.pageIndex = 0;
+    this.loadBucketPosts(bucket);
+  }
+
+  loadBucketPosts(bucket: any, event?: any): PageEvent {
+    this.posts = [];
     this.loading = true;
-    this.bucketService
-      .get(bucket.bucketID)
-      .then(async (bucket) => {
-        if (bucket) {
-          this.activeBucket = bucket;
-          this.posts = await this.converters.toHTMLPosts(bucket.posts);
-        } else {
-          this.posts = [];
-        }
-        this.loading = false;
-      })
-      .catch((_err) => {
-        this.posts = [];
+
+    const size = event ? event.pageSize : this.pageSize;
+    const page = event ? event.pageIndex : 0;
+    this.postService
+      .getAllByBucket(bucket.bucketID, { page, size })
+      .then(async ({ posts, count }) => {
+        this.length = count;
+        this.posts = await this.converters.toHTMLPosts(posts);
         this.loading = false;
       });
+
+    return event;
   }
 
   ngOnDestroy(): void {

@@ -75,7 +75,8 @@
       <div class="heading no-workflow-select" *ngIf="!runningGroupTask">
         No task selected!
       </div>
-      <div style="display: flex; flex-direction: row;">
+      <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
+      <div *ngIf="!loading" style="display: flex; flex-direction: row;">
         <div class="heading no-posts" *ngIf="runningGroupTask && (!posts || posts.length === 0)">
           No posts to review!
         </div>

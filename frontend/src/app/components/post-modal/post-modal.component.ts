@@ -34,6 +34,7 @@ import { BoardService } from 'src/app/services/board.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { Project } from 'src/app/models/project';
 import { ProjectService } from 'src/app/services/project.service';
+import Bucket from 'src/app/models/bucket';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -64,6 +65,7 @@ export class PostModalComponent {
   tagOptions: Tag[] = [];
 
   user: User;
+  board: Board;
   project: Project;
   post: Post;
   author: User | undefined;
@@ -163,13 +165,7 @@ export class PostModalComponent {
     this.bucketService
       .getAllByBoard(this.data.board.boardID)
       .then((buckets) => {
-        this.buckets = [];
-        buckets.forEach((bucket) => {
-          bucket.includesPost = bucket.posts.some(
-            (post) => post.postID == this.post.postID
-          );
-          this.buckets.push(bucket);
-        });
+        this.buckets = buckets;
       });
 
     const isStudent = this.user.role == Role.STUDENT;
@@ -197,20 +193,32 @@ export class PostModalComponent {
     this.dialogRef.close(this.post);
   }
 
-  updateBucket(event) {
-    const bucketID = event.source.id;
-    const bucket: any = this.buckets.find(
-      (bucket) => bucket.bucketID === bucketID
-    );
-
-    if (event.checked) {
-      bucket.posts.push(this.post);
-      this.bucketService.add(bucketID, this.post.postID);
-    } else {
-      bucket.posts = bucket.posts.filter(
-        (post) => post.postID !== this.post.postID
-      );
-      this.bucketService.remove(bucketID, this.post.postID);
+  async updatePostContainer(
+    event,
+    destType: PostType,
+    bucket: Bucket | null
+  ): Promise<void> {
+    if (destType == PostType.BOARD) {
+      if (event.checked) {
+        this.post = await this.canvasService.createBoardPostFromBucket(
+          this.post
+        );
+      } else {
+        this.post = (
+          await this.canvasService.clearPostsFromBoard([this.post])
+        )[0];
+      }
+    }
+    if (destType == PostType.BUCKET && bucket) {
+      const bucketID = bucket.bucketID;
+      const postID = this.post.postID;
+      if (event.checked) {
+        bucket.posts.push(postID);
+        await this.bucketService.add(bucketID, postID);
+      } else {
+        bucket.posts = bucket.posts.filter((id) => id !== postID);
+        await this.bucketService.remove(bucketID, postID);
+      }
     }
   }
 
@@ -416,7 +424,7 @@ export class PostModalComponent {
       autoFocus: false,
       data: {
         type: this.post.type,
-        board: await this.boardService.get(this.post.boardID),
+        board: this.data.board,
         user: this.user,
         spawnPosition: {
           top: this.post.displayAttributes?.position?.top
@@ -443,6 +451,12 @@ export class PostModalComponent {
         },
       },
     });
+  }
+
+  bucketIncludesPost(bucket: any): boolean {
+    return (
+      bucket.posts.findIndex((post) => post.postID == this.post.postID) > -1
+    );
   }
 
   openSnackBar(message: string) {

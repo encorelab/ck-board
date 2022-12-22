@@ -31,10 +31,10 @@
           <ng-container *ngIf="showInactive">
             <mat-list-item *ngFor="let task of inactiveGroupTasks">
               <mat-icon matListIcon>timeline</mat-icon>
-              <h3 matLine> {{task.group.name}}: {{task.workflow.name}} </h3>
-              <p matLine class="list-task-prompt"> {{task.workflow.prompt}} </p>
+              <h3 matLine> {{task.workflow.name}} </h3>
+              <p matLine class="list-task-prompt"> {{task.group.name}}: {{task.workflow.prompt}} </p>
               <span style="flex: 1 1 auto"></span>
-              <button mat-raised-button color="primary" style="margin-left: 10px;" (click)="begin(task)">Begin Task</button>
+              <button mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="begin(task)">Begin Task</button>
             </mat-list-item>
           </ng-container>
           <mat-divider></mat-divider>
@@ -45,11 +45,11 @@
           <ng-container *ngIf="showActive">
             <mat-list-item *ngFor="let task of activeGroupTasks">
               <mat-icon matListIcon>timeline</mat-icon>
-              <h3 matLine> {{task.group.name}}: {{task.workflow.name}} </h3>
-              <p matLine class="list-task-prompt"> {{task.workflow.prompt}} </p>
+              <h3 matLine> {{task.workflow.name}} </h3>
+              <p matLine class="list-task-prompt"> {{task.group.name}}: {{task.workflow.prompt}} </p>
               <span style="flex: 1 1 auto"></span>
-              <button *ngIf="(runningGroupTask && runningGroupTask.groupTask.groupTaskID !== task.groupTask.groupTaskID) || (!runningGroupTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(task)">Resume Task</button>
-              <button *ngIf="runningGroupTask && runningGroupTask.groupTask.groupTaskID === task.groupTask.groupTaskID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+              <button *ngIf="(runningGroupTask && runningGroupTask.groupTask.groupTaskID !== task.groupTask.groupTaskID) || (!runningGroupTask)" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="view(task)">Resume Task</button>
+              <button *ngIf="runningGroupTask && runningGroupTask.groupTask.groupTaskID === task.groupTask.groupTaskID" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="close()">Hide Task</button>
             </mat-list-item>
           </ng-container>
           <mat-divider></mat-divider>
@@ -60,11 +60,11 @@
           <ng-container *ngIf="showCompleted">
             <mat-list-item *ngFor="let task of completeGroupTasks">
               <mat-icon matListIcon>timeline</mat-icon>
-              <h3 matLine> {{task.group.name}}: {{task.workflow.name}} </h3>
-              <p matLine class="list-task-prompt"> {{task.workflow.prompt}} </p>
+              <h3 matLine> {{task.workflow.name}} </h3>
+              <p matLine class="list-task-prompt"> {{task.group.name}}: {{task.workflow.prompt}} </p>
               <span style="flex: 1 1 auto"></span>
-              <button *ngIf="(runningGroupTask && runningGroupTask.groupTask.groupTaskID !== task.groupTask.groupTaskID) || (!runningGroupTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(task)">View Task</button>
-              <button *ngIf="runningGroupTask && runningGroupTask.groupTask.groupTaskID === task.groupTask.groupTaskID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+              <button *ngIf="(runningGroupTask && runningGroupTask.groupTask.groupTaskID !== task.groupTask.groupTaskID) || (!runningGroupTask)" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="view(task)">View Task</button>
+              <button *ngIf="runningGroupTask && runningGroupTask.groupTask.groupTaskID === task.groupTask.groupTaskID" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="close()">Hide Task</button>
             </mat-list-item>
           </ng-container>
           <mat-divider></mat-divider>

@@ -14,19 +14,18 @@
     <p>Type : {{taskTypes}}</p>
     <div class="todoItemDetails">
       <div style="display: flex;">
-        <mat-icon style="margin-right: 5px;">access_time</mat-icon>
+        <mat-icon style="margin-right: 15px;">access_time</mat-icon>
         <div>
           <p style="font-weight: 500; margin-bottom: 2px">
             {{data.todoItem.deadline.date}}
           </p>
-          <span class="fill-remaining-space"></span>
           <p>{{data.todoItem.deadline.time}}</p>
         </div>
       </div>
-      <p style="font-weight: 500; margin: 0 10px;" [ngStyle]="{'color': statusColor}">{{status}}</p>
+      <p style="font-weight: 500; margin: 0 30px;" [ngStyle]="{'color': statusColor}">{{status}}</p>
     </div>
     <div *ngIf="!data.todoItem.todoStatus.completed">
-        <mat-form-field appearance="fill" style="padding: 0; margin: 0;">
+        <mat-form-field appearance="fill">
           <mat-label>Completion Quality</mat-label>
           <mat-select
           [(ngModel)]="completionQuality"

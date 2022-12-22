@@ -77,8 +77,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   project: Project;
   board: Board;
 
-  showInactive = true;
-  showActive = true;
+  showInactive = false;
+  showActive = false;
   showCompleted = false;
 
   taskWorkflows: TaskWorkflow[] = [];

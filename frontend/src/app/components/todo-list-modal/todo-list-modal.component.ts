@@ -11,6 +11,7 @@ import { EXPANDED_TODO_TYPE, TODO_TYPE_COLORS } from 'src/app/utils/constants';
 import { MatTableDataSource } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AddTodoListModalComponent } from '../add-todo-list-modal/add-todo-list-modal.component';
+import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { interval } from 'rxjs';
 import { PausableObservable, pausable } from 'rxjs-pausable';
@@ -102,12 +103,15 @@ export class TodoListModalComponent implements OnInit {
 
     this.personalDataSource = new MatTableDataSource<TodoItem>(
       this.personalTodoItems.filter(
-        (todoItem: TodoItem) => !todoItem.completed && !todoItem.groupID
+        (todoItem: TodoItem) =>
+          !todoItem.todoStatus.completed && !todoItem.groupID
       )
     );
 
     this.groupDataSource = new MatTableDataSource<TodoItem>(
-      this.groupTodoItems.filter((todoItem: TodoItem) => !todoItem.completed)
+      this.groupTodoItems.filter(
+        (todoItem: TodoItem) => !todoItem.todoStatus.completed
+      )
     );
 
     this.todoItemsMap = new Map(
@@ -116,7 +120,7 @@ export class TodoListModalComponent implements OnInit {
 
     this.completedItemsDataSource = new MatTableDataSource<TodoItem>(
       [...this.todoItemsMap.values()].filter(
-        (todoItem: TodoItem) => todoItem.completed
+        (todoItem: TodoItem) => todoItem.todoStatus.completed
       )
     );
   }
@@ -133,22 +137,15 @@ export class TodoListModalComponent implements OnInit {
       : dataSource.data.forEach((row) => this.selection.select(row));
   }
 
-  async completeTodoItems() {
-    if (this.selection.selected.length > 0) {
-      this.selection.selected.forEach(async (todoItem) => {
-        await this.todoItemService.update(todoItem.todoItemID, {
-          completed: true,
-        });
-      });
-      await this.getTodoItems();
-      this.dialogRef.close();
-      this.playAudio();
-      setTimeout(() => {
-        this.shoot();
-        this.pausable.resume();
-        setTimeout(() => this.pausable.pause(), this.CONFETTI_DURATION);
-      }, this.CONFETTI_DELAY);
-    }
+  async completeTodoItem() {
+    await this.getTodoItems();
+    this.dialogRef.close();
+    this.playAudio();
+    setTimeout(() => {
+      this.shoot();
+      this.pausable.resume();
+      setTimeout(() => this.pausable.pause(), this.CONFETTI_DURATION);
+    }, this.CONFETTI_DELAY);
   }
 
   async handleDeleteTodoItems() {
@@ -215,6 +212,18 @@ export class TodoListModalComponent implements OnInit {
           : null,
         onComplete: async () => {
           await this.getTodoItems();
+        },
+      },
+    });
+  }
+
+  async openTodoItemViewModal(todoItem) {
+    this.dialog.open(TodoItemCardModalComponent, {
+      width: '500px',
+      data: {
+        todoItem: todoItem,
+        onComplete: async () => {
+          await this.completeTodoItem();
         },
       },
     });

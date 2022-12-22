@@ -42,14 +42,14 @@ router.post('/', async (req, res) => {
 router.post('/:id', async (req, res) => {
   const { id } = req.params;
 
-  const { title, deadline, completed, overdue, notifications, type, groupID } =
+  const { title, deadline, todoStatus, overdue, notifications, type, groupID } =
     req.body;
 
   const todoItem: Partial<TodoItemModel> = Object.assign(
     {},
     title === null ? null : { title },
     deadline === null ? null : { deadline },
-    completed === null ? null : { completed },
+    todoStatus === null ? null : { todoStatus },
     overdue === null ? null : { overdue },
     type === null ? null : { type },
     groupID === null ? null : { groupID },

@@ -96,16 +96,25 @@ export enum TODOITEM_NOTIFICATION {
 }
 
 export enum EXPANDED_TODO_TYPE {
-  COGNITION = 'Cognitive strategies',
-  SEL = 'Social-emotional learning supports',
-  BEHAVIOURAL = 'Behavioural engagement practices',
+  CONTENT = 'Content learning',
+  SEL = 'Social-emotional learning',
+  ENGAGEMENT = 'Classroom engagement',
   CLASS = 'Class-related work',
 }
 
+export enum EXPANDED_COMPLETION_QUALITY {
+  N_A = 'N/A',
+  VERY_UNSATISFIED = 'Very Unsatisfied',
+  UNSATISFIED = 'Unsatisfied',
+  NEUTRAL = 'Neutral',
+  SATISFIED = 'Satisfied',
+  VERY_SATISFIED = 'Very Satisfied',
+}
+
 export enum TODO_TYPE_COLORS {
-  COGNITION = '#5bc2cb',
+  CONTENT = '#5bc2cb',
   SEL = '#f67280',
-  BEHAVIOURAL = '#e6a129',
+  ENGAGEMENT = '#e6a129',
   CLASS = '#88B04B',
 }
 

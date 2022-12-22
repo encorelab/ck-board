@@ -1,0 +1,64 @@
+<div>
+  <mat-card class="details">
+    <mat-card-header>
+      <div mat-card-avatar class="avatar"></div>
+      <mat-card-title>{{ taskTitle }}</mat-card-title>
+      <span class="fill-remaining-space"></span>
+      <mat-card-subtitle>{{assignee}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p style="overflow-wrap: break-word" [innerHTML]="taskDescription">
+        {{ taskDescription }}
+      </p>
+    </mat-card-content>
+    <p>Type : {{taskTypes}}</p>
+    <div class="todoItemDetails">
+      <div style="display: flex;">
+        <mat-icon style="margin-right: 5px;">access_time</mat-icon>
+        <div>
+          <p style="font-weight: 500; margin-bottom: 2px">
+            {{data.todoItem.deadline.date}}
+          </p>
+          <span class="fill-remaining-space"></span>
+          <p>{{data.todoItem.deadline.time}}</p>
+        </div>
+      </div>
+      <p style="font-weight: 500; margin: 0 10px;" [ngStyle]="{'color': statusColor}">{{status}}</p>
+    </div>
+    <div *ngIf="!data.todoItem.todoStatus.completed">
+        <mat-form-field appearance="fill" style="padding: 0; margin: 0;">
+          <mat-label>Completion Quality</mat-label>
+          <mat-select
+          [(ngModel)]="completionQuality"
+          [formControl]="completionQualityFormControl"
+          [errorStateMatcher]="matcher"
+          [(value)]="defaultQuality"
+          >
+          <mat-option *ngFor="let enum of completionQualityOptions | keyvalue" [value]=enum.key>
+            {{ enum.value }}
+          </mat-option>
+          </mat-select>
+        </mat-form-field>
+      <mat-chip 
+        [disabled]="!completionQualityFormControl.valid || completionQuality === 'N_A'" 
+        (click)="completeTask()"
+        class="config-button" mat-raised-button color="accent" 
+        style="text-align: center" selected>
+        <span style="width: 100%;text-align: center;">
+          Mark as Completed
+        </span>
+      </mat-chip>
+    </div>
+    <div *ngIf="data.todoItem.todoStatus.completed">
+      <h4>
+        Completion Quality:
+        <mat-chip color="accent" selected style="margin: 0 5px">
+          {{completionQualityOptions[data.todoItem.todoStatus.quality]}}
+        </mat-chip>
+      </h4>
+    </div>
+  </mat-card>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="close()">Close</button>
+</div>

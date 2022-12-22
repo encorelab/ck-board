@@ -18,7 +18,17 @@
       Task Title is <strong>too long!</strong>
     </mat-error>
   </mat-form-field>
-  <div>
+  <mat-form-field appearance="outline" style="width: 100%">
+    <mat-label>Description</mat-label>
+    <textarea
+      [errorStateMatcher]="matcher"
+      matInput
+      rows="5"
+      cols="40"
+      [(ngModel)]="taskDescription"
+    ></textarea>
+  </mat-form-field>
+    <div>
     <mat-form-field appearance="fill">
       <mat-label>Select Type..</mat-label>
       <mat-select
@@ -27,19 +37,18 @@
         [errorStateMatcher]="matcher"
         multiple
       >
-        <mat-option value="COGNITION">Cognitive strategies</mat-option>
-        <mat-option value="SEL">Social-emotional learning supports</mat-option>
-        <mat-option value="BEHAVIOURAL">Behavioural engagement practices</mat-option>
-        <mat-option value="CLASS">Class-related work</mat-option>
+        <mat-option *ngFor="let enum of todoItemOptions | keyvalue" [value]=enum.key>
+          {{ enum.value }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
     <mat-icon 
       style="margin-left: 15px;" 
-      matTooltip="Cognitive engagement strategies (i.e., learning strategies for memorization, recall, application of knowledge)
+      matTooltip="Content learning (i.e., learning strategies for memorization, recall, or application of knowledge)
 
-      Social-emotional learning supports (i.e., supports for developing your math identity, positive motivation, emotional awareness, stress management, relationships, or critical/creative thinking)
+      Social-emotional learning (i.e., supports for developing your emotional awareness, stress management, motivation, math identity, relationships, or critical/creative thinking)
 
-      Behavioural engagement practices (practices for improving learning engagement, i.e., note-taking, asking questions, generating/sharing ideas, or discussing ideas with peers)" >
+      Classroom engagement (i.e., practices for improving learning engagement, e.g., note-taking, asking questions, designing/explaining/suggesting ideas, or generating/sharing ideas with classmates)" >
       info
     </mat-icon>
     <mat-form-field appearance="fill" style="float: right">

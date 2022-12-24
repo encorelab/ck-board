@@ -4,13 +4,19 @@ import {
   HttpInterceptor,
   HttpHandler,
   HttpRequest,
+  HttpResponse,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { tap, share } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
 
 @Injectable()
 export class APIInterceptor implements HttpInterceptor {
-  constructor(public auth: UserService) {}
+  private cache: Map<string, HttpResponse<any>>;
+
+  constructor(public auth: UserService) {
+    this.cache = new Map();
+  }
 
   intercept(
     req: HttpRequest<any>,
@@ -22,6 +28,26 @@ export class APIInterceptor implements HttpInterceptor {
         Authorization: `Bearer ${this.auth.token}`,
       },
     });
-    return next.handle(apiReq);
+
+    if (this.shouldCache(apiReq)) {
+      const cachedResponse: HttpResponse<any> | undefined = this.cache.get(
+        apiReq.urlWithParams
+      );
+      if (cachedResponse) {
+        return of(cachedResponse.clone());
+      }
+    }
+
+    return next.handle(apiReq).pipe(
+      tap<HttpEvent<any>>((httpEvent: HttpEvent<any>) => {
+        if (httpEvent instanceof HttpResponse && this.shouldCache(apiReq)) {
+          this.cache.set(apiReq.urlWithParams, httpEvent.clone());
+        }
+      })
+    );
+  }
+
+  shouldCache(req: HttpRequest<any>): boolean {
+    return req.method === 'GET' && req.headers.get('cache') === 'true';
   }
 }

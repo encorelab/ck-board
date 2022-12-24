@@ -11,16 +11,18 @@ import Post, {
   MultipleChoiceOptions,
 } from 'src/app/models/post';
 import { Tag } from 'src/app/models/tag';
-import User from 'src/app/models/user';
+import User, { Role } from 'src/app/models/user';
 import { CanvasService } from 'src/app/services/canvas.service';
+import { UserService } from 'src/app/services/user.service';
 import {
   NEEDS_ATTENTION_TAG,
-  POST_COLOR,
   POST_TAGGED_BORDER_THICKNESS,
+  STUDENT_POST_COLOR,
+  TEACHER_POST_COLOR,
 } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Utils, { generateUniqueID } from 'src/app/utils/Utils';
+import { generateUniqueID } from 'src/app/utils/Utils';
 
 export interface AddPostDialog {
   type: PostType;
@@ -66,6 +68,7 @@ export class AddPostComponent {
   matcher = new MyErrorStateMatcher();
 
   constructor(
+    public userService: UserService,
     public canvasService: CanvasService,
     public fabricUtils: FabricUtils,
     public dialogRef: MatDialogRef<AddPostComponent>,
@@ -177,6 +180,7 @@ export class AddPostComponent {
       borderWidth: containsAttentionTag
         ? POST_TAGGED_BORDER_THICKNESS
         : undefined,
+      fillColor: this.defaultPostFill(),
     };
 
     const post: Post = {
@@ -210,7 +214,7 @@ export class AddPostComponent {
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      displayAttributes: null,
+      displayAttributes: { fillColor: this.defaultPostFill() },
     };
 
     return await this.canvasService.createBucketPost(bucketID, post);
@@ -228,7 +232,7 @@ export class AddPostComponent {
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      displayAttributes: null,
+      displayAttributes: { fillColor: this.defaultPostFill() },
     };
 
     return await this.canvasService.createListPost(post);
@@ -265,6 +269,12 @@ export class AddPostComponent {
     }
 
     this.dialogRef.close();
+  }
+
+  defaultPostFill() {
+    return this.userService.user?.role === Role.TEACHER
+      ? TEACHER_POST_COLOR
+      : STUDENT_POST_COLOR;
   }
 
   onNoClick(): void {

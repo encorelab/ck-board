@@ -2,9 +2,9 @@ import { Component, Inject } from '@angular/core';
 import { fabric } from 'fabric';
 import Post from 'src/app/models/post';
 import {
-  POST_COLOR,
   POST_DEFAULT_BORDER,
   POST_DEFAULT_BORDER_THICKNESS,
+  STUDENT_POST_COLOR,
 } from 'src/app/utils/constants';
 import { numDigits } from 'src/app/utils/Utils';
 
@@ -156,7 +156,7 @@ export class FabricPostComponent extends fabric.Group {
         desc.getScaledHeight() +
         commentButton.getScaledHeight() +
         CONTENT_EXTRA_HEIGHT,
-      fill: fillColor ?? POST_COLOR,
+      fill: fillColor ?? STUDENT_POST_COLOR,
       rx: 20,
       ry: 20,
       strokeWidth: borderWidth ?? POST_DEFAULT_BORDER_THICKNESS,

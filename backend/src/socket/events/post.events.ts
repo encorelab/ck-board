@@ -1,10 +1,10 @@
 import { Server, Socket } from 'socket.io';
 import {
-  POST_COLOR,
   POST_DEFAULT_OPACITY,
   POST_MOVING_FILL,
   POST_MOVING_OPACITY,
   SocketEvent,
+  STUDENT_POST_COLOR,
 } from '../../constants';
 import { CommentModel } from '../../models/Comment';
 import { UpvoteModel } from '../../models/Upvote';
@@ -21,6 +21,7 @@ import {
 import dalVote from '../../repository/dalVote';
 import WorkflowManager from '../../agents/workflow.agent';
 import { TaskActionType } from '../../models/Workflow';
+import { getDefaultPostColor } from '../../utils/board.helpers';
 
 class PostCreate {
   static type: SocketEvent = SocketEvent.POST_CREATE;
@@ -92,10 +93,12 @@ class PostStopMove {
   static async handleEvent(
     input: SocketPayload<PostStopMoveEventInput>
   ): Promise<PostModel | null> {
-    const post = await dalPost.update(input.eventData.postID, {
+    const postID = input.eventData.postID;
+    const defaultFill = await getDefaultPostColor(postID);
+    const post = await dalPost.update(postID, {
       displayAttributes: {
         position: { left: input.eventData.left, top: input.eventData.top },
-        fillColor: POST_COLOR,
+        fillColor: defaultFill ?? STUDENT_POST_COLOR,
         opacity: POST_DEFAULT_OPACITY,
       },
     });

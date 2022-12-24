@@ -24,6 +24,7 @@ import {
 } from 'src/app/components/add-post-modal/add-post.component';
 import User from 'src/app/models/user';
 import Upvote from 'src/app/models/upvote';
+import { FabricUtils } from 'src/app/utils/FabricUtils';
 
 @Component({
   selector: 'app-list-modal',
@@ -56,6 +57,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
     public canvasService: CanvasService,
     public socketService: SocketService,
     public converters: Converters,
+    public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.board = data.board;
@@ -235,13 +237,14 @@ export class ListModalComponent implements OnInit, OnDestroy {
     const containsAttentionTag = htmlPost.post.tags.find(
       (tag) => tag.name == NEEDS_ATTENTION_TAG.name
     );
-
+    const fill = await this.fabricUtils.defaultPostColor(htmlPost.post.userID);
     const renderAttr: DisplayAttributes = {
       position: {
         left: this.Xoffset,
         top: this.Yoffset,
       },
       lock: !this.board.permissions.allowStudentMoveAny,
+      fillColor: fill,
       borderColor: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : undefined,
       borderWidth: containsAttentionTag
         ? POST_TAGGED_BORDER_THICKNESS

@@ -20,7 +20,6 @@ import Post, {
 } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { SocketEvent } from 'src/app/utils/constants';
-import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -129,6 +128,7 @@ export class PostModalComponent {
     this.showComments = data?.commentPress ? true : false;
     this.postService.get(data.post.postID).then(async (p: Post) => {
       this.post = p;
+      this.postColor = p.displayAttributes.fillColor;
       this.title = p.title;
       this.editingTitle = linkifyStr(p.title, {
         defaultProtocol: 'https',
@@ -180,7 +180,6 @@ export class PostModalComponent {
     this.showAuthorName =
       (isStudent && data.board.permissions.showAuthorNameStudent) ||
       (isTeacher && data.board.permissions.showAuthorNameTeacher);
-    this.postColor = POST_COLOR;
   }
 
   ngOnInit(): void {

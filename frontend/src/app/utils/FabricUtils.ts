@@ -2,12 +2,15 @@ import { Injectable } from '@angular/core';
 import { fabric } from 'fabric';
 import { DisplayAttributes } from '../models/post';
 import { Tag } from '../models/tag';
+import { Role } from '../models/user';
+import { UserService } from '../services/user.service';
 import {
   DEFAULT_TAGS,
-  POST_COLOR,
   POST_DEFAULT_BORDER,
   POST_DEFAULT_BORDER_THICKNESS,
   POST_DEFAULT_OPACITY,
+  STUDENT_POST_COLOR,
+  TEACHER_POST_COLOR,
 } from './constants';
 import { numDigits, generateUniqueID } from './Utils';
 
@@ -37,6 +40,8 @@ export interface ImageOffset {
 
 @Injectable({ providedIn: 'root' })
 export class FabricUtils {
+  constructor(private userService: UserService) {}
+
   _canvas: fabric.Canvas;
 
   canvasConfig = {
@@ -282,11 +287,11 @@ export class FabricUtils {
 
 	@param postID the post being tagged
 	@param tag the tag being attached
-	@returns display attributes for post
+	@returns display attributes for post or null if no special features
 	*/
-  applyTagFeatures(postID: string, tag: Tag): DisplayAttributes {
+  applyTagFeatures(postID: string, tag: Tag): DisplayAttributes | null {
     if (tag.specialAttributes == null) {
-      return {};
+      return null;
     }
 
     const { borderColor, borderWidth, fillColor, opacity } =
@@ -319,16 +324,16 @@ export class FabricUtils {
 	@param postID the post being tagged
 	@returns display attributes for post
 	*/
-  resetTagFeatures(postID: string): DisplayAttributes {
+  async resetTagFeatures(postID: string): Promise<DisplayAttributes> {
     let fabricPost = this.getObjectFromId(postID);
-
+    const fill = await this.defaultPostColor(fabricPost.userID);
     if (fabricPost) {
       fabricPost = this.setBorderColor(fabricPost, POST_DEFAULT_BORDER);
       fabricPost = this.setBorderThickness(
         fabricPost,
         POST_DEFAULT_BORDER_THICKNESS
       );
-      fabricPost = this.setFillColor(fabricPost, POST_COLOR);
+      fabricPost = this.setFillColor(fabricPost, fill);
       fabricPost = this.setOpacity(fabricPost, POST_DEFAULT_OPACITY);
       this._canvas.requestRenderAll();
     }
@@ -336,7 +341,7 @@ export class FabricUtils {
     return {
       borderColor: POST_DEFAULT_BORDER,
       borderWidth: POST_DEFAULT_BORDER_THICKNESS,
-      fillColor: POST_COLOR,
+      fillColor: fill,
       opacity: POST_DEFAULT_OPACITY,
     };
   }
@@ -442,6 +447,17 @@ export class FabricUtils {
       this._canvas.renderAll.bind(this._canvas),
       settings
     );
+  }
+
+  /**
+   * Returns designated post color for users depending on their role.
+   *
+   * @param userID id of user
+   * @returns color as string
+   */
+  async defaultPostColor(userID: string): Promise<string> {
+    const user = await this.userService.getOneById(userID);
+    return user.role === Role.TEACHER ? TEACHER_POST_COLOR : STUDENT_POST_COLOR;
   }
 
   /**

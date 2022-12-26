@@ -103,15 +103,12 @@ export class TodoListModalComponent implements OnInit {
 
     this.personalDataSource = new MatTableDataSource<TodoItem>(
       this.personalTodoItems.filter(
-        (todoItem: TodoItem) =>
-          !todoItem.todoStatus.completed && !todoItem.groupID
+        (todoItem: TodoItem) => !todoItem.completed && !todoItem.groupID
       )
     );
 
     this.groupDataSource = new MatTableDataSource<TodoItem>(
-      this.groupTodoItems.filter(
-        (todoItem: TodoItem) => !todoItem.todoStatus.completed
-      )
+      this.groupTodoItems.filter((todoItem: TodoItem) => !todoItem.completed)
     );
 
     this.todoItemsMap = new Map(
@@ -120,7 +117,7 @@ export class TodoListModalComponent implements OnInit {
 
     this.completedItemsDataSource = new MatTableDataSource<TodoItem>(
       [...this.todoItemsMap.values()].filter(
-        (todoItem: TodoItem) => todoItem.todoStatus.completed
+        (todoItem: TodoItem) => todoItem.completed
       )
     );
   }

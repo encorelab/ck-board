@@ -222,17 +222,13 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       const formattedDate = date.toLocaleDateString('en-CA');
       const currentDate = new Date();
       const name = await this.userService.getOneById(item.userID);
-      const overdue = date < currentDate && !item.todoStatus.completed;
+      const overdue = date < currentDate && !item.completed;
       const todo: TodoItemDisplay = {
         name: name.username,
         goal: item.title,
         deadline: formattedDate,
-        status: overdue
-          ? 'Missed'
-          : item.todoStatus.completed
-          ? 'Complete'
-          : 'Pending',
-        completed: item.todoStatus.completed,
+        status: overdue ? 'Missed' : item.completed ? 'Complete' : 'Pending',
+        completed: item.completed,
         overdue: overdue,
       };
       data.push(todo);

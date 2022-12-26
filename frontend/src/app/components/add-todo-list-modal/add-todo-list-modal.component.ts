@@ -99,10 +99,8 @@ export class AddTodoListModalComponent implements OnInit {
       title: this.taskTitle,
       description: this.taskDescription,
       groupID: this.selectedGroup ? this.selectedGroup.groupID : '',
-      todoStatus: {
-        completed: false,
-        quality: CompletionQuality.N_A,
-      },
+      completed: false,
+      quality: CompletionQuality.N_A,
       overdue: false,
       type: this.todoItemTypes,
       notifications: [],
@@ -145,10 +143,8 @@ export class AddTodoListModalComponent implements OnInit {
     const todoItem: Partial<TodoItem> = {
       title: this.taskTitle,
       description: this.taskDescription,
-      todoStatus: {
-        completed: false,
-        quality: CompletionQuality.N_A,
-      },
+      completed: false,
+      quality: CompletionQuality.N_A,
       overdue: false,
       groupID: this.selectedGroup ? this.selectedGroup.groupID : '',
       type: this.todoItemTypes,

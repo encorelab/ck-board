@@ -24,7 +24,7 @@
       </div>
       <p style="font-weight: 500; margin: 0 30px;" [ngStyle]="{'color': statusColor}">{{status}}</p>
     </div>
-    <div *ngIf="!data.todoItem.todoStatus.completed">
+    <div *ngIf="!data.todoItem.completed">
         <mat-form-field appearance="fill">
           <mat-label>Completion Quality</mat-label>
           <mat-select
@@ -48,11 +48,11 @@
         </span>
       </mat-chip>
     </div>
-    <div *ngIf="data.todoItem.todoStatus.completed">
+    <div *ngIf="data.todoItem.completed">
       <h4>
         Completion Quality:
         <mat-chip color="accent" selected style="margin: 0 5px">
-          {{completionQualityOptions[data.todoItem.todoStatus.quality]}}
+          {{data.todoItem?.quality ? completionQualityOptions[data.todoItem.quality] : completionQualityOptions['SATISFIED']}}
         </mat-chip>
       </h4>
     </div>

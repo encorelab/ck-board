@@ -50,10 +50,13 @@ export class TodoItemCardModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.taskTitle = data.todoItem.title;
-    this.taskDescription = linkifyStr(data.todoItem.description, {
-      defaultProtocol: 'https',
-      target: '_blank',
-    });
+    this.taskDescription = linkifyStr(
+      data.todoItem?.description ? data.todoItem.description : '',
+      {
+        defaultProtocol: 'https',
+        target: '_blank',
+      }
+    );
     this.taskTypes = data.todoItem.type
       .map((type) => EXPANDED_TODO_TYPE[type])
       .join(', ');
@@ -61,15 +64,15 @@ export class TodoItemCardModalComponent implements OnInit {
       `${data.todoItem.deadline.date} ${data.todoItem.deadline.time}`
     );
     const currentDate = new Date();
-    const overdue = date < currentDate && !data.todoItem.todoStatus.completed;
+    const overdue = date < currentDate && !data.todoItem.completed;
     this.status = overdue
       ? 'Missed'
-      : data.todoItem.todoStatus.completed
+      : data.todoItem.completed
       ? 'Complete'
       : 'Pending';
     this.statusColor = overdue
       ? 'red'
-      : data.todoItem.todoStatus.completed
+      : data.todoItem.completed
       ? 'green'
       : 'orange';
   }
@@ -88,10 +91,8 @@ export class TodoItemCardModalComponent implements OnInit {
 
   async completeTask() {
     await this.todoItemService.update(this.data.todoItem.todoItemID, {
-      todoStatus: {
-        completed: true,
-        quality: this.completionQuality,
-      },
+      completed: true,
+      quality: this.completionQuality,
     });
     this.dialogRef.close();
     this.data.onComplete();

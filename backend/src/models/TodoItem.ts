@@ -1,9 +1,9 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 
 export enum TodoItemType {
-  CONTENT = 'CONTENT',
+  COGNITION = 'COGNITION',
   SEL = 'SEL',
-  ENGAGEMENT = 'ENGAGEMENT',
+  BEHAVIOURAL = 'BEHAVIOURAL',
   CLASS = 'CLASS',
 }
 
@@ -24,13 +24,13 @@ export class Deadline {
   public time!: string;
 }
 
-export class TodoStatus {
-  @prop({ required: true })
-  public completed!: boolean;
+// export class TodoStatus {
+//   @prop({ required: true })
+//   public completed!: boolean;
 
-  @prop({ required: true, type: String, enum: CompletionQuality })
-  public quality!: CompletionQuality;
-}
+//   @prop({ required: true, type: String, enum: CompletionQuality })
+//   public quality!: CompletionQuality;
+// }
 
 @modelOptions({ schemaOptions: { collection: 'todoItems', timestamps: true } })
 export class TodoItemModel {
@@ -55,8 +55,11 @@ export class TodoItemModel {
   @prop({ required: true, type: String, enum: TodoItemType })
   public type!: TodoItemType[];
 
-  @prop({ required: true, type: () => [TodoStatus] })
-  public todoStatus!: TodoStatus;
+  @prop({ required: true })
+  public completed!: boolean;
+
+  @prop({ required: false, type: String, enum: CompletionQuality })
+  public quality?: string;
 
   @prop({ required: true, type: () => [Deadline] })
   public deadline!: Deadline;

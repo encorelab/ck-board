@@ -96,9 +96,9 @@ export enum TODOITEM_NOTIFICATION {
 }
 
 export enum EXPANDED_TODO_TYPE {
-  CONTENT = 'Content learning',
+  COGNITION = 'Content learning',
   SEL = 'Social-emotional learning',
-  ENGAGEMENT = 'Classroom engagement',
+  BEHAVIOURAL = 'Classroom engagement',
   CLASS = 'Class-related work',
 }
 
@@ -112,9 +112,9 @@ export enum EXPANDED_COMPLETION_QUALITY {
 }
 
 export enum TODO_TYPE_COLORS {
-  CONTENT = '#5bc2cb',
+  COGNITION = '#5bc2cb',
   SEL = '#f67280',
-  ENGAGEMENT = '#e6a129',
+  BEHAVIOURAL = '#e6a129',
   CLASS = '#88B04B',
 }
 

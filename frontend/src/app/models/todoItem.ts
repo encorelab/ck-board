@@ -1,7 +1,7 @@
 export enum TodoItemType {
-  CONTENT = 'CONTENT',
+  COGNITION = 'COGNITION',
   SEL = 'SEL',
-  ENGAGEMENT = 'ENGAGEMENT',
+  BEHAVIOURAL = 'BEHAVIOURAL',
   CLASS = 'CLASS',
 }
 
@@ -19,11 +19,6 @@ class Deadline {
   date: string;
 }
 
-class TodoStatus {
-  completed!: boolean;
-  quality!: CompletionQuality;
-}
-
 export class TodoItem {
   todoItemID: string;
   projectID: string;
@@ -32,7 +27,8 @@ export class TodoItem {
   description?: string;
   groupID: string;
   type: TodoItemType[];
-  todoStatus: TodoStatus;
+  completed!: boolean;
+  quality?: CompletionQuality;
   deadline: Deadline;
   notifications!: string[];
   overdue: boolean;

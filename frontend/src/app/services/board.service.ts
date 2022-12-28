@@ -20,6 +20,12 @@ export class BoardService {
     return this.http.get<Board>('boards/personal/' + projectID).toPromise();
   }
 
+  getAllPersonal(projectID: string): Promise<Board[]> {
+    return this.http
+      .get<Board[]>('boards/personal/all/' + projectID)
+      .toPromise();
+  }
+
   getMultipleBy(ids: string[], filter?: Partial<Board>): Promise<Board[]> {
     return this.http
       .post<Board[]>('boards/multiple/', { ids, filter })

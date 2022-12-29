@@ -272,6 +272,7 @@ export class AddPostComponent {
           originalPostID: post.postID,
           newPostID: newPost.postID,
           personalBoardID: board.boardID,
+          post: post,
         };
         if (newPost) {
           this.socketService.emit(

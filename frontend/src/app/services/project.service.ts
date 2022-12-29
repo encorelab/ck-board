@@ -30,6 +30,12 @@ export class ProjectService {
     return this.http.post<Project>(`projects/join`, { code }).toPromise();
   }
 
+  removeUser(projectID: string, userID: string): Promise<Project> {
+    return this.http
+      .post<Project>(`projects/${projectID}/remove`, { userID })
+      .toPromise();
+  }
+
   remove(projectID: string): Promise<Project> {
     return this.http.delete<Project>('projects/' + projectID).toPromise();
   }

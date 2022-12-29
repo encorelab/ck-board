@@ -92,6 +92,14 @@ router.get('/users/:id', async (req, res) => {
   res.status(200).json(projects);
 });
 
+router.post('/:id/remove', async (req, res) => {
+  const { id } = req.params;
+  const { userID } = req.body;
+  console.log(id, userID);
+  const updatedProject = await dalProject.removeUser(id, userID);
+  res.status(200).json(updatedProject);
+});
+
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   const deletedProject = await dalProject.remove(id);

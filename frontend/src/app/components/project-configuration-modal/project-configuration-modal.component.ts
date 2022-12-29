@@ -14,6 +14,7 @@ import { UserService } from 'src/app/services/user.service';
 export class ProjectConfigurationModalComponent implements OnInit {
   project: Project;
   members: User[];
+  user: User;
 
   nameEditable: string;
   membershipDisabledEditable: boolean;
@@ -28,6 +29,8 @@ export class ProjectConfigurationModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.project = data.project;
+    this.user = data.user;
+    console.log(this.user);
     this.nameEditable = this.project.name;
     this.membershipDisabledEditable = this.project.membershipDisabled;
   }
@@ -44,6 +47,11 @@ export class ProjectConfigurationModalComponent implements OnInit {
       membershipDisabled: this.membershipDisabledEditable,
     });
     this.close();
+  }
+
+  async removeUser(_user: User) {
+    this.members = this.members.filter((user) => user.userID !== _user.userID);
+    await this.projectService.removeUser(this.project.projectID, _user.userID);
   }
 
   onNoClick(): void {

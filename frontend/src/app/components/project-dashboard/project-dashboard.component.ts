@@ -108,10 +108,13 @@ export class ProjectDashboardComponent implements OnInit {
   openSettingsDialog() {
     this.dialog
       .open(ProjectConfigurationModalComponent, {
-        data: { project: this.project },
+        data: { project: this.project, user: this.user },
       })
       .afterClosed()
-      .subscribe((p: Project) => (this.project = p));
+      .subscribe((p: Project) => {
+        console.log(p);
+        this.project = p;
+      });
   }
 
   openTodoList() {

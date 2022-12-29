@@ -40,7 +40,13 @@ export class AddTodoListModalComponent implements OnInit {
   ]);
   todoItemTypeFormControl = new FormControl('valid', [Validators.required]);
   todoItemTypes: TodoItemType[] = [];
-  todoItemOptions = EXPANDED_TODO_TYPE;
+  EXPANDED_TODO_TYPE: typeof EXPANDED_TODO_TYPE = EXPANDED_TODO_TYPE;
+  todoItemOptions = [
+    TodoItemType.COGNITION,
+    TodoItemType.SEL,
+    TodoItemType.BEHAVIOURAL,
+    TodoItemType.CLASS,
+  ];
   selectedGroup: Group | undefined;
   userGroups: Group[];
 
@@ -133,10 +139,12 @@ export class AddTodoListModalComponent implements OnInit {
       },
     };
 
-    await this.todoItemService.update(this.data.todoItem.todoItemID, todoItem);
-    this.data.onComplete();
+    const updatedTodo = await this.todoItemService.update(
+      this.data.todoItem.todoItemID,
+      todoItem
+    );
+    this.data.onComplete(updatedTodo);
     this.dialogRef.close();
-    return todoItem;
   }
 
   async restoreTodoItem() {
@@ -157,11 +165,11 @@ export class AddTodoListModalComponent implements OnInit {
       },
     };
 
-    await this.todoItemService.update(
+    const restoredTodo = await this.todoItemService.update(
       this.data.restoreTodoItem.todoItemID,
       todoItem
     );
-    this.data.onComplete();
+    this.data.onComplete(restoredTodo);
     this.dialogRef.close();
     return todoItem;
   }

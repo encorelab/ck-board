@@ -7,6 +7,7 @@ export enum TodoItemType {
 
 export enum CompletionQuality {
   N_A = 'N_A',
+  INCOMPLETE = 'INCOMPLETE',
   VERY_UNSATISFIED = 'VERY_UNSATISFIED',
   UNSATISFIED = 'UNSATISFIED',
   NEUTRAL = 'NEUTRAL',

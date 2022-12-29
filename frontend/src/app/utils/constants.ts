@@ -99,16 +99,17 @@ export enum EXPANDED_TODO_TYPE {
   COGNITION = 'Content learning',
   SEL = 'Social-emotional learning',
   BEHAVIOURAL = 'Classroom engagement',
-  CLASS = 'Class-related work',
+  CLASS = 'Assigned class work',
 }
 
 export enum EXPANDED_COMPLETION_QUALITY {
-  N_A = 'N/A',
-  VERY_UNSATISFIED = 'Very Unsatisfied',
-  UNSATISFIED = 'Unsatisfied',
-  NEUTRAL = 'Neutral',
-  SATISFIED = 'Satisfied',
-  VERY_SATISFIED = 'Very Satisfied',
+  N_A = 'In-progress',
+  INCOMPLETE = 'Incomplete',
+  VERY_UNSATISFIED = 'Poor',
+  UNSATISFIED = 'Low',
+  NEUTRAL = 'Moderate',
+  SATISFIED = 'Good',
+  VERY_SATISFIED = 'Excellent',
 }
 
 export enum TODO_TYPE_COLORS {

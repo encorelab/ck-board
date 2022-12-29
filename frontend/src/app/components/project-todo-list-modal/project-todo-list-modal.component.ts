@@ -38,7 +38,7 @@ export class ProjectTodoListModalComponent implements OnInit {
 
   openMemberTodoList(user: User) {
     this.dialog.open(TodoListModalComponent, {
-      width: '800px',
+      width: '900px',
       data: {
         project: this.project,
         user: user,

@@ -9,6 +9,7 @@ export enum TodoItemType {
 
 export enum CompletionQuality {
   N_A = 'N_A',
+  INCOMPLETE = 'INCOMPLETE',
   VERY_UNSATISFIED = 'VERY_UNSATISFIED',
   UNSATISFIED = 'UNSATISFIED',
   NEUTRAL = 'NEUTRAL',
@@ -23,14 +24,6 @@ export class Deadline {
   @prop({ required: true })
   public time!: string;
 }
-
-// export class TodoStatus {
-//   @prop({ required: true })
-//   public completed!: boolean;
-
-//   @prop({ required: true, type: String, enum: CompletionQuality })
-//   public quality!: CompletionQuality;
-// }
 
 @modelOptions({ schemaOptions: { collection: 'todoItems', timestamps: true } })
 export class TodoItemModel {

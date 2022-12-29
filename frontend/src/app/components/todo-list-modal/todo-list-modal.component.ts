@@ -6,8 +6,12 @@ import {
 } from '@angular/material/dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { GroupService } from 'src/app/services/group.service';
-import { TodoItem } from 'src/app/models/todoItem';
-import { EXPANDED_TODO_TYPE, TODO_TYPE_COLORS } from 'src/app/utils/constants';
+import { TodoItem, CompletionQuality } from 'src/app/models/todoItem';
+import {
+  EXPANDED_TODO_TYPE,
+  TODO_TYPE_COLORS,
+  EXPANDED_COMPLETION_QUALITY,
+} from 'src/app/utils/constants';
 import { MatTableDataSource } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AddTodoListModalComponent } from '../add-todo-list-modal/add-todo-list-modal.component';
@@ -44,6 +48,9 @@ export class TodoListModalComponent implements OnInit {
   CONFETTI_DURATION = 500;
   todoItemTypes = EXPANDED_TODO_TYPE;
   todoItemColors = TODO_TYPE_COLORS;
+  EXPANDED_COMPLETION_QUALITY: typeof EXPANDED_COMPLETION_QUALITY =
+    EXPANDED_COMPLETION_QUALITY;
+  CompletionQuality: typeof CompletionQuality = CompletionQuality;
 
   constructor(
     public dialogRef: MatDialogRef<TodoListModalComponent>,
@@ -67,6 +74,7 @@ export class TodoListModalComponent implements OnInit {
       'task-title',
       'type',
       'group',
+      'quality',
       'completion-date',
       'options',
     ];
@@ -101,6 +109,10 @@ export class TodoListModalComponent implements OnInit {
       this.userGroups.map((group) => group.groupID)
     );
 
+    this.updateTableDataSource();
+  }
+
+  updateTableDataSource() {
     this.personalDataSource = new MatTableDataSource<TodoItem>(
       this.personalTodoItems.filter(
         (todoItem: TodoItem) => !todoItem.completed && !todoItem.groupID
@@ -207,20 +219,67 @@ export class TodoListModalComponent implements OnInit {
         group: todoItem.groupID
           ? await this.groupService.getById(todoItem.groupID)
           : null,
-        onComplete: async () => {
-          await this.getTodoItems();
+        onComplete: async (t?: TodoItem) => {
+          if (t && t !== todoItem) {
+            this.groupTodoItems = this.groupTodoItems.filter(
+              (ti) => ti.todoItemID !== t.todoItemID
+            );
+            this.personalTodoItems = this.personalTodoItems.filter(
+              (ti) => ti.todoItemID !== t.todoItemID
+            );
+            this.updateTableDataSource();
+            if (t.groupID) {
+              this.groupTodoItems.push(t);
+            } else {
+              this.personalTodoItems.push(t);
+            }
+            this.updateTableDataSource();
+          }
         },
       },
     });
   }
 
-  async openTodoItemViewModal(todoItem) {
+  async openTodoItemViewModal(todoItem: TodoItem) {
     this.dialog.open(TodoItemCardModalComponent, {
       width: '500px',
       data: {
         todoItem: todoItem,
+        projectID: this.projectID,
+        userID: this.userID,
+        group: todoItem.groupID
+          ? await this.groupService.getById(todoItem.groupID)
+          : null,
         onComplete: async () => {
           await this.completeTodoItem();
+        },
+        onEdit: async (t: TodoItem) => {
+          if (t && t !== todoItem) {
+            this.groupTodoItems = this.groupTodoItems.filter(
+              (ti) => ti.todoItemID !== t.todoItemID
+            );
+            this.personalTodoItems = this.personalTodoItems.filter(
+              (ti) => ti.todoItemID !== t.todoItemID
+            );
+            this.updateTableDataSource();
+            if (t.groupID) {
+              this.groupTodoItems.push(t);
+            } else {
+              this.personalTodoItems.push(t);
+            }
+            this.updateTableDataSource();
+          }
+        },
+        onRestore: async (t: TodoItem) => {
+          if (t) {
+            this.todoItemsMap.delete(todoItem.todoItemID);
+            if (t.groupID) {
+              this.groupTodoItems.push(t);
+            } else {
+              this.personalTodoItems.push(t);
+            }
+            this.updateTableDataSource();
+          }
         },
       },
     });
@@ -233,8 +292,16 @@ export class TodoListModalComponent implements OnInit {
         projectID: this.projectID,
         userID: this.userID,
         restoreTodoItem: todoItem,
-        onComplete: async () => {
-          await this.getTodoItems();
+        onComplete: async (t?: TodoItem) => {
+          if (t) {
+            this.todoItemsMap.delete(todoItem.todoItemID);
+            if (t.groupID) {
+              this.groupTodoItems.push(t);
+            } else {
+              this.personalTodoItems.push(t);
+            }
+            this.updateTableDataSource();
+          }
         },
       },
     });

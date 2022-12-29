@@ -116,7 +116,7 @@ export class ProjectDashboardComponent implements OnInit {
 
   openTodoList() {
     this.dialog.open(TodoListModalComponent, {
-      width: '800px',
+      width: '900px',
       data: {
         project: this.project,
         user: this.user,

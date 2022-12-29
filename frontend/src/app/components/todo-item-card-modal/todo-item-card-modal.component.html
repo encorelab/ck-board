@@ -5,6 +5,22 @@
       <mat-card-title>{{ taskTitle }}</mat-card-title>
       <span class="fill-remaining-space"></span>
       <mat-card-subtitle>{{assignee}}</mat-card-subtitle>
+      <button
+        *ngIf="!todoItem.completed"
+        mat-icon-button
+        matTooltip="Edit Task"
+        (click)="editTodoItem(todoItem)"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button
+        *ngIf="todoItem.completed"
+        mat-icon-button
+        matTooltip="Restore Task"
+        (click)="restoreTodoItem(todoItem)"
+      >
+        <mat-icon>restore</mat-icon>
+      </button>
     </mat-card-header>
     <mat-card-content>
       <p style="overflow-wrap: break-word" [innerHTML]="taskDescription">
@@ -17,14 +33,14 @@
         <mat-icon style="margin-right: 15px;">access_time</mat-icon>
         <div>
           <p style="font-weight: 500; margin-bottom: 2px">
-            {{data.todoItem.deadline.date}}
+            {{todoItem.deadline.date}}
           </p>
-          <p>{{data.todoItem.deadline.time}}</p>
+          <p>{{todoItem.deadline.time}}</p>
         </div>
       </div>
       <p style="font-weight: 500; margin: 0 30px;" [ngStyle]="{'color': statusColor}">{{status}}</p>
     </div>
-    <div *ngIf="!data.todoItem.completed">
+    <div *ngIf="!todoItem.completed">
         <mat-form-field appearance="fill">
           <mat-label>Completion Quality</mat-label>
           <mat-select
@@ -33,9 +49,10 @@
           [errorStateMatcher]="matcher"
           [(value)]="defaultQuality"
           >
-          <mat-option *ngFor="let enum of completionQualityOptions | keyvalue" [value]=enum.key>
-            {{ enum.value }}
+          <mat-option *ngFor="let option of completionQualityOptions" [value]=option>
+            {{ EXPANDED_COMPLETION_QUALITY[option] }}
           </mat-option>
+          
           </mat-select>
         </mat-form-field>
       <mat-chip 
@@ -44,15 +61,15 @@
         class="config-button" mat-raised-button color="accent" 
         style="text-align: center" selected>
         <span style="width: 100%;text-align: center;">
-          Mark as Completed
+          Mark as Done
         </span>
       </mat-chip>
     </div>
-    <div *ngIf="data.todoItem.completed">
+    <div *ngIf="todoItem.completed">
       <h4>
         Completion Quality:
         <mat-chip color="accent" selected style="margin: 0 5px">
-          {{data.todoItem?.quality ? completionQualityOptions[data.todoItem.quality] : completionQualityOptions['SATISFIED']}}
+          {{taskCompletionQuality}}
         </mat-chip>
       </h4>
     </div>

@@ -1,6 +1,6 @@
 <h1 mat-dialog-title *ngIf="!editing && !restoring">Add Todo List Task</h1>
-<h1 mat-dialog-title *ngIf="editing">Update Todo List Task</h1>
-<h1 mat-dialog-title *ngIf="restoring">Restore Todo List Task</h1>
+<h1 mat-dialog-title *ngIf="editing">Edit Task</h1>
+<h1 mat-dialog-title *ngIf="restoring">Restore Task</h1>
 <div style="position: relative;">
   <mat-form-field appearance="fill" style="width: 100%">
     <mat-label>Title</mat-label>
@@ -37,8 +37,8 @@
         [errorStateMatcher]="matcher"
         multiple
       >
-        <mat-option *ngFor="let enum of todoItemOptions | keyvalue" [value]=enum.key>
-          {{ enum.value }}
+        <mat-option *ngFor="let option of todoItemOptions" [value]=option>
+          {{ EXPANDED_TODO_TYPE[option] }}
         </mat-option>
       </mat-select>
     </mat-form-field>

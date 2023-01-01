@@ -31,7 +31,7 @@ import { Group } from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
 import Converters from 'src/app/utils/converters';
 import { PostService } from 'src/app/services/post.service';
-import { SocketEvent } from 'src/app/utils/constants';
+import { EXPANDED_TODO_TYPE, SocketEvent, TODO_TYPE_COLORS } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
@@ -108,13 +108,15 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   todoIsVisible: Boolean = false;
   todoItems: TodoItem[] = [];
   todoDataSource = new MatTableDataSource<TodoItemDisplay>();
+  todoItemColors = TODO_TYPE_COLORS;
+  todoItemTypes = EXPANDED_TODO_TYPE;
   todoColumns: string[] = [
     'name',
     'goal',
     'type',
     'status',
     'deadline',
-    'rubric-score',
+    'completion-quality',
     'completion-notes',
   ];
 

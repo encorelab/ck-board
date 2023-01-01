@@ -201,6 +201,16 @@
     Add Post
   </button>
   <button
+    *ngIf="!editingPost && user.role === 'TEACHER' && board.scope === 'PROJECT_PERSONAL'"
+    type="submit"
+    [disabled]="disabled()"
+    mat-button
+    (click)="handlePersonalBoardCopy()"
+    cdkFocusInitial
+  >
+    Copy to All Students' Personal Boards
+  </button>
+  <button
     *ngIf="editingPost"
     type="submit"
     [disabled]="disabled()"

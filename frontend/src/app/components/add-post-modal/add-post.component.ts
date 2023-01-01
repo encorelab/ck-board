@@ -12,11 +12,17 @@ import Post, {
 } from 'src/app/models/post';
 import { Tag } from 'src/app/models/tag';
 import User from 'src/app/models/user';
+import { BoardService } from 'src/app/services/board.service';
 import { CanvasService } from 'src/app/services/canvas.service';
+import { PostService } from 'src/app/services/post.service';
+import { ProjectService } from 'src/app/services/project.service';
+import { SnackbarService } from 'src/app/services/snackbar.service';
+import { SocketService } from 'src/app/services/socket.service';
 import {
   NEEDS_ATTENTION_TAG,
   POST_COLOR,
   POST_TAGGED_BORDER_THICKNESS,
+  SocketEvent,
 } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
@@ -67,6 +73,11 @@ export class AddPostComponent {
 
   constructor(
     public canvasService: CanvasService,
+    public boardService: BoardService,
+    public projectService: ProjectService,
+    public postService: PostService,
+    public socketService: SocketService,
+    public snackbarService: SnackbarService,
     public fabricUtils: FabricUtils,
     public dialogRef: MatDialogRef<AddPostComponent>,
     @Inject(MAT_DIALOG_DATA) public data: AddPostDialog
@@ -162,7 +173,7 @@ export class AddPostComponent {
     }
   }
 
-  async addPost() {
+  getBoardPost(): Post {
     const containsAttentionTag = this.tags.find(
       (tag) => tag.name == NEEDS_ATTENTION_TAG.name
     );
@@ -179,7 +190,7 @@ export class AddPostComponent {
         : undefined,
     };
 
-    const post: Post = {
+    return {
       postID: generateUniqueID(),
       userID: this.user.userID,
       boardID: this.board.boardID,
@@ -192,14 +203,10 @@ export class AddPostComponent {
       tags: this.tags,
       displayAttributes: displayAttributes,
     };
-
-    await this.canvasService.createPost(post);
-    return post;
   }
 
-  async addBucketPost() {
-    const bucketID: string = this.data.bucket!.bucketID;
-    const post: Post = {
+  getBucketPost(): Post {
+    return {
       postID: generateUniqueID(),
       userID: this.user.userID,
       boardID: this.board.boardID,
@@ -212,12 +219,10 @@ export class AddPostComponent {
       tags: this.tags,
       displayAttributes: null,
     };
-
-    return await this.canvasService.createBucketPost(bucketID, post);
   }
 
-  async addListPost() {
-    const post: Post = {
+  getListPost(): Post {
+    return {
       postID: generateUniqueID(),
       userID: this.user.userID,
       boardID: this.board.boardID,
@@ -230,8 +235,58 @@ export class AddPostComponent {
       tags: this.tags,
       displayAttributes: null,
     };
+  }
 
+  async addPost() {
+    const post = this.getBoardPost();
+    await this.canvasService.createPost(post);
+    return post;
+  }
+
+  async addBucketPost() {
+    const bucketID: string = this.data.bucket!.bucketID;
+    const post: Post = this.getBucketPost();
+    return await this.canvasService.createBucketPost(bucketID, post);
+  }
+
+  async addListPost() {
+    const post: Post = this.getListPost();
     return await this.canvasService.createListPost(post);
+  }
+
+  async handlePersonalBoardCopy() {
+    const project = await this.projectService.get(this.board.projectID);
+    const boards = await this.boardService.getAllPersonal(this.board.projectID);
+
+    for (const board of boards) {
+      if (!project.teacherIDs.includes(board.ownerID)) {
+        let post;
+        if (this.data.type == PostType.BUCKET && this.data.bucket)
+          post = this.getBucketPost();
+        else if (this.data.type == PostType.LIST) post = this.getListPost();
+        else post = this.getBoardPost();
+
+        post.boardID = board.boardID;
+        const newPost = await this.postService.create(post);
+        const postInput = {
+          originalPostID: post.postID,
+          newPostID: newPost.postID,
+          personalBoardID: board.boardID,
+          post: post,
+        };
+        if (newPost) {
+          this.socketService.emit(
+            SocketEvent.PERSONAL_BOARD_ADD_POST,
+            postInput
+          );
+        }
+      }
+    }
+    this.snackbarService.queueSnackbar(
+      'Successfully copied post to all student personal boards.'
+    );
+
+    this.dialogRef.close();
   }
 
   async updateMultipleChoicePost() {

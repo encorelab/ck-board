@@ -344,6 +344,7 @@ export class PostModalComponent {
       originalPostID: this.post.postID,
       newPostID: newPost.postID,
       personalBoardID: personalBoard.boardID,
+      post: post,
     };
     if (newPost) {
       this.socketService.emit(SocketEvent.PERSONAL_BOARD_ADD_POST, postInput);

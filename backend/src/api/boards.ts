@@ -146,6 +146,14 @@ router.get('/personal/:projectID', async (req, res) => {
   return res.status(200).json(board);
 });
 
+router.get('/personal/all/:projectID', async (req, res) => {
+  const projectID: string = req.params.projectID;
+  const boards = await dalBoard.getAllPersonal(projectID);
+  if (!boards) return res.status(404).end('Personal Boards not found');
+
+  return res.status(200).json(boards);
+});
+
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 

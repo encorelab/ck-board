@@ -147,7 +147,6 @@ export class TodoListModalComponent implements OnInit {
   }
 
   async completeTodoItem() {
-    await this.getTodoItems();
     this.dialogRef.close();
     this.playAudio();
     setTimeout(() => {
@@ -250,8 +249,22 @@ export class TodoListModalComponent implements OnInit {
         group: todoItem.groupID
           ? await this.groupService.getById(todoItem.groupID)
           : null,
-        onComplete: async () => {
-          await this.completeTodoItem();
+        onComplete: async (t: TodoItem) => {
+          this.groupTodoItems = this.groupTodoItems.filter(
+            (ti) => ti.todoItemID !== t.todoItemID
+          );
+          this.personalTodoItems = this.personalTodoItems.filter(
+            (ti) => ti.todoItemID !== t.todoItemID
+          );
+          this.todoItemsMap.delete(todoItem.todoItemID);
+          if (t.groupID) {
+            this.groupTodoItems.push(t);
+          } else {
+            this.personalTodoItems.push(t);
+          }
+          this.updateTableDataSource();
+          if (t.quality !== CompletionQuality.INCOMPLETE)
+            await this.completeTodoItem();
         },
         onEdit: async (t: TodoItem) => {
           if (t && t !== todoItem) {

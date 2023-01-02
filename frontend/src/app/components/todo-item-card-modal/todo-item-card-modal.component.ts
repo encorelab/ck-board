@@ -129,12 +129,15 @@ export class TodoItemCardModalComponent implements OnInit {
   }
 
   async completeTask() {
-    await this.todoItemService.update(this.data.todoItem.todoItemID, {
-      completed: true,
-      quality: this.completionQuality,
-    });
+    const updatedTodo = await this.todoItemService.update(
+      this.data.todoItem.todoItemID,
+      {
+        completed: true,
+        quality: this.completionQuality,
+      }
+    );
     this.dialogRef.close();
-    this.data.onComplete();
+    this.data.onComplete(updatedTodo);
   }
 
   async editTodoItem(todoItem: TodoItem) {

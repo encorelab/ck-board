@@ -30,7 +30,6 @@ export class ProjectConfigurationModalComponent implements OnInit {
   ) {
     this.project = data.project;
     this.user = data.user;
-    console.log(this.user);
     this.nameEditable = this.project.name;
     this.membershipDisabledEditable = this.project.membershipDisabled;
   }
@@ -45,17 +44,17 @@ export class ProjectConfigurationModalComponent implements OnInit {
     this.project = await this.projectService.update(this.project.projectID, {
       name: this.nameEditable,
       membershipDisabled: this.membershipDisabledEditable,
+      members: this.members.map((user) => user.userID),
     });
     this.close();
   }
 
   async removeUser(_user: User) {
     this.members = this.members.filter((user) => user.userID !== _user.userID);
-    await this.projectService.removeUser(this.project.projectID, _user.userID);
   }
 
   onNoClick(): void {
-    this.close();
+    this.dialogRef.close();
   }
 
   close(): void {

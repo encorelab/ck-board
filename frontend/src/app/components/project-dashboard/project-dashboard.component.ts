@@ -111,9 +111,8 @@ export class ProjectDashboardComponent implements OnInit {
         data: { project: this.project, user: this.user },
       })
       .afterClosed()
-      .subscribe((p: Project) => {
-        console.log(p);
-        this.project = p;
+      .subscribe((p?: Project) => {
+        if (p) this.project = p;
       });
   }
 

@@ -108,19 +108,6 @@ export const remove = async (id: string) => {
   }
 };
 
-export const removeUser = async (projectID: string, userID: string) => {
-  try {
-    const updatedProject = await Project.findOneAndUpdate(
-      { projectID: projectID },
-      { $pull: { members: userID } },
-      { new: true }
-    );
-    return updatedProject;
-  } catch (err) {
-    throw new Error(JSON.stringify(err, null, ' '));
-  }
-};
-
 const dalProject = {
   getById,
   getByUserId,
@@ -131,7 +118,6 @@ const dalProject = {
   update,
   removeBoard,
   remove,
-  removeUser,
 };
 
 export default dalProject;

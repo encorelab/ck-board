@@ -47,7 +47,7 @@ export class ProjectConfigurationModalComponent implements OnInit {
   }
 
   onNoClick(): void {
-    this.close();
+    this.dialogRef.close();
   }
 
   close(): void {

@@ -111,7 +111,9 @@ export class ProjectDashboardComponent implements OnInit {
         data: { project: this.project },
       })
       .afterClosed()
-      .subscribe((p: Project) => (this.project = p));
+      .subscribe((p?: Project) => {
+        if (p) this.project = p;
+      });
   }
 
   openTodoList() {

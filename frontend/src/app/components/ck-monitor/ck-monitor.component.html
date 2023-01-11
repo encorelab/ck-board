@@ -1,6 +1,9 @@
 <div>
-  <app-toolbar class="toolbar" *ngIf="user && project && board" [user]="user">
+  <app-toolbar class="toolbar" *ngIf="user && project && board && !embedded" [user]="user" [embedded]="embedded">
     <span *ngIf="board">CK Monitor - {{ this.board.name }}</span>
+    <button mat-icon-button (click)="copyEmbedCode()" matTooltip="Copy embeddable URL">
+        <mat-icon>file_copy</mat-icon>
+      </button>
     <span style="flex: 1 1 auto"></span>
     <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
       <mat-icon>keyboard_return</mat-icon>
@@ -21,7 +24,7 @@
     </button>
   </app-toolbar>
   <mat-sidenav-container class="drawer-container">
-    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="true" [fixedTopGap]="64" style="position: fixed">
+    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
       <h2 class="section-title">Tasks</h2>
       <mat-list>
         <button class="subheader-button" mat-button (click)="showInactive = !showInactive">

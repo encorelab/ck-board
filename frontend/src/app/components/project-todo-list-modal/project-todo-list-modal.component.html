@@ -1,28 +1,30 @@
-<h1 mat-dialog-title>Project Member Todo List</h1>
-<div mat-dialog-content>
-  <h3>
-    <b>View Todo List for all members in this Project:</b>
-  </h3>
-  <div 
-    class="mat-elevation-z3" 
-    style="display: grid; grid-template-columns: 1fr 1fr;overflow-y:auto;max-height:400px;margin:5px 0" 
-  >
-    <mat-card *ngFor="let user of projectMembers" style="display:flex;margin: 10px;
-        padding: 10px;justify-content:space-between">
-      <mat-card-title style="font-size: small;margin:auto 0;">
-        {{ user.username }}
-      </mat-card-title>
-      <button 
-        mat-icon-button
-        (click)="openMemberTodoList(user)"
-      >
-        <mat-icon>launch</mat-icon>
-      </button>
-    </mat-card>
-  </div>
-</div>
-<div mat-dialog-actions>
-  <button mat-button (click)="onNoClick()">
-    Close
+<app-toolbar *ngIf="user && project && !embedded" [user]="user" style="width: 100%;">
+  <span *ngIf="project">CK Todo - {{ this.project.name }}</span>
+  <button mat-icon-button (click)="copyEmbedCode()" matTooltip="Copy embeddable URL">
+      <mat-icon>file_copy</mat-icon>
+    </button>
+  <span style="flex: 1 1 auto"></span>
+  <button mat-icon-button routerLink="{{'/project/'+project.projectID}}" matTooltip="Back to Project">
+    <mat-icon>keyboard_return</mat-icon>
   </button>
+</app-toolbar>
+<div class="todoModalWrapper">
+  <mat-sidenav-container class="drawer-container">
+    <mat-sidenav *ngIf="user.role === Role.TEACHER" #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
+      <h2 class="section-title">Project Members</h2>
+      <mat-list>
+        <mat-list-item *ngFor="let user of projectMembers">
+            <mat-icon *ngIf="user.role === Role.TEACHER" mat-list-icon>school</mat-icon>
+            <mat-icon *ngIf="user.role === Role.STUDENT" mat-list-icon>person</mat-icon>
+            <h3 matLine> {{user.username}} </h3>
+            <span style="flex: 1 1 auto"></span>
+            <button *ngIf="todoModalUser !== user.userID" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="openMemberTodoList(user)">Show Todo</button>
+            <button *ngIf="todoModalUser === user.userID" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="closeTodoList()">Hide Todo</button>
+        </mat-list-item>
+      </mat-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <app-todo-list-modal *ngIf="todoModalUser" [projectID]="project.projectID" [userID]="todoModalUser"></app-todo-list-modal>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
 </div>

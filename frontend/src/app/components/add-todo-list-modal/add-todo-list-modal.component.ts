@@ -81,7 +81,6 @@ export class AddTodoListModalComponent implements OnInit {
   }
 
   async createTodoItem() {
-    console.log(this.selectedGroup);
     const todoItem: TodoItem = {
       todoItemID: generateUniqueID(),
       projectID: this.projectID,
@@ -108,7 +107,6 @@ export class AddTodoListModalComponent implements OnInit {
   }
 
   async updateTodoItem() {
-    console.log(this.selectedGroup);
     const todoItem: Partial<TodoItem> = {
       title: this.taskTitle,
       groupID: this.selectedGroup ? this.selectedGroup.groupID : '',

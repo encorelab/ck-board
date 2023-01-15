@@ -1,7 +1,7 @@
 <div>
   <app-toolbar *ngIf="user && project && board && !embedded" [user]="user" style="width: 100%;">
     <span *ngIf="board">CK Workspace - {{ this.board.name }}</span>
-    <button mat-icon-button (click)="copyEmbedCode()" matTooltip="Copy embeddable URL">
+    <button mat-icon-button *ngIf="user.role === Role.TEACHER" (click)="copyEmbedCode()" matTooltip="Copy embeddable URL">
         <mat-icon>file_copy</mat-icon>
       </button>
     <span style="flex: 1 1 auto"></span>

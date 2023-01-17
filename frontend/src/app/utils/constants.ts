@@ -53,8 +53,8 @@ export enum SocketEvent {
   TRACING_DISABLED = 'TRACING_DISABLED',
 }
 
-export const STUDENT_POST_COLOR = '#FFE663';
-export const TEACHER_POST_COLOR = '#ADD8E6';
+export const STUDENT_POST_COLOR = '#FFE678';
+export const TEACHER_POST_COLOR = '#28C8FF';
 
 export const POST_DEFAULT_OPACITY = 1;
 export const POST_DEFAULT_BORDER = 'black';

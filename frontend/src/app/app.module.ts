@@ -137,10 +137,7 @@ export function tokenGetter() {
       provide: MatDialogRef,
       useValue: {},
     },
-    {
-      provide: NgxImageCompressService,
-      useValue: {},
-    },
+    NgxImageCompressService,
   ],
   bootstrap: [AppComponent],
 })

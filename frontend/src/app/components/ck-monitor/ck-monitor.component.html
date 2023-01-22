@@ -25,7 +25,7 @@
   </app-toolbar>
   <mat-sidenav-container class="drawer-container">
     <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
-      <h2 class="section-title">Tasks</h2>
+      <h2 class="section-title">All Tasks</h2>
       <mat-list>
         <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
           Pending Tasks ({{ inactiveTaskWorkflows.length }})
@@ -40,8 +40,24 @@
               Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
             </p>
             <span style="flex: 1 1 auto"></span>
-            <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
-            <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+            <button
+              *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)"
+              mat-raised-button
+              color="primary"
+              class="sidebar-button"
+              (click)="view(workflow)"
+            >
+              Monitor Task
+            </button>
+            <button
+              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID"
+              mat-raised-button
+              color="primary"
+              class="sidebar-button"
+              (click)="close()"
+            >
+              Hide Task
+            </button>
           </mat-list-item>
         </ng-container>
         <mat-divider></mat-divider>
@@ -58,8 +74,24 @@
               Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
             </p>
             <span style="flex: 1 1 auto"></span>
-            <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
-            <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+            <button
+              *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)"
+              mat-raised-button
+              color="primary"
+              class="sidebar-button"
+              (click)="view(workflow)"
+            >
+              Monitor Task
+            </button>
+            <button
+              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID"
+              mat-raised-button
+              color="primary"
+              class="sidebar-button"
+              (click)="close()"
+            >
+              Hide Task
+            </button>
           </mat-list-item>
         </ng-container>
         <mat-divider></mat-divider>
@@ -76,8 +108,24 @@
               Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
             </p>
             <span style="flex: 1 1 auto"></span>
-            <button *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)" mat-raised-button color="primary" style="margin-left: 10px;" (click)="view(workflow)">Monitor Task</button>
-            <button *ngIf="runningTask && runningTask.workflowID === workflow.workflowID" mat-raised-button color="primary" style="margin-left: 10px;" (click)="close()">Hide Task</button>
+            <button
+              *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)"
+              mat-raised-button
+              color="primary"
+              class="sidebar-button"
+              (click)="view(workflow)"
+            >
+              Monitor Task
+            </button>
+            <button
+              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID"
+              mat-raised-button
+              color="primary"
+              class="sidebar-button"
+              (click)="close()"
+            >
+              Hide Task
+            </button>
           </mat-list-item>
         </ng-container>
         <mat-divider></mat-divider>

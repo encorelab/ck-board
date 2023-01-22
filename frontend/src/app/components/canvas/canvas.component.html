@@ -1,13 +1,6 @@
 <div>
   <div>
-    <mat-toolbar *ngIf="user && board && embedded" color="primary" role="toolbar" aria-label="Top Toolbar">
-      <img
-        class="embeddableLogo"
-        src="/assets/encore-logo-white-sm.png"
-        alt="Encore logo"
-      />
-      <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
-    </mat-toolbar>
+
     <app-toolbar *ngIf="user && board && !embedded" [user]="user">
       <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="Read Task">
@@ -91,6 +84,9 @@
     </app-toolbar>
     <div class="canvas-area">
       <canvas id="canvas" (window:resize)="onResize($event)"></canvas>
+      <div class="top-embedded-board-name" *ngIf="user && board && embedded">
+        {{ board.name }}
+      </div>
       <div class="top-nav" *ngIf="!embedded">
         <a routerLink="{{ '/project/' + projectID }}">Back to Project</a>
       </div>

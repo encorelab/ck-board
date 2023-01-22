@@ -53,6 +53,18 @@ export const getPersonal = async (projectID: string, ownerID: string) => {
   }
 };
 
+export const getAllPersonal = async (projectID: string) => {
+  try {
+    const boards = await Board.find({
+      projectID,
+      scope: BoardScope.PROJECT_PERSONAL,
+    });
+    return boards;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const create = async (board: BoardModel) => {
   try {
     const savedBoard = await Board.create(board);
@@ -110,6 +122,7 @@ const dalBoard = {
   getMultipleByIds,
   getByProject,
   getPersonal,
+  getAllPersonal,
   create,
   update,
   updateMany,

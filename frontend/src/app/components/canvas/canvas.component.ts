@@ -136,6 +136,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
       [SocketEvent.WORKFLOW_POST_SUBMIT, this.handleWorkflowPost],
       [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
+      [SocketEvent.PERSONAL_BOARD_ADD_POST, this.handlePersonalBoardAddPost],
     ]);
   }
 
@@ -373,6 +374,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
         message: 'You do not have access to this board!',
       },
     });
+  };
+
+  handlePersonalBoardAddPost = (postData: any) => {
+    if (
+      postData.post.type === PostType.BOARD &&
+      this.board.scope === BoardScope.PROJECT_PERSONAL
+    ) {
+      const fabricPost = new FabricPostComponent(postData.post);
+      this.canvas.add(fabricPost);
+    }
   };
 
   showBucketsModal() {

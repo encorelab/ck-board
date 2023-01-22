@@ -21,6 +21,18 @@ $controls-border-radius: 0.75em;
   border: 1px solid $accent;
 }
 
+.top-embedded-board-name{
+  padding: 0.6em; 
+  position: absolute; 
+  top: 0.5em; 
+  left: 0.5em; 
+  font-weight: bold; 
+  background-color: white; 
+  color: #6c63ff; 
+  border-radius: 0.5em; 
+  font-size: 1em;
+}
+
 .bottom-nav {
   padding: 1em;
   position: absolute;

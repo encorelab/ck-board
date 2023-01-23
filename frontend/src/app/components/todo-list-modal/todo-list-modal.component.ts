@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, Input, OnChanges } from '@angular/core';
 import {
   MatDialogRef,
   MAT_DIALOG_DATA,
@@ -21,7 +21,7 @@ import { Group } from 'src/app/models/group';
   templateUrl: './todo-list-modal.component.html',
   styleUrls: ['./todo-list-modal.component.scss'],
 })
-export class TodoListModalComponent implements OnInit {
+export class TodoListModalComponent implements OnInit, OnChanges {
   minDate: Date;
   userGroups: Group[];
   personalTodoItems: TodoItem[];
@@ -31,11 +31,6 @@ export class TodoListModalComponent implements OnInit {
   groupDataSource: MatTableDataSource<TodoItem>;
   groupIDtoGroupMap: object;
 
-  projectID: string;
-  userID: string;
-  displayColumns: string[];
-  displayGroupColumns: string[];
-  completedDisplayColums: string[];
   selection = new SelectionModel<TodoItem>(true, []);
   pausable: PausableObservable<number>;
   completedItemsDataSource: MatTableDataSource<TodoItem>;
@@ -43,33 +38,34 @@ export class TodoListModalComponent implements OnInit {
   CONFETTI_DURATION = 500;
   todoItemTypes = EXPANDED_TODO_TYPE;
   todoItemColors = TODO_TYPE_COLORS;
+  displayColumns = ['select', 'task-title', 'type', 'deadline', 'edit'];
+  displayGroupColumns = [
+    'select',
+    'task-title',
+    'type',
+    'group',
+    'deadline',
+    'edit',
+  ];
+  completedDisplayColums = [
+    'task-title',
+    'type',
+    'group',
+    'completion-date',
+    'options',
+  ];
+
+  @Input()
+  projectID: string;
+
+  @Input()
+  userID: string;
 
   constructor(
-    public dialogRef: MatDialogRef<TodoListModalComponent>,
     public dialog: MatDialog,
     public todoItemService: TodoItemService,
-    public groupService: GroupService,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    this.projectID = data.project.projectID;
-    this.userID = data.user.userID;
-    this.displayColumns = ['select', 'task-title', 'type', 'deadline', 'edit'];
-    this.displayGroupColumns = [
-      'select',
-      'task-title',
-      'type',
-      'group',
-      'deadline',
-      'edit',
-    ];
-    this.completedDisplayColums = [
-      'task-title',
-      'type',
-      'group',
-      'completion-date',
-      'options',
-    ];
-  }
+    public groupService: GroupService
+  ) {}
 
   async ngOnInit() {
     await this.getTodoItems();
@@ -78,6 +74,10 @@ export class TodoListModalComponent implements OnInit {
     ) as PausableObservable<number>;
     this.pausable.subscribe(this.shoot.bind(this));
     this.pausable.pause();
+  }
+
+  async ngOnChanges() {
+    await this.getTodoItems();
   }
 
   async getTodoItems() {
@@ -141,7 +141,6 @@ export class TodoListModalComponent implements OnInit {
         });
       });
       await this.getTodoItems();
-      this.dialogRef.close();
       this.playAudio();
       setTimeout(() => {
         this.shoot();
@@ -262,9 +261,5 @@ export class TodoListModalComponent implements OnInit {
 
   confetti(args: any) {
     return window['confetti'].apply(this, arguments);
-  }
-
-  onNoClick(): void {
-    this.dialogRef.close();
   }
 }

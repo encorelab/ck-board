@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Board } from 'src/app/models/board';
+import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
@@ -128,6 +128,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
 
   displayColumns: string[] = ['group-name', 'members', 'progress'];
+  embedded: boolean = false;
 
   constructor(
     public userService: UserService,
@@ -151,6 +152,11 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         }
       }
     };
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params.embedded === 'true') {
+        this.embedded = true;
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -364,6 +370,11 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         }
       )
     );
+  }
+
+  copyEmbedCode() {
+    const url = window.location.href + '?embedded=true';
+    navigator.clipboard.writeText(url);
   }
 
   ngOnDestroy(): void {

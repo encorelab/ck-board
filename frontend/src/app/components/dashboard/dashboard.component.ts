@@ -105,7 +105,7 @@ export class DashboardComponent implements OnInit {
       .open(ProjectConfigurationModalComponent, {
         maxWidth: 1280,
         width: '700px',
-        data: { project: project },
+        data: { project: project, user: this.user },
       })
       .afterClosed()
       .subscribe((p: Project) => {

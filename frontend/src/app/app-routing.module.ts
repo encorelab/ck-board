@@ -13,6 +13,7 @@ import { BoardGuard } from './guards/board.guard';
 import { ProjectGuard } from './guards/project.guard';
 import { SsoLoginComponent } from './components/sso-login/sso-login.component';
 import { SsoGuard } from './guards/sso.guard';
+import { ProjectTodoListModalComponent } from './components/project-todo-list-modal/project-todo-list-modal.component';
 
 const routes: Routes = [
   { path: '', canActivate: [SsoGuard], component: LoginComponent },
@@ -38,6 +39,11 @@ const routes: Routes = [
     canActivate: [SsoGuard, AuthGuard, ProjectGuard, BoardGuard],
   },
   {
+    path: 'project/:projectID/my-personal-board',
+    component: CanvasComponent,
+    canActivate: [SsoGuard, AuthGuard, ProjectGuard],
+  },
+  {
     path: 'project/:projectID/board/:boardID/workspace',
     component: CkWorkspaceComponent,
     canActivate: [AuthGuard, ProjectGuard],
@@ -45,6 +51,11 @@ const routes: Routes = [
   {
     path: 'project/:projectID/board/:boardID/monitor',
     component: CkMonitorComponent,
+    canActivate: [AuthGuard, ProjectGuard],
+  },
+  {
+    path: 'project/:projectID/todo',
+    component: ProjectTodoListModalComponent,
     canActivate: [AuthGuard, ProjectGuard],
   },
   { path: 'error', component: ErrorComponent },

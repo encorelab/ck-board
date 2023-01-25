@@ -97,15 +97,11 @@ export const removeByBoard = async (boardID: string) => {
 
 export const update = async (id: string, post: Partial<PostModel>) => {
   try {
-    const setPost : any = flatten(post);
+    const setPost: any = flatten(post);
 
-    const updatedPost = await Post.findOneAndUpdate(
-      { postID: id },
-      setPost,
-      {
-        new: true
-      }
-    );
+    const updatedPost = await Post.findOneAndUpdate({ postID: id }, setPost, {
+      new: true,
+    });
     return updatedPost;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));

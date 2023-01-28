@@ -4,6 +4,7 @@ import {
   OnInit,
   ViewChild,
   TemplateRef,
+  HostListener,
 } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
@@ -94,6 +95,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   upvoteCounter = 0;
 
   unsubListeners: Subscription[] = [];
+
+  @HostListener('wheel', ['$event'])
+  onMouseWheel(e: WheelEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
 
   constructor(
     public postService: PostService,

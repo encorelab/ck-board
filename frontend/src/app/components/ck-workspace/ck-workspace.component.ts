@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Board } from 'src/app/models/board';
+import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
@@ -75,6 +75,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
+  embedded: boolean = false; // If standalone board embed
 
   constructor(
     public userService: UserService,
@@ -89,7 +90,13 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog
-  ) {}
+  ) {
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params.embedded === 'true') {
+        this.embedded = true;
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.user = this.userService.user!;
@@ -361,6 +368,11 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         );
       })
     );
+  }
+
+  copyEmbedCode() {
+    const url = window.location.href + '?embedded=true';
+    navigator.clipboard.writeText(url);
   }
 
   ngOnDestroy(): void {

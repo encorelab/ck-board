@@ -158,4 +158,10 @@ export class WorkflowService {
       .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/complete`, {})
       .toPromise();
   }
+
+  markGroupTaskActive(groupTaskID: string): Promise<GroupTask> {
+    return this.http
+      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/active`, {})
+      .toPromise();
+  }
 }

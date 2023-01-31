@@ -255,11 +255,6 @@ export class ConfigurationModalComponent {
     });
   }
 
-  copyToClipboard() {
-    const url = window.location.href + '?embedded=true';
-    navigator.clipboard.writeText(url);
-  }
-
   async copyConfiguration() {
     let boards = await this.boardService.getMultipleBy(this.project.boards, {
       scope: BoardScope.PROJECT_PERSONAL,

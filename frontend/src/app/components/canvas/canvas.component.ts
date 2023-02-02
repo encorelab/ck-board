@@ -4,6 +4,7 @@ import {
   OnInit,
   ViewChild,
   TemplateRef,
+  HostListener,
 } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
@@ -95,6 +96,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   unsubListeners: Subscription[] = [];
 
+  @HostListener('wheel', ['$event'])
+  onMouseWheel(e: WheelEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   constructor(
     public postService: PostService,
     public boardService: BoardService,
@@ -136,6 +143,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
       [SocketEvent.WORKFLOW_POST_SUBMIT, this.handleWorkflowPost],
       [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
+      [SocketEvent.PERSONAL_BOARD_ADD_POST, this.handlePersonalBoardAddPost],
     ]);
   }
 
@@ -375,6 +383,16 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   };
 
+  handlePersonalBoardAddPost = (postData: any) => {
+    if (
+      postData.post.type === PostType.BOARD &&
+      this.board.scope === BoardScope.PROJECT_PERSONAL
+    ) {
+      const fabricPost = new FabricPostComponent(postData.post);
+      this.canvas.add(fabricPost);
+    }
+  };
+
   showBucketsModal() {
     this._openDialog(
       BucketsModalComponent,
@@ -401,6 +419,24 @@ export class CanvasComponent implements OnInit, OnDestroy {
     );
   }
 
+  intermediateBoardConfig(board: Board) {
+    this.board = board;
+    this._calcUpvoteCounter();
+    this.configureZoom();
+    this.fabricUtils.setBackgroundImage(
+      board.bgImage?.url,
+      board.bgImage?.imgSettings
+    );
+    this.lockPostsMovement(
+      !board.permissions.allowStudentMoveAny && this.user.role == Role.STUDENT
+    );
+    this.updateShowAddPost(this.board.permissions);
+    this.setAuthorVisibilityAll();
+    if (this.board.permissions.showSnackBarStudent) {
+      this.openTaskDialog();
+    }
+  }
+
   configureBoard() {
     const map = this.activatedRoute.snapshot.paramMap;
 
@@ -409,48 +445,59 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
       this.traceService.setTraceContext(this.projectID, this.boardID);
+      this.postService.getAllByBoard(this.boardID).then((data) => {
+        data.forEach(async (post) => {
+          if (post.type == PostType.BOARD) {
+            const upvotes = await this.upvotesService.getUpvotesByPost(
+              post.postID
+            );
+            const comments = await this.commentService.getCommentsByPost(
+              post.postID
+            );
+            this.canvas.add(
+              new FabricPostComponent(post, {
+                upvotes: upvotes.length,
+                comments: comments.length,
+              })
+            );
+          }
+        });
+        this.boardService.get(this.boardID).then((board) => {
+          if (board) this.intermediateBoardConfig(board);
+        });
+      });
+    } else if (map.has('projectID')) {
+      this.projectID =
+        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+
+      this.boardService.getPersonal(this.projectID).then((board) => {
+        if (board) {
+          this.boardID = board.boardID;
+          this.traceService.setTraceContext(this.projectID, this.boardID);
+        } else this.router.navigate(['error']);
+        this.postService.getAllByBoard(this.boardID).then((data) => {
+          data.forEach(async (post) => {
+            if (post.type == PostType.BOARD) {
+              const upvotes = await this.upvotesService.getUpvotesByPost(
+                post.postID
+              );
+              const comments = await this.commentService.getCommentsByPost(
+                post.postID
+              );
+              this.canvas.add(
+                new FabricPostComponent(post, {
+                  upvotes: upvotes.length,
+                  comments: comments.length,
+                })
+              );
+            }
+          });
+          if (board) this.intermediateBoardConfig(board);
+        });
+      });
     } else {
       this.router.navigate(['error']);
     }
-
-    this.postService.getAllByBoard(this.boardID).then((data) => {
-      data.forEach(async (post) => {
-        if (post.type == PostType.BOARD) {
-          const upvotes = await this.upvotesService.getUpvotesByPost(
-            post.postID
-          );
-          const comments = await this.commentService.getCommentsByPost(
-            post.postID
-          );
-          this.canvas.add(
-            new FabricPostComponent(post, {
-              upvotes: upvotes.length,
-              comments: comments.length,
-            })
-          );
-        }
-      });
-      this.boardService.get(this.boardID).then((board) => {
-        if (board) {
-          this.board = board;
-          this._calcUpvoteCounter();
-          this.configureZoom();
-          this.fabricUtils.setBackgroundImage(
-            board.bgImage?.url,
-            board.bgImage?.imgSettings
-          );
-          this.lockPostsMovement(
-            !board.permissions.allowStudentMoveAny &&
-              this.user.role == Role.STUDENT
-          );
-          this.updateShowAddPost(this.board.permissions);
-          this.setAuthorVisibilityAll();
-          if (this.board.permissions.showSnackBarStudent) {
-            this.openTaskDialog();
-          }
-        }
-      });
-    });
     this.projectService
       .get(this.projectID)
       .then((project) => (this.project = project));
@@ -1000,22 +1047,23 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   openTodoList() {
-    this.dialog.open(TodoListModalComponent, {
-      width: '900px',
-      data: {
-        project: this.project,
-        user: this.user,
-      },
-    });
+    this.router.navigate([`/project/${this.projectID}/todo`]);
   }
 
   openProjectTodoList() {
-    this.dialog.open(ProjectTodoListModalComponent, {
-      width: '800px',
-      data: {
-        project: this.project,
-      },
-    });
+    this.router.navigate([`/project/${this.projectID}/todo`]);
+  }
+
+  copyEmbedCode() {
+    const url = window.location.href + '?embedded=true';
+    navigator.clipboard.writeText(url);
+  }
+
+  copyPersonalEmbedCode() {
+    const url =
+      window.location.origin +
+      `/project/${this.projectID}/my-personal-board?embedded=true`;
+    navigator.clipboard.writeText(url);
   }
 
   private _openDialog(

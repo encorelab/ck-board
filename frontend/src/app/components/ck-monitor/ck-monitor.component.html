@@ -39,7 +39,9 @@
             <p matLine class="list-task-prompt"> 
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
-                {{group.groupName}}&nbsp;
+                <span *ngIf="group.groupStatus === GroupTaskStatus.INACTIVE">
+                  {{group.groupName}}&nbsp;
+                </span>
               </span>
             </p>
             <span style="flex: 1 1 auto"></span>

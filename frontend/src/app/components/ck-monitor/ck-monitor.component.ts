@@ -262,14 +262,10 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         );
       }
 
-      if (!activeCount && !completedCount)
+      if (activeCount + completedCount != groupTasks.length)
         inactiveTaskWorkflows.push(this.taskWorkflows[i]);
-      else if (completedCount == groupTasks?.length) {
-        completeTaskWorkflows.push(this.taskWorkflows[i]);
-      } else {
-        if (completedCount) completeTaskWorkflows.push(this.taskWorkflows[i]);
-        activeTaskWorkflows.push(this.taskWorkflows[i]);
-      }
+      if (completedCount) completeTaskWorkflows.push(this.taskWorkflows[i]);
+      if (activeCount) activeTaskWorkflows.push(this.taskWorkflows[i]);
     }
     this.inactiveTaskWorkflows = inactiveTaskWorkflows;
     this.completeTaskWorkflows = completeTaskWorkflows;
@@ -338,7 +334,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     const groupTasksTableFormat: MonitorData[] = [];
     if (groupTasks) {
       for (let i = 0; i < groupTasks.length; i++) {
-        console.log(i);
         if (groupTasks[i].groupTask.status == status) {
           const groupMembers: string[] = [];
           for (let j = 0; j < groupTasks[i].group.members.length; j++) {
@@ -365,7 +360,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.runningTaskTableData = new MatTableDataSource<MonitorData>(
       groupTasksTableFormat
     );
-    console.log(this.runningTaskTableData);
   }
 
   async activateGroupTask(_group: MonitorData) {
@@ -377,6 +371,9 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.runningTaskTableData.data = this.runningTaskTableData.data.filter(
       (data) => data.groupTaskID != _group.groupTaskID
     );
+    if (!this.runningTaskTableData.data.length) {
+      this.runningTask = null;
+    }
   }
 
   async completeGroupTask(_group: MonitorData) {
@@ -388,6 +385,9 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.runningTaskTableData.data = this.runningTaskTableData.data.filter(
       (data) => data.groupTaskID != _group.groupTaskID
     );
+    if (!this.runningTaskTableData.data.length) {
+      this.runningTask = null;
+    }
   }
 
   close(): void {

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { flatten } from 'mongo-dot-notation';
 import { NotFoundError } from '../errors/client.errors';
 import { BucketModel } from '../models/Bucket';
 import Post, { PostModel, PostType } from '../models/Post';
@@ -96,15 +97,11 @@ export const removeByBoard = async (boardID: string) => {
 
 export const update = async (id: string, post: Partial<PostModel>) => {
   try {
-    const updatedPost = await Post.findOneAndUpdate(
-      { postID: id },
-      {
-        ...post,
-      },
-      {
-        new: true,
-      }
-    );
+    const setPost: any = flatten(post);
+
+    const updatedPost = await Post.findOneAndUpdate({ postID: id }, setPost, {
+      new: true,
+    });
     return updatedPost;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));

@@ -34,12 +34,7 @@
     >
       <mat-icon class="material-icons-outlined">note_add</mat-icon>
     </button>
-    <mat-paginator [length]="length"
-                [pageSize]="pageSize"
-                [pageSizeOptions]="pageSizeOptions"
-                [showFirstLastButtons]="true"
-                (page)="pageEvent=loadBucketPosts(activeBucket, $event)">
-    </mat-paginator>
+
   </div>
   <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
   <h3
@@ -56,4 +51,11 @@
       ></app-html-post>
     </div>
   </div>
+  <mat-paginator
+                [length]="length"
+                [pageSize]="pageSize"
+                [pageSizeOptions]="pageSizeOptions"
+                [showFirstLastButtons]="true"
+                (page)="pageEvent=loadBucketPosts(activeBucket, $event)">
+  </mat-paginator>
 </div>

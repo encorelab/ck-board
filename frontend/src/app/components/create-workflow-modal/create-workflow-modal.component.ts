@@ -198,7 +198,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   createDistributionWorkflow(): void {
-    if (!this._ppbSelected()) return;
+    if (!this._distributionWorkflowTypeSelected()) return;
 
     const workflow: DistributionWorkflow = this._assembleDistributionWorkflow();
     this.workflowService.createDistribution(workflow).then(async () => {

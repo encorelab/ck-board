@@ -1,0 +1,23 @@
+.avatar {
+  background-image: url('https://www.mtsolar.us/wp-content/uploads/2020/04/avatar-placeholder.png');
+  background-size: cover;
+}
+
+.fill-remaining-space {
+  flex: 1 1 auto;
+}
+
+.details {
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.todoItemDetails{
+  display: flex;
+  margin: 10px 0;
+  align-items: center;
+}
+
+.config-button {
+  margin: 5px;
+}

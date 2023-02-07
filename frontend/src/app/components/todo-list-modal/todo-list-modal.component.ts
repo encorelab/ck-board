@@ -6,11 +6,16 @@ import {
 } from '@angular/material/dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { GroupService } from 'src/app/services/group.service';
-import { TodoItem } from 'src/app/models/todoItem';
-import { EXPANDED_TODO_TYPE, TODO_TYPE_COLORS } from 'src/app/utils/constants';
+import { TodoItem, CompletionQuality } from 'src/app/models/todoItem';
+import {
+  EXPANDED_TODO_TYPE,
+  TODO_TYPE_COLORS,
+  EXPANDED_COMPLETION_QUALITY,
+} from 'src/app/utils/constants';
 import { MatTableDataSource } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AddTodoListModalComponent } from '../add-todo-list-modal/add-todo-list-modal.component';
+import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { interval } from 'rxjs';
 import { PausableObservable, pausable } from 'rxjs-pausable';
@@ -38,6 +43,9 @@ export class TodoListModalComponent implements OnInit, OnChanges {
   CONFETTI_DURATION = 500;
   todoItemTypes = EXPANDED_TODO_TYPE;
   todoItemColors = TODO_TYPE_COLORS;
+  EXPANDED_COMPLETION_QUALITY: typeof EXPANDED_COMPLETION_QUALITY =
+    EXPANDED_COMPLETION_QUALITY;
+  CompletionQuality: typeof CompletionQuality = CompletionQuality;
   displayColumns = ['select', 'task-title', 'type', 'deadline', 'edit'];
   displayGroupColumns = [
     'select',
@@ -100,6 +108,10 @@ export class TodoListModalComponent implements OnInit, OnChanges {
       this.userGroups.map((group) => group.groupID)
     );
 
+    this.updateTableDataSource();
+  }
+
+  updateTableDataSource() {
     this.personalDataSource = new MatTableDataSource<TodoItem>(
       this.personalTodoItems.filter(
         (todoItem: TodoItem) => !todoItem.completed && !todoItem.groupID
@@ -133,21 +145,13 @@ export class TodoListModalComponent implements OnInit, OnChanges {
       : dataSource.data.forEach((row) => this.selection.select(row));
   }
 
-  async completeTodoItems() {
-    if (this.selection.selected.length > 0) {
-      this.selection.selected.forEach(async (todoItem) => {
-        await this.todoItemService.update(todoItem.todoItemID, {
-          completed: true,
-        });
-      });
-      await this.getTodoItems();
-      this.playAudio();
-      setTimeout(() => {
-        this.shoot();
-        this.pausable.resume();
-        setTimeout(() => this.pausable.pause(), this.CONFETTI_DURATION);
-      }, this.CONFETTI_DELAY);
-    }
+  async completeTodoItem() {
+    this.playAudio();
+    setTimeout(() => {
+      this.shoot();
+      this.pausable.resume();
+      setTimeout(() => this.pausable.pause(), this.CONFETTI_DURATION);
+    }, this.CONFETTI_DELAY);
   }
 
   async handleDeleteTodoItems() {
@@ -212,8 +216,81 @@ export class TodoListModalComponent implements OnInit, OnChanges {
         group: todoItem.groupID
           ? await this.groupService.getById(todoItem.groupID)
           : null,
-        onComplete: async () => {
-          await this.getTodoItems();
+        onComplete: async (t?: TodoItem) => {
+          if (t && t !== todoItem) {
+            this.groupTodoItems = this.groupTodoItems.filter(
+              (ti) => ti.todoItemID !== t.todoItemID
+            );
+            this.personalTodoItems = this.personalTodoItems.filter(
+              (ti) => ti.todoItemID !== t.todoItemID
+            );
+            this.updateTableDataSource();
+            if (t.groupID) {
+              this.groupTodoItems.push(t);
+            } else {
+              this.personalTodoItems.push(t);
+            }
+            this.updateTableDataSource();
+          }
+        },
+      },
+    });
+  }
+
+  async openTodoItemViewModal(todoItem: TodoItem) {
+    this.dialog.open(TodoItemCardModalComponent, {
+      width: '500px',
+      data: {
+        todoItem: todoItem,
+        projectID: this.projectID,
+        userID: this.userID,
+        group: todoItem.groupID
+          ? await this.groupService.getById(todoItem.groupID)
+          : null,
+        onComplete: async (t: TodoItem) => {
+          this.groupTodoItems = this.groupTodoItems.filter(
+            (ti) => ti.todoItemID !== t.todoItemID
+          );
+          this.personalTodoItems = this.personalTodoItems.filter(
+            (ti) => ti.todoItemID !== t.todoItemID
+          );
+          this.todoItemsMap.delete(todoItem.todoItemID);
+          if (t.groupID) {
+            this.groupTodoItems.push(t);
+          } else {
+            this.personalTodoItems.push(t);
+          }
+          this.updateTableDataSource();
+          if (t.quality !== CompletionQuality.INCOMPLETE)
+            await this.completeTodoItem();
+        },
+        onEdit: async (t: TodoItem) => {
+          if (t && t !== todoItem) {
+            this.groupTodoItems = this.groupTodoItems.filter(
+              (ti) => ti.todoItemID !== t.todoItemID
+            );
+            this.personalTodoItems = this.personalTodoItems.filter(
+              (ti) => ti.todoItemID !== t.todoItemID
+            );
+            this.updateTableDataSource();
+            if (t.groupID) {
+              this.groupTodoItems.push(t);
+            } else {
+              this.personalTodoItems.push(t);
+            }
+            this.updateTableDataSource();
+          }
+        },
+        onRestore: async (t: TodoItem) => {
+          if (t) {
+            this.todoItemsMap.delete(todoItem.todoItemID);
+            if (t.groupID) {
+              this.groupTodoItems.push(t);
+            } else {
+              this.personalTodoItems.push(t);
+            }
+            this.updateTableDataSource();
+          }
         },
       },
     });
@@ -226,8 +303,16 @@ export class TodoListModalComponent implements OnInit, OnChanges {
         projectID: this.projectID,
         userID: this.userID,
         restoreTodoItem: todoItem,
-        onComplete: async () => {
-          await this.getTodoItems();
+        onComplete: async (t?: TodoItem) => {
+          if (t) {
+            this.todoItemsMap.delete(todoItem.todoItemID);
+            if (t.groupID) {
+              this.groupTodoItems.push(t);
+            } else {
+              this.personalTodoItems.push(t);
+            }
+            this.updateTableDataSource();
+          }
         },
       },
     });

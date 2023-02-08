@@ -145,6 +145,21 @@ export class WorkflowService {
       .toPromise();
   }
 
+  updateTaskProgress(
+    workflowID: string,
+    groupTaskID: string,
+    postID: string,
+    delta: number,
+    type: string
+  ): Promise<GroupTask> {
+    return this.http
+      .post<GroupTask>(
+        `workflows/task/${workflowID}/groupTask/${groupTaskID}`,
+        { postID, delta, type }
+      )
+      .toPromise();
+  }
+
   submitPost(groupTaskID: string, post: string): Promise<GroupTask> {
     return this.http
       .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/submit`, {

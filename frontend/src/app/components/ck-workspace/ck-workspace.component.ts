@@ -377,7 +377,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
     this.listeners.push(
       this.socketService.listen(SocketEvent.POST_COMMENT_REMOVE, (result) => {
-        console.log(result);
         const found = this.posts.find(
           (p) => p.post.postID == result.comment.postID
         );

@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   MatDialog,
   MatDialogRef,
@@ -24,6 +24,7 @@ import {
 } from 'src/app/components/add-post-modal/add-post.component';
 import User from 'src/app/models/user';
 import Upvote from 'src/app/models/upvote';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-list-modal',
@@ -31,6 +32,7 @@ import Upvote from 'src/app/models/upvote';
   styleUrls: ['./list-modal.component.scss'],
 })
 export class ListModalComponent implements OnInit, OnDestroy {
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   board: Board;
   user: User;
 
@@ -38,7 +40,13 @@ export class ListModalComponent implements OnInit, OnDestroy {
   loadingMore = false;
 
   posts: HTMLPost[];
+
+  // pagination
   page = 0;
+  length = 0;
+  pageSize = 8;
+  pageSizeOptions: number[] = [4, 8, 12, 16];
+  pageEvent: PageEvent;
 
   activeFilters: Tag[] = [];
   filterOptions: Tag[] = [];
@@ -150,19 +158,35 @@ export class ListModalComponent implements OnInit, OnDestroy {
     this.posts = [];
     this.page = 0;
     this.loading = true;
+
     return this.fetchMorePosts();
   }
 
   async fetchMorePosts() {
-    const opts = { size: 20, page: this.page };
-
-    const data = await this.postService.getAllByBoard(this.board.boardID, opts);
+    const data = await this.postService.getAllByBoard(this.board.boardID);
     const htmlPosts = await this.converters.toHTMLPosts(data);
-
+    this.length = data.length;
     this.posts = this.posts.concat(htmlPosts);
     this.page += 1;
     this.loading = false;
     this.loadingMore = false;
+  }
+
+  pagePosts(opts: any, event?: any): PageEvent {
+    const size = event ? event.pageSize : opts.size;
+    const page = event ? event.pageIndex : opts.page;
+
+    // after
+    //FIXME: for when pagination api is implemented in
+    // this.postService
+    //   .getAllByBoard(this.board.boardID, opts)
+    //   .then(async ({ posts, count }) => {
+    //     this.length = count;
+    //     this.posts = await this.converters.toHTMLPosts(posts);
+    //     this.loading = false;
+    //     this.loadingMore = false;
+    //   });
+    return event;
   }
 
   onScroll(event: any) {

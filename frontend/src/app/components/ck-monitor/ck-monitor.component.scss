@@ -127,3 +127,18 @@ mat-sidenav-content {
   width: 100%;
 }
 
+.mat-table {
+  overflow-x: scroll;
+}
+
+.mat-header-cell {
+  min-width: 120px;
+}
+
+.mat-column-type {
+  min-width: 200px;
+}
+
+.mat-cell {
+  padding: 10px !important;
+}

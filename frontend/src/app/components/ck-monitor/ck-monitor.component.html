@@ -207,11 +207,11 @@
             <th mat-header-cell *matHeaderCellDef> Type </th>
             <td mat-cell *matCellDef="let element">
               <mat-chip
-              *ngFor="let type of element.type"
-              [ngStyle]="{ 'background-color': todoItemColors[type], 'margin': '2px'}"
-            >
-              {{ todoItemTypes[type] }}
-            </mat-chip>
+                *ngFor="let type of element.types"
+                [ngStyle]="{ 'background-color': todoItemColors[type], 'margin': '2px'}"
+              >
+                {{ todoItemTypes[type] }}
+              </mat-chip>
             </td>
           </ng-container>
 

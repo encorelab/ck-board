@@ -41,7 +41,7 @@ import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { MatTableDataSource } from '@angular/material/table';
-import { CompletionQuality, TodoItem } from 'src/app/models/todoItem';
+import { CompletionQuality, TodoItem, TodoItemType } from 'src/app/models/todoItem';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
@@ -63,6 +63,7 @@ class TodoItemDisplay {
   completed: boolean;
   quality?: string;
   overdue: boolean;
+  types: TodoItemType[];
 }
 
 @Component({
@@ -243,6 +244,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         deadline: formattedDate,
         status: overdue ? 'Missed' : item.completed ? 'Complete' : 'Pending',
         quality: item.quality? EXPANDED_COMPLETION_QUALITY[item.quality] : '',
+        types: item.type,
         completed: item.completed,
         overdue: overdue,
       };

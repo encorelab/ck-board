@@ -31,12 +31,17 @@ import { Group } from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
 import Converters from 'src/app/utils/converters';
 import { PostService } from 'src/app/services/post.service';
-import { EXPANDED_TODO_TYPE, SocketEvent, TODO_TYPE_COLORS } from 'src/app/utils/constants';
+import {
+  EXPANDED_TODO_TYPE,
+  SocketEvent,
+  TODO_TYPE_COLORS,
+  EXPANDED_COMPLETION_QUALITY,
+} from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { MatTableDataSource } from '@angular/material/table';
-import { TodoItem } from 'src/app/models/todoItem';
+import { CompletionQuality, TodoItem } from 'src/app/models/todoItem';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
@@ -56,6 +61,7 @@ class TodoItemDisplay {
   deadline: string;
   status: string;
   completed: boolean;
+  quality?: string;
   overdue: boolean;
 }
 
@@ -236,6 +242,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         goal: item.title,
         deadline: formattedDate,
         status: overdue ? 'Missed' : item.completed ? 'Complete' : 'Pending',
+        quality: item.quality? EXPANDED_COMPLETION_QUALITY[item.quality] : '',
         completed: item.completed,
         overdue: overdue,
       };
@@ -264,6 +271,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
   async view(task: TaskWorkflow): Promise<void> {
     this.runningTask = task;
+    this.todoIsVisible = false;
     const progressData = await this._calcAverageProgress(
       this.taskWorkflowGroupMap.get(this.runningTask)
     );

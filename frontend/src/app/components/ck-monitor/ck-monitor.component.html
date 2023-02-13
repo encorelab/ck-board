@@ -136,7 +136,7 @@
           mat-raised-button
           color="primary"
           style="margin-left: 15px"
-          (click)="todoIsVisible = !todoIsVisible"
+          (click)="todoIsVisible = !todoIsVisible; runningTask = null"
         >
           {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
         </button>
@@ -229,14 +229,14 @@
 
           <ng-container matColumnDef="deadline">
             <th mat-header-cell *matHeaderCellDef mat-sort-header="deadline">
-              Deadline
             </th>
+            Deadline
             <td mat-cell *matCellDef="let element"> {{element.deadline}} </td>
           </ng-container>
 
           <ng-container matColumnDef="completion-quality">
             <th mat-header-cell *matHeaderCellDef> Completion Quality </th>
-            <td mat-cell *matCellDef="let element"> TBD </td>
+            <td mat-cell *matCellDef="let element"> {{element.quality}} </td>
           </ng-container>
 
           <ng-container matColumnDef="completion-notes">
@@ -252,7 +252,7 @@
         No task selected!
       </div>
       <div style="display: flex; flex-direction: row;">
-        <div *ngIf="runningTask">
+        <div *ngIf="runningTask && !todoIsVisible">
           <mat-card class="example-card" style="width: 500px; margin: 20px 20px 10px 10px">
             <mat-card-title>Task Progress</mat-card-title>
             <div class="mat-elevation-z3 table_style">
@@ -280,7 +280,7 @@
             </div>
           </mat-card>
         </div>
-        <div *ngIf="runningTask">
+        <div *ngIf="runningTask && !todoIsVisible">
           <mat-card class="example-card" style="width: 350px; margin: 10px auto">
             <mat-card-title>{{runningTask.name}}</mat-card-title>
             <mat-card-content>

@@ -2,12 +2,19 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { GroupService } from 'src/app/services/group.service';
-import { TodoItem, TodoItemType } from 'src/app/models/todoItem';
+import {
+  TodoItem,
+  TodoItemType,
+  CompletionQuality,
+} from 'src/app/models/todoItem';
 import { Group } from 'src/app/models/group';
 import { FormControl, Validators } from '@angular/forms';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
-import { TODO_TITLE_MAX_LENGTH } from 'src/app/utils/constants';
+import {
+  TODO_TITLE_MAX_LENGTH,
+  EXPANDED_TODO_TYPE,
+} from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-add-todo-list-modal',
@@ -16,6 +23,7 @@ import { TODO_TITLE_MAX_LENGTH } from 'src/app/utils/constants';
 })
 export class AddTodoListModalComponent implements OnInit {
   taskTitle = '';
+  taskDescription = '';
   taskDeadlineDate: Date = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
   timeHour = 12;
   timeMinute = 0;
@@ -32,6 +40,13 @@ export class AddTodoListModalComponent implements OnInit {
   ]);
   todoItemTypeFormControl = new FormControl('valid', [Validators.required]);
   todoItemTypes: TodoItemType[] = [];
+  EXPANDED_TODO_TYPE: typeof EXPANDED_TODO_TYPE = EXPANDED_TODO_TYPE;
+  todoItemOptions = [
+    TodoItemType.COGNITION,
+    TodoItemType.SEL,
+    TodoItemType.BEHAVIOURAL,
+    TodoItemType.CLASS,
+  ];
   selectedGroup: Group | undefined;
   userGroups: Group[];
 
@@ -56,6 +71,7 @@ export class AddTodoListModalComponent implements OnInit {
       this.editing = true;
       this.taskDeadlineDate = new Date(data.todoItem.deadline.date);
       this.taskTitle = data.todoItem.title;
+      this.taskDescription = data.todoItem.description;
       const time = data.todoItem.deadline.time.split(':');
       this.timeHour = parseInt(time[0]);
       this.timeMinute = parseInt(time[1]);
@@ -64,6 +80,7 @@ export class AddTodoListModalComponent implements OnInit {
     } else if (data.restoreTodoItem) {
       this.restoring = true;
       this.taskTitle = data.restoreTodoItem.title;
+      this.taskDescription = data.restoreTodoItem.description;
       this.todoItemTypes = data.restoreTodoItem.type;
     }
   }
@@ -86,8 +103,10 @@ export class AddTodoListModalComponent implements OnInit {
       projectID: this.projectID,
       userID: this.userID,
       title: this.taskTitle,
+      description: this.taskDescription,
       groupID: this.selectedGroup ? this.selectedGroup.groupID : '',
       completed: false,
+      quality: CompletionQuality.N_A,
       overdue: false,
       type: this.todoItemTypes,
       notifications: [],
@@ -99,7 +118,6 @@ export class AddTodoListModalComponent implements OnInit {
         )}:00 ${this.timePeriod}`,
       },
     };
-
     await this.todoItemService.create(todoItem);
     this.data.onComplete(todoItem);
     this.dialogRef.close();
@@ -109,6 +127,7 @@ export class AddTodoListModalComponent implements OnInit {
   async updateTodoItem() {
     const todoItem: Partial<TodoItem> = {
       title: this.taskTitle,
+      description: this.taskDescription,
       groupID: this.selectedGroup ? this.selectedGroup.groupID : '',
       type: this.todoItemTypes,
       deadline: {
@@ -120,16 +139,20 @@ export class AddTodoListModalComponent implements OnInit {
       },
     };
 
-    await this.todoItemService.update(this.data.todoItem.todoItemID, todoItem);
-    this.data.onComplete();
+    const updatedTodo = await this.todoItemService.update(
+      this.data.todoItem.todoItemID,
+      todoItem
+    );
+    this.data.onComplete(updatedTodo);
     this.dialogRef.close();
-    return todoItem;
   }
 
   async restoreTodoItem() {
     const todoItem: Partial<TodoItem> = {
       title: this.taskTitle,
+      description: this.taskDescription,
       completed: false,
+      quality: CompletionQuality.N_A,
       overdue: false,
       groupID: this.selectedGroup ? this.selectedGroup.groupID : '',
       type: this.todoItemTypes,
@@ -142,11 +165,11 @@ export class AddTodoListModalComponent implements OnInit {
       },
     };
 
-    await this.todoItemService.update(
+    const restoredTodo = await this.todoItemService.update(
       this.data.restoreTodoItem.todoItemID,
       todoItem
     );
-    this.data.onComplete();
+    this.data.onComplete(restoredTodo);
     this.dialogRef.close();
     return todoItem;
   }

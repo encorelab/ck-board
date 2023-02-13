@@ -2,16 +2,25 @@
   width: 100%;
 }
 
+.todoItemRow:hover{
+  cursor: pointer;
+  background: #f5f5f5;
+}
+
 .mat-column-task-title {
-  padding-left: 16px;
   font-size: 16px;
-  margin-right: 16px;
+  padding: 0 12px;
 }
 
 .mat-column-group {
   margin-right: 16px;
   font-size: 16px;
   padding-right: 16px;
+}
+
+.mat-column-quality{
+  font-size: 16px;
+  padding: 0 12px;
 }
 
 .mat-column-type{

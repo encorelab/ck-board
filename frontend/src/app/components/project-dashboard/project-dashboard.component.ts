@@ -108,29 +108,20 @@ export class ProjectDashboardComponent implements OnInit {
   openSettingsDialog() {
     this.dialog
       .open(ProjectConfigurationModalComponent, {
-        data: { project: this.project },
+        data: { project: this.project, user: this.user },
       })
       .afterClosed()
-      .subscribe((p: Project) => (this.project = p));
+      .subscribe((p?: Project) => {
+        if (p) this.project = p;
+      });
   }
 
   openTodoList() {
-    this.dialog.open(TodoListModalComponent, {
-      width: '800px',
-      data: {
-        project: this.project,
-        user: this.user,
-      },
-    });
+    this.router.navigate([`/project/${this.projectID}/todo`]);
   }
 
   openProjectTodoList() {
-    this.dialog.open(ProjectTodoListModalComponent, {
-      width: '800px',
-      data: {
-        project: this.project,
-      },
-    });
+    this.router.navigate([`/project/${this.projectID}/todo`]);
   }
 
   toggleBoardVisibility(event: any, board: Board) {

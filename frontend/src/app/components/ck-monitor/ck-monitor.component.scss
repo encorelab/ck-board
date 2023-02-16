@@ -104,6 +104,11 @@
   text-align: left !important;
 }
 
+.sidebar-button {
+  min-width: unset !important;
+  margin-left: 10px !important;
+}
+
 mat-sidenav {
   width: 30%;
   height: 100%;

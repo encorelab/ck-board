@@ -138,7 +138,7 @@ export class PostModalComponent {
       this.editingDesc = linkifyStr(p.desc, {
         defaultProtocol: 'https',
         target: '_blank',
-      });
+      }).replace(/(?:\r\n|\r|\n)/g, '<br>');
       this.tags = p.tags;
       this.tagOptions = data.board.tags.filter(
         (n) => !this.tags.map((b) => b.name).includes(n.name)
@@ -239,7 +239,7 @@ export class PostModalComponent {
     this.editingDesc = linkifyStr(this.desc, {
       defaultProtocol: 'https',
       target: '_blank',
-    });
+    }).replace(/(?:\r\n|\r|\n)/g, '<br>');
 
     const update: Partial<Post> = {
       postID: this.post.postID,
@@ -344,6 +344,7 @@ export class PostModalComponent {
       originalPostID: this.post.postID,
       newPostID: newPost.postID,
       personalBoardID: personalBoard.boardID,
+      post: post,
     };
     if (newPost) {
       this.socketService.emit(SocketEvent.PERSONAL_BOARD_ADD_POST, postInput);

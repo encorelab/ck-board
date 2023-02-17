@@ -6,6 +6,10 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
+import * as Highcharts from 'highcharts';
+import more from 'highcharts/highcharts-more';
+import exporting from 'highcharts/modules/exporting';
+import nodata from 'highcharts/modules/no-data-to-display';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope } from 'src/app/models/board';
@@ -41,8 +45,16 @@ import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
 import { FormControl, FormGroup } from '@angular/forms';
+import { LearnerConfigurationModalComponent } from '../learner-configuration-modal/learner-configuration-modal.component';
+import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-modal.component';
+import LearnerModel from 'src/app/models/learner';
+import { createClassEngagement } from 'src/app/utils/highchart';
+import { LearnerService } from 'src/app/services/learner.service';
 
 SwiperCore.use([EffectCards]);
+more(Highcharts);
+exporting(Highcharts);
+nodata(Highcharts);
 
 interface MonitorData {
   groupName: string;
@@ -123,6 +135,12 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     end: new FormControl(null),
   });
 
+  showEngModel = false;
+  engModelIsVisible = false;
+  engModel: LearnerModel;
+  Highcharts: typeof Highcharts = Highcharts;
+  chartOptions: Highcharts.Options = {};
+
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
@@ -140,6 +158,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     public socketService: SocketService,
     public snackbarService: SnackbarService,
     public todoItemService: TodoItemService,
+    public learnerService: LearnerService,
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -183,6 +202,17 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       projectID,
       this.user.userID
     );
+
+    Highcharts.setOptions({
+      lang: {
+        noData:
+          'No data available. Please specify dimension values for students.',
+      },
+    });
+    this.engModel = await this.learnerService.getByBoard(boardID);
+    if (this.engModel) {
+      this.showEngModel = true;
+    }
 
     this.taskWorkflows = await this.workflowService.getActiveTasks(boardID);
 
@@ -317,6 +347,24 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this._openDialog(ListModalComponent, {
       board: this.board,
     });
+  }
+
+  toggleEngagementModel(): void {
+    this.chartOptions = createClassEngagement(this.engModel, {
+      onEditData: () => {
+        this.dialog.open(LearnerDataModalComponent, {
+          data: { model: this.engModel, projectID: this.project.projectID },
+          maxWidth: 1280,
+        });
+      },
+      onEditDimensions: () => {
+        this.dialog.open(LearnerConfigurationModalComponent, {
+          data: this.engModel,
+          maxWidth: 1280,
+        });
+      },
+    });
+    this.engModelIsVisible = !this.engModelIsVisible;
   }
 
   openGroupDialog(): void {

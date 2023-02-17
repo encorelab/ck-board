@@ -31,6 +31,8 @@
     "export-to-csv": "^0.2.1",
     "fabric": "^4.5.1",
     "firebase": "^8.7.1",
+    "highcharts": "^9.3.3",
+    "highcharts-angular": "^3.0.0",
     "json2csv": "^5.0.7",
     "linkify-string": "^3.0.4",
     "linkifyjs": "^3.0.4",
@@ -39,8 +41,8 @@
     "ngx-socket-io": "^4.2.0",
     "prettier": "^2.6.2",
     "rxjs": "~6.6.0",
-    "swiper": "^8.2.6",
     "rxjs-pausable": "^1.0.0",
+    "swiper": "^8.2.6",
     "tslib": "^2.1.0",
     "uuid": "^8.3.2",
     "zone.js": "~0.11.4"

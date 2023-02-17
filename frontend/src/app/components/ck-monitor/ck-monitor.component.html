@@ -131,16 +131,25 @@
         <mat-divider></mat-divider>
       </mat-list>
       <h2 class="section-title">Learner Models</h2>
-      <ng-container>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button
+          *ngIf="showEngModel"
+          mat-raised-button
+          color="primary"
+          style="margin: 0px 15px;"
+          (click)="toggleEngagementModel()"
+        >
+          {{ engModelIsVisible? 'Hide Engagement Model' : 'View Engagement Model' }} 
+        </button>
         <button
           mat-raised-button
           color="primary"
-          style="margin-left: 15px"
+          style="margin: 0px 15px;"
           (click)="todoIsVisible = !todoIsVisible"
         >
           {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
         </button>
-      </ng-container>
+      </div>
     </mat-sidenav>
     <mat-sidenav-content>
       <div *ngIf="todoIsVisible" style="margin: 10px">
@@ -241,7 +250,15 @@
           <tr mat-row *matRowDef="let row; columns: todoColumns;"></tr>
         </table>
       </div>
-      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible">
+      <div *ngIf="engModelIsVisible" style="margin: 10px">
+        <highcharts-chart 
+          [Highcharts]="Highcharts"
+          [options]="chartOptions"
+          style="width: 100%; height: 80vh; display: block;"
+        >
+        </highcharts-chart>
+      </div>
+      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !engModelIsVisible">
         No task selected!
       </div>
       <div style="display: flex; flex-direction: row;">

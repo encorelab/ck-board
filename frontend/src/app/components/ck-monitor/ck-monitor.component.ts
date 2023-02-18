@@ -47,8 +47,8 @@ import sorting from 'src/app/utils/sorting';
 import { FormControl, FormGroup } from '@angular/forms';
 import { LearnerConfigurationModalComponent } from '../learner-configuration-modal/learner-configuration-modal.component';
 import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-modal.component';
-import LearnerModel from 'src/app/models/learner';
-import { createClassEngagement } from 'src/app/utils/highchart';
+import LearnerModel, { DimensionType } from 'src/app/models/learner';
+import { createClassEngagementGraph } from 'src/app/utils/highchart';
 import { LearnerService } from 'src/app/services/learner.service';
 
 SwiperCore.use([EffectCards]);
@@ -140,6 +140,9 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   engModel: LearnerModel;
   Highcharts: typeof Highcharts = Highcharts;
   chartOptions: Highcharts.Options = {};
+  DimensionType: typeof DimensionType = DimensionType;
+  dimensionType: DimensionType = DimensionType.DIAGNOSTIC;
+  updateFlag: boolean = false;
 
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
@@ -350,21 +353,47 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   }
 
   toggleEngagementModel(): void {
-    this.chartOptions = createClassEngagement(this.engModel, {
-      onEditData: () => {
-        this.dialog.open(LearnerDataModalComponent, {
-          data: { model: this.engModel, projectID: this.project.projectID },
-          maxWidth: 1280,
-        });
-      },
-      onEditDimensions: () => {
-        this.dialog.open(LearnerConfigurationModalComponent, {
-          data: this.engModel,
-          maxWidth: 1280,
-        });
-      },
-    });
+    this.refreshModel();
     this.engModelIsVisible = !this.engModelIsVisible;
+  }
+
+  refreshModel(): void {
+    this.chartOptions = createClassEngagementGraph(
+      this.engModel,
+      {
+        onEditData: () => {
+          this.dialog.open(LearnerDataModalComponent, {
+            data: {
+              model: this.engModel,
+              projectID: this.project.projectID,
+              onUpdate: (model: LearnerModel) => {
+                this.engModel = model;
+                this.refreshModel();
+              },
+            },
+            maxWidth: 1280,
+          });
+        },
+        onEditDimensions: () => {
+          this.dialog.open(LearnerConfigurationModalComponent, {
+            data: {
+              model: this.engModel,
+              onUpdate: (model) => {
+                this.engModel = model;
+                this.refreshModel();
+              },
+            },
+            maxWidth: 1280,
+          });
+        },
+      },
+      this.dimensionType
+    );
+    this.updateFlag = true;
+  }
+
+  dimensionTypeChange(): void {
+    this.refreshModel();
   }
 
   openGroupDialog(): void {

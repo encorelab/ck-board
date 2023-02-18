@@ -25,12 +25,24 @@ const nestedCaseInsensitive = (
   return typeof value === 'string' ? value.toUpperCase() : value;
 };
 
-// ... other sorting data accessors
+const groupItemBy = (array: any[], property: string): any => {
+  const hash = {};
+  const props = property.split('.');
+  for (let i = 0; i < array.length; i++) {
+    const key = props.reduce(function (acc, prop) {
+      return acc && acc[prop];
+    }, array[i]);
+    if (!hash[key]) hash[key] = [];
+    hash[key].push(array[i]);
+  }
+  return hash;
+};
 
 const sorting = {
   nestedProperty,
   caseInsensitive,
   nestedCaseInsensitive,
+  groupItemBy,
 };
 
 export default sorting;

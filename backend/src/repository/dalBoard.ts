@@ -71,6 +71,7 @@ export const create = async (board: BoardModel) => {
   try {
     const savedBoard = await Board.create(board);
     await dalLearnerModel.createDefault(
+      board.projectID,
       board.boardID,
       LearnerModelType.ENGAGEMENT
     );

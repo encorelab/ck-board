@@ -11,11 +11,15 @@ import { LearnerService } from 'src/app/services/learner.service';
 export class LearnerConfigurationModalComponent implements OnInit {
   newDimensionText: string = '';
 
+  model: LearnerModel;
+
   constructor(
     public dialogRef: MatDialogRef<LearnerConfigurationModalComponent>,
     public learnerService: LearnerService,
-    @Inject(MAT_DIALOG_DATA) public model: LearnerModel
-  ) {}
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.model = data.model;
+  }
 
   ngOnInit(): void {}
 
@@ -26,16 +30,16 @@ export class LearnerConfigurationModalComponent implements OnInit {
         this.newDimensionText
       );
       this.newDimensionText = '';
+      this.data.onUpdate(this.model);
     }
   }
 
   async removeDimension(dimension: string): Promise<void> {
-    if (this.newDimensionText.length > 0) {
-      this.model = await this.learnerService.removeDimension(
-        this.model.modelID,
-        dimension
-      );
-    }
+    this.model = await this.learnerService.removeDimension(
+      this.model.modelID,
+      dimension
+    );
+    this.data.onUpdate(this.model);
   }
 
   onClose(): void {

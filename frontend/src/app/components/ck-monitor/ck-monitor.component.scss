@@ -120,10 +120,17 @@ mat-sidenav-content {
   flex-direction: column;
   align-items: flex-start;
 
-  min-height: 80vh;
+  min-height: 90vh;
 }
 
 .table {
   width: 100%;
 }
 
+.graph-toggle {
+  position: absolute;
+  z-index: 99;
+  
+  padding: 20px;
+  width: 130px;
+}

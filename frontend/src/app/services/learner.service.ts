@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import LearnerModel from '../models/learner';
+import LearnerModel, { DimensionValue } from '../models/learner';
 
 @Injectable({
   providedIn: 'root',
@@ -28,14 +28,13 @@ export class LearnerService {
     modelID: string,
     studentID: string,
     assessment: string,
-    data: number[]
+    dimensionValues: DimensionValue[]
   ): Promise<LearnerModel> {
-    console.log(studentID);
     return this.http
       .post<LearnerModel>(`learner/${modelID}/updateData`, {
         studentID,
         assessment,
-        data,
+        dimensionValues,
       })
       .toPromise();
   }

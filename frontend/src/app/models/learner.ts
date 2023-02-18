@@ -1,5 +1,12 @@
+import { AuthUser } from './user';
+
 export enum LearnerModelType {
   ENGAGEMENT = 'ENGAGEMENT',
+}
+
+export enum DimensionType {
+  DIAGNOSTIC = 'Diagnostic',
+  REASSESSMENT = 'Re-assessment',
 }
 
 export class LearnerModel {
@@ -8,10 +15,11 @@ export class LearnerModel {
   type: LearnerModelType;
 
   dimensions: string[]; // name of dimensions, must be unique
-  data: Map<string, DimensionValue[]>; // map student to list of dimensions with values
+  data: DimensionValue[]; // map student to list of dimensions with values
 }
 
-export interface DimensionValue {
+export class DimensionValue {
+  student: AuthUser;
   dimension: string; // name of dimension
 
   diagnostic: number;

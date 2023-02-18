@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import LearnerModel from 'src/app/models/learner';
+import LearnerModel, { DimensionValue } from 'src/app/models/learner';
 import { AuthUser, Role } from 'src/app/models/user';
 import { LearnerService } from 'src/app/services/learner.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -28,7 +28,7 @@ export class LearnerDataModalComponent implements OnInit {
 
   student: AuthUser | null;
   assessment: string | null;
-  series: number[];
+  dimensionValues: DimensionValue[];
 
   constructor(
     public dialogRef: MatDialogRef<LearnerDataModalComponent>,
@@ -57,25 +57,17 @@ export class LearnerDataModalComponent implements OnInit {
 
   studentChange(): void {
     if (this.student && this.assessment) {
-      const userData = this.model.data.get(this.student.userID);
-      if (userData && this.assessment === 'Diagnostic') {
-        this.series = userData.map((v) => v.diagnostic);
-      } else if (userData && this.assessment === 'Re-assessment') {
-        this.series = userData.map((v) => v.reassessment);
-      }
+      this.dimensionValues = this.model.data.filter(
+        (d) => d.student.userID === this.student?.userID
+      );
     }
   }
 
   assessmentChange(): void {
-    if (this.student && this.assessment) {
-      const userData = this.model.data[this.student.userID];
-      if (userData && this.assessment === 'Diagnostic') {
-        this.series = userData.map((v) => v.diagnostic);
-      } else if (userData && this.assessment === 'Re-assessment') {
-        this.series = userData.map((v) => v.reassessment);
-      } else {
-        this.series = this.model.dimensions.map(() => 0);
-      }
+    if (this.student != null && this.assessment) {
+      this.dimensionValues = this.model.data.filter(
+        (d) => d.student.userID === this.student?.userID
+      );
     }
   }
 
@@ -86,8 +78,10 @@ export class LearnerDataModalComponent implements OnInit {
       this.model.modelID,
       this.student.userID,
       this.assessment,
-      this.series
+      this.dimensionValues
     );
+    this.data.onUpdate(this.model);
+    this.onClose();
   }
 
   onClose(): void {

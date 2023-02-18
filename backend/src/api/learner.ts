@@ -1,6 +1,10 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import { DimensionValue } from '../models/Learner';
+import { Role } from '../models/User';
 import dalLearnerModel from '../repository/dalLearnerModel';
+import dalProject from '../repository/dalProject';
+import dalUser from '../repository/dalUser';
 
 const router = Router();
 
@@ -21,66 +25,67 @@ router.post('/:id/addDimension', async (req, res) => {
   const { dimension } = req.body;
 
   const model = await dalLearnerModel.addDimension(id, dimension);
+  if (!model) {
+    return res.status(500).json('Unable to add dimension.');
+  }
 
-  res.status(200).json(model);
+  const project = await dalProject.getById(model.projectID);
+  if (!project) {
+    return res.sendStatus(404);
+  }
+
+  const students = await dalUser.findByUserIDs(project.members, {
+    role: Role.STUDENT,
+  });
+  const newDimensionValues: DimensionValue[] = students.map((student) => {
+    return {
+      student: student,
+      dimension: dimension,
+      diagnostic: 0,
+      reassessment: 0,
+    };
+  });
+  const updatedModel = await dalLearnerModel.addDimensionValues(
+    id,
+    newDimensionValues
+  );
+
+  res.status(200).json(updatedModel);
 });
 
 router.post('/:id/removeDimension', async (req, res) => {
   const { id } = req.params;
   const { dimension } = req.body;
 
-  const model = await dalLearnerModel.removeDimension(id, dimension);
+  const noDimModel = await dalLearnerModel.removeDimension(id, dimension);
+  if (!noDimModel) {
+    return res.status(500).json('Unable to remove dimension.');
+  }
 
-  res.status(200).json(model);
+  const updatedModel = await dalLearnerModel.removeDimensionValues(
+    id,
+    dimension
+  );
+
+  res.status(200).json(updatedModel);
 });
 
 router.post('/:id/updateData', async (req, res) => {
   const { id } = req.params;
-  const { studentID, assessment, data } = req.body;
+  const { studentID, dimensionValues } = req.body;
 
   const model = await dalLearnerModel.getByID(id);
   if (!model) {
     return res.status(404).json('Learner model with ID: ' + id + ' not found.');
   }
-  if (model.dimensions.length !== data.length) {
+  if (model.dimensions.length !== dimensionValues.length) {
     return res.status(400).json('Data size does not match dimension length.');
   }
 
-  const studentData = model.data.get(studentID);
-  let newDimValues = [];
-  if (!studentData) {
-    newDimValues = data.map((d: number, i: number) => {
-      const dimValue: any = {};
-      dimValue.dimension = model.dimensions[i];
-      if (assessment === 'Diagnostic') {
-        dimValue.diagnostic = d;
-        dimValue.reassessment = 0;
-      } else {
-        dimValue.diagnostic = 0;
-        dimValue.reassessment = d;
-      }
-      return dimValue;
-    });
-  } else {
-    newDimValues = data.map((d: number, i: number) => {
-      const dimValue = studentData[i];
-      if (assessment === 'Diagnostic') {
-        dimValue.diagnostic = d;
-        dimValue.reassessment = 0;
-      } else {
-        dimValue.diagnostic = 0;
-        dimValue.reassessment = d;
-      }
-      return dimValue;
-    });
-  }
-
-  console.log(newDimValues);
-  console.log('whattt');
   const updatedModel = await dalLearnerModel.updateData(
     id,
     studentID,
-    newDimValues
+    dimensionValues
   );
 
   res.status(200).json(updatedModel);

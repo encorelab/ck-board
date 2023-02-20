@@ -261,7 +261,7 @@ export class ConfigurationModalComponent {
       data: {
         title: 'Confirmation',
         message:
-          'Are you sure you want to reset each member\'s upvote counter (to renew the number of available upvotes)?',
+          'Are you sure you want to reset each members upvote counter (to renew the number of available upvotes)?',
         handleConfirm: async () => {
           await this.upvoteService.removeByBoard(this.boardID);
         },

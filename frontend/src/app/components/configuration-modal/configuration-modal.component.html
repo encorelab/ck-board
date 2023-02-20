@@ -64,6 +64,19 @@
           <mat-icon class="chip-icon">clear_all</mat-icon>
           <span style="width: 100%; text-align: center"> Clear Votes </span>
         </mat-chip>
+        <mat-chip
+          class="config-button"
+          mat-raised-button
+          color="warn"
+          (click)="openVoteResetDialog()"
+          style="text-align: center"
+          selected
+        >
+          <mat-icon class="chip-icon">clear_all</mat-icon>
+          <span style="width: 100%; text-align: center">
+            Reset Vote Counter
+          </span>
+        </mat-chip>
       </div>
 
       <h2 class="section-title">Background</h2>

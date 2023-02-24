@@ -212,8 +212,9 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
           'No data available. Please specify dimension values for students.',
       },
     });
-    this.engModel = await this.learnerService.getByBoard(boardID);
-    if (this.engModel) {
+    const models = await this.learnerService.getByBoards([boardID]);
+    if (models?.length > 0) {
+      this.engModel = models[0];
       this.showEngModel = true;
     }
 

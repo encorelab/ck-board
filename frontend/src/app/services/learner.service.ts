@@ -8,8 +8,10 @@ import LearnerModel, { DimensionValue } from '../models/learner';
 export class LearnerService {
   constructor(private http: HttpClient) {}
 
-  getByBoard(boardID: string): Promise<LearnerModel> {
-    return this.http.get<LearnerModel>('learner/board/' + boardID).toPromise();
+  getByBoards(boardIDs: string[]): Promise<LearnerModel[]> {
+    return this.http
+      .post<LearnerModel[]>('learner/board/many', { boardIDs })
+      .toPromise();
   }
 
   addDimension(modelID: string, dimension: string): Promise<LearnerModel> {

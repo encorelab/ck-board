@@ -20,7 +20,7 @@ export const createDefault = async (
       boardID: boardID,
       type: type,
       dimensions: [],
-      data: new Map<string, DimensionValue[]>(),
+      data: [],
     });
     return savedModel;
   } catch (err) {
@@ -37,10 +37,10 @@ export const getByID = async (modelID: string) => {
   }
 };
 
-export const getByBoard = async (boardID: string) => {
+export const getByBoards = async (boardIDs: string[]) => {
   try {
-    const model = await Learner.findOne({ boardID });
-    return model;
+    const models = await Learner.find({ boardID: { $in: boardIDs } });
+    return models;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -154,7 +154,7 @@ export const updateData = async (
 const dalLearnerModel = {
   createDefault,
   getByID,
-  getByBoard,
+  getByBoards,
   addDimension,
   removeDimension,
   addDimensionValues,

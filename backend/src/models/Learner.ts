@@ -29,7 +29,7 @@ export class LearnerModelModel {
   @prop({ enum: LearnerModelType, type: String, required: true })
   public type!: LearnerModelType;
 
-  @prop({ required: true, unique: true })
+  @prop({ required: true })
   public dimensions!: string[];
 
   @prop({ required: true, type: () => [DimensionValue] })

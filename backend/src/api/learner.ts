@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import mongoose from 'mongoose';
 import { DimensionValue } from '../models/Learner';
 import { Role } from '../models/User';
 import dalLearnerModel from '../repository/dalLearnerModel';
@@ -8,16 +7,11 @@ import dalUser from '../repository/dalUser';
 
 const router = Router();
 
-router.get('/board/:id', async (req, res) => {
-  const { id } = req.params;
+router.post('/board/many', async (req, res) => {
+  const { boardIDs } = req.body;
 
-  const model = await dalLearnerModel.getByBoard(id);
-  if (!model)
-    return res
-      .status(404)
-      .json('Learner model with boardID: ' + id + ' not found.');
-
-  res.status(200).json(model);
+  const models = await dalLearnerModel.getByBoards(boardIDs);
+  res.status(200).json(models);
 });
 
 router.post('/:id/addDimension', async (req, res) => {

@@ -3,8 +3,9 @@
     <mat-card-header>
       <div mat-card-avatar class="avatar"></div>
       <mat-card-title>{{ taskTitle }}</mat-card-title>
+
       <span class="fill-remaining-space"></span>
-      <mat-card-subtitle>{{assignee}}</mat-card-subtitle>
+      <mat-card-subtitle>{{ assignee }}</mat-card-subtitle>
       <button
         *ngIf="!todoItem.completed"
         mat-icon-button

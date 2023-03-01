@@ -47,7 +47,16 @@ SwiperCore.use([EffectCards]);
 interface MonitorData {
   groupName: string;
   groupMembers: string[];
+  groupTaskID: string;
   progress: string;
+  workflowID: string;
+  taskWorkflow: TaskWorkflow;
+  groupTaskStatus: GroupTaskStatus;
+}
+
+interface GroupName {
+  groupName: string;
+  groupStatus: GroupTaskStatus;
 }
 
 class TodoItemDisplay {
@@ -90,12 +99,24 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     TaskWorkflow,
     ExpandedGroupTask[]
   >();
+
+  taskWorkflowNameMap: Map<TaskWorkflow, GroupName[]> = new Map<
+    TaskWorkflow,
+    GroupName[]
+  >();
+
   taskWorkflowGroupNameMap: Map<TaskWorkflow, string[]> = new Map<
     TaskWorkflow,
     string[]
   >();
 
+  taskWorkflowCompleteGroupNameMap: Map<TaskWorkflow, string[]> = new Map<
+    TaskWorkflow,
+    string[]
+  >();
+
   runningTask: TaskWorkflow | null;
+  runningTaskGroupStatus: GroupTaskStatus | null;
   runningTaskTableData: MatTableDataSource<MonitorData>;
   currentGroupProgress: number;
   averageGroupProgress: number;
@@ -127,7 +148,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
 
-  displayColumns: string[] = ['group-name', 'members', 'progress'];
+  displayColumns: string[] = ['group-name', 'members', 'progress', 'action'];
+  loading: boolean = true;
   embedded: boolean = false;
 
   constructor(
@@ -177,6 +199,16 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     this.board = await this.boardService.get(boardID);
     this.project = await this.projectService.get(projectID);
+    await this.updateWorkflowData(boardID, projectID);
+    this.socketService.connect(this.user.userID, this.board.boardID);
+    return true;
+  }
+
+  async updateWorkflowData(boardID, projectID) {
+    const inactiveTaskWorkflows: TaskWorkflow[] = [];
+    const completeTaskWorkflows: TaskWorkflow[] = [];
+    const activeTaskWorkflows: TaskWorkflow[] = [];
+
     this.todoItems = await this.todoItemService.getByProject(projectID);
     this.updateTodoItemDataSource();
     this.group = await this.groupService.getByProjectUser(
@@ -194,10 +226,29 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       groupTasks.sort((a, b) =>
         this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
       );
+      this.taskWorkflowNameMap.set(
+        this.taskWorkflows[i],
+        groupTasks.map((group) => {
+          return {
+            groupName: group.group.name,
+            groupStatus: group.groupTask.status,
+          };
+        })
+      );
       this.taskWorkflowGroupMap.set(this.taskWorkflows[i], groupTasks);
       this.taskWorkflowGroupNameMap.set(
         this.taskWorkflows[i],
-        groupTasks.map((group) => group.group.name)
+        groupTasks
+          .filter((group) => group.groupTask.status != GroupTaskStatus.COMPLETE)
+          .map((group) => group.group.name)
+      );
+      this.taskWorkflowCompleteGroupNameMap.set(
+        this.taskWorkflows[i],
+        groupTasks
+          .filter(
+            (group) => group.groupTask.status === GroupTaskStatus.COMPLETE
+          )
+          .map((group) => group.group.name)
       );
       let activeCount = 0,
         completedCount = 0;
@@ -210,14 +261,16 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
           groupTasks[i].groupTask.status == GroupTaskStatus.COMPLETE
         );
       }
-      if (!activeCount && !completedCount)
-        this.inactiveTaskWorkflows.push(this.taskWorkflows[i]);
-      else if (completedCount == groupTasks?.length)
-        this.completeTaskWorkflows.push(this.taskWorkflows[i]);
-      else this.activeTaskWorkflows.push(this.taskWorkflows[i]);
+
+      if (activeCount + completedCount != groupTasks.length)
+        inactiveTaskWorkflows.push(this.taskWorkflows[i]);
+      if (completedCount) completeTaskWorkflows.push(this.taskWorkflows[i]);
+      if (activeCount) activeTaskWorkflows.push(this.taskWorkflows[i]);
     }
-    this.socketService.connect(this.user.userID, this.board.boardID);
-    return true;
+    this.inactiveTaskWorkflows = inactiveTaskWorkflows;
+    this.completeTaskWorkflows = completeTaskWorkflows;
+    this.activeTaskWorkflows = activeTaskWorkflows;
+    this.loading = false;
   }
 
   async updateTodoItemDataSource(): Promise<void> {
@@ -260,35 +313,48 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     });
   }
 
-  async view(task: TaskWorkflow): Promise<void> {
+  async view(task: TaskWorkflow, status: GroupTaskStatus): Promise<void> {
     this.runningTask = task;
+    this.runningTaskGroupStatus = status;
     const progressData = await this._calcAverageProgress(
       this.taskWorkflowGroupMap.get(this.runningTask)
     );
     this.minGroupProgress = progressData[0];
     this.averageGroupProgress = progressData[1];
     this.maxGroupProgress = progressData[2];
-    await this.updateRunningTaskDataSource(task);
+    await this.updateRunningTaskDataSource(task, status);
     this._startListening();
   }
 
-  async updateRunningTaskDataSource(workflow: TaskWorkflow): Promise<void> {
+  async updateRunningTaskDataSource(
+    workflow: TaskWorkflow,
+    status: GroupTaskStatus
+  ): Promise<void> {
     const groupTasks = this.taskWorkflowGroupMap.get(workflow);
     const groupTasksTableFormat: MonitorData[] = [];
     if (groupTasks) {
       for (let i = 0; i < groupTasks.length; i++) {
-        const groupMembers: string[] = [];
-        for (let j = 0; j < groupTasks[i].group.members.length; j++) {
-          groupMembers.push(
-            (await this.userService.getOneById(groupTasks[i].group.members[j]))
-              .username
-          );
+        if (groupTasks[i].groupTask.status == status) {
+          const groupMembers: string[] = [];
+          for (let j = 0; j < groupTasks[i].group.members.length; j++) {
+            groupMembers.push(
+              (
+                await this.userService.getOneById(
+                  groupTasks[i].group.members[j]
+                )
+              ).username
+            );
+          }
+          groupTasksTableFormat.push({
+            groupName: groupTasks[i].group.name,
+            progress: this._calcGroupProgress(groupTasks[i]).toFixed(2),
+            groupMembers: groupMembers,
+            groupTaskID: groupTasks[i].groupTask.groupTaskID,
+            workflowID: groupTasks[i].workflow.workflowID,
+            taskWorkflow: groupTasks[i].workflow,
+            groupTaskStatus: groupTasks[i].groupTask.status,
+          });
         }
-        groupTasksTableFormat.push({
-          groupName: groupTasks[i].group.name,
-          progress: this._calcGroupProgress(groupTasks[i]).toFixed(2),
-          groupMembers: groupMembers,
-        });
       }
     }
     this.runningTaskTableData = new MatTableDataSource<MonitorData>(
@@ -296,8 +362,37 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     );
   }
 
+  async activateGroupTask(_group: MonitorData) {
+    this.loading = true;
+    const updatedGroupTask = await this.workflowService.markGroupTaskActive(
+      _group.groupTaskID
+    );
+    await this.updateWorkflowData(this.board.boardID, this.project.projectID);
+    this.runningTaskTableData.data = this.runningTaskTableData.data.filter(
+      (data) => data.groupTaskID != _group.groupTaskID
+    );
+    if (!this.runningTaskTableData.data.length) {
+      this.runningTask = null;
+    }
+  }
+
+  async completeGroupTask(_group: MonitorData) {
+    this.loading = true;
+    const updatedGroupTask = await this.workflowService.markGroupTaskComplete(
+      _group.groupTaskID
+    );
+    await this.updateWorkflowData(this.board.boardID, this.project.projectID);
+    this.runningTaskTableData.data = this.runningTaskTableData.data.filter(
+      (data) => data.groupTaskID != _group.groupTaskID
+    );
+    if (!this.runningTaskTableData.data.length) {
+      this.runningTask = null;
+    }
+  }
+
   close(): void {
     this.runningTask = null;
+    this.runningTaskGroupStatus = null;
     this.runningTaskTableData = new MatTableDataSource<MonitorData>();
     this.minGroupProgress = 0;
     this.averageGroupProgress = 0;
@@ -361,8 +456,12 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
             );
             this.taskWorkflowGroupMap.set(found.workflow, groupTasks);
             this.runningTask = found.workflow;
+            this.runningTaskGroupStatus = GroupTaskStatus.ACTIVE;
             const progressData = await this._calcAverageProgress(groupTasks);
-            await this.updateRunningTaskDataSource(found.workflow);
+            await this.updateRunningTaskDataSource(
+              found.workflow,
+              GroupTaskStatus.ACTIVE
+            );
             this.minGroupProgress = progressData[0];
             this.averageGroupProgress = progressData[1];
             this.maxGroupProgress = progressData[2];

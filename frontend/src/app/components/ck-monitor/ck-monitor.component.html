@@ -37,20 +37,25 @@
             <h3 matLine> {{workflow.name}} </h3>
             <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
             <p matLine class="list-task-prompt"> 
-              Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
+              Groups:
+              <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
+                <span *ngIf="group.groupStatus === GroupTaskStatus.INACTIVE">
+                  {{group.groupName}}&nbsp;
+                </span>
+              </span>
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
-              *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)"
+              *ngIf="(runningTask && (runningTask.workflowID !== workflow.workflowID || runningTaskGroupStatus !== GroupTaskStatus.INACTIVE)) || (!runningTask)"
               mat-raised-button
               color="primary"
               class="sidebar-button"
-              (click)="view(workflow)"
+              (click)="view(workflow, GroupTaskStatus.INACTIVE)"
             >
               Monitor Task
             </button>
             <button
-              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID"
+              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID && runningTaskGroupStatus === GroupTaskStatus.INACTIVE"
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -71,20 +76,25 @@
             <h3 matLine> {{workflow.name}} </h3>
             <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
             <p matLine class="list-task-prompt"> 
-              Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
+              Groups:
+              <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
+                <span *ngIf="group.groupStatus === GroupTaskStatus.ACTIVE">
+                  {{group.groupName}}&nbsp;
+                </span>
+              </span>
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
-              *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)"
+              *ngIf="(runningTask && (runningTask.workflowID !== workflow.workflowID || runningTaskGroupStatus !== GroupTaskStatus.ACTIVE)) || (!runningTask)"
               mat-raised-button
               color="primary"
               class="sidebar-button"
-              (click)="view(workflow)"
+              (click)="view(workflow, GroupTaskStatus.ACTIVE)"
             >
               Monitor Task
             </button>
             <button
-              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID"
+              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID && runningTaskGroupStatus === GroupTaskStatus.ACTIVE"
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -105,20 +115,25 @@
             <h3 matLine> {{workflow.name}} </h3>
             <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
             <p matLine class="list-task-prompt"> 
-              Groups: {{taskWorkflowGroupNameMap.get(workflow)?.join(', ')}} 
+              Groups:
+              <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
+                <span *ngIf="group.groupStatus === GroupTaskStatus.COMPLETE">
+                  {{group.groupName}}&nbsp;
+                </span>
+              </span>
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
-              *ngIf="(runningTask && runningTask.workflowID !== workflow.workflowID) || (!runningTask)"
+              *ngIf="(runningTask && (runningTask.workflowID !== workflow.workflowID || runningTaskGroupStatus !== GroupTaskStatus.COMPLETE)) || (!runningTask)"
               mat-raised-button
               color="primary"
               class="sidebar-button"
-              (click)="view(workflow)"
+              (click)="view(workflow, GroupTaskStatus.COMPLETE)"
             >
               Monitor Task
             </button>
             <button
-              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID"
+              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID && runningTaskGroupStatus === GroupTaskStatus.COMPLETE"
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -241,6 +256,7 @@
           <tr mat-row *matRowDef="let row; columns: todoColumns;"></tr>
         </table>
       </div>
+      <mat-progress-bar style="margin: 20px; width: 95%" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
       <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible">
         No task selected!
       </div>
@@ -264,6 +280,27 @@
                 <ng-container matColumnDef="progress">
                   <th mat-header-cell *matHeaderCellDef> Progress </th>
                   <td mat-cell *matCellDef="let group"> {{group.progress}} % </td>
+                </ng-container>
+
+                <ng-container matColumnDef="action">
+                  <th mat-header-cell *matHeaderCellDef > {{ runningTaskGroupStatus === GroupTaskStatus.INACTIVE ? "" : "Action"}} </th>
+                  <td mat-cell *matCellDef="let group"> 
+                    <button 
+                      *ngIf="runningTaskGroupStatus !== GroupTaskStatus.INACTIVE" mat-icon-button 
+                      (click)="
+                        runningTaskGroupStatus === GroupTaskStatus.COMPLETE 
+                        ? activateGroupTask(group) 
+                        : completeGroupTask(group)"
+                      
+                    >
+                      <mat-icon matTooltip="Re-activate Task" *ngIf="runningTaskGroupStatus === GroupTaskStatus.COMPLETE">
+                        play_circle_outline
+                      </mat-icon>
+                      <mat-icon matTooltip="Cancel Task" *ngIf="runningTaskGroupStatus === GroupTaskStatus.ACTIVE">
+                        cancel
+                      </mat-icon>
+                    </button>  
+                  </td>
                 </ng-container>
 
             

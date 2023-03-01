@@ -31,9 +31,14 @@ export class TodoItemService {
     return this.http.get<TodoItem[]>(`todoItems/user/${userID}`).toPromise();
   }
 
-  getByProject(projectID: string, representation = 'default'): Promise<ExpandedTodoItem[]> {
+  getByProject(
+    projectID: string,
+    representation = 'default'
+  ): Promise<ExpandedTodoItem[]> {
     return this.http
-      .get<ExpandedTodoItem[]>(`todoItems/project/${projectID}?representation=${representation}`)
+      .get<ExpandedTodoItem[]>(
+        `todoItems/project/${projectID}?representation=${representation}`
+      )
       .toPromise();
   }
 

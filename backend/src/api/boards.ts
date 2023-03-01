@@ -73,7 +73,7 @@ router.post('/:id', async (req, res) => {
     initialZoom === undefined ? null : { initialZoom },
     upvoteLimit === undefined ? null : { upvoteLimit },
     visible === undefined ? true : { visible },
-    defaultTodoDateRange === undefined? null: { defaultTodoDateRange },
+    defaultTodoDateRange === undefined ? null : { defaultTodoDateRange }
   );
 
   const updatedBoard = await dalBoard.update(id, board);

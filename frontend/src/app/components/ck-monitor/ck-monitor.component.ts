@@ -41,7 +41,12 @@ import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { MatTableDataSource } from '@angular/material/table';
-import { CompletionQuality, ExpandedTodoItem, TodoItem, TodoItemType } from 'src/app/models/todoItem';
+import {
+  CompletionQuality,
+  ExpandedTodoItem,
+  TodoItem,
+  TodoItemType,
+} from 'src/app/models/todoItem';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
@@ -218,7 +223,10 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     const completeTaskWorkflows: TaskWorkflow[] = [];
     const activeTaskWorkflows: TaskWorkflow[] = [];
 
-    this.todoItems = await this.todoItemService.getByProject(projectID, 'expanded');
+    this.todoItems = await this.todoItemService.getByProject(
+      projectID,
+      'expanded'
+    );
     if (this.board.defaultTodoDateRange) {
       const start = new Date(this.board.defaultTodoDateRange.start);
       const end = new Date(this.board.defaultTodoDateRange.end);
@@ -297,14 +305,16 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       const date = new Date(`${item.deadline.date} ${item.deadline.time}`);
       const formattedDate = date.toLocaleDateString('en-CA');
       const currentDate = new Date();
-      const name = todoItem.group? todoItem.group.name : todoItem.user.username;
+      const name = todoItem.group
+        ? todoItem.group.name
+        : todoItem.user.username;
       const overdue = date < currentDate && !item.completed;
       const todo: TodoItemDisplay = {
         name: name,
         goal: item.title,
         deadline: formattedDate,
         status: overdue ? 'Missed' : item.completed ? 'Complete' : 'Pending',
-        quality: item.quality? EXPANDED_COMPLETION_QUALITY[item.quality] : '',
+        quality: item.quality ? EXPANDED_COMPLETION_QUALITY[item.quality] : '',
         types: item.type,
         completed: item.completed,
         overdue: overdue,
@@ -334,10 +344,10 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   setDefaultRange(start: Date, end: Date): void {
     if (!start || !end) return;
     this.filterTodosByDeadline(start, end);
-    const defaultTodoDateRange = { start, end }
+    const defaultTodoDateRange = { start, end };
     this.boardService.update(this.board.boardID, { defaultTodoDateRange });
   }
-    
+
   async view(task: TaskWorkflow, status: GroupTaskStatus): Promise<void> {
     this.runningTask = task;
     this.todoIsVisible = false;

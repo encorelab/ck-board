@@ -79,10 +79,10 @@ export class PermissionsModel {
 
 export class DateRange {
   @prop({ required: true })
-  public start!: Date
+  public start!: Date;
 
   @prop({ required: true })
-  public end!: Date
+  public end!: Date;
 }
 
 export enum BoardScope {

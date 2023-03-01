@@ -84,7 +84,6 @@ export class DistributionWorkflow extends Workflow {
 
 export class TaskWorkflow extends Workflow {
   prompt: string;
-
   requiredActions: TaskAction[];
   assignedGroups: string[];
 }

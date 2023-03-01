@@ -41,7 +41,7 @@ import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { MatTableDataSource } from '@angular/material/table';
-import { CompletionQuality, TodoItem, TodoItemType } from 'src/app/models/todoItem';
+import { CompletionQuality, ExpandedTodoItem, TodoItem, TodoItemType } from 'src/app/models/todoItem';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
@@ -113,7 +113,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   members: User[] = [];
 
   todoIsVisible: Boolean = false;
-  todoItems: TodoItem[] = [];
+  todoItems: ExpandedTodoItem[] = [];
   todoDataSource = new MatTableDataSource<TodoItemDisplay>();
   todoItemColors = TODO_TYPE_COLORS;
   todoItemTypes = EXPANDED_TODO_TYPE;
@@ -186,8 +186,15 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     this.board = await this.boardService.get(boardID);
     this.project = await this.projectService.get(projectID);
-    this.todoItems = await this.todoItemService.getByProject(projectID);
-    this.updateTodoItemDataSource();
+    this.todoItems = await this.todoItemService.getByProject(projectID, 'expanded');
+    if (this.board.defaultTodoDateRange) {
+      const start = new Date(this.board.defaultTodoDateRange.start);
+      const end = new Date(this.board.defaultTodoDateRange.end);
+      this.todoDeadlineRange.setValue({ start, end });
+      this.filterTodosByDeadline(start, end);
+    } else {
+      this.updateTodoItemDataSource();
+    }
     this.group = await this.groupService.getByProjectUser(
       projectID,
       this.user.userID
@@ -232,14 +239,15 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   async updateTodoItemDataSource(): Promise<void> {
     const data: TodoItemDisplay[] = [];
 
-    for (const item of this.todoItems) {
+    for (const todoItem of this.todoItems) {
+      const item = todoItem.todoItem;
       const date = new Date(`${item.deadline.date} ${item.deadline.time}`);
       const formattedDate = date.toLocaleDateString('en-CA');
       const currentDate = new Date();
-      const name = await this.userService.getOneById(item.userID);
+      const name = todoItem.group? todoItem.group.name : todoItem.user.username;
       const overdue = date < currentDate && !item.completed;
       const todo: TodoItemDisplay = {
-        name: name.username,
+        name: name,
         goal: item.title,
         deadline: formattedDate,
         status: overdue ? 'Missed' : item.completed ? 'Complete' : 'Pending',
@@ -250,7 +258,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       };
       data.push(todo);
     }
-
     this.todoDataSource.data = data;
   }
 
@@ -269,6 +276,13 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       );
       return adjustedDate <= end && adjustedDate >= start;
     });
+  }
+
+  setDefaultRange(start: Date, end: Date): void {
+    if (!start || !end) return;
+    this.filterTodosByDeadline(start, end);
+    const defaultTodoDateRange = { start, end }
+    this.boardService.update(this.board.boardID, { defaultTodoDateRange });
   }
 
   async view(task: TaskWorkflow): Promise<void> {

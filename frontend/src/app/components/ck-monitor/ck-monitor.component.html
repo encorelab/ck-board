@@ -179,6 +179,14 @@
               >
                 Apply
               </button>
+              <button
+                mat-raised-button
+                color="primary"
+                matDateRangePickerApply
+                (click)="setDefaultRange(todoDeadlineRange.value.start, todoDeadlineRange.value.end)"
+              >
+                Set as Default
+              </button>
             </mat-date-range-picker-actions>
           </mat-date-range-picker>
         

@@ -8,9 +8,6 @@ export interface ExpandedTodoItem {
   todoItem: TodoItemModel;
   user: UserModel;
   group: GroupModel;
-  formattedDeadline: string;
-  status: string;
-
 }
 
 export const getById = async (id: string) => {
@@ -57,7 +54,7 @@ export const getByProject = async (projectID: string) => {
 export const getByProjectExpanded = async (projectID: string) => {
   try {
     const todoItems = await getByProject(projectID);
-    const expandedTodoItems = todoItems.map(async (item) => {
+    const expandedTodoItems = await Promise.all(todoItems.map(async (item) => {
       const user = await dalUser.findByUserID(item.userID);
       if (!user)
         throw new Error(
@@ -70,19 +67,12 @@ export const getByProjectExpanded = async (projectID: string) => {
             `No group associated with todoItem (id: ${item.todoItemID})`
           );
       
-      const status = item.overdue ? 'Missed' : item.completed ? 'Complete' : 'Pending';
-      
-      const date = new Date(`${item.deadline.date} ${item.deadline.time}`);
-      const formattedDeadline = date.toLocaleDateString('en-CA');
-
       return {
         todoItem: item,
         user: user,
         group: group,
-        status: status,
-        formattedDeadline: formattedDeadline,
       }
-    });
+    }));
     return expandedTodoItems;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -136,6 +126,7 @@ const dalTodoItem = {
   getByUserProject,
   getByUser,
   getByProject,
+  getByProjectExpanded,
   create,
   remove,
   update,

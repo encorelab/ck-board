@@ -4,6 +4,7 @@ import {
   DistributionWorkflow,
   GroupTask,
   GroupTaskEntity,
+  GroupTaskStatus,
   GroupTaskType,
   TaskWorkflow,
   Workflow,
@@ -155,13 +156,17 @@ export class WorkflowService {
 
   markGroupTaskComplete(groupTaskID: string): Promise<GroupTask> {
     return this.http
-      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/complete`, {})
+      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/status`, {
+        status: GroupTaskStatus.COMPLETE,
+      })
       .toPromise();
   }
 
   markGroupTaskActive(groupTaskID: string): Promise<GroupTask> {
     return this.http
-      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/active`, {})
+      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/status`, {
+        status: GroupTaskStatus.ACTIVE,
+      })
       .toPromise();
   }
 }

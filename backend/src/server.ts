@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -18,9 +19,12 @@ import trace from './api/trace';
 import groups from './api/groups';
 import todoItems from './api/todoItem';
 import { isAuthenticated } from './utils/auth';
+import redis from './utils/redis';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
+const ckAddr = process.env.CKBOARD_SERVER_ADDRESS || 'http://localhost:4201';
+const scoreAddr = process.env.SCORE_SERVER_ADDRESS || 'http://localhost';
 const dbUsername = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbUrl = process.env.DB_URL;
@@ -28,9 +32,29 @@ const dbName = process.env.DB_NAME;
 const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
 const app = express();
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    credentials: true,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (origin != ckAddr && origin != scoreAddr) {
+        const msg = `This site ${origin} does not have an access. Only specific domains are allowed to access it.`;
+        return callback(new Error(msg), false);
+      }
+
+      return callback(null, true);
+    },
+  })
+);
 app.use(bodyParser.json());
 const server = http.createServer(app);
+
+(async () => {
+  await redis.connect();
+  return redis;
+})();
 
 const socket = Socket.Instance;
 socket.init();

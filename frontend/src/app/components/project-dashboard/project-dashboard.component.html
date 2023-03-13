@@ -4,14 +4,6 @@
     <span style="flex: 1 1 auto"></span>
     <button
       mat-icon-button
-      *ngIf="user && user.role === Role.STUDENT"
-      (click)="openTodoList()"
-      matTooltip="Todo List"
-    >
-      <mat-icon>assignment</mat-icon>
-    </button>
-    <button
-      mat-icon-button
       [matMenuTriggerFor]="addMenu"
       *ngIf="user && user.role === Role.TEACHER"
       matTooltip="Create Board"
@@ -23,41 +15,59 @@
         Create Board
       </button>
     </mat-menu>
-    <app-csv-download-button
-      [projectID]="this.projectID"
-      *ngIf="user && user.role === Role.TEACHER"
-    >
-    </app-csv-download-button>
-    <button
-      *ngIf="user && user.role === Role.TEACHER"
-      mat-icon-button
-      (click)="openSettingsDialog()"
-      matTooltip="Adjust Settings"
-    >
-      <mat-icon>settings</mat-icon>
+
+    <button mat-icon-button [matMenuTriggerFor]="projectNavbarMenu">
+      <mat-icon>dehaze</mat-icon>
     </button>
+
+    <mat-menu #projectNavbarMenu="matMenu">
+      <button
+        mat-menu-item 
+        *ngIf="user && user.role === Role.STUDENT"
+        (click)="openTodoList()"
+      >
+        <mat-icon>assignment</mat-icon>
+        Todo List
+      </button>
+      <app-csv-download-button
+        [projectID]="this.projectID"
+        *ngIf="user && user.role === Role.TEACHER"
+      >
+      </app-csv-download-button>
+      <button
+        mat-menu-item 
+        *ngIf="user && user.role === Role.TEACHER"
+        (click)="openProjectTodoList()"
+      >
+        <mat-icon>assignment_ind</mat-icon>
+        View All Todo Lists
+      </button>
+      <button
+        *ngIf="user && user.role === Role.TEACHER"
+        mat-menu-item 
+        (click)="openGroupDialog()"
+      >
+        <mat-icon>group_work</mat-icon>
+        Manage Groups
+      </button>
+
+      <button
+        *ngIf="user && user.role === Role.TEACHER"
+        mat-menu-item
+        (click)="openSettingsDialog()"
+      >
+        <mat-icon>settings</mat-icon>
+        Adjust Settings
+      </button>
+
+    </mat-menu>
+
     <div *ngIf="project">
       <app-project-notification-dropdown
         [user]="user"
         [project]="project"
       ></app-project-notification-dropdown>
     </div>
-    <button
-      mat-icon-button
-      *ngIf="user && user.role === Role.TEACHER"
-      (click)="openProjectTodoList()"
-      matTooltip="View All Todo Lists"
-    >
-      <mat-icon>assignment_ind</mat-icon>
-    </button>
-    <button
-      *ngIf="user && user.role === Role.TEACHER"
-      mat-icon-button
-      (click)="openGroupDialog()"
-      matTooltip="Manage Groups"
-    >
-      <mat-icon>group_work</mat-icon>
-    </button>
   </app-toolbar>
   <div class="content">
     <div class="heading">

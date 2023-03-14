@@ -15,7 +15,7 @@
       </button>
       <span style="flex: 1 1 auto"></span>
       <!-- HAMBURGER -->
-      <button mat-icon-button [matMenuTriggerFor]="navbarMenu">
+      <button navbarMenu mat-icon-button [matMenuTriggerFor]="navbarMenu">
         <mat-icon>dehaze</mat-icon>
       </button>
       <mat-menu #navbarMenu="matMenu">
@@ -88,6 +88,16 @@
         >
           <mat-icon>settings</mat-icon>
           Adjust Settings
+        </button>
+        <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;color:black" target="_blank" >
+          <button mat-menu-item style="text-decoration:none;color:black">
+            <mat-icon>launch</mat-icon>
+            Go to SCORE
+          </button>
+        </a>
+        <button mat-menu-item (click)="signOut()">
+          <mat-icon class="material-icons-outlined">logout</mat-icon>
+          Log Out
         </button>
       </mat-menu>
       <div *ngIf="board">

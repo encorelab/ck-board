@@ -10,13 +10,21 @@
     >
       <mat-icon>add</mat-icon>
     </button>
+
     <mat-menu #addMenu="matMenu">
       <button mat-menu-item (click)="openCreateBoardDialog()">
         Create Board
       </button>
     </mat-menu>
 
-    <button mat-icon-button [matMenuTriggerFor]="projectNavbarMenu">
+    <div *ngIf="project">
+      <app-project-notification-dropdown
+        [user]="user"
+        [project]="project"
+      ></app-project-notification-dropdown>
+    </div>
+
+    <button navbarMenu mat-icon-button [matMenuTriggerFor]="projectNavbarMenu">
       <mat-icon>dehaze</mat-icon>
     </button>
 
@@ -59,15 +67,17 @@
         <mat-icon>settings</mat-icon>
         Adjust Settings
       </button>
-
+      <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;color:black" target="_blank" >
+      <button mat-menu-item style="text-decoration:none;color:black">
+          <mat-icon>launch</mat-icon>
+          Go to SCORE
+        </button>
+      </a>
+      <button mat-menu-item (click)="signOut()">
+        <mat-icon class="material-icons-outlined">logout</mat-icon>
+        Log Out
+      </button>
     </mat-menu>
-
-    <div *ngIf="project">
-      <app-project-notification-dropdown
-        [user]="user"
-        [project]="project"
-      ></app-project-notification-dropdown>
-    </div>
   </app-toolbar>
   <div class="content">
     <div class="heading">

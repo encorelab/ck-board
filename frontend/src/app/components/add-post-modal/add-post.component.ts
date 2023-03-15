@@ -170,11 +170,7 @@ export class AddPostComponent {
     ) {
       return !this.titleControl.valid || !this.questionPromptControl.valid;
     } else {
-      return (
-        !this.titleControl.valid ||
-        !this.msgControl.valid ||
-        this.creationInProgress
-      );
+      return !this.titleControl.valid || !this.msgControl.valid;
     }
   }
 

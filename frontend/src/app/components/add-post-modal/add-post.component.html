@@ -193,7 +193,7 @@
   <button
     *ngIf="!editingPost"
     type="submit"
-    [disabled]="disabled()"
+    [disabled]="disabled() || this.creationInProgress"
     mat-button
     (click)="handleDialogSubmit()"
     cdkFocusInitial

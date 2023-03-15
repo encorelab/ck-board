@@ -52,6 +52,7 @@ export class AddPostComponent {
   correctMultipleChoiceSelected = false;
   editingPost: Post | undefined;
   contentType: ContentType = ContentType.OPEN_RESPONSE_MESSAGE;
+  creationInProgress = false;
 
   title = '';
   message = '';
@@ -169,7 +170,11 @@ export class AddPostComponent {
     ) {
       return !this.titleControl.valid || !this.questionPromptControl.valid;
     } else {
-      return !this.titleControl.valid || !this.msgControl.valid;
+      return (
+        !this.titleControl.valid ||
+        !this.msgControl.valid ||
+        this.creationInProgress
+      );
     }
   }
 
@@ -305,21 +310,28 @@ export class AddPostComponent {
   }
 
   async handleDialogSubmit() {
+    this.creationInProgress = true;
     let post: Post;
 
-    if (this.data.type == PostType.BUCKET && this.data.bucket) {
-      post = await this.addBucketPost();
-    } else if (this.data.type == PostType.LIST) {
-      post = await this.addListPost();
-    } else {
-      post = await this.addPost();
-    }
+    try {
+      if (this.data.type == PostType.BUCKET && this.data.bucket) {
+        post = await this.addBucketPost();
+      } else if (this.data.type == PostType.LIST) {
+        post = await this.addListPost();
+      } else {
+        post = await this.addPost();
+      }
 
-    if (this.data.onComplete) {
-      this.data.onComplete(post);
+      if (this.data.onComplete) {
+        this.data.onComplete(post);
+      }
+      this.creationInProgress = false;
+      this.snackbarService.queueSnackbar('Post created!');
+    } catch (e) {
+      this.snackbarService.queueSnackbar('Unable to create post!');
+    } finally {
+      this.dialogRef.close();
     }
-
-    this.dialogRef.close();
   }
 
   onNoClick(): void {

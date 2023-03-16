@@ -1066,6 +1066,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(url);
   }
 
+  signOut(): void {
+    this.userService.logout();
+    this.router.navigate(['login']);
+  }
+
   private _openDialog(
     component: ComponentType<unknown>,
     data: any,

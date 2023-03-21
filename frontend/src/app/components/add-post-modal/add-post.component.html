@@ -193,6 +193,7 @@
   <button
     *ngIf="!editingPost"
     type="submit"
+    [class.spinner]="this.creationInProgress"
     [disabled]="disabled() || this.creationInProgress"
     mat-button
     (click)="handleDialogSubmit()"

@@ -95,6 +95,9 @@ export class AddPostComponent {
         : [];
       this.tags = this.editingPost.tags;
       this.correctMultipleChoiceSelected = true;
+    } else {
+      this.title = localStorage.getItem('post_create_title') ?? '';
+      this.message = localStorage.getItem('post_create_message') ?? '';
     }
     this.tagOptions = data.board.tags.filter(
       (n) => !this.tags.map((b) => b.name).includes(n.name)
@@ -309,6 +312,8 @@ export class AddPostComponent {
     this.creationInProgress = true;
     let post: Post;
 
+    localStorage.setItem('post_create_title', this.title);
+    localStorage.setItem('post_create_message', this.message);
     try {
       if (this.data.type == PostType.BUCKET && this.data.bucket) {
         post = await this.addBucketPost();
@@ -318,13 +323,16 @@ export class AddPostComponent {
         post = await this.addPost();
       }
 
+      localStorage.removeItem('post_create_title');
+      localStorage.removeItem('post_create_message');
       if (this.data.onComplete) {
         this.data.onComplete(post);
       }
       this.creationInProgress = false;
-      this.snackbarService.queueSnackbar('Post created!');
     } catch (e) {
-      this.snackbarService.queueSnackbar('Unable to create post!');
+      this.snackbarService.queueSnackbar(
+        'Unable to create post, please refresh and try again!'
+      );
     } finally {
       this.dialogRef.close();
     }

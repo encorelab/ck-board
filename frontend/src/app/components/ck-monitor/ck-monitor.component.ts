@@ -50,11 +50,9 @@ import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-mo
 import LearnerModel, { DimensionType } from 'src/app/models/learner';
 import { createClassEngagementGraph } from 'src/app/utils/highchart';
 import { LearnerService } from 'src/app/services/learner.service';
+import { LearnerModelsComponent } from '../learner-models/learner-models.component';
 
 SwiperCore.use([EffectCards]);
-more(Highcharts);
-exporting(Highcharts);
-nodata(Highcharts);
 
 interface MonitorData {
   groupName: string;
@@ -135,21 +133,14 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     end: new FormControl(null),
   });
 
-  showEngModel = false;
-  engModelIsVisible = false;
-  engModel: LearnerModel;
-  Highcharts: typeof Highcharts = Highcharts;
-  chartOptions: Highcharts.Options = {};
-  DimensionType: typeof DimensionType = DimensionType;
-  dimensionType: DimensionType = DimensionType.DIAGNOSTIC;
-  updateFlag: boolean = false;
-
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
 
   displayColumns: string[] = ['group-name', 'members', 'progress'];
   embedded: boolean = false;
+
+  engModelIsVisible = false;
 
   constructor(
     public userService: UserService,
@@ -205,18 +196,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       projectID,
       this.user.userID
     );
-
-    Highcharts.setOptions({
-      lang: {
-        noData:
-          'No data available. Please specify dimension values for students.',
-      },
-    });
-    const models = await this.learnerService.getByBoards([boardID]);
-    if (models?.length > 0) {
-      this.engModel = models[0];
-      this.showEngModel = true;
-    }
 
     this.taskWorkflows = await this.workflowService.getActiveTasks(boardID);
 
@@ -354,47 +333,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   }
 
   toggleEngagementModel(): void {
-    this.refreshModel();
     this.engModelIsVisible = !this.engModelIsVisible;
-  }
-
-  refreshModel(): void {
-    this.chartOptions = createClassEngagementGraph(
-      this.engModel,
-      {
-        onEditData: () => {
-          this.dialog.open(LearnerDataModalComponent, {
-            data: {
-              model: this.engModel,
-              projectID: this.project.projectID,
-              onUpdate: (model: LearnerModel) => {
-                this.engModel = model;
-                this.refreshModel();
-              },
-            },
-            maxWidth: 1280,
-          });
-        },
-        onEditDimensions: () => {
-          this.dialog.open(LearnerConfigurationModalComponent, {
-            data: {
-              model: this.engModel,
-              onUpdate: (model) => {
-                this.engModel = model;
-                this.refreshModel();
-              },
-            },
-            maxWidth: 1280,
-          });
-        },
-      },
-      this.dimensionType
-    );
-    this.updateFlag = true;
-  }
-
-  dimensionTypeChange(): void {
-    this.refreshModel();
   }
 
   openGroupDialog(): void {

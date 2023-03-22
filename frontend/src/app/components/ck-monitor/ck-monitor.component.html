@@ -25,7 +25,6 @@
   </app-toolbar>
   <mat-sidenav-container class="drawer-container">
     <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
-      <h2 class="section-title">All Tasks</h2>
       <mat-list>
         <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
           Pending Tasks ({{ inactiveTaskWorkflows.length }})
@@ -130,24 +129,23 @@
         </ng-container>
         <mat-divider></mat-divider>
       </mat-list>
-      <h2 class="section-title">Learner Models</h2>
-      <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: grid;
+      grid-gap: 1em;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); padding: 20px 5px;">
         <button
-          *ngIf="showEngModel"
           mat-raised-button
           color="primary"
-          style="margin: 0px 15px;"
-          (click)="toggleEngagementModel()"
+          style=""
+          (click)="todoIsVisible = !todoIsVisible"
         >
-          {{ engModelIsVisible? 'Hide Engagement Model' : 'View Engagement Model' }} 
+          {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
         </button>
         <button
           mat-raised-button
           color="primary"
-          style="margin: 0px 15px;"
-          (click)="todoIsVisible = !todoIsVisible"
+          (click)="toggleEngagementModel()"
         >
-          {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
+          {{ engModelIsVisible? 'Hide Engagement Model' : 'View Engagement Model' }} 
         </button>
       </div>
     </mat-sidenav>
@@ -251,19 +249,7 @@
         </table>
       </div>
       <div *ngIf="engModelIsVisible" style="margin: 10px">
-        <div class="graph-toggle">
-          <mat-select [(ngModel)]="dimensionType" (selectionChange)="dimensionTypeChange()">
-            <mat-option [value]="DimensionType.DIAGNOSTIC">Diagnostic</mat-option>
-            <mat-option [value]="DimensionType.REASSESSMENT">Re-assessment</mat-option>
-          </mat-select>
-        </div>
-        <highcharts-chart 
-          [Highcharts]="Highcharts"
-          [options]="chartOptions"
-          [(update)]="updateFlag"
-          style="width: 100%; height: 80vh; display: inline-block;"
-        >
-        </highcharts-chart>
+        <app-learner-models #learner [board]="board"></app-learner-models>
       </div>
       <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !engModelIsVisible">
         No task selected!

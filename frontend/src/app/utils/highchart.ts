@@ -38,7 +38,7 @@ export const createClassEngagementGraph = (
     exporting: {
       buttons: {
         contextButton: {
-          text: 'Edit Chart',
+          text: 'Edit Model',
           menuItems: ['dimensions', 'data'],
         },
       },

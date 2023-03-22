@@ -109,7 +109,9 @@ export const getParamMap = (params: string): Map<string, string> => {
   const paramMap = new Map<string, string>();
   const keyValuePairs = params.split('&');
   keyValuePairs.forEach((keyValuePair) => {
-    const [key, value] = keyValuePair.split('=');
+    // Get everything before the = as the key and everything after the = as the value
+    const splitResult = keyValuePair.split(/=(.*)/);
+    const [key, value] = splitResult;
     paramMap.set(key, value);
   });
   return paramMap;

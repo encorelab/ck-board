@@ -1,7 +1,11 @@
 <div class="graph-toggle">
-  <mat-select [(ngModel)]="dimensionType" (selectionChange)="dimensionTypeChange()">
+  <mat-select style="margin-bottom: 20px" [(ngModel)]="dimensionType" (selectionChange)="dimensionTypeChange()" [disabled]="disableDimensionFilter()">
     <mat-option [value]="DimensionType.DIAGNOSTIC">Diagnostic</mat-option>
     <mat-option [value]="DimensionType.REASSESSMENT">Re-assessment</mat-option>
+  </mat-select>
+  <mat-select [(ngModel)]="modelSubject" (selectionChange)="modelSubjectChange()" placeholder="All Students">
+    <mat-option [value]="null">All Students</mat-option>
+    <mat-option *ngFor="let student of idToUser | keyvalue" [value]="student.value">{{student.value.username}}</mat-option>
   </mat-select>
 </div>
 <highcharts-chart 

@@ -1,11 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import {
-  FormArray,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import LearnerModel, { DimensionValue } from 'src/app/models/learner';
 import { AuthUser, Role } from 'src/app/models/user';
@@ -13,6 +7,13 @@ import { LearnerService } from 'src/app/services/learner.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
+
+export interface LearnerDataInput {
+  model: LearnerModel;
+  projectID: string;
+  selectedStudentID: string;
+  onUpdate: Function;
+}
 
 @Component({
   selector: 'app-learner-data-modal',
@@ -36,7 +37,7 @@ export class LearnerDataModalComponent implements OnInit {
     public userService: UserService,
     public projectService: ProjectService,
     public fb: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: LearnerDataInput
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -52,7 +53,10 @@ export class LearnerDataModalComponent implements OnInit {
     );
     this.students = (
       await this.userService.getByProject(this.data.projectID)
-    ).filter((u) => u.role == Role.STUDENT);
+    ).filter((u) => {
+      if (u.userID === this.data.selectedStudentID) this.student = u;
+      return u.role == Role.STUDENT;
+    });
   }
 
   studentChange(): void {

@@ -6,6 +6,15 @@
   background: transparent;
 }
 
+.toolbar {
+  width: 100%; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+
 .list-task-prompt {
   color: gray;
 }
@@ -78,7 +87,16 @@
 } 
 
 .drawer-container {
-  flex: 1;
+  position: absolute;
+  padding-top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+
+  @media (min-width: breakpoint('sm', 'min')) {
+    padding-top: 64px;
+  }
 }
 
 .subheader-button {
@@ -97,5 +115,6 @@ mat-sidenav-content {
   flex-direction: column;
   align-items: flex-start;
 
-  min-height: 80vh;
+  min-height: 90vh;
+  overflow: hidden;
 }

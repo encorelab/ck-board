@@ -88,14 +88,14 @@
 
 .drawer-container {
   position: absolute;
-  top: 56px;
+  padding-top: 56px;
   left: 0;
   right: 0;
   bottom: 0;
   overflow: auto;
 
   @media (min-width: breakpoint('sm', 'min')) {
-    top: 64px;
+    padding-top: 64px;
   }
 }
 
@@ -120,7 +120,8 @@ mat-sidenav-content {
   flex-direction: column;
   align-items: flex-start;
 
-  min-height: 80vh;
+  min-height: 90vh;
+  overflow: hidden;
 }
 
 .table {
@@ -133,4 +134,8 @@ mat-sidenav-content {
 
 .mat-column-action{
   padding: 0 8px;
+}
+
+.mat-loading-progress-bar{
+  margin-top: 10px;
 }

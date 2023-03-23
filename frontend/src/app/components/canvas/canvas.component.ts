@@ -155,7 +155,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
 
     this.user = this.userService.user!;
-    this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+    this.canvas = new fabric.Canvas(
+      'canvas',
+      this.embedded
+        ? this.fabricUtils.embeddedCanvasConfig
+        : this.fabricUtils.canvasConfig
+    );
     this.fabricUtils._canvas = this.canvas;
 
     this.configureBoard();

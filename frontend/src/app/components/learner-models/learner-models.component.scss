@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@import '../../../styles.scss';
 
 .graph-toggle {
   position: absolute;
@@ -10,13 +11,15 @@
 
 .graphs {
   display: grid;
-  grid-gap: 1em;
+  grid-gap: 0.5em;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
 }
 
 .graph {
   max-height: 350px;
   cursor: pointer;
+  border-radius: 4px;
+  @include mat.elevation(2);
 
   &:hover {
     @include mat.elevation(5);
@@ -24,8 +27,19 @@
 }
 
 .plus-icon {
-  position:relative;
-  top:50%;
-  left:50%;
-  transform: translate(-50%,-50%), scale(10)
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: scale(6);
+  color: $accent
+}
+
+.plus-text {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+  color: black;
+
+  position: relative;
+  top: 70%;
 }

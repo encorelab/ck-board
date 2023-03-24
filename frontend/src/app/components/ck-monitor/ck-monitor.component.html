@@ -178,9 +178,9 @@
         <button
           mat-raised-button
           color="primary"
-          (click)="toggleEngagementModel()"
+          (click)="toggleModels()"
         >
-          {{ showModel ? 'Hide Engagement Model' : 'View Engagement Model' }} 
+          {{ showModels ? 'Hide Learner Models' : 'View Learner Models' }} 
         </button>
       </div>
     </mat-sidenav>
@@ -283,11 +283,11 @@
           <tr mat-row *matRowDef="let row; columns: todoColumns;"></tr>
         </table>
       </div>
-      <div *ngIf="showModel" style="margin: 10px">
+      <div *ngIf="showModels">
         <app-learner-models #learner [board]="board"></app-learner-models>
       </div>
       <mat-progress-bar style="margin: 20px; width: 95%" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
-      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !showModel">
+      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !showModels">
         No task selected!
       </div>
       <div style="display: flex; flex-direction: row;">

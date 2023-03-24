@@ -1,9 +1,5 @@
 import { AuthUser } from './user';
 
-export enum LearnerModelType {
-  ENGAGEMENT = 'ENGAGEMENT',
-}
-
 export enum DimensionType {
   DIAGNOSTIC = 'Diagnostic',
   REASSESSMENT = 'Re-assessment',
@@ -12,7 +8,7 @@ export enum DimensionType {
 export class LearnerModel {
   modelID: string;
   boardID: string;
-  type: LearnerModelType;
+  name: string;
 
   dimensions: string[]; // name of dimensions, must be unique
   data: DimensionValue[]; // map student to list of dimensions with values

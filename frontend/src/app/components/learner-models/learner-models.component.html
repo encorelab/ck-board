@@ -1,18 +1,29 @@
-<div class="graph-toggle">
-  <mat-select style="margin-bottom: 20px" [(ngModel)]="dimensionType" (selectionChange)="dimensionTypeChange()" [disabled]="disableDimensionFilter()">
-    <mat-option [value]="DimensionType.DIAGNOSTIC">Diagnostic</mat-option>
-    <mat-option [value]="DimensionType.REASSESSMENT">Re-assessment</mat-option>
-  </mat-select>
-  <mat-select [(ngModel)]="modelSubject" (selectionChange)="modelSubjectChange()" placeholder="All Students">
+<mat-toolbar>
+  <span>Learner Models</span>
+  <span class="example-spacer"></span>
+  <mat-select style="width: 15%; font-size: 15px"[(ngModel)]="modelSubject" (selectionChange)="subjectChange()" placeholder="All Students">
     <mat-option [value]="null">All Students</mat-option>
     <mat-option *ngFor="let student of idToUser | keyvalue" [value]="student.value">{{student.value.username}}</mat-option>
   </mat-select>
+</mat-toolbar>
+<div class="graphs">
+  <div *ngFor="let modelCard of modelCards">
+    <div class="graph-toggle">
+      <mat-select *ngIf="!disableDimensionFilter()"style="width: 95%; font-size: 15px; margin-right: 0px" [(ngModel)]="modelCard.dimensionType" (selectionChange)="dimensionTypeChange(modelCard)">
+        <mat-option [value]="DimensionType.DIAGNOSTIC">Diagnostic</mat-option>
+        <mat-option [value]="DimensionType.REASSESSMENT">Re-assessment</mat-option>
+      </mat-select>
+    </div>
+    <highcharts-chart 
+      class="graph"
+      [Highcharts]="Highcharts"
+      [options]="modelCard.chartOptions"
+      [(update)]="modelCard.updateFlag"
+      [oneToOne]="true"
+      style="width: 100%; height: 80vh; display: inline-block;"
+    ></highcharts-chart>
+  </div>
+  <div class="graph">
+    <mat-icon class="plus-icon">add_box</mat-icon>
+  </div>
 </div>
-<highcharts-chart 
-  [Highcharts]="Highcharts"
-  [options]="chartOptions"
-  [(update)]="updateFlag"
-  [oneToOne]="true"
-  style="width: 100%; height: 80vh; display: inline-block;"
->
-</highcharts-chart>

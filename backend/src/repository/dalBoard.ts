@@ -10,7 +10,6 @@ import dalTag from './dalTag';
 import dalComment from './dalComment';
 import dalVote from './dalVote';
 import dalLearnerModel from './dalLearnerModel';
-import { LearnerModelType } from '../models/Learner';
 
 export const getById = async (id: string) => {
   try {
@@ -70,11 +69,7 @@ export const getAllPersonal = async (projectID: string) => {
 export const create = async (board: BoardModel) => {
   try {
     const savedBoard = await Board.create(board);
-    await dalLearnerModel.createDefault(
-      board.projectID,
-      board.boardID,
-      LearnerModelType.ENGAGEMENT
-    );
+    await dalLearnerModel.createDefaultModels(board.projectID, board.boardID);
     return savedBoard;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));

@@ -81,6 +81,12 @@ export const NEEDS_ATTENTION_TAG: Partial<Tag> = {
   },
 };
 
+export const DEFAULT_MODELS = [
+  'Engagement Model',
+  'SEL Model',
+  'Content Model',
+];
+
 export const DEFAULT_TAGS: Partial<Tag>[] = [
   IDEA_TAG,
   QUESTION_TAG,

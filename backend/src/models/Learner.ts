@@ -8,9 +8,11 @@ import {
 import { UserModel } from './User';
 import * as autopopulate from 'mongoose-autopopulate';
 
-export enum LearnerModelType {
-  ENGAGEMENT = 'ENGAGEMENT',
-}
+export const DEFAULT_MODELS = [
+  'Engagement Model',
+  'SEL Model',
+  'Content Model',
+];
 
 @plugin(autopopulate.default)
 @modelOptions({
@@ -26,8 +28,8 @@ export class LearnerModelModel {
   @prop({ required: true })
   public boardID!: string;
 
-  @prop({ enum: LearnerModelType, type: String, required: true })
-  public type!: LearnerModelType;
+  @prop({ required: true })
+  public name!: string;
 
   @prop({ required: true })
   public dimensions!: string[];

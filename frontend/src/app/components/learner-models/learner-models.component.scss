@@ -1,7 +1,31 @@
+@use '@angular/material' as mat;
+
 .graph-toggle {
   position: absolute;
   z-index: 99;
   
   padding: 20px;
   width: 130px;
+}
+
+.graphs {
+  display: grid;
+  grid-gap: 1em;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+}
+
+.graph {
+  max-height: 350px;
+  cursor: pointer;
+
+  &:hover {
+    @include mat.elevation(5);
+  }
+}
+
+.plus-icon {
+  position:relative;
+  top:50%;
+  left:50%;
+  transform: translate(-50%,-50%), scale(10)
 }

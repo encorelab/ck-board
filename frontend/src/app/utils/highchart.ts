@@ -8,7 +8,7 @@ export interface MenuHandlers {
   onEditData: Function;
 }
 
-export const createClassEngagementGraph = (
+export const createClassGraph = (
   model: LearnerModel,
   handlers: MenuHandlers,
   dimensionType: DimensionType = DimensionType.DIAGNOSTIC
@@ -59,7 +59,7 @@ export const createClassEngagementGraph = (
       },
     },
     title: {
-      text: 'Engagement Model',
+      text: model.name,
     },
     xAxis: {
       categories: dimensions,
@@ -80,7 +80,7 @@ export const createClassEngagementGraph = (
   };
 };
 
-export const createStudentEngagementGraph = (
+export const createStudentGraph = (
   model: LearnerModel,
   handlers: MenuHandlers,
   student: AuthUser
@@ -162,7 +162,7 @@ export const createStudentEngagementGraph = (
       },
     },
     title: {
-      text: `${student.username}'s Engagement Model`,
+      text: model.name,
     },
     xAxis: {
       categories: dimensions,

@@ -8,10 +8,7 @@ import { Board } from 'src/app/models/board';
 import LearnerModel, { DimensionType } from 'src/app/models/learner';
 import { AuthUser } from 'src/app/models/user';
 import { LearnerService } from 'src/app/services/learner.service';
-import {
-  createClassEngagementGraph,
-  createStudentEngagementGraph,
-} from 'src/app/utils/highchart';
+import { createClassGraph, createStudentGraph } from 'src/app/utils/highchart';
 import { LearnerConfigurationModalComponent } from '../learner-configuration-modal/learner-configuration-modal.component';
 import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-modal.component';
 
@@ -29,6 +26,13 @@ export interface LearnerInput {
   board: Board;
 }
 
+export interface ModelCard {
+  model: LearnerModel;
+  dimensionType: DimensionType;
+  chartOptions: Highcharts.Options;
+  updateFlag: boolean;
+}
+
 @Component({
   selector: 'app-learner-models',
   templateUrl: './learner-models.component.html',
@@ -37,13 +41,11 @@ export interface LearnerInput {
 export class LearnerModelsComponent implements OnInit {
   @Input() board: Board;
 
-  engModel: LearnerModel;
-
-  Highcharts: typeof Highcharts = Highcharts;
-  chartOptions: Highcharts.Options = {};
+  modelCards: ModelCard[] = [];
 
   DimensionType: typeof DimensionType = DimensionType;
-  dimensionType: DimensionType = DimensionType.DIAGNOSTIC;
+  Highcharts: typeof Highcharts = Highcharts;
+  chartOptions: Highcharts.Options = {};
 
   idToUser: Map<string, AuthUser> = new Map<string, AuthUser>();
   modelSubject: AuthUser | null;
@@ -57,26 +59,33 @@ export class LearnerModelsComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     const models = await this.learnerService.getByBoards([this.board.boardID]);
-    if (models?.length > 0) {
-      this.engModel = models[0];
-      models[0].data.map((d) => this.idToUser.set(d.student.userID, d.student));
-      this.refreshModel();
+    for (const model of models) {
+      this.modelCards.push({
+        model: model,
+        dimensionType: DimensionType.DIAGNOSTIC,
+        chartOptions: this.createChartOptions(model),
+        updateFlag: false,
+      });
+      model.data.map((d) => this.idToUser.set(d.student.userID, d.student));
     }
   }
 
-  refreshModel(): void {
+  createChartOptions(
+    model: LearnerModel,
+    dimType = DimensionType.DIAGNOSTIC
+  ): Highcharts.Options {
     if (!this.modelSubject) {
-      this.chartOptions = createClassEngagementGraph(
-        this.engModel,
+      return createClassGraph(
+        model,
         {
           onEditData: this.onEditData,
           onEditDimensions: this.onEditDimensions,
         },
-        this.dimensionType
+        dimType
       );
     } else {
-      this.chartOptions = createStudentEngagementGraph(
-        this.engModel,
+      return createStudentGraph(
+        model,
         {
           onEditData: this.onEditData,
           onEditDimensions: this.onEditDimensions,
@@ -84,44 +93,56 @@ export class LearnerModelsComponent implements OnInit {
         this.modelSubject
       );
     }
-
-    this.updateFlag = true;
   }
 
-  onEditData = (): void => {
+  refreshModelCard(model: LearnerModel, modelCard?: ModelCard): void {
+    if (!modelCard) {
+      modelCard = this.modelCards.find(
+        (m) => m.model.modelID === model.modelID
+      );
+    }
+    if (modelCard) {
+      modelCard.model = model;
+      modelCard.chartOptions = this.createChartOptions(
+        model,
+        modelCard.dimensionType
+      );
+      modelCard.updateFlag = true;
+    }
+  }
+
+  onEditData = (model: LearnerModel): void => {
     this.dialog.open(LearnerDataModalComponent, {
       data: {
-        model: this.engModel,
+        model: model,
         projectID: this.board.projectID,
         selectedStudentID: this.modelSubject?.userID,
         onUpdate: (model: LearnerModel) => {
-          this.engModel = model;
-          this.refreshModel();
+          this.refreshModelCard(model);
         },
       },
       maxWidth: 1280,
     });
   };
 
-  onEditDimensions = () => {
+  onEditDimensions = (model: LearnerModel) => {
     this.dialog.open(LearnerConfigurationModalComponent, {
       data: {
-        model: this.engModel,
-        onUpdate: (model) => {
-          this.engModel = model;
-          this.refreshModel();
+        model: model,
+        onUpdate: (model: LearnerModel) => {
+          this.refreshModelCard(model);
         },
       },
       maxWidth: 1280,
     });
   };
 
-  dimensionTypeChange(): void {
-    this.refreshModel();
+  dimensionTypeChange(modelCard: ModelCard): void {
+    this.refreshModelCard(modelCard.model);
   }
 
-  modelSubjectChange(): void {
-    this.refreshModel();
+  subjectChange(): void {
+    this.modelCards.map((mc) => this.refreshModelCard(mc.model, mc));
   }
 
   disableDimensionFilter(): boolean {

@@ -1,28 +1,27 @@
-import mongoose, { mongo } from 'mongoose';
+import { mongo } from 'mongoose';
 import { NotFoundError } from '../errors/client.errors';
 import Learner, {
+  DEFAULT_MODELS,
   DimensionValue,
   LearnerModelModel,
-  LearnerModelType,
 } from '../models/Learner';
 import User from '../models/User';
-import dalUser from './dalUser';
 
-export const createDefault = async (
+export const createDefaultModels = async (
   projectID: string,
-  boardID: string,
-  type: LearnerModelType
+  boardID: string
 ) => {
   try {
-    const savedModel = await Learner.create({
-      modelID: new mongo.ObjectId().toString(),
-      projectID: projectID,
-      boardID: boardID,
-      type: type,
-      dimensions: [],
-      data: [],
-    });
-    return savedModel;
+    for (const value of DEFAULT_MODELS) {
+      await Learner.create({
+        modelID: new mongo.ObjectId().toString(),
+        projectID: projectID,
+        boardID: boardID,
+        name: value,
+        dimensions: [],
+        data: [],
+      });
+    }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -152,7 +151,7 @@ export const updateData = async (
 };
 
 const dalLearnerModel = {
-  createDefault,
+  createDefaultModels,
   getByID,
   getByBoards,
   addDimension,

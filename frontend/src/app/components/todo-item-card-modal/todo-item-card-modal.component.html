@@ -1,0 +1,81 @@
+<div>
+  <mat-card class="details">
+    <mat-card-header>
+      <div mat-card-avatar class="avatar"></div>
+      <mat-card-title>{{ taskTitle }}</mat-card-title>
+
+      <span class="fill-remaining-space"></span>
+      <mat-card-subtitle>{{ assignee }}</mat-card-subtitle>
+      <button
+        *ngIf="!todoItem.completed"
+        mat-icon-button
+        matTooltip="Edit Task"
+        (click)="editTodoItem(todoItem)"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button
+        *ngIf="todoItem.completed"
+        mat-icon-button
+        matTooltip="Restore Task"
+        (click)="restoreTodoItem(todoItem)"
+      >
+        <mat-icon>restore</mat-icon>
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <p style="overflow-wrap: break-word" [innerHTML]="taskDescription">
+        {{ taskDescription }}
+      </p>
+    </mat-card-content>
+    <p>Type : {{taskTypes}}</p>
+    <div class="todoItemDetails">
+      <div style="display: flex;">
+        <mat-icon style="margin-right: 15px;">access_time</mat-icon>
+        <div>
+          <p style="font-weight: 500; margin-bottom: 2px">
+            {{todoItem.deadline.date}}
+          </p>
+          <p>{{todoItem.deadline.time}}</p>
+        </div>
+      </div>
+      <p style="font-weight: 500; margin: 0 30px;" [ngStyle]="{'color': statusColor}">{{status}}</p>
+    </div>
+    <div *ngIf="!todoItem.completed">
+        <mat-form-field appearance="fill">
+          <mat-label>Completion Quality</mat-label>
+          <mat-select
+          [(ngModel)]="completionQuality"
+          [formControl]="completionQualityFormControl"
+          [errorStateMatcher]="matcher"
+          [(value)]="defaultQuality"
+          >
+          <mat-option *ngFor="let option of completionQualityOptions" [value]=option>
+            {{ EXPANDED_COMPLETION_QUALITY[option] }}
+          </mat-option>
+          
+          </mat-select>
+        </mat-form-field>
+      <mat-chip 
+        [disabled]="!completionQualityFormControl.valid || completionQuality === 'N_A'" 
+        (click)="completeTask()"
+        class="config-button" mat-raised-button color="accent" 
+        style="text-align: center" selected>
+        <span style="width: 100%;text-align: center;">
+          Mark as Done
+        </span>
+      </mat-chip>
+    </div>
+    <div *ngIf="todoItem.completed">
+      <h4>
+        Completion Quality:
+        <mat-chip color="accent" selected style="margin: 0 5px">
+          {{taskCompletionQuality}}
+        </mat-chip>
+      </h4>
+    </div>
+  </mat-card>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="close()">Close</button>
+</div>

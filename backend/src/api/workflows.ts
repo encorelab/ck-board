@@ -327,13 +327,14 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
 });
 
 /**
- * Mark group task as complete.
+ * Update Group Task status to Complete/Active
  */
-router.post('/task/groupTask/:groupTaskID/complete', async (req, res) => {
+router.post('/task/groupTask/:groupTaskID/status', async (req, res) => {
   const { groupTaskID } = req.params;
+  const { status } = req.body;
 
   const updatedGroupTask = await dalGroupTask.update(groupTaskID, {
-    status: GroupTaskStatus.COMPLETE,
+    status: status,
   });
   res.status(200).json(updatedGroupTask);
 });

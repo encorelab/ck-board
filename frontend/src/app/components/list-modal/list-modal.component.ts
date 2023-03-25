@@ -159,11 +159,11 @@ export class ListModalComponent implements OnInit, OnDestroy {
     this.page = 0;
     this.loading = true;
 
-    return this.fetchMorePosts();
+    return this.fetchMorePosts({ size: this.pageSize, page: this.page });
   }
 
-  async fetchMorePosts() {
-    const data = await this.postService.getAllByBoard(this.board.boardID);
+  async fetchMorePosts(opts?: { size: number; page: number }) {
+    const data = await this.postService.getAllByBoard(this.board.boardID, opts);
     const htmlPosts = await this.converters.toHTMLPosts(data);
     this.length = data.length;
     this.posts = this.posts.concat(htmlPosts);
@@ -172,20 +172,25 @@ export class ListModalComponent implements OnInit, OnDestroy {
     this.loadingMore = false;
   }
 
-  pagePosts(opts: any, event?: any): PageEvent {
-    const size = event ? event.pageSize : opts.size;
-    const page = event ? event.pageIndex : opts.page;
+  pagePosts(event?: any): PageEvent {
+    this.posts = [];
+    this.loading = true;
+
+    const size = event ? event.pageSize : this.pageSize;
+    const page = event ? event.pageIndex : 0;
+    console.log('pagePosts', event, size, page);
 
     // after
-    //FIXME: for when pagination api is implemented in
-    // this.postService
-    //   .getAllByBoard(this.board.boardID, opts)
-    //   .then(async ({ posts, count }) => {
-    //     this.length = count;
-    //     this.posts = await this.converters.toHTMLPosts(posts);
-    //     this.loading = false;
-    //     this.loadingMore = false;
-    //   });
+    // FIXME: for when pagination api is implemented in
+    this.postService
+      .getAllByBoard(this.board.boardID, { size, page })
+      .then(async (posts: Post[]) => {
+        console.log('----', size * page, posts);
+        this.length = posts.length;
+        this.posts = await this.converters.toHTMLPosts(posts);
+        this.loading = false;
+        this.loadingMore = false;
+      });
     return event;
   }
 

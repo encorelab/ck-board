@@ -18,6 +18,17 @@ export class UserService {
     return this.http.post<User[]>('auth/multiple', ids).toPromise();
   }
 
+  redirectOnSessionExpire(expiresAt: string) {
+    console.log(expiresAt);
+    const expiresAtDate = Date.parse(expiresAt);
+    if (!isNaN(expiresAtDate)) {
+      // protect against invalid date values
+      setTimeout(async () => {
+        window.location.reload();
+      }, expiresAtDate - Date.now());
+    }
+  }
+
   async register(user: User) {
     return this.http
       .post<TokenResponse>('auth/register', user, { withCredentials: true })
@@ -26,6 +37,7 @@ export class UserService {
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('access_token', result.token);
         localStorage.setItem('expires_at', result.expiresAt);
+        this.redirectOnSessionExpire(result.expiresAt);
         return true;
       });
   }
@@ -45,6 +57,7 @@ export class UserService {
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('access_token', result.token);
         localStorage.setItem('expires_at', result.expiresAt);
+        this.redirectOnSessionExpire(result.expiresAt);
         return true;
       });
   }

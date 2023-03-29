@@ -4,7 +4,6 @@ import {
   OnInit,
   Output,
   EventEmitter,
-  OnChanges,
   SimpleChanges,
 } from '@angular/core';
 import {
@@ -28,6 +27,7 @@ export class MoveGroupMembersComponent implements OnInit {
   @Input() projectID: string;
   @Input() headerText: string;
   @Output() updateGroups: EventEmitter<Group[]> = new EventEmitter<Group[]>();
+  @Output() groupsChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   groupMembers: GroupMembers[] = [];
   projectMembers: string[] = [];
@@ -117,6 +117,7 @@ export class MoveGroupMembersComponent implements OnInit {
     this.unassigned.push(members[memberIndex]);
     members.splice(memberIndex, 1);
     this.updateGroups.emit(this.getGroups());
+    this.groupsChanged.emit(true);
   }
 
   removeAllMembers(groupIndex: number): void {
@@ -125,6 +126,7 @@ export class MoveGroupMembersComponent implements OnInit {
     this.unassigned.push(...members);
     members.length = 0;
     this.updateGroups.emit(this.getGroups());
+    this.groupsChanged.emit(true);
   }
 
   shuffleBetweenGroups(): void {
@@ -142,6 +144,7 @@ export class MoveGroupMembersComponent implements OnInit {
       this.groupMembers[index % this.groupMembers.length].members.push(member);
     });
     this.updateGroups.emit(this.getGroups());
+    this.groupsChanged.emit(true);
   }
 
   private clearUnassignedMembers(): void {
@@ -183,6 +186,7 @@ export class MoveGroupMembersComponent implements OnInit {
         event.currentIndex
       );
       this.updateGroups.emit(this.getGroups());
+      this.groupsChanged.emit(true);
     }
   }
 }

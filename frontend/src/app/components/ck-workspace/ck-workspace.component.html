@@ -107,7 +107,8 @@
             <div (click)="$event.stopPropagation();" style="display: flex; flex-direction: column; gap: 10px;">
               <app-html-post 
                 (click)="$event.stopPropagation();" 
-                [post]="htmlPost" [disableDownload]="true" 
+                [post]="htmlPost" [disableDownload]="true"
+                [onCommentEvent]="onCommentEvent" [onTagEvent]="onTagEvent" 
                 style="width: 360px; height: 100%;">
               </app-html-post>
               <div style="display: flex; flex-direction: row;">

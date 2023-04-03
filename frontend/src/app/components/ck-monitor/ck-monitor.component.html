@@ -276,9 +276,9 @@
           <tr mat-row *matRowDef="let row; columns: todoColumns;"></tr>
         </table>
       </div>
-      <mat-progress-bar style="margin: 20px; width: 95%" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
       <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible">
         No task selected!
+        <mat-progress-bar class="mat-loading-progress-bar" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
       </div>
       <div style="display: flex; flex-direction: row;">
         <div *ngIf="runningTask">

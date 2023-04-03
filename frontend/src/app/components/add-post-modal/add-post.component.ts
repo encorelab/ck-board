@@ -331,7 +331,7 @@ export class AddPostComponent {
       this.creationInProgress = false;
     } catch (e) {
       this.snackbarService.queueSnackbar(
-        'Unable to create post, please refresh and try again!'
+        'Unable to create post. Please refresh and try again!'
       );
     } finally {
       this.dialogRef.close();

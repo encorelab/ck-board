@@ -278,55 +278,6 @@ class WorkflowManager {
       return removePostFromSource(source, sourcePosts);
     }
   }
-
-  async updateTask(
-    userId: string,
-    postId: string,
-    type: TaskActionType,
-    delta: number
-  ) {
-    const rawTasks: GroupTaskModel[] = await dalGroupTask.getByUserAndPost(
-      userId,
-      postId
-    );
-    const tasks: GroupTaskExpanded[] = await dalGroupTask.expandGroupTasks(
-      rawTasks
-    );
-
-    const updatedTasks = (
-      await Promise.all<any[]>(
-        tasks.flatMap(async (task) => {
-          const workflow = await dalWorkflow.getById(task.workflow.workflowID);
-          if (!workflow || !isTask<TaskWorkflowModel>(workflow)) return [];
-
-          const progress = task.groupTask.progress.get(postId);
-          if (!progress) return [];
-
-          const action = progress.find((a) => a.type === type);
-          if (workflow && action) {
-            const newAmountReq = action.amountRequired + delta;
-            const limit = workflow.requiredActions.find((a) => a.type === type);
-            if (
-              limit &&
-              !(newAmountReq > limit.amountRequired || newAmountReq < 0)
-            ) {
-              action.amountRequired = newAmountReq;
-              return task;
-            }
-          }
-          return [];
-        })
-      )
-    ).flat();
-
-    await dalGroupTask.updateMany(updatedTasks.map((u) => u.groupTask));
-
-    Socket.Instance.emit(
-      SocketEvent.WORKFLOW_PROGRESS_UPDATE,
-      updatedTasks,
-      true
-    );
-  }
 }
 
 export default WorkflowManager;

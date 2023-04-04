@@ -194,4 +194,9 @@ export class ProjectDashboardComponent implements OnInit {
       },
     });
   }
+
+  signOut(): void {
+    this.userService.logout();
+    this.router.navigate(['login']);
+  }
 }

@@ -512,6 +512,11 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(url);
   }
 
+  signOut(): void {
+    this.userService.logout();
+    this.router.navigate(['login']);
+  }
+
   ngOnDestroy(): void {
     this.listeners.map((l) => l.unsubscribe());
     this.socketService.disconnect(this.user.userID, this.board.boardID);

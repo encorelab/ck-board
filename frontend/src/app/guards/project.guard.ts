@@ -32,6 +32,10 @@ export class ProjectGuard implements CanActivate {
     next: ActivatedRouteSnapshot,
     _state: RouterStateSnapshot
   ): Promise<boolean> {
+    if (!this.userService.loggedIn) {
+      return false;
+    }
+
     const projectID = next.params.projectID;
 
     const isValidProject = await this.isValidProject(projectID);

@@ -63,6 +63,7 @@ import { TodoItemCardModalComponent } from './components/todo-item-card-modal/to
 import { LearnerConfigurationModalComponent } from './components/learner-configuration-modal/learner-configuration-modal.component';
 import { LearnerDataModalComponent } from './components/learner-data-modal/learner-data-modal.component';
 import { LearnerModelsComponent } from './components/learner-models/learner-models.component';
+import { AddLearnerModalComponent } from './components/add-learner-modal/add-learner-modal.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -111,6 +112,7 @@ export function tokenGetter() {
     LearnerConfigurationModalComponent,
     LearnerDataModalComponent,
     LearnerModelsComponent,
+    AddLearnerModalComponent,
   ],
   imports: [
     BrowserModule,

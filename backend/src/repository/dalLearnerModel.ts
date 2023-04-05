@@ -7,6 +7,26 @@ import Learner, {
 } from '../models/Learner';
 import User from '../models/User';
 
+export const create = async (
+  projectID: string,
+  boardID: string,
+  name: string,
+  dimensions: string[]
+) => {
+  try {
+    return await Learner.create({
+      modelID: new mongo.ObjectId().toString(),
+      projectID: projectID,
+      boardID: boardID,
+      name: name,
+      dimensions: dimensions,
+      data: [],
+    });
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const createDefaultModels = async (
   projectID: string,
   boardID: string
@@ -151,6 +171,7 @@ export const updateData = async (
 };
 
 const dalLearnerModel = {
+  create,
   createDefaultModels,
   getByID,
   getByBoards,

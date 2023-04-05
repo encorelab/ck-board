@@ -14,6 +14,22 @@ export class LearnerService {
       .toPromise();
   }
 
+  createModel(
+    projectID: string,
+    boardID: string,
+    name: string,
+    dimensions: string[]
+  ): Promise<LearnerModel> {
+    return this.http
+      .post<LearnerModel>('learner/', {
+        projectID,
+        boardID,
+        name,
+        dimensions,
+      })
+      .toPromise();
+  }
+
   addDimension(modelID: string, dimension: string): Promise<LearnerModel> {
     return this.http
       .post<LearnerModel>(`learner/${modelID}/addDimension`, { dimension })

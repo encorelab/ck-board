@@ -7,6 +7,18 @@ import dalUser from '../repository/dalUser';
 
 const router = Router();
 
+router.post('/', async (req, res) => {
+  const { projectID, boardID, name, dimensions } = req.body;
+
+  const model = await dalLearnerModel.create(
+    projectID,
+    boardID,
+    name,
+    dimensions
+  );
+  res.status(200).json(model);
+});
+
 router.post('/board/many', async (req, res) => {
   const { boardIDs } = req.body;
 

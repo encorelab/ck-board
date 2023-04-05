@@ -16,7 +16,7 @@
 }
 
 .graph {
-  max-height: 350px;
+  height: 350px;
   cursor: pointer;
   border-radius: 4px;
   @include mat.elevation(2);
@@ -24,6 +24,21 @@
   &:hover {
     @include mat.elevation(5);
   }
+
+  &-highchart {
+    @extend .graph;
+    width: 100%; 
+    display: inline-block;
+  }
+
+  &-add {
+    @extend .graph;
+    background-color: white;
+  }
+}
+
+.high-chart  .graph {
+
 }
 
 .plus-icon {

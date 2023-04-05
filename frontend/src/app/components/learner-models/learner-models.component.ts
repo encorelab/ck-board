@@ -9,6 +9,7 @@ import LearnerModel, { DimensionType } from 'src/app/models/learner';
 import { AuthUser } from 'src/app/models/user';
 import { LearnerService } from 'src/app/services/learner.service';
 import { createClassGraph, createStudentGraph } from 'src/app/utils/highchart';
+import { AddLearnerModalComponent } from '../add-learner-modal/add-learner-modal.component';
 import { LearnerConfigurationModalComponent } from '../learner-configuration-modal/learner-configuration-modal.component';
 import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-modal.component';
 
@@ -147,5 +148,24 @@ export class LearnerModelsComponent implements OnInit {
 
   disableDimensionFilter(): boolean {
     return this.modelSubject != null;
+  }
+
+  handleCreateModel(): void {
+    this.dialog.open(AddLearnerModalComponent, {
+      data: {
+        board: this.board,
+        onCreate: (model: LearnerModel) => {
+          this.modelCards.push({
+            model: model,
+            dimensionType: DimensionType.DIAGNOSTIC,
+            chartOptions: this.createChartOptions(model),
+            updateFlag: false,
+          });
+          model.data.map((d) => this.idToUser.set(d.student.userID, d.student));
+        },
+      },
+      minWidth: 480,
+      maxWidth: 1280,
+    });
   }
 }

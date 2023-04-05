@@ -4,7 +4,7 @@ import { fabric } from 'fabric';
 import { PersonalBoardSetting } from 'src/app/models/project';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { UserService } from 'src/app/services/user.service';
-import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
+import { FabricUtils } from 'src/app/utils/FabricUtils';
 import { generateCode, generateUniqueID } from 'src/app/utils/Utils';
 
 @Component({
@@ -20,6 +20,7 @@ export class AddProjectModalComponent implements OnInit {
     bgImage: null,
   };
   membershipDisabledEditable = false;
+  linkToScore = false;
 
   constructor(
     public dialogRef: MatDialogRef<AddProjectModalComponent>,
@@ -54,6 +55,7 @@ export class AddProjectModalComponent implements OnInit {
       boards: [],
       studentJoinCode: generateCode(5).toString(),
       teacherJoinCode: generateCode(5).toString(),
+      ...(this.linkToScore && { scoreJoinCode: generateCode(5).toString(), linkedRunId: 0 }),
       personalBoardSetting: this.personalBoardSetting,
       membershipDisabled: this.membershipDisabledEditable,
     });

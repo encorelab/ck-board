@@ -34,6 +34,14 @@ export const getByJoinCode = async (code: string, role: Role) => {
   }
 };
 
+export const getByConnectCode = async (code: string) => {
+  try {
+    return await Project.findOne({ scoreJoinCode: code });
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const addStudent = async (code: string, userID: string) => {
   const project = await Project.findOne({ studentJoinCode: code });
   if (!project) {
@@ -112,6 +120,7 @@ const dalProject = {
   getById,
   getByUserId,
   getByJoinCode,
+  getByConnectCode,
   create,
   addStudent,
   addTeacher,

@@ -35,6 +35,12 @@ export class ProjectModel {
   @prop({ required: true })
   public teacherJoinCode!: string;
 
+  @prop({ required: false })
+  public scoreJoinCode!: string;
+
+  @prop({ required: false })
+  public linkedRunId!: number;
+
   @prop({ required: true, type: () => PersonalBoardSetting })
   public personalBoardSetting!: PersonalBoardSetting;
 

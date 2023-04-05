@@ -78,6 +78,33 @@ router.post('/:id', async (req, res) => {
   res.status(200).json(updatedProject);
 });
 
+router.post('/connect/:runId/:code', async (req, res) => {
+  const { runId, code } = req.params;
+
+  let project = await dalProject.getByConnectCode(code);
+  const available = project != null && project.linkedRunId == 0;
+  const linkedRunId = Number(runId);
+  const response: any = {
+    code: null,
+    message: 'Code does not exist or has already been used',
+  };
+  if (available && !isNaN(linkedRunId)) {
+    const id = project?.projectID;
+    if (!!id) {
+      project = await dalProject.update(id, { linkedRunId });
+      if (!!project) {
+        response.message =
+          'Successfully linked Run to an available CK Board project';
+        response.code = project.scoreJoinCode;
+      }
+    }
+  } else if (!isNaN(linkedRunId) && linkedRunId == project?.linkedRunId) {
+    response.message = 'Run is already linked to this CK Board project';
+  }
+
+  res.status(200).json(response);
+});
+
 router.get('/:id', async (req, res) => {
   const id = req.params.id;
 

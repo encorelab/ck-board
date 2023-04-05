@@ -13,6 +13,8 @@ export class Project {
   members: string[];
   studentJoinCode: string;
   teacherJoinCode: string;
+  scoreJoinCode: string;
+  linkedRunId: number;
   personalBoardSetting: PersonalBoardSetting;
   membershipDisabled: boolean;
 }

@@ -37,19 +37,21 @@ export class ProjectConfigurationModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userService.getMultipleByIds(this.project.members)
-      .then((users) => {
-        this.members = users.sort((a, b) => b.role.charCodeAt(0) - a.role.charCodeAt(0));
-      });
+    this.userService.getMultipleByIds(this.project.members).then((users) => {
+      this.members = users.sort(
+        (a, b) => b.role.charCodeAt(0) - a.role.charCodeAt(0)
+      );
+    });
   }
 
   handleDialogSubmit(): void {
     this.loading = true;
-    this.projectService.update(this.project.projectID, {
-      name: this.nameEditable,
-      membershipDisabled: this.membershipDisabledEditable,
-      members: this.members.map((user) => user.userID),
-    })
+    this.projectService
+      .update(this.project.projectID, {
+        name: this.nameEditable,
+        membershipDisabled: this.membershipDisabledEditable,
+        members: this.members.map((user) => user.userID),
+      })
       .then((project) => {
         this.project = project;
       })

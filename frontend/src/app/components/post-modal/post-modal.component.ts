@@ -108,6 +108,8 @@ export class PostModalComponent {
   expandedUpvotesView = false;
   expandedUpvotes: any[] = [];
 
+  loading: boolean = false;
+
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
     public dialog: MatDialog,
@@ -266,15 +268,21 @@ export class PostModalComponent {
     });
   }
 
-  async addTag(event, tagOption) {
+  addTag(event: MouseEvent, tagOption: Tag): void {
     event.stopPropagation();
 
-    this.post = await this.canvasService.tag(this.post, tagOption);
-    this.tags.push(tagOption);
-    this.tagOptions = this.tagOptions.filter((tag) => tag != tagOption);
-    if (this.data.onTagEvent) {
-      this.data.onTagEvent(this.post.postID, 'add');
-    }
+    this.loading = true;
+    this.canvasService
+      .tag(this.post, tagOption)
+      .then((post) => {
+        this.post = post;
+        this.tags.push(tagOption);
+        this.tagOptions = this.tagOptions.filter((tag) => tag != tagOption);
+        if (this.data.onTagEvent) {
+          this.data.onTagEvent(this.post.postID, 'add');
+        }
+      })
+      .finally(() => (this.loading = false));
   }
 
   async removeTag(tag) {

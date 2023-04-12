@@ -143,6 +143,8 @@
             <div
               mat-menu-item
               (click)="addTag($event, tagOption)"
+              [class.spinner]="loading"
+              [disabled]="loading"
               *ngFor="let tagOption of tagOptions"
             >
               {{ tagOption.name }}
@@ -190,7 +192,8 @@
   <div mat-dialog-actions>
     <button
       *ngIf="isEditing"
-      [disabled]="!titleControl.valid || !descControl.valid"
+      [disabled]="!titleControl.valid || !descControl.valid || loading"
+      [class.spinner]="loading"
       mat-button
       (click)="onUpdate()"
     >

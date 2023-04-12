@@ -174,7 +174,7 @@
         <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
       </mat-chip>
       <mat-menu #menu1="matMenu">
-        <div mat-menu-item *ngIf="tagOptions && tagOptions.length == 0">
+        <div mat-menu-item *ngIf="tagOptions && tagOptions.length === 0">
           No tags available.
         </div>
         <div

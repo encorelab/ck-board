@@ -239,7 +239,8 @@
       </mat-form-field>
       <button
         mat-button
-        [disabled]="newTagText.length < 1"
+        [class.spinner]="loading"
+        [disabled]="newTagText.length < 1 || loading"
         color="primary"
         (click)="addTag()"
       >
@@ -261,10 +262,11 @@
   <button
     mat-button
     (click)="handleDialogSubmit()"
+    [class.spinner]="loading"
     [disabled]="
       (taskMessage && !taskTitle.trim()) ||
       (taskTitle && !taskTitle.trim()) ||
-      boardNameInput.invalid
+      boardNameInput.invalid || loading
     "
     cdkFocusInitial
   >

@@ -1,10 +1,9 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnDestroy } from '@angular/core';
 import {
   MatDialog,
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { PostType } from '../../models/post';
 import { BoardService } from 'src/app/services/board.service';
 import { PostService } from '../../services/post.service';
 import { UserService } from 'src/app/services/user.service';
@@ -19,18 +18,19 @@ import {
 import { CanvasService } from 'src/app/services/canvas.service';
 import { Project } from 'src/app/models/project';
 import { Board, BoardScope, BoardPermissions } from 'src/app/models/board';
-import { generateUniqueID } from 'src/app/utils/Utils';
+import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Router } from '@angular/router';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ImageSettings } from 'src/app/utils/FabricUtils';
 import { SocketService } from 'src/app/services/socket.service';
+import { SnackbarService } from 'src/app/services/snackbar.service';
 
 @Component({
   selector: 'app-configuration-modal',
   templateUrl: './configuration-modal.component.html',
   styleUrls: ['./configuration-modal.component.scss'],
 })
-export class ConfigurationModalComponent {
+export class ConfigurationModalComponent implements OnDestroy {
   readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
   project: Project;
@@ -68,6 +68,8 @@ export class ConfigurationModalComponent {
 
   members: string[] = [];
 
+  loading: boolean = false;
+
   constructor(
     public dialogRef: MatDialogRef<ConfigurationModalComponent>,
     public dialog: MatDialog,
@@ -78,7 +80,8 @@ export class ConfigurationModalComponent {
     public canvasService: CanvasService,
     public fileUploadService: FileUploadService,
     public socketService: SocketService,
-    private router: Router,
+    private _snackbarService: SnackbarService,
+    private _router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.project = data.project;
@@ -103,7 +106,7 @@ export class ConfigurationModalComponent {
     );
   }
 
-  async addTag() {
+  addTag(): void {
     this.tagsChanged = true;
     this.tags.push({
       tagID: generateUniqueID(),
@@ -111,17 +114,49 @@ export class ConfigurationModalComponent {
       name: this.newTagText,
       color: this.newTagColor,
     });
-    await this.boardService.update(this.boardID, { tags: this.tags });
+
+    this.loading = true;
+    this.boardService
+      .update(this.boardID, { tags: this.tags })
+      .then((board) => {
+        this._snackbarService.queueSnackbar(
+          `Sucessfully added tag to Board: ${board.name}`
+        );
+      })
+      .catch((error) => {
+        const errorMsg = getErrorMessage(error);
+        console.error(errorMsg);
+        this._snackbarService.queueSnackbar(
+          'A problem occured while adding a tag. Please try again',
+          `Error: ${errorMsg}`
+        );
+      })
+      .finally(() => (this.loading = false));
     this.newTagText = '';
   }
 
-  async removeTag(tagRemove) {
+  removeTag(tagRemove: Tag): void {
     this.tagsChanged = true;
     this.tags = this.tags.filter((tag) => tag != tagRemove);
-    await this.boardService.update(this.boardID, { tags: this.tags });
+
+    this.boardService
+      .update(this.boardID, { tags: this.tags })
+      .then((board) => {
+        this._snackbarService.queueSnackbar(
+          `Sucessfully removed tag from Board: ${board.name}`
+        );
+      })
+      .catch((error) => {
+        const errorMsg = getErrorMessage(error);
+        console.error(errorMsg);
+        this._snackbarService.queueSnackbar(
+          'A problem occured while removing a tag. Please try again',
+          `Error: ${errorMsg}`
+        );
+      });
   }
 
-  compressFile() {
+  compressFile(): void {
     this.fileUploadService.compressFile().then(async (compressedImage) => {
       this.newCompressedImage = compressedImage;
 
@@ -142,64 +177,96 @@ export class ConfigurationModalComponent {
     });
   }
 
-  async updateBoardImageSettings(): Promise<Board> {
+  updateBoardImageSettings(): Promise<Board> {
     this.bgImgSettings.top = this.backgroundPosY;
     this.bgImgSettings.left = this.backgroundPosX;
     this.bgImgSettings.scaleX = this.backgroundScale / 100;
     this.bgImgSettings.scaleY = this.backgroundScale / 100;
 
-    const board: Board = await this.canvasService.updateBoardImageSettings(
+    return this.canvasService.updateBoardImageSettings(
       this.boardID,
       this.bgImgSettings
     );
-    return board;
   }
 
-  async removeImage() {
+  removeImage(): void {
     this.currentBgImage = null;
-    const board = await this.canvasService.updateBoardImage(this.boardID, null);
-    this.data.update(board);
+
+    this.canvasService
+      .updateBoardImage(this.boardID, null)
+      .then((board) => {
+        this.data.update(board);
+      })
+      .catch((error) => {
+        const errorMsg = getErrorMessage(error);
+        console.error(errorMsg);
+        this._snackbarService.queueSnackbar(
+          'A problem occured while removing the board image. Please try again',
+          `Error: ${errorMsg}`
+        );
+      });
   }
 
-  async handleDialogSubmit() {
-    let board: Board;
-    board = await this.canvasService.updateBoardName(
-      this.boardID,
-      this.boardName.trim()
-    );
-    board = await this.canvasService.updateBoardTask(
-      this.boardID,
-      this.taskTitle,
-      this.taskMessage
-    );
-    board = await this.canvasService.updateBoardPermissions(
-      this.boardID,
-      this.permissions
-    );
-    board = await this.canvasService.updateBoardUpvotes(
-      this.boardID,
-      this.upvoteLimit
-    );
+  handleDialogSubmit(): void {
+    this.loading = true;
+    this.canvasService
+      .updateBoardName(this.boardID, this.boardName.trim())
+      .then(() => {
+        return this.canvasService.updateBoardTask(
+          this.boardID,
+          this.taskTitle,
+          this.taskMessage
+        );
+      })
+      .then(() => {
+        return this.canvasService.updateBoardPermissions(
+          this.boardID,
+          this.permissions
+        );
+      })
+      .then(() => {
+        return this.canvasService.updateBoardUpvotes(
+          this.boardID,
+          this.upvoteLimit
+        );
+      })
+      .then((board) => {
+        return this.currentBgImage
+          ? this.updateBoardImageSettings()
+          : Promise.resolve(board);
+      })
+      .then(() => {
+        return this.boardService.update(this.boardID, {
+          initialZoom: this.initialZoom,
+        });
+      })
+      .then((board) => {
+        this.data.update(board);
+      })
+      .catch((error) => {
+        const errorMsg = getErrorMessage(error);
+        console.error(errorMsg);
+        this._snackbarService.queueSnackbar(
+          'A problem occured while updating the board. Please try again',
+          `Error: ${errorMsg}`
+        );
+      })
+      .finally(() => {
+        this.loading = false;
+      });
 
-    if (this.currentBgImage) board = await this.updateBoardImageSettings();
-
-    board = await this.boardService.update(this.boardID, {
-      initialZoom: this.initialZoom,
-    });
-    await this.data.update(board);
     this.dialogRef.close();
   }
 
-  async ngOnDestroy(): Promise<void> {
+  ngOnDestroy(): void {
     if (this.tagsChanged) {
-      this.socketService.emit(
-        SocketEvent.BOARD_TAGS_UPDATE,
-        await this.boardService.get(this.boardID)
-      );
+      this.boardService.get(this.boardID).then((board) => {
+        this.socketService.emit(SocketEvent.BOARD_TAGS_UPDATE, board);
+      });
     }
   }
 
-  async handleClearBoard() {
+  handleClearBoard(): void {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
       data: {
@@ -208,33 +275,32 @@ export class ConfigurationModalComponent {
           'Are you sure you want to clear posts from this board? NOTE: Posts will be cleared from the board but remain in the the list view and any assigned buckets.',
         handleConfirm: async () => {
           this.postService.getAllByBoard(this.boardID).then(async (data) => {
-            await this.canvasService.clearPostsFromBoard(data);
+            this.canvasService.clearPostsFromBoard(data);
           });
         },
       },
     });
   }
 
-  async handleDeleteBoard() {
+  handleDeleteBoard(): void {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
       data: {
         title: 'Confirmation',
         message:
           'This will permanently delete the board and all related content. Are you sure you want to do this?',
-        handleConfirm: async () => {
-          const board = await this.boardService.remove(this.boardID);
-          if (board) {
+        handleConfirm: () => {
+          this.boardService.remove(this.boardID).then((board) => {
             this.dialogRef.close();
-            this.router.navigate(['project/' + this.project.projectID]);
-            await this.data.update(board, true);
-          }
+            this._router.navigate(['project/' + this.project.projectID]);
+            this.data.update(board, true);
+          });
         },
       },
     });
   }
 
-  resetColor() {
+  resetColor(): void {
     this.newTagColor = TAG_DEFAULT_COLOR;
   }
 
@@ -242,34 +308,52 @@ export class ConfigurationModalComponent {
     this.dialogRef.close();
   }
 
-  openVoteDeleteDialog() {
+  openVoteDeleteDialog(): void {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
       data: {
         title: 'Confirmation',
         message: 'Are you sure you want to clear all votes from the board?',
-        handleConfirm: async () => {
-          await this.upvoteService.removeByBoard(this.boardID);
+        handleConfirm: () => {
+          this.upvoteService.removeByBoard(this.boardID).then(() => {
+            this._snackbarService.queueSnackbar(
+              'Success! All votes have been cleared'
+            );
+          });
         },
       },
     });
   }
 
-  async copyConfiguration() {
-    let boards = await this.boardService.getMultipleBy(this.project.boards, {
-      scope: BoardScope.PROJECT_PERSONAL,
-    });
-    boards = boards.filter((b) => {
-      if (this.isTeacherPersonalBoard) {
-        return this.project.teacherIDs.includes(b.ownerID);
-      } else {
-        return !this.project.teacherIDs.includes(b.ownerID);
-      }
-    });
+  copyConfiguration(): void {
+    this.boardService
+      .getMultipleBy(this.project.boards, {
+        scope: BoardScope.PROJECT_PERSONAL,
+      })
+      .then((boards) => {
+        boards = boards.filter((b) => {
+          return this.isTeacherPersonalBoard
+            ? this.project.teacherIDs.includes(b.ownerID)
+            : !this.project.teacherIDs.includes(b.ownerID);
+        });
 
-    await this.boardService.copyConfiguration(
-      this.boardID,
-      boards.map((b) => b.boardID)
-    );
+        return this.boardService.copyConfiguration(
+          this.boardID,
+          boards.map((b) => b.boardID)
+        );
+      })
+      .then(() => {
+        this._snackbarService.queueSnackbar(
+          'Success! Board configuration copied to all Personal Teacher Boards'
+        );
+      })
+      .catch((error) => {
+        const errorMsg = getErrorMessage(error);
+        console.error(errorMsg);
+        this._snackbarService.queueSnackbar(
+          'A problem occured while updating the board. Please try again',
+          `Error: ${errorMsg}`
+        );
+      });
   }
 }

@@ -155,7 +155,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
 
     this.user = this.userService.user!;
-    this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+    this.canvas = new fabric.Canvas(
+      'canvas',
+      this.embedded
+        ? this.fabricUtils.embeddedCanvasConfig
+        : this.fabricUtils.canvasConfig
+    );
     this.fabricUtils._canvas = this.canvas;
 
     this.configureBoard();
@@ -1064,6 +1069,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       window.location.origin +
       `/project/${this.projectID}/my-personal-board?embedded=true`;
     navigator.clipboard.writeText(url);
+  }
+
+  signOut(): void {
+    this.userService.logout();
+    this.router.navigate(['login']);
   }
 
   private _openDialog(

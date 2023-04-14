@@ -1,32 +1,51 @@
 <div>
-  <app-toolbar *ngIf="user && project && board && !embedded" [user]="user" style="width: 100%;">
+  <app-toolbar class="toolbar" *ngIf="user && project && board && !embedded" [user]="user" style="width: 100%;">
     <span *ngIf="board">CK Workspace - {{ this.board.name }}</span>
     <button mat-icon-button *ngIf="user.role === Role.TEACHER" (click)="copyEmbedCode()" matTooltip="Copy embeddable URL">
         <mat-icon>file_copy</mat-icon>
       </button>
     <span style="flex: 1 1 auto"></span>
+
     <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
       <mat-icon>keyboard_return</mat-icon>
     </button>
-    <button
+
+    <button navbarMenu mat-icon-button [matMenuTriggerFor]="navbarMenu">
+      <mat-icon>dehaze</mat-icon>
+    </button>
+    <mat-menu #navbarMenu="matMenu">
+      <button
         *ngIf="user && user.role === Role.TEACHER"
-        mat-icon-button
+        mat-menu-item
         (click)="openGroupDialog()"
-        matTooltip="Manage Groups"
       >
         <mat-icon>group_work</mat-icon>
+        Manage Groups
       </button>
-    <button mat-icon-button *ngIf="!(user && user.role === Role.STUDENT && !board.permissions.showBucketStudent)" (click)="showBucketsModal()" matTooltip="View Buckets">
-      <mat-icon>shopping_basket</mat-icon>
-    </button>
-    <button mat-icon-button (click)="showListModal()" matTooltip="List Posts">
-      <mat-icon>list_alt</mat-icon>
-    </button>
+      <button mat-menu-item *ngIf="!(user && user.role === Role.STUDENT && !board.permissions.showBucketStudent)" (click)="showBucketsModal()">
+        <mat-icon>shopping_basket</mat-icon>
+        View Buckets
+      </button>
+      <button mat-menu-item (click)="showListModal()">
+        <mat-icon>list_alt</mat-icon>
+        List Posts
+      </button>
+      <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;color:black" target="_blank" >
+        <button mat-menu-item style="text-decoration:none;color:black">
+          <mat-icon>launch</mat-icon>
+          Go to SCORE
+        </button>
+      </a>
+      <button mat-menu-item (click)="signOut()">
+        <mat-icon class="material-icons-outlined">logout</mat-icon>
+        Log Out
+      </button>
+    </mat-menu>
   </app-toolbar>
   <mat-sidenav-container class="drawer-container">
     <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
-      <div *ngIf="activeGroupTasks">
-        <mat-list>
+      <!-- <div > -->
+        <mat-list *ngIf="activeGroupTasks">
           <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
             Pending Tasks ({{ inactiveGroupTasks.length }})
             <mat-icon>{{ showInactive ? 'expand_less' : 'expand_more' }}</mat-icon>
@@ -72,7 +91,7 @@
           </ng-container>
           <mat-divider></mat-divider>
         </mat-list>
-      </div>
+      <!-- </div> -->
     </mat-sidenav>
     <mat-sidenav-content>
       <div class="heading no-workflow-select" *ngIf="!runningGroupTask">
@@ -88,7 +107,8 @@
             <div (click)="$event.stopPropagation();" style="display: flex; flex-direction: column; gap: 10px;">
               <app-html-post 
                 (click)="$event.stopPropagation();" 
-                [post]="htmlPost" [disableDownload]="true" 
+                [post]="htmlPost" [disableDownload]="true"
+                [onCommentEvent]="onCommentEvent" [onTagEvent]="onTagEvent" 
                 style="width: 360px; height: 100%;">
               </app-html-post>
               <div style="display: flex; flex-direction: row;">

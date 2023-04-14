@@ -15,7 +15,7 @@ import dalGroupTask from '../repository/dalGroupTask';
 import dalPost from '../repository/dalPost';
 import dalWorkflow from '../repository/dalWorkflow';
 import Socket from '../socket/socket';
-import { movePostsToDestination } from '../utils/workflow.helpers';
+import { isTask, movePostsToDestination } from '../utils/workflow.helpers';
 
 const router = Router();
 
@@ -279,6 +279,40 @@ router.post('/task/groupTask/:groupTaskID', async (req, res) => {
 
   const updatedGroupTask = await dalGroupTask.update(groupTaskID, update);
   res.status(200).json(updatedGroupTask);
+});
+
+/**
+ * Update progress of running workflow's group task.
+ */
+router.post('/task/:workflowID/groupTask/:groupTaskID', async (req, res) => {
+  const { workflowID, groupTaskID } = req.params;
+  const { postID, delta, type } = req.body;
+
+  const workflow = await dalWorkflow.getById(workflowID);
+  const task = await dalGroupTask.getById(groupTaskID);
+  if (!workflow || !task || !isTask<TaskWorkflowModel>(workflow)) {
+    return res.status(404).end('Valid task workflow or group task not found!');
+  }
+
+  const progress = task.progress.get(postID);
+  const action = progress?.find((a) => a.type === type);
+  if (!action) {
+    return res
+      .status(400)
+      .end(`Unable to find ${type} action in task progress!`);
+  }
+
+  const newAmountReq = action.amountRequired + delta;
+  const limit = workflow.requiredActions.find((a) => a.type === type);
+  if (limit && !(newAmountReq > limit.amountRequired || newAmountReq < 0)) {
+    action.amountRequired = newAmountReq;
+  }
+
+  await dalGroupTask.update(groupTaskID, task);
+
+  Socket.Instance.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [task], true);
+
+  res.status(200).json(task);
 });
 
 /**

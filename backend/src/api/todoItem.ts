@@ -20,6 +20,12 @@ router.get('/user/:userID', async (req, res) => {
 
 router.get('/project/:projectID', async (req, res) => {
   const { projectID } = req.params;
+  const representation = req.query.representation as string;
+
+  if (representation == 'expanded') {
+    const expandedTodoItems = await dalTodoItem.getByProjectExpanded(projectID);
+    return res.status(200).json(expandedTodoItems);
+  }
 
   const todoItems = await dalTodoItem.getByProject(projectID);
   res.status(200).json(todoItems);

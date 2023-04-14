@@ -1,9 +1,15 @@
+.global-groups-list{
+    display: flex;
+}
+
 .group-member-list {
     display: grid;
     grid-template-columns: auto auto auto auto;
     column-gap: 1rem;
     width: 100%;
     margin-bottom: 10px;
+    max-height: 400px;
+    overflow-y:scroll;
 }
 
 .member-list-container {
@@ -65,4 +71,8 @@
 
 .member-list.cdk-drop-list-dragging .member-box:not(.cdk-drag-placeholder) {
     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.left-margin{
+    margin-left: 20px;
 }

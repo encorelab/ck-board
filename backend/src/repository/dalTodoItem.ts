@@ -1,4 +1,14 @@
+import { GroupModel } from '../models/Group';
 import TodoItem, { TodoItemModel } from '../models/TodoItem';
+import { UserModel } from '../models/User';
+import dalGroup from './dalGroup';
+import dalUser from './dalUser';
+
+export interface ExpandedTodoItem {
+  todoItem: TodoItemModel;
+  user: UserModel;
+  group: GroupModel;
+}
 
 export const getById = async (id: string) => {
   try {
@@ -36,6 +46,38 @@ export const getByProject = async (projectID: string) => {
       projectID: projectID,
     });
     return todoItems;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getByProjectExpanded = async (projectID: string) => {
+  try {
+    const todoItems = await getByProject(projectID);
+    const expandedTodoItems = await Promise.all(
+      todoItems.map(async (item) => {
+        const user = await dalUser.findByUserID(item.userID);
+        if (!user)
+          throw new Error(
+            `No user associated with todoItem (id: ${item.todoItemID})`
+          );
+
+        const group = item.groupID
+          ? await dalGroup.getById(item.groupID)
+          : null;
+        if (!group && item.groupID)
+          throw new Error(
+            `No group associated with todoItem (id: ${item.todoItemID})`
+          );
+
+        return {
+          todoItem: item,
+          user: user,
+          group: group,
+        };
+      })
+    );
+    return expandedTodoItems;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -88,6 +130,7 @@ const dalTodoItem = {
   getByUserProject,
   getByUser,
   getByProject,
+  getByProjectExpanded,
   create,
   remove,
   update,

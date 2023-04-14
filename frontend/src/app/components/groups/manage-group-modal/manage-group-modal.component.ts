@@ -115,7 +115,7 @@ export class ManageGroupModalComponent implements OnInit {
           title: 'Confirmation',
           message: 'You have unsaved changes',
           confirmLabel: 'Save groups',
-          cancelLabel: 'Cancel without saving',
+          cancelLabel: 'Close without saving',
           handleConfirm: async () => {
             this.saveGroups();
           },

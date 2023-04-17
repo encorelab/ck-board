@@ -340,6 +340,9 @@ export class PostModalComponent {
 
     if (!personalBoard) return;
 
+    if (this.post.displayAttributes)
+      this.post.displayAttributes.position = this.canvasService.centerPos;
+
     const post: Post = {
       postID: generateUniqueID(),
       userID: this.user.userID,

@@ -21,6 +21,11 @@ import Upvote from '../models/upvote';
 import { WorkflowService } from './workflow.service';
 import { UserService } from './user.service';
 
+interface Position {
+  top: number;
+  left: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -350,5 +355,9 @@ export class CanvasService {
 
   async readPost(postID: string) {
     this.socketService.emit(SocketEvent.POST_READ, postID);
+  }
+
+  get centerPos(): Position {
+    return this.fabricUtils._canvas.getCenter();
   }
 }

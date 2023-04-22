@@ -366,7 +366,6 @@ export class PostModalComponent {
       post: post,
     };
     if (newPost) {
-      this.socketService.emit(SocketEvent.PERSONAL_BOARD_ADD_POST, postInput);
       this.openSnackBar('Successfully copied to your Personal Board');
     }
   }

@@ -3,7 +3,6 @@ import { UpvoteModel } from '../../models/Upvote';
 import { PostModel } from '../../models/Post';
 import dalTrace from '../../repository/dalTrace';
 import {
-  PersonalBoardAddPostEventInput,
   PostStopMoveEventInput,
   PostTagEventInput,
   SocketPayload,
@@ -235,30 +234,6 @@ const read = async (input: SocketPayload<string>, eventType: string) => {
   return dalTrace.create(trace);
 };
 
-/**
- * Creates trace for saving a post to the user's personal board
- * @param input
- * @param eventType the associated SocketEvent
- * @returns
- */
-const personalBoardAddPost = async (
-  input: SocketPayload<PersonalBoardAddPostEventInput>,
-  eventType: string
-) => {
-  const trace = await createTrace(input.trace);
-  const postID = input.eventData.originalPostID;
-  const newPostID = input.eventData.newPostID;
-  const personalBoardID = input.eventData.personalBoardID;
-
-  trace.event = {
-    postID: postID,
-    postAddedToPersonalBoardID: personalBoardID,
-    personalBoardSavedPostID: newPostID,
-  };
-  trace.eventType = eventType;
-  return dalTrace.create(trace);
-};
-
 const postTrace = {
   create,
   update,
@@ -271,7 +246,6 @@ const postTrace = {
   tagRemove,
   move,
   read,
-  personalBoardAddPost,
 };
 
 export default postTrace;

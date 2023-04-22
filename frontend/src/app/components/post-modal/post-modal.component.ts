@@ -334,40 +334,38 @@ export class PostModalComponent {
   }
 
   async savePostToPersonalBoard() {
-    const personalBoard = await this.boardService.getPersonal(
-      this.project.projectID
-    );
+    try {
+      const personalBoard = await this.boardService.getPersonal(
+        this.project.projectID
+      );
 
-    if (!personalBoard) return;
+      if (!personalBoard) return;
 
-    if (this.post.displayAttributes)
-      this.post.displayAttributes.position = this.canvasService.centerPos;
+      if (this.post.displayAttributes)
+        this.post.displayAttributes.position = this.canvasService.centerPos;
 
-    const post: Post = {
-      postID: generateUniqueID(),
-      userID: this.user.userID,
-      boardID: personalBoard.boardID,
-      type: PostType.BOARD,
-      contentType: this.contentType,
-      multipleChoice: this.multipleChoiceOptions,
-      title: this.title,
-      author: this.user.username,
-      desc: this.desc,
-      tags: this.tags,
-      displayAttributes: this.post.displayAttributes,
-    };
+      const post: Post = {
+        postID: generateUniqueID(),
+        userID: this.user.userID,
+        boardID: personalBoard.boardID,
+        type: PostType.BOARD,
+        contentType: this.contentType,
+        multipleChoice: this.multipleChoiceOptions,
+        title: this.title,
+        author: this.user.username,
+        desc: this.desc,
+        tags: this.tags,
+        displayAttributes: this.post.displayAttributes,
+      };
 
-    const newPost = await this.postService.create(post);
+      const newPost = await this.postService.create(post);
 
-    const postInput = {
-      originalPostID: this.post.postID,
-      newPostID: newPost.postID,
-      personalBoardID: personalBoard.boardID,
-      post: post,
-    };
-    if (newPost) {
-      this.socketService.emit(SocketEvent.PERSONAL_BOARD_ADD_POST, postInput);
-      this.openSnackBar('Successfully copied to your Personal Board');
+      if (newPost)
+        this.openSnackBar('Successfully copied to your Personal Board');
+    } catch (error) {
+      this.openSnackBar(
+        'Unable to copy post to your Personal Board. Please refresh and try again!'
+      );
     }
   }
 

@@ -8,13 +8,14 @@ import dalUser from '../repository/dalUser';
 const router = Router();
 
 router.post('/', async (req, res) => {
-  const { projectID, boardID, name, dimensions } = req.body;
+  const { projectID, boardID, name, dimensions, data } = req.body;
 
   const model = await dalLearnerModel.create(
     projectID,
     boardID,
     name,
-    dimensions
+    dimensions,
+    data
   );
   res.status(200).json(model);
 });
@@ -95,6 +96,13 @@ router.post('/:id/updateData', async (req, res) => {
   );
 
   res.status(200).json(updatedModel);
+});
+
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const deletedModel = await dalLearnerModel.deleteModel(id);
+  res.status(200).json(deletedModel);
 });
 
 export default router;

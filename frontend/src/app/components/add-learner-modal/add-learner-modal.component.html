@@ -1,4 +1,4 @@
-<h1 mat-dialog-title>Create Learner Model</h1>
+<h1 mat-dialog-title>{{ data.title ?? 'Create Learner Model' }}</h1>
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Information">
@@ -19,8 +19,23 @@
         </mat-error>
       </mat-form-field>
     </mat-tab>
-    <mat-tab label="Dimensions">
-      <div style="padding-top: 10px;">
+    <mat-tab label="Data">
+      <div style="display: flex; justify-content: space-between; padding: 20px 20px 15px 0">
+        <mat-radio-group [(ngModel)]="modelDataInputType">
+          <mat-radio-button value="CSV" [disabled]="dimensions.size > 0">
+            Import Data via CSV
+          </mat-radio-button>
+          <mat-radio-button value="MANUAL_ENTRY" [disabled]="importCSV !== null" style="padding: 0 0 0 10px">
+            Manual Entry
+          </mat-radio-button>
+        </mat-radio-group>
+        <mat-chip *ngIf="importCSV !== null || dimensions.size > 0">
+            Clear Data
+            <mat-icon class="cancel" (click)="clearData()">cancel</mat-icon>
+        </mat-chip>
+      </div>
+      <div *ngIf="modelDataInputType === 'MANUAL_ENTRY'" style="padding-top: 10px;">
+        <div style="font-weight: bold; padding: 0 0 10px 0;">Dimensions</div>
         <mat-form-field appearance="fill">
           <mat-label>New Dimension Name...</mat-label>
           <input matInput [(ngModel)]="newDimensionText" (keyup.enter)="addDimension()" />
@@ -34,12 +49,50 @@
           Add Dimension
         </button>
       </div>
-      <mat-chip-list>
-        <mat-chip *ngFor="let dim of dimensions">
-          {{ dim }}
-          <mat-icon class="cancel" (click)="removeDimension(dim)">cancel</mat-icon>
-        </mat-chip>
-      </mat-chip-list>
+      <div *ngIf="modelDataInputType === 'MANUAL_ENTRY' || importCSV !== null" style="margin-bottom: 20px;">
+        <mat-chip-list>
+          <mat-chip *ngFor="let dim of dimensions" selected color="accent" removable (removed)="removeDimension(dim)">
+            {{ dim }}
+            <mat-icon *ngIf="modelDataInputType === 'MANUAL_ENTRY'" matChipRemove>cancel</mat-icon>
+          </mat-chip>
+        </mat-chip-list>
+      </div>
+      <div *ngIf="modelDataInputType === 'CSV' && importCSV === null">
+        <button type="button" mat-raised-button (click)="fileInput.click()" color="accent">Choose File</button>
+        <input hidden (change)="onFileSelected($event)" #fileInput type="file">
+      </div>
+      <div *ngIf="importCSV !== null || dimensions.size > 0">
+        <div style="font-weight: bold; padding: 10px 0 0 0;">Select Student & Assessment Type:</div>
+        <div>
+          <mat-form-field appearance="fill" style="padding: 10px 10px;">
+            <mat-label>Student</mat-label>
+            <mat-select [(ngModel)]="selectedStudent" (selectionChange)="studentChange()">
+              <mat-option *ngFor="let item of idToStudent | keyvalue" [value]="item.value">{{item.value.username}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill" style="padding: 10px 10px;">
+            <mat-label>Assessment</mat-label>
+            <mat-select [(ngModel)]="selectedAssessment" (selectionChange)="assessmentChange()">
+              <mat-option value="Diagnostic">Diagnostic</mat-option>
+              <mat-option value="Re-assessment">Re-assessment</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div style="font-weight: bold; margin-bottom: 10px;">Data Series</div>
+        <div *ngFor="let dimensionValue of filteredDimensions; let i = index;">
+          <mat-form-field>
+            <mat-label>{{dimensionValue.dimension}}</mat-label>
+            <input *ngIf="selectedAssessment === 'Diagnostic'" type="number" [(ngModel)]="dimensionValue.diagnostic" matInput>
+            <input *ngIf="selectedAssessment === 'Re-assessment'" type="number" [(ngModel)]="dimensionValue.reassessment" matInput>
+            <!-- <mat-error *ngIf="formArray[i].hasError('required')">
+              Value is required
+            </mat-error>
+            <mat-error *ngIf="formArray[i].hasError('min') || formArray[i].hasError('max')">
+              Value must be between 0-100
+            </mat-error> -->
+          </mat-form-field>
+        </div>
+      </div>
     </mat-tab>
   </mat-tab-group>
   <div mat-dialog-actions>

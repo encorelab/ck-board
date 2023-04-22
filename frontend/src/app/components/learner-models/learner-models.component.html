@@ -1,19 +1,14 @@
 <mat-toolbar>
   <span>Learner Models</span>
   <span class="example-spacer"></span>
-  <mat-select style="width: 15%; font-size: 15px"[(ngModel)]="modelSubject" (selectionChange)="subjectChange()" placeholder="All Students">
-    <mat-option [value]="null">All Students</mat-option>
-    <mat-option *ngFor="let student of idToUser | keyvalue" [value]="student.value">{{student.value.username}}</mat-option>
+  <mat-select style="width: 15%; font-size: 15px" [(ngModel)]="modelSubject" (selectionChange)="subjectChange()" placeholder="Filter Models">
+    <mat-option [value]="DimensionType.DIAGNOSTIC">All Students (Diagnostic)</mat-option>
+    <mat-option [value]="DimensionType.REASSESSMENT">All Students (Reassessment)</mat-option>
+    <mat-option *ngFor="let student of idToUser | keyvalue" [value]="student.key">{{student.value.username}}</mat-option>
   </mat-select>
 </mat-toolbar>
 <div class="graphs">
   <div *ngFor="let modelCard of modelCards">
-    <div class="graph-toggle">
-      <mat-select *ngIf="!disableDimensionFilter()"style="width: 95%; font-size: 15px; margin-right: 0px" [(ngModel)]="modelCard.dimensionType" (selectionChange)="dimensionTypeChange(modelCard)">
-        <mat-option [value]="DimensionType.DIAGNOSTIC">Diagnostic</mat-option>
-        <mat-option [value]="DimensionType.REASSESSMENT">Re-assessment</mat-option>
-      </mat-select>
-    </div>
     <highcharts-chart 
       class="graph-highchart"
       [Highcharts]="Highcharts"

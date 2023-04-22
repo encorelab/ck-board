@@ -11,7 +11,8 @@ export const create = async (
   projectID: string,
   boardID: string,
   name: string,
-  dimensions: string[]
+  dimensions: string[],
+  data: DimensionValue[]
 ) => {
   try {
     return await Learner.create({
@@ -20,7 +21,7 @@ export const create = async (
       boardID: boardID,
       name: name,
       dimensions: dimensions,
-      data: [],
+      data: data,
     });
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -170,6 +171,15 @@ export const updateData = async (
   }
 };
 
+export const deleteModel = async (id: string) => {
+  try {
+    const deletedModel = await Learner.findOneAndDelete({ modelID: id });
+    return deletedModel;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 const dalLearnerModel = {
   create,
   createDefaultModels,
@@ -181,6 +191,7 @@ const dalLearnerModel = {
   removeDimensionValues,
   update,
   updateData,
+  deleteModel,
 };
 
 export default dalLearnerModel;

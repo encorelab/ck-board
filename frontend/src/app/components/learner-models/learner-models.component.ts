@@ -12,6 +12,8 @@ import { createClassGraph, createStudentGraph } from 'src/app/utils/highchart';
 import { AddLearnerModalComponent } from '../add-learner-modal/add-learner-modal.component';
 import { LearnerConfigurationModalComponent } from '../learner-configuration-modal/learner-configuration-modal.component';
 import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-modal.component';
+import { MatSelectChange } from '@angular/material/select';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 more(Highcharts);
 exporting(Highcharts);
@@ -49,7 +51,8 @@ export class LearnerModelsComponent implements OnInit {
   chartOptions: Highcharts.Options = {};
 
   idToUser: Map<string, AuthUser> = new Map<string, AuthUser>();
-  modelSubject: AuthUser | null;
+  modelSubject: string = DimensionType.DIAGNOSTIC;
+  classDimensionFilter: DimensionType = DimensionType.DIAGNOSTIC;
 
   updateFlag: boolean = false;
 
@@ -71,18 +74,19 @@ export class LearnerModelsComponent implements OnInit {
     }
   }
 
-  createChartOptions(
-    model: LearnerModel,
-    dimType = DimensionType.DIAGNOSTIC
-  ): Highcharts.Options {
-    if (!this.modelSubject) {
+  createChartOptions(model: LearnerModel): Highcharts.Options {
+    if (
+      this.modelSubject == DimensionType.DIAGNOSTIC ||
+      this.modelSubject == DimensionType.REASSESSMENT
+    ) {
       return createClassGraph(
         model,
         {
           onEditData: this.onEditData,
           onEditDimensions: this.onEditDimensions,
+          onDeleteModel: this.onDeleteModel,
         },
-        dimType
+        this.modelSubject
       );
     } else {
       return createStudentGraph(
@@ -90,8 +94,9 @@ export class LearnerModelsComponent implements OnInit {
         {
           onEditData: this.onEditData,
           onEditDimensions: this.onEditDimensions,
+          onDeleteModel: this.onDeleteModel,
         },
-        this.modelSubject
+        this.idToUser.get(this.modelSubject)!
       );
     }
   }
@@ -104,10 +109,7 @@ export class LearnerModelsComponent implements OnInit {
     }
     if (modelCard) {
       modelCard.model = model;
-      modelCard.chartOptions = this.createChartOptions(
-        model,
-        modelCard.dimensionType
-      );
+      modelCard.chartOptions = this.createChartOptions(model);
       modelCard.updateFlag = true;
     }
   }
@@ -117,7 +119,7 @@ export class LearnerModelsComponent implements OnInit {
       data: {
         model: model,
         projectID: this.board.projectID,
-        selectedStudentID: this.modelSubject?.userID,
+        selectedStudentID: this.modelSubject,
         onUpdate: (model: LearnerModel) => {
           this.refreshModelCard(model);
         },
@@ -138,6 +140,22 @@ export class LearnerModelsComponent implements OnInit {
     });
   };
 
+  onDeleteModel = (model: LearnerModel): void => {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmation',
+        message: 'Are you sure you want to delete this learner model?',
+        handleConfirm: async () => {
+          await this.learnerService.deleteModel(model.modelID);
+          this.modelCards = this.modelCards.filter(
+            (m) => m.model.modelID !== model.modelID
+          );
+        },
+      },
+    });
+  };
+
   dimensionTypeChange(modelCard: ModelCard): void {
     this.refreshModelCard(modelCard.model);
   }
@@ -146,8 +164,8 @@ export class LearnerModelsComponent implements OnInit {
     this.modelCards.map((mc) => this.refreshModelCard(mc.model, mc));
   }
 
-  disableDimensionFilter(): boolean {
-    return this.modelSubject != null;
+  dimTypeFilterChange(dim: DimensionType): void {
+    this.classDimensionFilter = dim;
   }
 
   handleCreateModel(): void {
@@ -164,7 +182,7 @@ export class LearnerModelsComponent implements OnInit {
           model.data.map((d) => this.idToUser.set(d.student.userID, d.student));
         },
       },
-      minWidth: 480,
+      minWidth: 720,
       maxWidth: 1280,
     });
   }

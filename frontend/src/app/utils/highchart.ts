@@ -6,6 +6,7 @@ import sorting from './sorting';
 export interface MenuHandlers {
   onEditDimensions: Function;
   onEditData: Function;
+  onDeleteModel: Function;
 }
 
 export const createClassGraph = (
@@ -40,7 +41,7 @@ export const createClassGraph = (
       buttons: {
         contextButton: {
           text: 'Edit Model',
-          menuItems: ['dimensions', 'data'],
+          menuItems: ['dimensions', 'data', 'delete'],
         },
       },
       menuItemDefinitions: {
@@ -54,6 +55,12 @@ export const createClassGraph = (
           text: 'Edit Data',
           onclick: () => {
             handlers.onEditData(model);
+          },
+        },
+        delete: {
+          text: 'Delete Model',
+          onclick: () => {
+            handlers.onDeleteModel(model);
           },
         },
       },
@@ -143,7 +150,7 @@ export const createStudentGraph = (
       buttons: {
         contextButton: {
           text: 'Edit Model',
-          menuItems: ['dimensions', 'data'],
+          menuItems: ['dimensions', 'data', 'delete'],
         },
       },
       menuItemDefinitions: {
@@ -157,6 +164,12 @@ export const createStudentGraph = (
           text: 'Edit Data',
           onclick: () => {
             handlers.onEditData(model);
+          },
+        },
+        delete: {
+          text: 'Delete Model',
+          onclick: () => {
+            handlers.onDeleteModel(model);
           },
         },
       },

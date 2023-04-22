@@ -18,7 +18,8 @@ export class LearnerService {
     projectID: string,
     boardID: string,
     name: string,
-    dimensions: string[]
+    dimensions: string[],
+    data: DimensionValue[]
   ): Promise<LearnerModel> {
     return this.http
       .post<LearnerModel>('learner/', {
@@ -26,6 +27,7 @@ export class LearnerService {
         boardID,
         name,
         dimensions,
+        data,
       })
       .toPromise();
   }
@@ -55,5 +57,9 @@ export class LearnerService {
         dimensionValues,
       })
       .toPromise();
+  }
+
+  deleteModel(id: string): Promise<LearnerModel> {
+    return this.http.delete<LearnerModel>(`learner/${id}`).toPromise();
   }
 }

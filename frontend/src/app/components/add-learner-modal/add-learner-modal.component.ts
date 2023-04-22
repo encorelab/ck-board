@@ -150,12 +150,23 @@ export class AddLearnerModalComponent implements OnInit {
         const reassessment = Number(values[4]);
 
         if (!student) {
-          this.showError(`Student with ID: ${values[0]} does not exist. Please ensure the file is properly formatted based on the template below.`);
+          this.showError(
+            `Student with ID: ${values[0]} does not exist. Please ensure the file is properly formatted based on the template below.`
+          );
           this.showCSVHelp = true;
           this.clearData();
           return;
-        } else if (isNaN(diagnostic) || isNaN(reassessment) || diagnostic < 0 || diagnostic > 100 || reassessment < 0 || reassessment > 100) {
-          this.showError(`The diagnostic or reassessment values should be numbers between 0-100 (inclusive).`)
+        } else if (
+          isNaN(diagnostic) ||
+          isNaN(reassessment) ||
+          diagnostic < 0 ||
+          diagnostic > 100 ||
+          reassessment < 0 ||
+          reassessment > 100
+        ) {
+          this.showError(
+            `The diagnostic or reassessment values should be numbers between 0-100 (inclusive).`
+          );
           this.showCSVHelp = true;
           this.clearData();
           return;

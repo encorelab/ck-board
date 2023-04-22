@@ -4,8 +4,8 @@ import { AuthUser } from '../models/user';
 import sorting from './sorting';
 
 export interface MenuHandlers {
-  onEditDimensions: Function;
   onEditData: Function;
+  onExport: Function;
   onDeleteModel: Function;
 }
 
@@ -41,20 +41,20 @@ export const createClassGraph = (
       buttons: {
         contextButton: {
           text: 'Edit Model',
-          menuItems: ['dimensions', 'data', 'delete'],
+          menuItems: ['data', 'export', 'delete'],
         },
       },
       menuItemDefinitions: {
-        dimensions: {
-          text: 'Edit Dimensions',
-          onclick: () => {
-            handlers.onEditDimensions(model);
-          },
-        },
         data: {
           text: 'Edit Data',
           onclick: () => {
             handlers.onEditData(model);
+          },
+        },
+        export: {
+          text: 'Export via CSV',
+          onclick: () => {
+            handlers.onExport(model);
           },
         },
         delete: {
@@ -150,20 +150,20 @@ export const createStudentGraph = (
       buttons: {
         contextButton: {
           text: 'Edit Model',
-          menuItems: ['dimensions', 'data', 'delete'],
+          menuItems: ['data', 'export', 'delete'],
         },
       },
       menuItemDefinitions: {
-        dimensions: {
-          text: 'Edit Dimensions',
-          onclick: () => {
-            handlers.onEditDimensions(model);
-          },
-        },
         data: {
           text: 'Edit Data',
           onclick: () => {
             handlers.onEditData(model);
+          },
+        },
+        export: {
+          text: 'Export via CSV',
+          onclick: () => {
+            handlers.onExport(model);
           },
         },
         delete: {

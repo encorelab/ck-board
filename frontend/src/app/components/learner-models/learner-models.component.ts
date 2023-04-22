@@ -10,10 +10,9 @@ import { AuthUser } from 'src/app/models/user';
 import { LearnerService } from 'src/app/services/learner.service';
 import { createClassGraph, createStudentGraph } from 'src/app/utils/highchart';
 import { AddLearnerModalComponent } from '../add-learner-modal/add-learner-modal.component';
-import { LearnerConfigurationModalComponent } from '../learner-configuration-modal/learner-configuration-modal.component';
-import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-modal.component';
-import { MatSelectChange } from '@angular/material/select';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { ProjectService } from 'src/app/services/project.service';
+import * as saveAs from 'file-saver';
 
 more(Highcharts);
 exporting(Highcharts);
@@ -58,6 +57,7 @@ export class LearnerModelsComponent implements OnInit {
 
   constructor(
     public learnerService: LearnerService,
+    public projectService: ProjectService,
     public dialog: MatDialog
   ) {}
 
@@ -83,7 +83,7 @@ export class LearnerModelsComponent implements OnInit {
         model,
         {
           onEditData: this.onEditData,
-          onEditDimensions: this.onEditDimensions,
+          onExport: this.onExport,
           onDeleteModel: this.onDeleteModel,
         },
         this.modelSubject
@@ -93,7 +93,7 @@ export class LearnerModelsComponent implements OnInit {
         model,
         {
           onEditData: this.onEditData,
-          onEditDimensions: this.onEditDimensions,
+          onExport: this.onExport,
           onDeleteModel: this.onDeleteModel,
         },
         this.idToUser.get(this.modelSubject)!
@@ -115,30 +115,32 @@ export class LearnerModelsComponent implements OnInit {
   }
 
   onEditData = (model: LearnerModel): void => {
-    this.dialog.open(LearnerDataModalComponent, {
+    this.dialog.open(AddLearnerModalComponent, {
       data: {
+        isEditing: true,
         model: model,
-        projectID: this.board.projectID,
+        board: this.board,
         selectedStudentID: this.modelSubject,
         onUpdate: (model: LearnerModel) => {
           this.refreshModelCard(model);
         },
       },
+      minWidth: 720,
       maxWidth: 1280,
     });
   };
 
-  onEditDimensions = (model: LearnerModel) => {
-    this.dialog.open(LearnerConfigurationModalComponent, {
-      data: {
-        model: model,
-        onUpdate: (model: LearnerModel) => {
-          this.refreshModelCard(model);
-        },
-      },
-      maxWidth: 1280,
-    });
-  };
+  onExport = async (model: LearnerModel): Promise<void> => {
+    const rows: string[] = ['student_id,student_username,dimension,diagnostic,reassessment'];
+    model.data.forEach(value => {
+      const { userID, username } = value.student;
+      rows.push(`${userID},${username},${value.dimension},${value.diagnostic},${value.reassessment}`);
+    })
+    const csvArray = rows.join('\r\n');
+    const blob = new Blob([csvArray], {type: 'text/csv' });
+    const projectName = (await this.projectService.get(this.board.projectID)).name;
+    saveAs(blob, `${projectName}_${model.name}.csv`);
+  }
 
   onDeleteModel = (model: LearnerModel): void => {
     this.dialog.open(ConfirmModalComponent, {
@@ -171,6 +173,7 @@ export class LearnerModelsComponent implements OnInit {
   handleCreateModel(): void {
     this.dialog.open(AddLearnerModalComponent, {
       data: {
+        isEditing: false,
         board: this.board,
         onCreate: (model: LearnerModel) => {
           this.modelCards.push({

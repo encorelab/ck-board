@@ -1,4 +1,4 @@
-<h1 mat-dialog-title>{{ data.title ?? 'Create Learner Model' }}</h1>
+<h1 mat-dialog-title>{{ data.isEditing ? 'Edit' : 'Create' }} Learner Model</h1>
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Information">
@@ -29,9 +29,9 @@
             Manual Entry
           </mat-radio-button>
         </mat-radio-group>
-        <mat-chip *ngIf="importCSV !== null || dimensions.size > 0">
-            Clear Data
-            <mat-icon class="cancel" (click)="clearData()">cancel</mat-icon>
+        <mat-chip *ngIf="importCSV !== null || dimensions.size > 0" removable (removed)="clearData()">
+          Clear Data
+          <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
       </div>
       <div *ngIf="modelDataInputType === 'MANUAL_ENTRY'" style="padding-top: 10px;">
@@ -60,6 +60,49 @@
       <div *ngIf="modelDataInputType === 'CSV' && importCSV === null">
         <button type="button" mat-raised-button (click)="fileInput.click()" color="accent">Choose File</button>
         <input hidden (change)="onFileSelected($event)" #fileInput type="file">
+        <div>
+          <button class="csv-help-toggler" mat-button style="color: grey;" (click)="toggleCSVHelp()">
+            <mat-icon>info</mat-icon>
+            How to format the CSV file?
+            <mat-icon>{{ showCSVHelp ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
+          <div>
+            <div *ngIf="showCSVHelp" style="width: 55%; float:left">
+              <p>The CSV file must contain 5 ordered columns starting from: student_id, username, dimension, diagnostic value, reassessment value. Each
+                row (line) specifies diagnostic and reassessment values per student and dimension. In the example below, the first row corresponding to CarterJones
+                specifies a diagnostic value of 23 and reassessment value of 45 for Dimension1. Remember to include the header row! 
+              </p>
+              <pre>
+                <code [innerHTML]="template"></code>
+              </pre>
+              <p>To find each student's corresponding id, you can search the table or download them via CSV.</p>
+              <button type="button" mat-raised-button (click)="exportStudentInfo()" color="accent" style="margin-left: 10px">Download Student Info</button>
+            </div>
+            <div *ngIf="showCSVHelp" style="width: 40%; float:right">
+              <div style="font-weight: bold; padding: 0 0 10px 0;">Student Info</div>
+              <mat-form-field>
+                <mat-label>Filter</mat-label>
+                <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Carter" #input>
+              </mat-form-field>
+              <table mat-table [dataSource]="dataSource">
+                <ng-container matColumnDef="username">
+                  <th mat-header-cell *matHeaderCellDef> Username </th>
+                  <td mat-cell *matCellDef="let element"> {{element.username}} </td>
+                </ng-container>
+                <ng-container matColumnDef="id">
+                  <th mat-header-cell *matHeaderCellDef> ID </th>
+                  <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
+                </tr>
+              </table>
+              <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+            </div>
+          </div>
+        </div>
       </div>
       <div *ngIf="importCSV !== null || dimensions.size > 0">
         <div style="font-weight: bold; padding: 10px 0 0 0;">Select Student & Assessment Type:</div>
@@ -97,6 +140,7 @@
   </mat-tab-group>
   <div mat-dialog-actions>
     <button mat-button (click)="onClose()">Close</button>
-    <button mat-button *ngIf="nameControl.valid" (click)="createModel()">Create Model</button>
+    <button mat-button *ngIf="data.isEditing && nameControl.valid" (click)="updateModel()">Update Model</button>
+    <button mat-button *ngIf="!data.isEditing && nameControl.valid" (click)="createModel()">Create Model</button>
   </div>
   

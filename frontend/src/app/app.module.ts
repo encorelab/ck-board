@@ -60,8 +60,6 @@ import { NgxImageCompressService } from 'ngx-image-compress';
 import { CkMonitorComponent } from './components/ck-monitor/ck-monitor.component';
 import { MatSortModule } from '@angular/material/sort';
 import { TodoItemCardModalComponent } from './components/todo-item-card-modal/todo-item-card-modal.component';
-import { LearnerConfigurationModalComponent } from './components/learner-configuration-modal/learner-configuration-modal.component';
-import { LearnerDataModalComponent } from './components/learner-data-modal/learner-data-modal.component';
 import { LearnerModelsComponent } from './components/learner-models/learner-models.component';
 import { AddLearnerModalComponent } from './components/add-learner-modal/add-learner-modal.component';
 
@@ -109,8 +107,6 @@ export function tokenGetter() {
     SsoLoginComponent,
     CkMonitorComponent,
     TodoItemCardModalComponent,
-    LearnerConfigurationModalComponent,
-    LearnerDataModalComponent,
     LearnerModelsComponent,
     AddLearnerModalComponent,
   ],

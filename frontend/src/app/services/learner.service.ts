@@ -59,6 +59,21 @@ export class LearnerService {
       .toPromise();
   }
 
+  updateModel(
+    id: string,
+    name: string,
+    dimensions: string[],
+    data: DimensionValue[]
+  ): Promise<LearnerModel> {
+    return this.http
+      .post<LearnerModel>(`learner/${id}/update`, {
+        name,
+        dimensions,
+        modelData: data,
+      })
+      .toPromise();
+  }
+
   deleteModel(id: string): Promise<LearnerModel> {
     return this.http.delete<LearnerModel>(`learner/${id}`).toPromise();
   }

@@ -3,24 +3,34 @@
   padding-bottom: 20px;
 }
 
-.chip {
-  width: 45%;
+.csv-help-toggler {
+  padding: 10px 0 0 0 !important;
 }
 
-.chip > span {
-  margin: auto;
+pre {
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-left: 3px solid #f36d33;
+  color: #666;
+  page-break-inside: avoid;
+  font-family: monospace;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 1.6em;
+  white-space: pre-line;
+  width: 100%;
+  overflow: auto;
+  padding: 0.5em 0.8em;
+  display: block;
+  word-wrap: break-word;
 }
 
-.chip-icon {
-  padding-right: 10px;
-  width: 12px;
-  height: 15px;
-  font-size: medium;
+/* Structure */
+table {
+  width: 100%;
 }
 
-.cancel {
-  padding-left: 10px;
-  width: 12px;
-  height: 15px;
-  font-size: medium;
+.mat-mdc-form-field {
+  font-size: 14px;
+  width: 100%;
 }

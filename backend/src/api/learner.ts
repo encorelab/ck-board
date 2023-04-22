@@ -98,6 +98,22 @@ router.post('/:id/updateData', async (req, res) => {
   res.status(200).json(updatedModel);
 });
 
+router.post('/:id/update', async (req, res) => {
+  const { id } = req.params;
+  const { name, dimensions, modelData } = req.body;
+
+  const model = await dalLearnerModel.getByID(id);
+  if (!model) {
+    return res.status(404).json('Learner model with ID: ' + id + ' not found.');
+  }
+  model.name = name;
+  model.dimensions = dimensions;
+  model.data = modelData;
+  const updatedModel = await dalLearnerModel.update(model);
+
+  res.status(200).json(updatedModel);
+});
+
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
 

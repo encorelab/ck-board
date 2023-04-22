@@ -1,17 +1,31 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { Board } from 'src/app/models/board';
-import { DimensionValue } from 'src/app/models/learner';
+import LearnerModel, { DimensionValue } from 'src/app/models/learner';
 import { AuthUser, Role } from 'src/app/models/user';
 import { LearnerService } from 'src/app/services/learner.service';
 import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
+import * as saveAs from 'file-saver';
+import { MatPaginator } from '@angular/material/paginator';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+
+export interface StudentElement {
+  id: string;
+  username: string;
+}
 
 export interface AddLearnerInput {
-  title?: string;
+  isEditing: boolean;
   board: Board;
-  onCreate: Function;
+
+  onCreate?: Function;
+
+  model?: LearnerModel;
+  selectedStudentID?: string;
+  onUpdate?: Function;
 }
 
 export enum DataInputMethod {
@@ -25,6 +39,8 @@ export enum DataInputMethod {
   styleUrls: ['./add-learner-modal.component.scss'],
 })
 export class AddLearnerModalComponent implements OnInit {
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+  
   name: string = '';
 
   newDimensionText: string = '';
@@ -34,11 +50,20 @@ export class AddLearnerModalComponent implements OnInit {
   stuDimToVals: Map<string, DimensionValue> = new Map<string, DimensionValue>();
   DELIMITER = ',,,';
 
-  modelDataInputType: DataInputMethod = DataInputMethod.CSV;
+  modelDataInputType: DataInputMethod = DataInputMethod.MANUAL_ENTRY;
   importCSV: any = null;
   filteredDimensions: DimensionValue[] = [];
   selectedStudent: AuthUser | null;
   selectedAssessment: string | null;
+
+  showCSVHelp: boolean = false;
+  displayedColumns: string[] = ['username', 'id'];
+  tableData: StudentElement[] = [];
+  dataSource: MatTableDataSource<StudentElement> = new MatTableDataSource();
+  template: string = 
+`# student_id, student_username, dimension, diagnostic, reassessment
+06e209ee-0500-4777-bb6a-9cd44a74dd80, CarterJones, Dimension 1, 23, 45
+06e209ee-0500-4777-bb6a-9cd44a74dd80, AbbyCruise, Dimension 2, 76, 54`;
 
   idToStudent: Map<string, AuthUser> = new Map<string, AuthUser>();
   nameControl = new FormControl('', [
@@ -49,19 +74,35 @@ export class AddLearnerModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<AddLearnerModalComponent>,
+    private dialog: MatDialog,
     private userService: UserService,
     private learnerService: LearnerService,
     @Inject(MAT_DIALOG_DATA) public data: AddLearnerInput
-  ) {}
+  ) {
+    if (data.isEditing && data.model) {
+      this.name = data.model.name;
+      this.modelData = data.model.data;
+      data.model.dimensions.map((d) => this.dimensions.add(d));
+      data.model.data.map((d) => {
+        this.stuDimToVals.set(this.buildKey(d.student.userID, d.dimension), d);
+      });
+    }
+  }
 
   async ngOnInit(): Promise<void> {
     (await this.userService.getByProject(this.data.board.projectID)).map(
       (u) => {
+        if (this.data.isEditing && u.userID === this.data.selectedStudentID) {
+          this.selectedStudent = u;
+          this.selectedAssessment = 'Diagnostic';
+          this.studentChange();
+        }
         if (u.role == Role.STUDENT) {
           this.idToStudent.set(u.userID, u);
         }
       }
     );
+    this.createStudentInfoTable();
   }
 
   addDimension(): void {
@@ -74,31 +115,42 @@ export class AddLearnerModalComponent implements OnInit {
   }
 
   removeDimension(dimension: string): void {
-    this.dimensions.delete(dimension);
-    this.removeValuesPerDimension(dimension);
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'WARNING',
+        message:
+          'This action will delete this dimension for all students including all associated data.',
+        handleConfirm: async () => {
+          this.dimensions.delete(dimension);
+          this.removeValuesPerDimension(dimension);
+        },
+      },
+    });
   }
 
   onFileSelected(event: any): void {
     this.importCSV = event.target.files[0] ?? null;
+    this.showCSVHelp = false;
     const fileReader = new FileReader();
     fileReader.onload = (e) => {
       const result = fileReader.result;
       if (typeof result !== 'string') {
-        throw new Error('ss');
+        return;
       }
-      for (const row of result.split('\n')) {
+      for (const row of result.split('\n').splice(1)) {
         const values = row.split(',');
         const student = this.idToStudent.get(values[0]);
         if (!student) throw new Error('Student does not exist');
 
-        this.dimensions.add(values[1]);
+        this.dimensions.add(values[2]);
         const dimValue = {
           student: student,
-          dimension: values[1],
-          diagnostic: Number(values[2]),
-          reassessment: Number(values[3]),
+          dimension: values[2],
+          diagnostic: Number(values[3]),
+          reassessment: Number(values[4]),
         };
-        this.stuDimToVals.set(this.buildKey(values[0], values[1]), dimValue);
+        this.stuDimToVals.set(this.buildKey(values[0], values[2]), dimValue);
         this.modelData.push(dimValue);
       }
       for (const dim of this.dimensions) {
@@ -166,28 +218,83 @@ export class AddLearnerModalComponent implements OnInit {
   }
 
   clearData(): void {
-    this.importCSV = null;
-    this.dimensions.clear();
-    this.stuDimToVals.clear();
-    this.modelData = [];
-    this.filteredDimensions = [];
-    this.selectedAssessment = null;
-    this.selectedStudent = null;
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
+      data: {
+        title: 'WARNING',
+        message: 'This action will remove all dimensions and associated data.',
+        handleConfirm: async () => {
+          this.importCSV = null;
+          this.dimensions.clear();
+          this.stuDimToVals.clear();
+          this.modelData = [];
+          this.filteredDimensions = [];
+          this.selectedAssessment = null;
+          this.selectedStudent = null;
+        },
+      },
+    });
   }
 
+  createStudentInfoTable(): void {
+    this.idToStudent.forEach((user, id) => {
+      this.tableData.push({ id, username: user.username });
+    })
+    this.dataSource = new MatTableDataSource(this.tableData);
+    this.dataSource.paginator = this.paginator;
+  }
+
+  applyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
+
+  exportStudentInfo(): void {
+    const rows: string[] = ['student_id,student_username'];
+    this.idToStudent.forEach((user, id) => {
+      rows.push(`${id},${user.username}`);
+    })
+    const csvArray = rows.join('\r\n');
+    const blob = new Blob([csvArray], {type: 'text/csv' })
+    saveAs(blob, `${this.data.board.projectID}_student_info.csv`);
+  }
+
+  toggleCSVHelp(): void {
+    this.showCSVHelp = !this.showCSVHelp;
+  }
+  
   onClose(): void {
     this.dialogRef.close();
   }
 
+  async updateModel(): Promise<void> {
+    if (this.data.isEditing && this.data.onUpdate && this.data.model) {
+      const model = await this.learnerService.updateModel(
+        this.data.model.modelID,
+        this.name,
+        Array.from(this.dimensions),
+        this.modelData
+      );
+      this.data.onUpdate(model);
+      this.dialogRef.close();
+    }
+  }
+
   async createModel(): Promise<void> {
-    const model = await this.learnerService.createModel(
-      this.data.board.projectID,
-      this.data.board.boardID,
-      this.name,
-      Array.from(this.dimensions),
-      this.modelData
-    );
-    this.data.onCreate(model);
-    this.dialogRef.close();
+    if (!this.data.isEditing && this.data.onCreate) {
+      const model = await this.learnerService.createModel(
+        this.data.board.projectID,
+        this.data.board.boardID,
+        this.name,
+        Array.from(this.dimensions),
+        this.modelData
+      );
+      this.data.onCreate(model);
+      this.dialogRef.close();
+    }
   }
 }

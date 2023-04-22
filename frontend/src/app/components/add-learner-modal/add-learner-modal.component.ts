@@ -1,6 +1,10 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialog,
+} from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Board } from 'src/app/models/board';
 import LearnerModel, { DimensionValue } from 'src/app/models/learner';
@@ -40,7 +44,7 @@ export enum DataInputMethod {
 })
 export class AddLearnerModalComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  
+
   name: string = '';
 
   newDimensionText: string = '';
@@ -60,8 +64,7 @@ export class AddLearnerModalComponent implements OnInit {
   displayedColumns: string[] = ['username', 'id'];
   tableData: StudentElement[] = [];
   dataSource: MatTableDataSource<StudentElement> = new MatTableDataSource();
-  template: string = 
-`# student_id, student_username, dimension, diagnostic, reassessment
+  template: string = `# student_id, student_username, dimension, diagnostic, reassessment
 06e209ee-0500-4777-bb6a-9cd44a74dd80, CarterJones, Dimension 1, 23, 45
 06e209ee-0500-4777-bb6a-9cd44a74dd80, AbbyCruise, Dimension 2, 76, 54`;
 
@@ -239,7 +242,7 @@ export class AddLearnerModalComponent implements OnInit {
   createStudentInfoTable(): void {
     this.idToStudent.forEach((user, id) => {
       this.tableData.push({ id, username: user.username });
-    })
+    });
     this.dataSource = new MatTableDataSource(this.tableData);
     this.dataSource.paginator = this.paginator;
   }
@@ -257,16 +260,16 @@ export class AddLearnerModalComponent implements OnInit {
     const rows: string[] = ['student_id,student_username'];
     this.idToStudent.forEach((user, id) => {
       rows.push(`${id},${user.username}`);
-    })
+    });
     const csvArray = rows.join('\r\n');
-    const blob = new Blob([csvArray], {type: 'text/csv' })
+    const blob = new Blob([csvArray], { type: 'text/csv' });
     saveAs(blob, `${this.data.board.projectID}_student_info.csv`);
   }
 
   toggleCSVHelp(): void {
     this.showCSVHelp = !this.showCSVHelp;
   }
-  
+
   onClose(): void {
     this.dialogRef.close();
   }

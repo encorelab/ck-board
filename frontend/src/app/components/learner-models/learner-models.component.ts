@@ -131,16 +131,21 @@ export class LearnerModelsComponent implements OnInit {
   };
 
   onExport = async (model: LearnerModel): Promise<void> => {
-    const rows: string[] = ['student_id,student_username,dimension,diagnostic,reassessment'];
-    model.data.forEach(value => {
+    const rows: string[] = [
+      'student_id,student_username,dimension,diagnostic,reassessment',
+    ];
+    model.data.forEach((value) => {
       const { userID, username } = value.student;
-      rows.push(`${userID},${username},${value.dimension},${value.diagnostic},${value.reassessment}`);
-    })
+      rows.push(
+        `${userID},${username},${value.dimension},${value.diagnostic},${value.reassessment}`
+      );
+    });
     const csvArray = rows.join('\r\n');
-    const blob = new Blob([csvArray], {type: 'text/csv' });
-    const projectName = (await this.projectService.get(this.board.projectID)).name;
+    const blob = new Blob([csvArray], { type: 'text/csv' });
+    const projectName = (await this.projectService.get(this.board.projectID))
+      .name;
     saveAs(blob, `${projectName}_${model.name}.csv`);
-  }
+  };
 
   onDeleteModel = (model: LearnerModel): void => {
     this.dialog.open(ConfirmModalComponent, {

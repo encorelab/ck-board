@@ -29,7 +29,7 @@
             Manual Entry
           </mat-radio-button>
         </mat-radio-group>
-        <mat-chip *ngIf="importCSV !== null || dimensions.size > 0" removable (removed)="clearData()">
+        <mat-chip *ngIf="importCSV !== null || dimensions.size > 0" removable (removed)="askToClearData()">
           Clear Data
           <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
@@ -60,6 +60,9 @@
       <div *ngIf="modelDataInputType === 'CSV' && importCSV === null">
         <button type="button" mat-raised-button (click)="fileInput.click()" color="accent">Choose File</button>
         <input hidden (change)="onFileSelected($event)" #fileInput type="file">
+        <mat-error *ngIf="isError" style="padding-top: 10px; font-weight: bold;">
+          {{ errorMessage }}
+        </mat-error>
         <div>
           <button class="csv-help-toggler" mat-button style="color: grey;" (click)="toggleCSVHelp()">
             <mat-icon>info</mat-icon>

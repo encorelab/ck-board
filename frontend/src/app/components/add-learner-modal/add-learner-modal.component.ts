@@ -61,6 +61,8 @@ export class AddLearnerModalComponent implements OnInit {
   selectedAssessment: string | null;
 
   showCSVHelp: boolean = false;
+  isError = false;
+  errorMessage = '';
   displayedColumns: string[] = ['username', 'id'];
   tableData: StudentElement[] = [];
   dataSource: MatTableDataSource<StudentElement> = new MatTableDataSource();
@@ -144,7 +146,20 @@ export class AddLearnerModalComponent implements OnInit {
       for (const row of result.split('\n').splice(1)) {
         const values = row.split(',');
         const student = this.idToStudent.get(values[0]);
-        if (!student) throw new Error('Student does not exist');
+        const diagnostic = Number(values[3]);
+        const reassessment = Number(values[4]);
+
+        if (!student) {
+          this.showError(`Student with ID: ${values[0]} does not exist. Please ensure the file is properly formatted based on the template below.`);
+          this.showCSVHelp = true;
+          this.clearData();
+          return;
+        } else if (isNaN(diagnostic) || isNaN(reassessment) || diagnostic < 0 || diagnostic > 100 || reassessment < 0 || reassessment > 100) {
+          this.showError(`The diagnostic or reassessment values should be numbers between 0-100 (inclusive).`)
+          this.showCSVHelp = true;
+          this.clearData();
+          return;
+        }
 
         this.dimensions.add(values[2]);
         const dimValue = {
@@ -159,6 +174,7 @@ export class AddLearnerModalComponent implements OnInit {
       for (const dim of this.dimensions) {
         this.createValuesPerDimension(dim);
       }
+      this.hideError();
     };
     fileReader.readAsText(this.importCSV);
   }
@@ -220,23 +236,37 @@ export class AddLearnerModalComponent implements OnInit {
     return userID + this.DELIMITER + dimension;
   }
 
-  clearData(): void {
+  askToClearData(): void {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
       data: {
         title: 'WARNING',
         message: 'This action will remove all dimensions and associated data.',
         handleConfirm: async () => {
-          this.importCSV = null;
-          this.dimensions.clear();
-          this.stuDimToVals.clear();
-          this.modelData = [];
-          this.filteredDimensions = [];
-          this.selectedAssessment = null;
-          this.selectedStudent = null;
+          this.clearData();
         },
       },
     });
+  }
+
+  clearData(): void {
+    this.importCSV = null;
+    this.dimensions.clear();
+    this.stuDimToVals.clear();
+    this.modelData = [];
+    this.filteredDimensions = [];
+    this.selectedAssessment = null;
+    this.selectedStudent = null;
+  }
+
+  showError(message: string): void {
+    this.isError = true;
+    this.errorMessage = message;
+  }
+
+  hideError(): void {
+    this.isError = false;
+    this.errorMessage = '';
   }
 
   createStudentInfoTable(): void {

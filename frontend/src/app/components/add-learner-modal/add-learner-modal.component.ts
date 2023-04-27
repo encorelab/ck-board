@@ -298,9 +298,9 @@ export class AddLearnerModalComponent implements OnInit {
   }
 
   exportStudentInfo(): void {
-    const rows: string[] = ['student_id,student_username'];
+    const rows: string[] = ['student_id,student_username,dimension,diagnostic,reassessment'];
     this.idToStudent.forEach((user, id) => {
-      rows.push(`${id},${user.username}`);
+      rows.push(`${id},${user.username},Sample Dimension, 0, 0`);
     });
     const csvArray = rows.join('\r\n');
     const blob = new Blob([csvArray], { type: 'text/csv' });

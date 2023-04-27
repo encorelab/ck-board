@@ -99,6 +99,13 @@
   }
 }
 
+.feature-buttons {
+  display: flex; 
+  flex-direction: column; 
+  padding: 20px; 
+  row-gap: 10px;
+}
+
 .subheader-button {
   width: 100%;
   text-align: left !important;

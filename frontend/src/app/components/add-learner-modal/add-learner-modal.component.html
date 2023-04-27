@@ -72,8 +72,8 @@
           <div>
             <div *ngIf="showCSVHelp" style="width: 55%; float:left">
               <p>The CSV file must contain 5 ordered columns starting from: student_id, username, dimension, diagnostic value, reassessment value. Each
-                row (line) specifies diagnostic and reassessment values per student and dimension. In the example below, the first row corresponding to CarterJones
-                specifies a diagnostic value of 23 and reassessment value of 45 for Dimension1. Remember to include the header row! 
+                row (line) specifies diagnostic and reassessment values per student and dimension. Diagnostic and reassessment values must be between 0 and 100 (inclusive). 
+                In the example below, the first row corresponding to CarterJones specifies a diagnostic value of 23 and reassessment value of 45 for Dimension1. Remember to include the header row! 
               </p>
               <pre>
                 <code [innerHTML]="template"></code>

@@ -1,11 +1,10 @@
 import dotenv from 'dotenv';
+import { dbURI } from './src/utils/mongo';
 dotenv.config();
-
-console.log(process.env.DB_URI);
 
 export = {
   mongodb: {
-    url: process.env.DB_URI,
+    url: dbURI(),
     databaseName: process.env.DB_NAME,
     options: {
       useNewUrlParser: true, // removes a deprecation warning when connecting

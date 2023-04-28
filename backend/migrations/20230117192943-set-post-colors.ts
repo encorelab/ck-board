@@ -25,47 +25,39 @@ export const up = async (db: Db, client: MongoClient) => {
 
           if (user.role == Role.STUDENT) {
             if (!post.displayAttributes) {
-              await db
-                .collection<PostModel>('posts')
-                .updateOne(
-                  { postID: post.postID },
-                  {
-                    $set: {
-                      displayAttributes: { fillColor: STUDENT_POST_COLOR },
-                    },
-                  }
-                );
+              await db.collection<PostModel>('posts').updateOne(
+                { postID: post.postID },
+                {
+                  $set: {
+                    displayAttributes: { fillColor: STUDENT_POST_COLOR },
+                  },
+                }
+              );
             } else {
-              await db
-                .collection<PostModel>('posts')
-                .updateOne(
-                  { postID: post.postID },
-                  {
-                    $set: { 'displayAttributes.fillColor': STUDENT_POST_COLOR },
-                  }
-                );
+              await db.collection<PostModel>('posts').updateOne(
+                { postID: post.postID },
+                {
+                  $set: { 'displayAttributes.fillColor': STUDENT_POST_COLOR },
+                }
+              );
             }
           } else {
             if (!post.displayAttributes) {
-              await db
-                .collection<PostModel>('posts')
-                .updateOne(
-                  { postID: post.postID },
-                  {
-                    $set: {
-                      displayAttributes: { fillColor: TEACHER_POST_COLOR },
-                    },
-                  }
-                );
+              await db.collection<PostModel>('posts').updateOne(
+                { postID: post.postID },
+                {
+                  $set: {
+                    displayAttributes: { fillColor: TEACHER_POST_COLOR },
+                  },
+                }
+              );
             } else {
-              await db
-                .collection<PostModel>('posts')
-                .updateOne(
-                  { postID: post.postID },
-                  {
-                    $set: { 'displayAttributes.fillColor': TEACHER_POST_COLOR },
-                  }
-                );
+              await db.collection<PostModel>('posts').updateOne(
+                { postID: post.postID },
+                {
+                  $set: { 'displayAttributes.fillColor': TEACHER_POST_COLOR },
+                }
+              );
             }
           }
         }

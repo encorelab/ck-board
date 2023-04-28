@@ -68,7 +68,7 @@ export class AddTodoListModalComponent implements OnInit {
     ATL skills (i.e., thining skills, self-management skills, and research skills)
 
     Classroom engagement (i.e., practices for improving learning engagement, e.g., note-taking, asking questions, designing/explaining/suggesting ideas, or generating/sharing ideas with classmates)
-  `
+  `;
 
   constructor(
     public dialogRef: MatDialogRef<AddTodoListModalComponent>,

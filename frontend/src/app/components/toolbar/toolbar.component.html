@@ -1,5 +1,5 @@
 <mat-toolbar color="primary" role="toolbar" aria-label="Top Toolbar">
-  <a routerLink="/dashboard" *ngIf="!embedded">
+  <a routerLink="/dashboard">
     <img
       class="logo"
       src="/assets/encore-logo-white-sm.png"
@@ -9,15 +9,27 @@
   <ng-content></ng-content>
   <button
     style="margin-left: 1em"
-    *ngIf="user && user.username && !embedded"
+    *ngIf="user && user.username && showSignOut"
     mat-button
     [matMenuTriggerFor]="menu"
     matTooltip="Account"
   >
     {{ user.username }}
   </button>
+  <span *ngIf="!showSignOut" class="username-span">{{ user.username }}</span>
+
+  <ng-content select="[navbarMenu]"></ng-content>
+
   <mat-menu #menu="matMenu">
-    <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;" target="_blank" mat-menu-item>Go to SCORE</a>
-    <button mat-menu-item (click)="signOut()">Log Out</button>
+    <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;color:black" target="_blank" >
+      <button mat-menu-item style="text-decoration:none;color:black">
+        <mat-icon>launch</mat-icon>
+        Go to SCORE
+      </button>
+    </a>
+    <button mat-menu-item (click)="signOut()">
+      <mat-icon class="material-icons-outlined">logout</mat-icon>
+      Log Out
+    </button>
   </mat-menu>
 </mat-toolbar>

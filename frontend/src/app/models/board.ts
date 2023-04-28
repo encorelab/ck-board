@@ -24,6 +24,11 @@ export class BoardPermissions {
   allowTracing: boolean;
 }
 
+export class DateRange {
+  start: Date;
+  end: Date;
+}
+
 export enum BoardScope {
   PROJECT_SHARED = 'PROJECT_SHARED',
   PROJECT_PERSONAL = 'PROJECT_PERSONAL',
@@ -48,4 +53,5 @@ export class Board {
   initialZoom = 100;
   upvoteLimit = 5;
   visible: boolean;
+  defaultTodoDateRange: DateRange | null;
 }

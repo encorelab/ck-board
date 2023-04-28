@@ -29,6 +29,10 @@ export class BoardGuard implements CanActivate {
     next: ActivatedRouteSnapshot,
     _state: RouterStateSnapshot
   ): Promise<boolean> {
+    if (!this.userService.loggedIn) {
+      return false;
+    }
+
     const boardID = next.params.boardID;
 
     if (boardID) {

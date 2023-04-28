@@ -34,7 +34,17 @@
         <mat-list-item *ngFor="let member of members">
           <mat-icon *ngIf="member.role === Role.TEACHER" mat-list-icon>school</mat-icon>
           <mat-icon *ngIf="member.role === Role.STUDENT" mat-list-icon>person</mat-icon>
-          <div mat-line>{{ member.username }}</div>
+          <div mat-line>
+            {{ member.username }}
+          </div>
+          <button  
+            mat-icon-button 
+            *ngIf="member.userID !== user.userID"
+            (click)="removeUser(member)" 
+            matTooltip="Remove User"  
+          >
+            <mat-icon >remove_circle</mat-icon>
+          </button>
         </mat-list-item>
         <mat-divider></mat-divider>
       </mat-list>

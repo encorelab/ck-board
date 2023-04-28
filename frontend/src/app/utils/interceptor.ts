@@ -7,8 +7,10 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { tap, share } from 'rxjs/operators';
+import { tap, timeout } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
+
+export const DEFAULT_TIMEOUT = 30000;
 
 @Injectable()
 export class APIInterceptor implements HttpInterceptor {
@@ -22,6 +24,8 @@ export class APIInterceptor implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
+    const timeoutValue = Number(req.headers.get('timeout') || DEFAULT_TIMEOUT);
+
     const apiReq = req.clone({
       url: `http://localhost:8001/api/${req.url}`,
       setHeaders: {
@@ -38,7 +42,7 @@ export class APIInterceptor implements HttpInterceptor {
       }
     }
 
-    return next.handle(apiReq).pipe(
+    return next.handle(apiReq).pipe(timeout(timeoutValue)).pipe(
       tap<HttpEvent<any>>((httpEvent: HttpEvent<any>) => {
         if (httpEvent instanceof HttpResponse && this.shouldCache(apiReq)) {
           this.cache.set(apiReq.urlWithParams, httpEvent.clone());

@@ -158,13 +158,6 @@ class PostCommentAdd {
     );
     if (input.trace.allowTracing) await postTrace.commentAdd(input, this.type);
 
-    WorkflowManager.Instance.updateTask(
-      comment.userID,
-      comment.postID,
-      TaskActionType.COMMENT,
-      -1
-    );
-
     return { comment: comment, amount: commentAmount };
   }
 
@@ -184,13 +177,6 @@ class PostCommentRemove {
     if (input.trace.allowTracing)
       await postTrace.commentRemove(input, this.type);
 
-    WorkflowManager.Instance.updateTask(
-      comment.userID,
-      comment.postID,
-      TaskActionType.COMMENT,
-      1
-    );
-
     return { comment: comment, amount: commentAmount };
   }
 
@@ -208,13 +194,6 @@ class PostTagAdd {
     const tag = input.eventData;
 
     if (input.trace.allowTracing) await postTrace.tagAdd(input, this.type);
-
-    WorkflowManager.Instance.updateTask(
-      tag.userId,
-      tag.post.postID,
-      TaskActionType.TAG,
-      -1
-    );
 
     return tag;
   }
@@ -237,13 +216,6 @@ class PostTagRemove {
     const tag = input.eventData;
 
     if (input.trace.allowTracing) await postTrace.tagRemove(input, this.type);
-
-    WorkflowManager.Instance.updateTask(
-      tag.userId,
-      tag.post.postID,
-      TaskActionType.TAG,
-      1
-    );
 
     return tag;
   }

@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   MatDialog,
   MatDialogRef,
@@ -25,6 +25,7 @@ import {
 import User from 'src/app/models/user';
 import Upvote from 'src/app/models/upvote';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-list-modal',
@@ -32,6 +33,7 @@ import { FabricUtils } from 'src/app/utils/FabricUtils';
   styleUrls: ['./list-modal.component.scss'],
 })
 export class ListModalComponent implements OnInit, OnDestroy {
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   board: Board;
   user: User;
 
@@ -39,7 +41,13 @@ export class ListModalComponent implements OnInit, OnDestroy {
   loadingMore = false;
 
   posts: HTMLPost[];
+
+  // pagination
   page = 0;
+  length = 0;
+  pageSize = 8;
+  pageSizeOptions: number[] = [4, 8, 12, 16];
+  pageEvent: PageEvent;
 
   activeFilters: Tag[] = [];
   filterOptions: Tag[] = [];
@@ -152,19 +160,40 @@ export class ListModalComponent implements OnInit, OnDestroy {
     this.posts = [];
     this.page = 0;
     this.loading = true;
-    return this.fetchMorePosts();
+
+    return this.fetchMorePosts({ size: this.pageSize, page: this.page });
   }
 
-  async fetchMorePosts() {
-    const opts = { size: 20, page: this.page };
-
+  async fetchMorePosts(opts?: { size: number; page: number }) {
     const data = await this.postService.getAllByBoard(this.board.boardID, opts);
     const htmlPosts = await this.converters.toHTMLPosts(data);
-
+    this.length = data.length;
     this.posts = this.posts.concat(htmlPosts);
     this.page += 1;
     this.loading = false;
     this.loadingMore = false;
+  }
+
+  pagePosts(event?: any): PageEvent {
+    this.posts = [];
+    this.loading = true;
+
+    const size = event ? event.pageSize : this.pageSize;
+    const page = event ? event.pageIndex : 0;
+    console.log('pagePosts', event, size, page);
+
+    // after
+    // FIXME: for when pagination api is implemented in
+    this.postService
+      .getAllByBoard(this.board.boardID, { size, page })
+      .then(async (posts: Post[]) => {
+        console.log('----', size * page, posts);
+        this.length = posts.length;
+        this.posts = await this.converters.toHTMLPosts(posts);
+        this.loading = false;
+        this.loadingMore = false;
+      });
+    return event;
   }
 
   onScroll(event: any) {

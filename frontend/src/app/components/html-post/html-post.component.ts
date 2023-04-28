@@ -46,6 +46,8 @@ export interface HTMLPost {
 export class HtmlPostComponent implements OnInit {
   @Input() post: HTMLPost;
   @Input() disableDownload: boolean = false;
+  @Input() onCommentEvent: Function;
+  @Input() onTagEvent: Function;
   @Output() movePostToBoardEvent = new EventEmitter<string>();
 
   exists = true;
@@ -84,6 +86,8 @@ export class HtmlPostComponent implements OnInit {
           post: this.post.post,
           board: this.post.board,
           commentPress: commentPress,
+          onCommentEvent: this.onCommentEvent,
+          onTagEvent: this.onTagEvent,
         },
       })
       .afterClosed()

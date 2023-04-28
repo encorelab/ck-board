@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { flatten } from 'mongo-dot-notation';
 import { NotFoundError } from '../errors/client.errors';
 import { BucketModel } from '../models/Bucket';
 import Post, { PostModel, PostType } from '../models/Post';
@@ -98,12 +99,8 @@ export const update = async (id: string, post: Partial<PostModel>) => {
   try {
     const updatedPost = await Post.findOneAndUpdate(
       { postID: id },
-      {
-        ...post,
-      },
-      {
-        new: true,
-      }
+      { $set: post },
+      { new: true }
     );
     return updatedPost;
   } catch (err) {

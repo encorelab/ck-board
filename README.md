@@ -41,8 +41,27 @@ Add the following content into the `.env` file and replace with your own credent
 ```
 DB_USER=[Mongoose DB Username]
 DB_PASSWORD=[Mongoose DB Password]
+DB_URL=[Mongoose DB URL]
 DB_NAME=[Mongoose DB Name]
 JWT_SECRET=[JWT Secret Token]
+PORT=8001
+```
+
+**SCORE SSO**
+
+If also running [SCORE](https://github.com/WISE-Community/WISE-Docker-Dev) for Single Sign-On (SSO), add the following additional content into the `.env` file and replace with your own credentials:
+
+```
+SCORE_SSO_ENDPOINT=/sso/ckboard
+SCORE_SSO_SECRET= [any value that matches ck_board_sso_secret on SCORE]
+SCORE_LOGOUT_ENDPOINT=/api/logout 
+```
+
+For the SCORE development environment, add the following values to application-dockerdev.properties 
+
+```
+ck_board_url=http://localhost:4201
+ck_board_sso_secret_key=[any value that matches SCORE_SSO_SECRET on CK Board]
 ```
 
 ### 5. Run Application
@@ -56,7 +75,7 @@ $ npm run dev    # Start server
 # … Open a new terminal tab to run client app
 
 $ cd frontend    # Go into frontend folder
-$ ng serve --open      # Run Angular app; Will start application on http://localhost:4200/
+$ ng serve --port 4201      # Run Angular app; Will start application on http://localhost:4201/
 ```
 
 ## Running unit tests

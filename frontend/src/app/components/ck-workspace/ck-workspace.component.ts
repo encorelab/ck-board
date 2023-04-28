@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Board } from 'src/app/models/board';
+import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
@@ -75,6 +75,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
+  embedded: boolean = false; // If standalone board embed
 
   constructor(
     public userService: UserService,
@@ -89,7 +90,13 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog
-  ) {}
+  ) {
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params.embedded === 'true') {
+        this.embedded = true;
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.user = this.userService.user!;
@@ -269,18 +276,66 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
   }
 
+  onCommentEvent = async (postID: string, type: string): Promise<void> => {
+    if (!this.runningGroupTask) return;
+
+    const workflowID = this.runningGroupTask.workflow.workflowID;
+    const groupTaskID = this.runningGroupTask.groupTask.groupTaskID;
+    if (type == 'add') {
+      await this.workflowService.updateTaskProgress(
+        workflowID,
+        groupTaskID,
+        postID,
+        -1,
+        'COMMENT'
+      );
+    } else {
+      await this.workflowService.updateTaskProgress(
+        workflowID,
+        groupTaskID,
+        postID,
+        1,
+        'COMMENT'
+      );
+    }
+  };
+
+  onTagEvent = async (postID: string, type: string): Promise<void> => {
+    if (!this.runningGroupTask) return;
+
+    const workflowID = this.runningGroupTask.workflow.workflowID;
+    const groupTaskID = this.runningGroupTask.groupTask.groupTaskID;
+    if (type == 'add') {
+      await this.workflowService.updateTaskProgress(
+        workflowID,
+        groupTaskID,
+        postID,
+        -1,
+        'TAG'
+      );
+    } else {
+      await this.workflowService.updateTaskProgress(
+        workflowID,
+        groupTaskID,
+        postID,
+        1,
+        'TAG'
+      );
+    }
+  };
+
   private _startListening(): void {
     this.listeners.push(
       this.socketService.listen(
         SocketEvent.WORKFLOW_PROGRESS_UPDATE,
         (updates) => {
+          if (!this.runningGroupTask) return;
+
           const found = updates.find(
-            (u) =>
-              u.groupTask.groupTaskID ==
-              this.runningGroupTask?.groupTask.groupTaskID
+            (u) => u.groupTaskID == this.runningGroupTask?.groupTask.groupTaskID
           );
           if (found) {
-            this.runningGroupTask = found;
+            this.runningGroupTask.groupTask = found;
             this.currentGroupProgress = this._calcGroupProgress(
               this.runningGroupTask
             );
@@ -361,6 +416,16 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         );
       })
     );
+  }
+
+  copyEmbedCode() {
+    const url = window.location.href + '?embedded=true';
+    navigator.clipboard.writeText(url);
+  }
+
+  signOut(): void {
+    this.userService.logout();
+    this.router.navigate(['login']);
   }
 
   ngOnDestroy(): void {

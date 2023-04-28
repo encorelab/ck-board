@@ -51,6 +51,13 @@ export class FabricUtils {
     stopContextMenu: true,
   };
 
+  embeddedCanvasConfig = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    fireRightClick: true,
+    stopContextMenu: true,
+  };
+
   public set canvas(surface: fabric.Canvas) {
     this._canvas = surface;
   }

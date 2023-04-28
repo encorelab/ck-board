@@ -42,13 +42,16 @@ export class APIInterceptor implements HttpInterceptor {
       }
     }
 
-    return next.handle(apiReq).pipe(timeout(timeoutValue)).pipe(
-      tap<HttpEvent<any>>((httpEvent: HttpEvent<any>) => {
-        if (httpEvent instanceof HttpResponse && this.shouldCache(apiReq)) {
-          this.cache.set(apiReq.urlWithParams, httpEvent.clone());
-        }
-      })
-    );
+    return next
+      .handle(apiReq)
+      .pipe(timeout(timeoutValue))
+      .pipe(
+        tap<HttpEvent<any>>((httpEvent: HttpEvent<any>) => {
+          if (httpEvent instanceof HttpResponse && this.shouldCache(apiReq)) {
+            this.cache.set(apiReq.urlWithParams, httpEvent.clone());
+          }
+        })
+      );
   }
 
   shouldCache(req: HttpRequest<any>): boolean {

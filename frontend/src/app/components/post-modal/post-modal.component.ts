@@ -61,7 +61,7 @@ export class PostModalData {
   templateUrl: './post-modal.component.html',
   styleUrls: ['./post-modal.component.scss'],
 })
-export class PostModalComponent {
+export class PostModalComponent implements OnInit {
   tags: Tag[] = [];
   tagOptions: Tag[] = [];
 
@@ -91,6 +91,8 @@ export class PostModalComponent {
   showComments = false;
   showEditDelete = false;
   showAuthorName: boolean;
+
+  loading: boolean = false;
 
   error = '';
   titleControl = new FormControl('', [
@@ -128,31 +130,34 @@ export class PostModalComponent {
     this.user = data.user;
     this.contentType = data.post.contentType;
     this.showComments = data?.commentPress ? true : false;
-    this.postService.get(data.post.postID).then(async (p: Post) => {
-      this.post = p;
-      this.title = p.title;
-      this.editingTitle = linkifyStr(p.title, {
-        defaultProtocol: 'https',
-        target: '_blank',
-      });
-      this.desc = p.desc;
-      this.editingDesc = linkifyStr(p.desc, {
-        defaultProtocol: 'https',
-        target: '_blank',
-      }).replace(/(?:\r\n|\r|\n)/g, '<br>');
-      this.tags = p.tags;
-      this.tagOptions = data.board.tags.filter(
-        (n) => !this.tags.map((b) => b.name).includes(n.name)
-      );
-      this.canEditDelete =
-        this.data.post.userID == this.user.userID ||
-        this.user.role == Role.TEACHER;
-      this.author = await this.userService.getOneById(p.userID);
-      this.contentType = p.contentType;
-      if (this.contentType === ContentType.MULTIPLE_CHOICE) {
-        this.multipleChoiceOptions = p.multipleChoice;
-      }
-    });
+    this.loading = true;
+    this.postService.get(data.post.postID)
+      .then(async (p: Post) => {
+        this.post = p;
+        this.title = p.title;
+        this.editingTitle = linkifyStr(p.title, {
+          defaultProtocol: 'https',
+          target: '_blank',
+        });
+        this.desc = p.desc;
+        this.editingDesc = linkifyStr(p.desc, {
+          defaultProtocol: 'https',
+          target: '_blank',
+        }).replace(/(?:\r\n|\r|\n)/g, '<br>');
+        this.tags = p.tags;
+        this.tagOptions = data.board.tags.filter(
+          (n) => !this.tags.map((b) => b.name).includes(n.name)
+        );
+        this.canEditDelete =
+          this.data.post.userID == this.user.userID ||
+          this.user.role == Role.TEACHER;
+        this.author = await this.userService.getOneById(p.userID);
+        this.contentType = p.contentType;
+        if (this.contentType === ContentType.MULTIPLE_CHOICE) {
+          this.multipleChoiceOptions = p.multipleChoice;
+        }
+      })
+      .finally(() => this.loading = false);
     this.commentService.getCommentsByPost(data.post.postID).then((data) => {
       data.forEach((comment) => {
         this.comments.push(comment);
@@ -223,7 +228,7 @@ export class PostModalComponent {
     }
   }
 
-  toggleEdit() {
+  toggleEdit(): void {
     if (this.contentType === ContentType.MULTIPLE_CHOICE) {
       this.editMultipleChoicePost();
     } else {
@@ -231,11 +236,11 @@ export class PostModalComponent {
     }
   }
 
-  toggleComments() {
+  toggleComments(): void {
     this.showComments = !this.showComments;
   }
 
-  async onUpdate() {
+  onUpdate(): void {
     this.editingTitle = this.title;
     this.editingDesc = linkifyStr(this.desc, {
       defaultProtocol: 'https',
@@ -252,7 +257,7 @@ export class PostModalComponent {
     this.toggleEdit();
   }
 
-  onDelete() {
+  onDelete(): void {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
       data: {
@@ -310,7 +315,7 @@ export class PostModalComponent {
     }
   }
 
-  async deleteComment(comment: Comment) {
+  deleteComment(comment: Comment): void {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
       data: {
@@ -368,7 +373,7 @@ export class PostModalComponent {
     }
   }
 
-  async handleUpvoteClick() {
+  handleUpvoteClick(): void {
     if (this._votingLocked())
       return this._setError(getErrorMessage('Voting is disabled!'));
 
@@ -378,7 +383,7 @@ export class PostModalComponent {
       .catch((e) => this._setError(getErrorMessage(e)));
   }
 
-  async handleDownvoteClick() {
+  handleDownvoteClick(): void {
     if (this._votingLocked())
       return this._setError(getErrorMessage('Voting is disabled!'));
 

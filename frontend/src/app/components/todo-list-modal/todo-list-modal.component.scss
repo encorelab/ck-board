@@ -71,3 +71,24 @@
   width: 0px;
   overflow: initial;
 }
+
+.todo-button-row {
+  display: flex;
+  margin-top: 10px;
+  height: 60px;
+
+  .delete-btn {
+    text-align: center;
+    margin-right: 10px;
+
+    &-icon {
+      width: 0px;
+      overflow: initial;
+    }
+
+    &-text {
+      width: 100%;
+      text-align: center;
+    }
+  }
+}

@@ -1,9 +1,5 @@
-import { Component, OnInit, Inject, Input, OnChanges } from '@angular/core';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-  MatDialog,
-} from '@angular/material/dialog';
+import { Component, OnInit, Input, OnChanges } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { GroupService } from 'src/app/services/group.service';
 import { TodoItem, CompletionQuality } from 'src/app/models/todoItem';
@@ -63,6 +59,8 @@ export class TodoListModalComponent implements OnInit, OnChanges {
     'options',
   ];
 
+  loading: boolean = true;
+
   @Input()
   projectID: string;
 
@@ -84,11 +82,12 @@ export class TodoListModalComponent implements OnInit, OnChanges {
     this.pausable.pause();
   }
 
-  async ngOnChanges() {
-    await this.getTodoItems();
+  ngOnChanges(): void {
+    this.getTodoItems();
   }
 
   async getTodoItems() {
+    this.loading = true;
     this.personalTodoItems = await this.todoItemService.getByUserProject(
       this.userID,
       this.projectID
@@ -109,9 +108,10 @@ export class TodoListModalComponent implements OnInit, OnChanges {
     );
 
     this.updateTableDataSource();
+    this.loading = false;
   }
 
-  updateTableDataSource() {
+  updateTableDataSource(): void {
     this.personalDataSource = new MatTableDataSource<TodoItem>(
       this.personalTodoItems.filter(
         (todoItem: TodoItem) => !todoItem.completed && !todoItem.groupID

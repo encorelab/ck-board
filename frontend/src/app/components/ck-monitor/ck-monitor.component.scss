@@ -124,12 +124,12 @@ mat-sidenav-content {
   overflow: hidden;
 }
 
-.table {
+.table-wrapper {
   width: 100%;
 }
 
 .mat-table {
-  overflow-x: scroll;
+  width: 100%;
 }
 
 .mat-header-cell {
@@ -154,4 +154,11 @@ mat-sidenav-content {
 
 .mat-loading-progress-bar{
   margin-top: 10px;
+}
+
+.todo-top-input-row {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

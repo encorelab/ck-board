@@ -1,9 +1,13 @@
 <h1 mat-dialog-title>Todo List</h1>
-<div style="position: relative">
+<div style="position: relative;">
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Personal Todo List">
       <div class="mat-elevation-z3 table_style">
-        <table mat-table [dataSource]="personalDataSource" class="table">
+        <table
+          mat-table
+          [dataSource]="personalDataSource"
+          class="table"
+        >
           <ng-container matColumnDef="select">
             <th mat-header-cell *matHeaderCellDef>
               <mat-checkbox
@@ -79,18 +83,18 @@
           ></tr>
         </table>
       </div>
-      <mat-chip-list style="display: flex; margin-top: 10px; height: 60px">
+      <mat-chip-list class="todo-button-row" [class.spinner]="loading">
         <mat-chip
           mat-raised-button
           color="warn"
           (click)="handleDeleteTodoItems()"
-          style="text-align: center; margin-right: 10px"
+          class="delete-btn"
           selected
         >
-          <mat-icon class="chip-icon" style="width: 0px; overflow: initial"
+          <mat-icon class="chip-icon delete-btn-icon"
             >delete</mat-icon
           >
-          <span style="width: 100%; text-align: center">
+          <span class="delete-btn-text">
             Delete Todo Items
           </span>
         </mat-chip>
@@ -193,18 +197,18 @@
           ></tr>
         </table>
       </div>
-      <mat-chip-list style="display: flex; margin-top: 10px; height: 60px">
+      <mat-chip-list class="todo-button-row">
         <mat-chip
           mat-raised-button
           color="warn"
           (click)="handleDeleteTodoItems()"
-          style="text-align: center; margin-right: 10px"
+          class="delete-btn"
           selected
         >
-          <mat-icon class="chip-icon" style="width: 0px; overflow: initial"
+          <mat-icon class="chip-icon delete-btn-icon"
             >delete</mat-icon
           >
-          <span style="width: 100%; text-align: center">
+          <span class="delete-btn-text">
             Delete Todo Items
           </span>
         </mat-chip>

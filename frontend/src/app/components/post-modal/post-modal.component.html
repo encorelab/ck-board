@@ -60,7 +60,7 @@
       </button>
     </mat-card-header>
     <mat-card-content>
-      <p style="overflow-wrap: break-word" [innerHTML]="editingDesc">
+      <p style="overflow-wrap: break-word" [innerHTML]="editingDesc" [class.spinner]="loading">
         {{ editingDesc }}
       </p>
       <div *ngIf="contentType === 'MULTIPLE_CHOICE'">

@@ -4,11 +4,10 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Board, BoardScope } from 'src/app/models/board';
+import { Board } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
@@ -24,8 +23,6 @@ import { UserService } from 'src/app/services/user.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
-import { SwiperComponent } from 'swiper/angular';
-import SwiperCore, { EffectCards } from 'swiper';
 import { HTMLPost } from '../html-post/html-post.component';
 import { Group } from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
@@ -41,18 +38,11 @@ import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { MatTableDataSource } from '@angular/material/table';
-import {
-  CompletionQuality,
-  ExpandedTodoItem,
-  TodoItem,
-  TodoItemType,
-} from 'src/app/models/todoItem';
+import { ExpandedTodoItem, TodoItemType } from 'src/app/models/todoItem';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
 import { FormControl, FormGroup } from '@angular/forms';
-
-SwiperCore.use([EffectCards]);
 
 interface MonitorData {
   groupName: string;
@@ -83,11 +73,9 @@ class TodoItemDisplay {
 @Component({
   selector: 'app-ck-monitor',
   templateUrl: './ck-monitor.component.html',
-  styleUrls: ['./ck-monitor.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./ck-monitor.component.scss']
 })
 export class CkMonitorComponent implements OnInit, OnDestroy {
-  @ViewChild(SwiperComponent) swiper: SwiperComponent;
   @ViewChild(MatSort) set matSort(sort: MatSort) {
     this.todoDataSource.sort = sort;
   }
@@ -223,10 +211,12 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     const completeTaskWorkflows: TaskWorkflow[] = [];
     const activeTaskWorkflows: TaskWorkflow[] = [];
 
+    this.loading = true;
     this.todoItems = await this.todoItemService.getByProject(
       projectID,
       'expanded'
     );
+
     if (this.board.defaultTodoDateRange) {
       const start = new Date(this.board.defaultTodoDateRange.start);
       const end = new Date(this.board.defaultTodoDateRange.end);
@@ -235,6 +225,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     } else {
       this.updateTodoItemDataSource();
     }
+    this.loading = false;
+
     this.group = await this.groupService.getByProjectUser(
       projectID,
       this.user.userID

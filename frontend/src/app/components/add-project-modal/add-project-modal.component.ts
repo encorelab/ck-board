@@ -55,7 +55,10 @@ export class AddProjectModalComponent implements OnInit {
       boards: [],
       studentJoinCode: generateCode(5).toString(),
       teacherJoinCode: generateCode(5).toString(),
-      ...(this.linkToScore && { scoreJoinCode: generateCode(5).toString(), linkedRunId: 0 }),
+      ...(this.linkToScore && {
+        scoreJoinCode: generateCode(5).toString(),
+        linkedRunId: 0,
+      }),
       personalBoardSetting: this.personalBoardSetting,
       membershipDisabled: this.membershipDisabledEditable,
     });

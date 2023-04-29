@@ -47,9 +47,24 @@ export const addStudent = async (code: string, userID: string) => {
   if (!project) {
     throw new UnauthorizedError('Invalid Join Code!');
   }
-  await project.updateOne({ $push: { members: userID } });
+  if (!project.members.includes(userID)) {
+    await project.updateOne({ $push: { members: userID } });
+  }
 
   return project;
+};
+
+export const removeStudent = async (code: string, userID: string) => {
+  const project = await Project.findOne({ studentJoinCode: code });
+  if (!project) {
+    throw new UnauthorizedError('Invalid Join Code!');
+  }
+  if (project.members.includes(userID)) {
+    await project.updateOne({ $pull: { members: userID } });
+  }
+
+  return project;
+  ``;
 };
 
 export const addTeacher = async (code: string, userID: string) => {
@@ -57,7 +72,21 @@ export const addTeacher = async (code: string, userID: string) => {
   if (!project) {
     throw new UnauthorizedError('Invalid Join Code!');
   }
-  await project.updateOne({ $push: { teacherIDs: userID, members: userID } });
+  if (!project.members.includes(userID)) {
+    await project.updateOne({ $push: { teacherIDs: userID, members: userID } });
+  }
+
+  return project;
+};
+
+export const removeTeacher = async (code: string, userID: string) => {
+  const project = await Project.findOne({ teacherJoinCode: code });
+  if (!project) {
+    throw new UnauthorizedError('Invalid Join Code!');
+  }
+  if (project.members.includes(userID)) {
+    await project.updateOne({ $pull: { teacherIDs: userID, members: userID } });
+  }
 
   return project;
 };
@@ -123,7 +152,9 @@ const dalProject = {
   getByConnectCode,
   create,
   addStudent,
+  removeStudent,
   addTeacher,
+  removeTeacher,
   update,
   removeBoard,
   remove,

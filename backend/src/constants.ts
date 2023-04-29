@@ -79,3 +79,5 @@ export const DEFAULT_TAGS: Partial<TagModel>[] = [
   QUESTION_TAG,
   NEEDS_ATTENTION_TAG,
 ];
+
+export const SCORE_DOMAIN = 'score.oise.utoronto.ca';

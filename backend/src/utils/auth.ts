@@ -12,6 +12,7 @@ import { NotFoundError } from '../errors/client.errors';
 import { addUserToProject } from './project.helpers';
 import { ApplicationError } from '../errors/base.errors';
 import { addToken, checkToken, sign, verify } from './jwt';
+import { SCORE_DOMAIN } from '../constants';
 
 export interface Token {
   email: string;
@@ -126,7 +127,7 @@ export const getOrCreateUser = async (
   paramMap: Map<string, string>
 ): Promise<UserModel | null> => {
   const username = paramMap.get('username') ?? '';
-  const email = `${username}@score.oise.utoronto.ca`;
+  const email = `${username}@${SCORE_DOMAIN}`;
   const role = getRole(paramMap.get('role'));
   try {
     return await createUserIfNecessary(email, username, role);

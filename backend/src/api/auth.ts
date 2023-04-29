@@ -1,21 +1,21 @@
 import { Router } from 'express';
-import { sign } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import dalUser from '../repository/dalUser';
 import {
   addHours,
   generateHashedSsoPayload,
   generateSsoPayload,
-  getJWTSecret,
   getParamMap,
   isAuthenticated,
   isCorrectHashedSsoPayload,
   isSsoEnabled,
   isValidNonce,
+  logoutSCORE,
   signInUserWithSso,
   userToToken,
 } from '../utils/auth';
 import { UserModel } from '../models/User';
+import { addToken, destroyToken, sign } from '../utils/jwt';
 
 const router = Router();
 
@@ -37,9 +37,17 @@ router.post('/login', async (req, res) => {
   }
 
   const user = userToToken(foundUser);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = sign(user);
   const expiresAt = addHours(2);
 
+  await addToken(foundUser.userID, token);
+
+  res.cookie('CK_SESSION', token, {
+    httpOnly: true,
+    domain: process.env.APP_DOMAIN || 'localhost',
+    expires: expiresAt,
+    secure: true,
+  });
   res.status(200).send({ token, user, expiresAt });
 });
 
@@ -52,10 +60,33 @@ router.post('/register', async (req, res) => {
   const savedUser = await dalUser.create(body);
 
   const user = userToToken(savedUser);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = sign(user);
   const expiresAt = addHours(2);
 
+  await addToken(savedUser.userID, token);
+
+  res.cookie('CK_SESSION', token, {
+    httpOnly: true,
+    domain: process.env.APP_DOMAIN || 'localhost',
+    expires: expiresAt,
+    secure: true,
+  });
   res.status(200).send({ token, user, expiresAt });
+});
+
+router.post('/logout', isAuthenticated, async (req, res) => {
+  if (!req.headers.authorization) {
+    return res.status(400).end('No authorization header found!');
+  }
+
+  const token = req.headers.authorization.replace('Bearer ', '');
+  await destroyToken(res.locals.user.userID, token);
+
+  if (req.query.score) {
+    await logoutSCORE(req);
+  }
+
+  res.status(200).end();
 });
 
 router.post('/multiple', async (req, res) => {
@@ -71,12 +102,14 @@ router.get('/is-sso-enabled', async (req, res) => {
 });
 
 router.get('/sso/handshake', async (req, res) => {
-  const scoreSsoEndpoint = process.env.SCORE_SSO_ENDPOINT;
-  const payload = await generateSsoPayload();
-  const hashedPayload = generateHashedSsoPayload(payload);
-  if (!scoreSsoEndpoint) {
+  const ssoEndpoint = process.env.SCORE_SSO_ENDPOINT;
+  const scoreAddress = process.env.SCORE_SERVER_ADDRESS || 'http://localhost';
+  if (!ssoEndpoint) {
     throw new Error('No SCORE SSO endpoint environment variable defined!');
   }
+  const scoreSsoEndpoint = `${scoreAddress + ssoEndpoint}`;
+  const payload = await generateSsoPayload();
+  const hashedPayload = generateHashedSsoPayload(payload);
   res.status(200).send({
     scoreSsoEndpoint: scoreSsoEndpoint,
     sig: hashedPayload,

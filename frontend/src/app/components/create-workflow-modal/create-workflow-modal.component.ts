@@ -432,6 +432,16 @@ export class CreateWorkflowModalComponent implements OnInit {
         type: TaskActionType.CREATE_POST,
         amountRequired: this.postGeneration,
       });
+    if (this.commentsRequired)
+      actions.push({
+        type: TaskActionType.COMMENT,
+        amountRequired: 1,
+      });
+    if (this.tagsRequired)
+      actions.push({
+        type: TaskActionType.TAG,
+        amountRequired: 1,
+      });
 
     const workflow: TaskWorkflow = {
       workflowID: workflowID,

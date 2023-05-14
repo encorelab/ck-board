@@ -251,6 +251,14 @@
               [(ngModel)]="postGeneration"
             ></mat-slider>
           </div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <mat-checkbox [(ngModel)]="commentsRequired">
+              Require minimum 1 comment per post
+            </mat-checkbox>
+            <mat-checkbox [(ngModel)]="tagsRequired">
+              Require minimum 1 tag per post
+            </mat-checkbox>
+          </div>
         </section>
       </div>
     </mat-tab>

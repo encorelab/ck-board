@@ -128,7 +128,7 @@
               </app-html-post>
               <div style="display: flex; flex-direction: row;">
                 <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Previous</button>
-                <button (click)="submitPost(htmlPost)" mat-raised-button color="primary" [disabled]="runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE || !postSubmittable(htmlPost)" style="width: 30%; margin: 0px 5px;">Submit</button>
+                <button (click)="submitPost(htmlPost)" mat-raised-button color="primary" [disabled]="runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE || !postSubmittable(htmlPost) || runningGroupTask.workflow.type === TaskWorkflowType.GENERATION" style="width: 30%; margin: 0px 5px;">Submit</button>
                 <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Next</button>
               </div>
             </div>

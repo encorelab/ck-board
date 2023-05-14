@@ -326,6 +326,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
             PostType[this.runningGroupTask?.workflow.destinations[0].type];
           if (post.type === PostType.BUCKET) {
             post.boardID = this.board.boardID;
+            const htmlPost = await this.converters.toHTMLPost(post);
+            this.posts.push(htmlPost);
             await this.canvasService.createBucketPost(
               this.runningGroupTask.workflow.destinations[0].id,
               post
@@ -340,18 +342,15 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
             };
             post.boardID = this.runningGroupTask?.workflow.destinations[0].id;
             post.displayAttributes = displayAttributes;
+            const htmlPost = await this.converters.toHTMLPost(post);
+            this.posts.push(htmlPost);
             this.postService.create(post);
-            // this.socketService.emit(SocketEvent.POST_CREATE, post);
           }
 
-          const htmlPost = await this.converters.toHTMLPost(post);
-          this.posts.push(htmlPost);
-          this.runningGroupTask.groupTask.progress[post.postID] = [
-            {
-              type: TaskActionType.CREATE_POST,
-              amountRequired: 1,
-            },
-          ];
+          this.runningGroupTask.groupTask.progress[post.postID] =
+            this.runningGroupTask.workflow.requiredActions.filter(
+              (action) => action.type !== TaskActionType.CREATE_POST
+            );
           this.runningGroupTask.groupTask.posts.push(post.postID);
           const t = await this.workflowService.updateGroupTask(
             this.runningGroupTask.groupTask.groupTaskID,
@@ -360,7 +359,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
               progress: this.runningGroupTask.groupTask.progress,
             }
           );
-          // this.filterPosts();
+
           console.log(t);
           console.log(this.runningGroupTask);
           this.currentGroupProgress = this._calcGroupProgress(
@@ -495,29 +494,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         }
       })
     );
-    // this.listeners.push(
-    //   this.socketService.listen(SocketEvent.POST_CREATE, async (result) => {
-    //     if (this.runningGroupTask && this.runningGroupTask.workflow.type === TaskWorkflowType.GENERATION) {
-    //       console.log("CREATE POSTS")
-    //       this.runningGroupTask.groupTask =
-    //         await this.groupTaskService.getGroupTask(
-    //           this.runningGroupTask.group.groupID,
-    //           this.runningGroupTask.workflow.workflowID,
-    //         );
-    //       console.log("gere")
-    //       console.log(this.runningGroupTask.groupTask.posts);
-    // const _newPosts = this.runningGroupTask.groupTask.posts.filter(p =>
-    //   !this.posts.map(post => post.post.postID).includes(p)
-    // )
-    // console.log(_newPosts)
-    // const newPosts = await this.postService.getAll(_newPosts);
-    // this.posts.concat(await this.converters.toHTMLPosts(newPosts));
-    //       this.currentGroupProgress = this._calcGroupProgress(
-    //         this.runningGroupTask
-    //       );
-    //     }
-    //   })
-    // );
     this.listeners.push(
       this.socketService.listen(SocketEvent.POST_COMMENT_REMOVE, (result) => {
         const found = this.posts.find(
@@ -581,13 +557,11 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   private _calcGroupProgress(task: ExpandedGroupTask | null): number {
     console.log(task);
     if (!task) return 0;
-
-    // if(task.workflow.type === TaskWorkflowType.GENERATION)
-
     // get all posts' progress
     const values = Object.keys(task.groupTask.progress).map(function (key) {
       return task.groupTask.progress[key];
     });
+
     console.log(values);
     // sum all amountRequired for each action per post
     // i.e. Post A (1 tag req, 1 comment req) + Post B (1 tag req, 0 comments required)
@@ -603,14 +577,22 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     // sum both required tags (1) and required comments (1) = 2
     // multiple by number of posts since those requirements are per-post
-    // console.log(task.workflow.requiredActions);
-    let total = task.workflow.requiredActions.reduce(
-      (partialSum, a) => partialSum + a.amountRequired,
-      0
-    );
+
+    let total = task.workflow.requiredActions
+      .filter((a) => a.type !== TaskActionType.CREATE_POST)
+      .reduce((partialSum, a) => partialSum + a.amountRequired, 0);
     if (task.workflow.type === TaskWorkflowType.GENERATION) {
-      // total *= task.group.members.length;
-      remaining = total - remaining;
+      const createPosts = task.workflow.requiredActions.filter(
+        (a) => a.type === TaskActionType.CREATE_POST
+      )[0].amountRequired;
+      const actionPerPost = total;
+      console.log(createPosts);
+      console.log(total);
+      if (total) total = total * createPosts + createPosts;
+      else total = createPosts;
+
+      remaining += createPosts - task.groupTask.posts.length;
+      remaining += (createPosts - task.groupTask.posts.length) * actionPerPost;
     } else {
       total *= values.length;
     }

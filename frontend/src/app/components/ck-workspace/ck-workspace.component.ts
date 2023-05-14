@@ -372,7 +372,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           console.log(this.currentGroupProgress);
           console.log(this.averageGroupProgress);
           this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
-            this.runningGroupTask,
+            this.runningGroupTask.groupTask,
           ]);
         }
         return;
@@ -384,32 +384,76 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
+  onCommentEvent = async (postID: string, type: string): Promise<void> => {
+    if (!this.runningGroupTask) return;
+
+    const workflowID = this.runningGroupTask.workflow.workflowID;
+    const groupTaskID = this.runningGroupTask.groupTask.groupTaskID;
+    if (type == 'add') {
+      await this.workflowService.updateTaskProgress(
+        workflowID,
+        groupTaskID,
+        postID,
+        -1,
+        'COMMENT'
+      );
+    } else {
+      await this.workflowService.updateTaskProgress(
+        workflowID,
+        groupTaskID,
+        postID,
+        1,
+        'COMMENT'
+      );
+    }
+  };
+
+  onTagEvent = async (postID: string, type: string): Promise<void> => {
+    if (!this.runningGroupTask) return;
+
+    const workflowID = this.runningGroupTask.workflow.workflowID;
+    const groupTaskID = this.runningGroupTask.groupTask.groupTaskID;
+    if (type == 'add') {
+      await this.workflowService.updateTaskProgress(
+        workflowID,
+        groupTaskID,
+        postID,
+        -1,
+        'TAG'
+      );
+    } else {
+      await this.workflowService.updateTaskProgress(
+        workflowID,
+        groupTaskID,
+        postID,
+        1,
+        'TAG'
+      );
+    }
+  };
+
   private _startListening(): void {
     this.listeners.push(
       this.socketService.listen(
         SocketEvent.WORKFLOW_PROGRESS_UPDATE,
         async (updates) => {
+          if (!this.runningGroupTask) return;
+
           const found = updates.find(
-            (u) =>
-              u.groupTask.groupTaskID ==
-              this.runningGroupTask?.groupTask.groupTaskID
+            (u) => u.groupTaskID == this.runningGroupTask?.groupTask.groupTaskID
           );
-          console.log('khjfjkhfhjkfgjhlk');
           if (found) {
-            this.runningGroupTask = found;
-            if (found.workflow.type === TaskWorkflowType.GENERATION) {
-              const _newPosts = found.groupTask.posts.filter(
+            this.runningGroupTask.groupTask = found;
+            if (
+              this.runningGroupTask?.workflow.type ===
+              TaskWorkflowType.GENERATION
+            ) {
+              const _newPosts = found.posts.filter(
                 (p) => !this.posts.map((post) => post.post.postID).includes(p)
               );
-              console.log(found.groupTask.posts);
-              console.log(_newPosts);
               const newPosts = await this.postService.getAll(_newPosts);
-              console.log(newPosts);
               const htmlPosts = await this.converters.toHTMLPosts(newPosts);
-              console.log(htmlPosts);
-              console.log(this.posts);
               this.posts = this.posts.concat(htmlPosts);
-              console.log(this.posts);
             }
             this.currentGroupProgress = this._calcGroupProgress(
               this.runningGroupTask

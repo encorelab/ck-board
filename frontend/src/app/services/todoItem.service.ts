@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { TodoItem } from '../models/todoItem';
+import { ExpandedTodoItem, TodoItem } from '../models/todoItem';
 import { NotificationService } from './notification.service';
 import { SocketService } from './socket.service';
 import { SocketEvent, TODOITEM_NOTIFICATION } from '../utils/constants';
@@ -31,9 +31,14 @@ export class TodoItemService {
     return this.http.get<TodoItem[]>(`todoItems/user/${userID}`).toPromise();
   }
 
-  getByProject(projectID: string): Promise<TodoItem[]> {
+  getByProject(
+    projectID: string,
+    representation = 'default'
+  ): Promise<ExpandedTodoItem[]> {
     return this.http
-      .get<TodoItem[]>(`todoItems/project/${projectID}`)
+      .get<ExpandedTodoItem[]>(
+        `todoItems/project/${projectID}?representation=${representation}`
+      )
       .toPromise();
   }
 

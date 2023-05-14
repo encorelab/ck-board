@@ -52,7 +52,8 @@ export class PostModalData {
   user!: User;
   board!: Board;
   commentPress?: boolean;
-  eventHandlers?: Map<PostModalEvent, Function>;
+  onCommentEvent?: Function;
+  onTagEvent?: Function;
 }
 
 @Component({
@@ -271,6 +272,9 @@ export class PostModalComponent {
     this.post = await this.canvasService.tag(this.post, tagOption);
     this.tags.push(tagOption);
     this.tagOptions = this.tagOptions.filter((tag) => tag != tagOption);
+    if (this.data.onTagEvent) {
+      this.data.onTagEvent(this.post.postID, 'add');
+    }
   }
 
   async removeTag(tag) {
@@ -283,9 +287,12 @@ export class PostModalComponent {
       this.tags.splice(index, 1);
     }
     this.tagOptions.push(tag);
+    if (this.data.onTagEvent) {
+      this.data.onTagEvent(this.post.postID, 'remove');
+    }
   }
 
-  addComment() {
+  async addComment() {
     const comment: Comment = {
       comment: this.newComment,
       commentID: generateUniqueID(),
@@ -295,9 +302,12 @@ export class PostModalComponent {
       author: this.data.user.username,
     };
 
-    this.canvasService.comment(comment);
+    await this.canvasService.comment(comment);
     this.newComment = '';
     this.comments.push(comment);
+    if (this.data.onCommentEvent) {
+      this.data.onCommentEvent(this.post.postID, 'add');
+    }
   }
 
   async deleteComment(comment: Comment) {
@@ -306,11 +316,17 @@ export class PostModalComponent {
       data: {
         title: 'Confirmation',
         message: 'Are you sure you want to delete this comment?',
-        handleConfirm: () => {
-          this.canvasService.deleteComment(comment.commentID, comment.postID);
+        handleConfirm: async () => {
+          await this.canvasService.deleteComment(
+            comment.commentID,
+            comment.postID
+          );
           const ind = this.comments.indexOf(comment);
           if (ind != -1) {
             this.comments.splice(ind, 1);
+          }
+          if (this.data.onCommentEvent) {
+            this.data.onCommentEvent(this.post.postID, 'remove');
           }
         },
       },

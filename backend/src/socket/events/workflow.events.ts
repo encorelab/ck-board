@@ -48,42 +48,16 @@ class WorkflowUpdate {
   static type: SocketEvent = SocketEvent.WORKFLOW_PROGRESS_UPDATE;
 
   static async handleEvent(
-    input: SocketPayload<
-      [
-        {
-          groupTask: GroupTaskModel;
-          workflow: TaskWorkflowModel;
-          group: GroupModel;
-        }
-      ]
-    >
-  ): Promise<
-    | [
-        {
-          groupTask: GroupTaskModel;
-          workflow: TaskWorkflowModel;
-          group: GroupModel;
-        }
-      ]
-    | null
-  > {
+    input: SocketPayload<[GroupTaskModel]>
+  ): Promise<[GroupTaskModel] | null> {
     return input.eventData;
   }
 
   static async handleResult(
     io: Server,
     socket: Socket,
-    result:
-      | [
-          {
-            groupTask: GroupTaskModel;
-            workflow: TaskWorkflowModel;
-            group: GroupModel;
-          }
-        ]
-      | null
+    result: [GroupTaskModel] | null
   ) {
-    console.log('hereeeeeeee');
     socket.to(socket.data.room).emit(this.type, result);
   }
 }

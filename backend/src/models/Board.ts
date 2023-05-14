@@ -77,6 +77,14 @@ export class PermissionsModel {
   public allowTracing!: boolean;
 }
 
+export class DateRange {
+  @prop({ required: true })
+  public start!: Date;
+
+  @prop({ required: true })
+  public end!: Date;
+}
+
 export enum BoardScope {
   PROJECT_SHARED = 'PROJECT_SHARED',
   PROJECT_PERSONAL = 'PROJECT_PERSONAL',
@@ -127,6 +135,9 @@ export class BoardModel {
 
   @prop({ required: true })
   public visible!: boolean;
+
+  @prop({ required: false })
+  public defaultTodoDateRange?: DateRange;
 }
 
 export default getModelForClass(BoardModel);

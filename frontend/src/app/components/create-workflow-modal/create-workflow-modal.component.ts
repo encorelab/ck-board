@@ -224,7 +224,6 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   createGenerationTaskWorkflow(): void {
     if (!this._validGenerationTaskWorkflow()) return;
-    console.log(this.postGeneration);
     const workflow: TaskWorkflow = this._assembleGenerationTaskWorkflow();
     this.workflowService.createTask(workflow).then(async () => {
       await this.loadWorkflows();

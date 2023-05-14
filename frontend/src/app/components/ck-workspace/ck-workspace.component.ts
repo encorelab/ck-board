@@ -183,7 +183,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     } else {
       postIDs = postIDs.concat(groupTask.groupTask.posts);
     }
-    console.log(postIDs);
     const posts = await this.postService.getAll(postIDs);
     this.posts = await this.converters.toHTMLPosts(posts);
     this.members = await this.userService.getMultipleByIds(
@@ -360,16 +359,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
             }
           );
 
-          console.log(t);
-          console.log(this.runningGroupTask);
           this.currentGroupProgress = this._calcGroupProgress(
             this.runningGroupTask
           );
           this.averageGroupProgress = await this._calcAverageProgress(
             this.runningGroupTask
           );
-          console.log(this.currentGroupProgress);
-          console.log(this.averageGroupProgress);
           this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
             this.runningGroupTask.groupTask,
           ]);
@@ -488,7 +483,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         const found = this.posts.find(
           (p) => p.post.postID == result.comment.postID
         );
-        console.log('comment adde');
         if (found) {
           found.comments += 1;
         }
@@ -507,7 +501,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.listeners.push(
       this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post }) => {
         const found = this.posts.find((p) => p.post.postID == post.postID);
-        console.log('tag adde');
         if (found) {
           found.post = post;
         }
@@ -516,7 +509,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.listeners.push(
       this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post }) => {
         const found = this.posts.find((p) => p.post.postID == post.postID);
-        console.log('tag remove');
         if (found) {
           found.post = post;
         }
@@ -555,14 +547,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   private _calcGroupProgress(task: ExpandedGroupTask | null): number {
-    console.log(task);
     if (!task) return 0;
     // get all posts' progress
     const values = Object.keys(task.groupTask.progress).map(function (key) {
       return task.groupTask.progress[key];
     });
 
-    console.log(values);
     // sum all amountRequired for each action per post
     // i.e. Post A (1 tag req, 1 comment req) + Post B (1 tag req, 0 comments required)
     let remaining = values.reduce(
@@ -586,8 +576,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         (a) => a.type === TaskActionType.CREATE_POST
       )[0].amountRequired;
       const actionPerPost = total;
-      console.log(createPosts);
-      console.log(total);
       if (total) total = total * createPosts + createPosts;
       else total = createPosts;
 
@@ -596,8 +584,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     } else {
       total *= values.length;
     }
-    console.log(total);
-    console.log(remaining);
     return ((total - remaining) / total) * 100;
   }
 

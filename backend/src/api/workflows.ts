@@ -216,7 +216,7 @@ router.delete('/task/:id', async (req, res) => {
 router.get('/task/:workflowID/groupTask/group/:groupID', async (req, res) => {
   const { workflowID, groupID } = req.params;
   const representation = req.query.representation as string;
-  console.log('zdsfg');
+
   const groupTask = await dalGroupTask.getByWorkflowGroup(workflowID, groupID);
   if (!groupTask) return res.status(404).end('No group task found.');
 

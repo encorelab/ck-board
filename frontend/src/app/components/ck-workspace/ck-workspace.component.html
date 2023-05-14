@@ -98,11 +98,26 @@
         No task selected!
       </div>
       <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
+      <div *ngIf="!loading && runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && !taskSubmittable(runningGroupTask) && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE" class="heading workflow-create-post">
+        <button
+          mat-raised-button
+          matTooltip="Create Post"
+          (click)="addPost()"
+          style="margin: 0; padding: 0; line-height: inherit; height: inherit"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
       <div *ngIf="!loading" style="display: flex; flex-direction: row;">
-        <div class="heading no-posts" *ngIf="runningGroupTask && (!posts || posts.length === 0)">
+        <div class="heading no-posts" *ngIf="runningGroupTask && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && (!posts || posts.length === 0)">
           No posts to review!
         </div>
-        <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask && posts && posts.length > 0">
+        <div class="heading no-posts" *ngIf="runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && (!posts || posts.length === 0)">
+          Create a Post!
+        </div>
+
+        <!-- Draft post slider -->
+        <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask && !showSubmittedPosts && posts && posts.length > 0">
           <ng-template swiperSlide *ngFor="let htmlPost of posts">
             <div (click)="$event.stopPropagation();" style="display: flex; flex-direction: column; gap: 10px;">
               <app-html-post 
@@ -118,6 +133,23 @@
             </div>
           </ng-template>
         </swiper>
+        <!-- Submitted Post Slider -->
+        <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask && showSubmittedPosts && submittedPosts && submittedPosts.length > 0">
+          <ng-template swiperSlide *ngFor="let htmlPost of submittedPosts">
+            <div (click)="$event.stopPropagation();" style="display: flex; flex-direction: column; gap: 10px;">
+              <app-html-post 
+                (click)="$event.stopPropagation();" 
+                [post]="htmlPost" [disableDownload]="true" 
+                style="width: 360px; height: 100%;">
+              </app-html-post>
+              <div style="display: flex; flex-direction: row;">
+                <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Previous</button>
+                <button mat-raised-button color="primary"  style="width: 30%; margin: 0px 5px;">Submitted!</button>
+                <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Next</button>
+              </div>
+            </div>
+          </ng-template>
+        </swiper>
         <div *ngIf="runningGroupTask">
           <mat-card class="example-card" style="width: 350px; margin: 10px auto">
             <mat-card-title>{{runningGroupTask.group.name}}: {{runningGroupTask.workflow.name}}</mat-card-title>
@@ -128,6 +160,7 @@
                 <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
                   <li *ngIf="hasCommentRequirement(runningGroupTask)">Comment on each post at least once!</li>
                   <li *ngIf="hasTagRequirement(runningGroupTask)">Tag each post at least once!</li>
+                  <li *ngIf="hasCreatePostRequirement(runningGroupTask)">Create {{numberOfPosts(runningGroupTask)}} posts</li>
                 </ul>
               </section>
             </mat-card-content>

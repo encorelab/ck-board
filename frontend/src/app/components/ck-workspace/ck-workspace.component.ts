@@ -17,6 +17,7 @@ import {
   GroupTaskStatus,
   TaskAction,
   TaskActionType,
+  TaskWorkflowType,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -32,10 +33,18 @@ import { Group } from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
 import Converters from 'src/app/utils/converters';
 import { PostService } from 'src/app/services/post.service';
-import { SocketEvent } from 'src/app/utils/constants';
+import {
+  NEEDS_ATTENTION_TAG,
+  POST_TAGGED_BORDER_THICKNESS,
+  SocketEvent,
+} from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
 import { interval, Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
+import { AddPostComponent } from '../add-post-modal/add-post.component';
+import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
+import { CanvasService } from 'src/app/services/canvas.service';
+import { GroupTaskService } from 'src/app/services/groupTask.service';
 
 // install Swiper modules
 SwiperCore.use([EffectCards]);
@@ -70,10 +79,14 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   averageGroupProgress: number;
   listeners: Subscription[] = [];
   posts: HTMLPost[] = [];
+  submittedPosts: HTMLPost[] = [];
   members: User[] = [];
+
+  showSubmittedPosts: boolean = false;
 
   Role: typeof Role = Role;
   TaskActionType: typeof TaskActionType = TaskActionType;
+  TaskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
   embedded: boolean = false; // If standalone board embed
 
@@ -86,6 +99,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     public groupService: GroupService,
     public socketService: SocketService,
     public snackbarService: SnackbarService,
+    public canvasService: CanvasService,
+    public groupTaskService: GroupTaskService,
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -153,6 +168,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   async view(groupTask: ExpandedGroupTask): Promise<void> {
     this.loading = true;
     this.runningGroupTask = groupTask;
+    this.runningGroupTask.groupTask = await this.groupTaskService.getGroupTask(
+      this.runningGroupTask.group.groupID,
+      this.runningGroupTask.workflow.workflowID
+    );
     this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
     this.averageGroupProgress = await this._calcAverageProgress(
       this.runningGroupTask
@@ -164,7 +183,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     } else {
       postIDs = postIDs.concat(groupTask.groupTask.posts);
     }
-
+    console.log(postIDs);
     const posts = await this.postService.getAll(postIDs);
     this.posts = await this.converters.toHTMLPosts(posts);
     this.members = await this.userService.getMultipleByIds(
@@ -194,6 +213,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
 
     this.posts = this.posts.filter((p) => p.post.postID !== post.post.postID);
+    this.submittedPosts.push(post);
     this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
   }
 
@@ -253,11 +273,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   taskSubmittable(groupTask: ExpandedGroupTask): boolean {
-    return (
-      this.currentGroupProgress == 100 &&
-      groupTask.groupTask.posts.length == 0 &&
-      groupTask.groupTask.status == GroupTaskStatus.ACTIVE
-    );
+    return this.runningGroupTask?.workflow.type === TaskWorkflowType.GENERATION
+      ? this.currentGroupProgress >= 100 &&
+          groupTask.groupTask.status == GroupTaskStatus.ACTIVE
+      : this.currentGroupProgress == 100 &&
+          groupTask.groupTask.posts.length == 0 &&
+          groupTask.groupTask.status == GroupTaskStatus.ACTIVE;
   }
 
   hasCommentRequirement(runningGroupTask: ExpandedGroupTask): boolean {
@@ -276,18 +297,120 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
   }
 
+  hasCreatePostRequirement(runningGroupTask: ExpandedGroupTask): boolean {
+    return (
+      runningGroupTask.workflow.requiredActions.find(
+        (a) => a.type == TaskActionType.CREATE_POST
+      ) != undefined
+    );
+  }
+
+  numberOfPosts(runningGroupTask: ExpandedGroupTask): number | undefined {
+    return runningGroupTask.workflow.requiredActions.find(
+      (a) => a.type == TaskActionType.CREATE_POST
+    )?.amountRequired;
+  }
+
+  togglePostsSlider(): void {
+    this.showSubmittedPosts = !this.showSubmittedPosts;
+  }
+
+  addPost(): void {
+    const dialogData = {
+      disableCreation: true,
+      board: this.board,
+      user: this.user,
+      onComplete: async (post: Post) => {
+        if (this.runningGroupTask) {
+          post.type =
+            PostType[this.runningGroupTask?.workflow.destinations[0].type];
+          if (post.type === PostType.BUCKET) {
+            post.boardID = this.board.boardID;
+            await this.canvasService.createBucketPost(
+              this.runningGroupTask.workflow.destinations[0].id,
+              post
+            );
+          } else {
+            const displayAttributes: DisplayAttributes = {
+              position: {
+                left: 150,
+                top: 150,
+              },
+              lock: !this.board.permissions.allowStudentMoveAny,
+            };
+            post.boardID = this.runningGroupTask?.workflow.destinations[0].id;
+            post.displayAttributes = displayAttributes;
+            this.postService.create(post);
+            // this.socketService.emit(SocketEvent.POST_CREATE, post);
+          }
+
+          const htmlPost = await this.converters.toHTMLPost(post);
+          this.posts.push(htmlPost);
+          this.runningGroupTask.groupTask.progress[post.postID] = [
+            {
+              type: TaskActionType.CREATE_POST,
+              amountRequired: 1,
+            },
+          ];
+          this.runningGroupTask.groupTask.posts.push(post.postID);
+          const t = await this.workflowService.updateGroupTask(
+            this.runningGroupTask.groupTask.groupTaskID,
+            {
+              posts: this.posts.map((p) => p.post.postID),
+              progress: this.runningGroupTask.groupTask.progress,
+            }
+          );
+          // this.filterPosts();
+          console.log(t);
+          console.log(this.runningGroupTask);
+          this.currentGroupProgress = this._calcGroupProgress(
+            this.runningGroupTask
+          );
+          this.averageGroupProgress = await this._calcAverageProgress(
+            this.runningGroupTask
+          );
+          console.log(this.currentGroupProgress);
+          console.log(this.averageGroupProgress);
+          this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
+            this.runningGroupTask,
+          ]);
+        }
+        return;
+      },
+    };
+    this.dialog.open(AddPostComponent, {
+      width: '500px',
+      data: dialogData,
+    });
+  }
+
   private _startListening(): void {
     this.listeners.push(
       this.socketService.listen(
         SocketEvent.WORKFLOW_PROGRESS_UPDATE,
-        (updates) => {
+        async (updates) => {
           const found = updates.find(
             (u) =>
               u.groupTask.groupTaskID ==
               this.runningGroupTask?.groupTask.groupTaskID
           );
+          console.log('khjfjkhfhjkfgjhlk');
           if (found) {
             this.runningGroupTask = found;
+            if (found.workflow.type === TaskWorkflowType.GENERATION) {
+              const _newPosts = found.groupTask.posts.filter(
+                (p) => !this.posts.map((post) => post.post.postID).includes(p)
+              );
+              console.log(found.groupTask.posts);
+              console.log(_newPosts);
+              const newPosts = await this.postService.getAll(_newPosts);
+              console.log(newPosts);
+              const htmlPosts = await this.converters.toHTMLPosts(newPosts);
+              console.log(htmlPosts);
+              console.log(this.posts);
+              this.posts = this.posts.concat(htmlPosts);
+              console.log(this.posts);
+            }
             this.currentGroupProgress = this._calcGroupProgress(
               this.runningGroupTask
             );
@@ -322,11 +445,35 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         const found = this.posts.find(
           (p) => p.post.postID == result.comment.postID
         );
+        console.log('comment adde');
         if (found) {
           found.comments += 1;
         }
       })
     );
+    // this.listeners.push(
+    //   this.socketService.listen(SocketEvent.POST_CREATE, async (result) => {
+    //     if (this.runningGroupTask && this.runningGroupTask.workflow.type === TaskWorkflowType.GENERATION) {
+    //       console.log("CREATE POSTS")
+    //       this.runningGroupTask.groupTask =
+    //         await this.groupTaskService.getGroupTask(
+    //           this.runningGroupTask.group.groupID,
+    //           this.runningGroupTask.workflow.workflowID,
+    //         );
+    //       console.log("gere")
+    //       console.log(this.runningGroupTask.groupTask.posts);
+    // const _newPosts = this.runningGroupTask.groupTask.posts.filter(p =>
+    //   !this.posts.map(post => post.post.postID).includes(p)
+    // )
+    // console.log(_newPosts)
+    // const newPosts = await this.postService.getAll(_newPosts);
+    // this.posts.concat(await this.converters.toHTMLPosts(newPosts));
+    //       this.currentGroupProgress = this._calcGroupProgress(
+    //         this.runningGroupTask
+    //       );
+    //     }
+    //   })
+    // );
     this.listeners.push(
       this.socketService.listen(SocketEvent.POST_COMMENT_REMOVE, (result) => {
         const found = this.posts.find(
@@ -340,6 +487,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.listeners.push(
       this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post }) => {
         const found = this.posts.find((p) => p.post.postID == post.postID);
+        console.log('tag adde');
         if (found) {
           found.post = post;
         }
@@ -348,6 +496,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.listeners.push(
       this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post }) => {
         const found = this.posts.find((p) => p.post.postID == post.postID);
+        console.log('tag remove');
         if (found) {
           found.post = post;
         }
@@ -386,32 +535,43 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   private _calcGroupProgress(task: ExpandedGroupTask | null): number {
+    console.log(task);
     if (!task) return 0;
+
+    // if(task.workflow.type === TaskWorkflowType.GENERATION)
 
     // get all posts' progress
     const values = Object.keys(task.groupTask.progress).map(function (key) {
       return task.groupTask.progress[key];
     });
-
+    console.log(values);
     // sum all amountRequired for each action per post
     // i.e. Post A (1 tag req, 1 comment req) + Post B (1 tag req, 0 comments required)
-    const remaining = values.reduce(
+    let remaining = values.reduce(
       (partialSum, a) =>
         partialSum + a.reduce((partial, b) => partial + b.amountRequired, 0),
       0
     );
 
     // nothing left to do
-    if (remaining == 0) return 100;
+    if (remaining == 0 && task.workflow.type !== TaskWorkflowType.GENERATION)
+      return 100;
 
     // sum both required tags (1) and required comments (1) = 2
     // multiple by number of posts since those requirements are per-post
-    const total =
-      task.workflow.requiredActions.reduce(
-        (partialSum, a) => partialSum + a.amountRequired,
-        0
-      ) * values.length;
-
+    // console.log(task.workflow.requiredActions);
+    let total = task.workflow.requiredActions.reduce(
+      (partialSum, a) => partialSum + a.amountRequired,
+      0
+    );
+    if (task.workflow.type === TaskWorkflowType.GENERATION) {
+      // total *= task.group.members.length;
+      remaining = total - remaining;
+    } else {
+      total *= values.length;
+    }
+    console.log(total);
+    console.log(remaining);
     return ((total - remaining) / total) * 100;
   }
 

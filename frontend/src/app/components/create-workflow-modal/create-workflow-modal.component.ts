@@ -25,6 +25,7 @@ import {
   TaskActionType,
   TaskWorkflow,
   WorkflowType,
+  TaskWorkflowType,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
@@ -58,6 +59,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   // Common fields between all workflows
   WorkflowType: typeof WorkflowType = WorkflowType;
+  taskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
   workflowType: WorkflowType = WorkflowType.DISTRIBUTION;
   sourceOptions: (Bucket | Board)[] = [];
   destOptions: (Bucket | Board)[] = [];
@@ -69,7 +71,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   distributionWorkflowType: DistributionWorkflowType;
   removeFromSource = false;
 
-  // Fields for task workflow creation
+  // Fields for peer review workflow and generation task workflow creation
   groupOptions: Group[] = [];
   taskSource: Board | Bucket;
   taskDestination: Board | Bucket;
@@ -77,6 +79,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   assignedGroups: Group[] = [];
   commentsRequired = false;
   tagsRequired = false;
+  postGeneration = 1;
 
   bucketNameFormControl = new FormControl('valid', [
     Validators.required,
@@ -208,10 +211,21 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
-  createTaskWorkflow(): void {
+  createPeerReviewWorkflow(): void {
     if (!this._actionSelected()) return;
 
-    const workflow: TaskWorkflow = this._assembleTaskWorkflow();
+    const workflow: TaskWorkflow = this._assemblePeerReviewWorkflow();
+    this.workflowService.createTask(workflow).then(async () => {
+      await this.loadWorkflows();
+      this.selected.setValue(2);
+      this._clearWorkflowForm();
+    });
+  }
+
+  createGenerationTaskWorkflow(): void {
+    if (!this._validGenerationTaskWorkflow()) return;
+    console.log(this.postGeneration);
+    const workflow: TaskWorkflow = this._assembleGenerationTaskWorkflow();
     this.workflowService.createTask(workflow).then(async () => {
       await this.loadWorkflows();
       this.selected.setValue(2);
@@ -290,6 +304,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.workflowTypeFormControl.reset();
     this.removeFromSourceFormControl.reset();
     this.removeFromSource = false;
+    this.postGeneration = 1;
   }
 
   _isBoard(object: Board | Bucket): object is Board {
@@ -353,7 +368,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     return workflow;
   }
 
-  _validTaskWorkflow(): boolean {
+  _validPeerReviewWorkflow(): boolean {
     return (
       this.workflowNameFormControl.valid &&
       this.sourceFormControl.valid &&
@@ -364,11 +379,20 @@ export class CreateWorkflowModalComponent implements OnInit {
     );
   }
 
+  _validGenerationTaskWorkflow(): boolean {
+    return (
+      this.workflowNameFormControl.valid &&
+      this.destinationFormControl.valid &&
+      this.groupsFormControl.valid &&
+      this.promptFormControl.valid
+    );
+  }
+
   _actionSelected(): boolean {
     return this.commentsRequired || this.tagsRequired;
   }
 
-  _assembleTaskWorkflow(): TaskWorkflow {
+  _assemblePeerReviewWorkflow(): TaskWorkflow {
     const workflowID: string = generateUniqueID();
 
     const actions: TaskAction[] = [];
@@ -393,6 +417,33 @@ export class CreateWorkflowModalComponent implements OnInit {
       prompt: this.prompt,
       requiredActions: actions,
       assignedGroups: this.assignedGroups.map((g) => g.groupID),
+      type: this.taskWorkflowType.PEER_REVIEW,
+    };
+
+    return workflow;
+  }
+
+  _assembleGenerationTaskWorkflow(): TaskWorkflow {
+    const workflowID: string = generateUniqueID();
+
+    const actions: TaskAction[] = [];
+    if (this.postGeneration)
+      actions.push({
+        type: TaskActionType.CREATE_POST,
+        amountRequired: this.postGeneration,
+      });
+
+    const workflow: TaskWorkflow = {
+      workflowID: workflowID,
+      boardID: this.board.boardID,
+      active: false,
+      name: this.workflowName,
+      source: this._placeholderContainer(),
+      destinations: [this._mapToContainer(this.taskDestination)],
+      prompt: this.prompt,
+      requiredActions: actions,
+      assignedGroups: this.assignedGroups.map((g) => g.groupID),
+      type: this.taskWorkflowType.GENERATION,
     };
 
     return workflow;
@@ -427,5 +478,14 @@ export class CreateWorkflowModalComponent implements OnInit {
         name: bucketBoard.name,
       };
     }
+  }
+
+  // Default to current board if no source required
+  _placeholderContainer() {
+    return {
+      type: ContainerType.BOARD,
+      id: this.board.boardID,
+      name: 'CK Workspace',
+    };
   }
 }

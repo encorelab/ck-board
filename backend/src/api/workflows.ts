@@ -216,7 +216,7 @@ router.delete('/task/:id', async (req, res) => {
 router.get('/task/:workflowID/groupTask/group/:groupID', async (req, res) => {
   const { workflowID, groupID } = req.params;
   const representation = req.query.representation as string;
-
+  console.log('zdsfg');
   const groupTask = await dalGroupTask.getByWorkflowGroup(workflowID, groupID);
   if (!groupTask) return res.status(404).end('No group task found.');
 
@@ -268,12 +268,13 @@ router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
  */
 router.post('/task/groupTask/:groupTaskID', async (req, res) => {
   const { groupTaskID } = req.params;
-  const { actions, posts, status } = req.body;
+  const { actions, posts, status, progress } = req.body;
 
   const update: Partial<GroupTaskModel> = Object.assign(
     {},
     actions === null ? null : { actions },
     posts === null ? null : { posts },
+    progress === null ? null : { progress },
     status === null ? null : { status }
   );
 

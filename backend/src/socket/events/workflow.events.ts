@@ -5,6 +5,8 @@ import {
   TaskWorkflowModel,
 } from '../../models/Workflow';
 import { SocketPayload } from '../types/event.types';
+import { GroupTaskModel } from '../../models/GroupTask';
+import { GroupModel } from '../../models/Group';
 
 class WorkflowRunDistribution {
   static type: SocketEvent = SocketEvent.WORKFLOW_RUN_DISTRIBUTION;
@@ -42,6 +44,54 @@ class WorkflowRunTask {
   }
 }
 
-const workflowEvents = [WorkflowRunDistribution, WorkflowRunTask];
+class WorkflowUpdate {
+  static type: SocketEvent = SocketEvent.WORKFLOW_PROGRESS_UPDATE;
+
+  static async handleEvent(
+    input: SocketPayload<
+      [
+        {
+          groupTask: GroupTaskModel;
+          workflow: TaskWorkflowModel;
+          group: GroupModel;
+        }
+      ]
+    >
+  ): Promise<
+    | [
+        {
+          groupTask: GroupTaskModel;
+          workflow: TaskWorkflowModel;
+          group: GroupModel;
+        }
+      ]
+    | null
+  > {
+    return input.eventData;
+  }
+
+  static async handleResult(
+    io: Server,
+    socket: Socket,
+    result:
+      | [
+          {
+            groupTask: GroupTaskModel;
+            workflow: TaskWorkflowModel;
+            group: GroupModel;
+          }
+        ]
+      | null
+  ) {
+    console.log('hereeeeeeee');
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
+
+const workflowEvents = [
+  WorkflowRunDistribution,
+  WorkflowRunTask,
+  WorkflowUpdate,
+];
 
 export default workflowEvents;

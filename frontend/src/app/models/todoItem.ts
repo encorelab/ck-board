@@ -5,6 +5,7 @@ export enum TodoItemType {
   COGNITION = 'COGNITION',
   SEL = 'SEL',
   BEHAVIOURAL = 'BEHAVIOURAL',
+  ATL = 'ATL',
   CLASS = 'CLASS',
 }
 

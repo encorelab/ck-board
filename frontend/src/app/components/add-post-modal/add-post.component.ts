@@ -36,6 +36,7 @@ export interface AddPostDialog {
   spawnPosition: { left: number; top: number };
   onComplete?: (post: any) => any;
   editingPost?: Post | undefined;
+  disableCreation?: boolean;
 }
 
 @Component({
@@ -241,6 +242,20 @@ export class AddPostComponent {
     };
   }
 
+  getPartialPost(): Partial<Post> {
+    return {
+      postID: generateUniqueID(),
+      userID: this.user.userID,
+      author: this.user.username,
+      contentType: this.contentType,
+      multipleChoice: this.multipleChoiceOptions,
+      title: this.title,
+      desc: this.message,
+      tags: this.tags,
+      displayAttributes: null,
+    };
+  }
+
   async addPost() {
     const post = this.getBoardPost();
     await this.canvasService.createPost(post);
@@ -311,6 +326,14 @@ export class AddPostComponent {
   async handleDialogSubmit() {
     this.creationInProgress = true;
     let post: Post;
+    if (this.data?.disableCreation) {
+      const _post = this.getPartialPost();
+      if (this.data.onComplete) {
+        this.data.onComplete(_post);
+      }
+      this.dialogRef.close();
+      return;
+    }
 
     localStorage.setItem('post_create_title', this.title);
     localStorage.setItem('post_create_message', this.message);

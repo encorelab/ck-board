@@ -8,6 +8,12 @@ import {
 export enum WorkflowType {
   DISTRIBUTION = 'DISTRIBUTION',
   TASK = 'TASK',
+  GENERATION = 'GENERATION',
+}
+
+export enum TaskWorkflowType {
+  PEER_REVIEW = 'PEER_REVIEW',
+  GENERATION = 'GENERATION',
 }
 
 export enum DistributionWorkflowType {
@@ -24,6 +30,7 @@ export enum ContainerType {
 export enum TaskActionType {
   COMMENT = 'COMMENT',
   TAG = 'TAG',
+  CREATE_POST = 'CREATE_POST',
 }
 
 export class DistributionWorkflowTypeModel {
@@ -91,6 +98,9 @@ export class TaskWorkflowModel extends WorkflowModel {
 
   @prop({ required: true })
   public assignedGroups!: string[];
+
+  @prop({ enum: TaskWorkflowType, type: String, required: false })
+  public type?: string;
 }
 
 export const Workflow = getModelForClass(WorkflowModel);

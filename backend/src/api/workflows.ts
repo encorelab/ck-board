@@ -268,12 +268,13 @@ router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
  */
 router.post('/task/groupTask/:groupTaskID', async (req, res) => {
   const { groupTaskID } = req.params;
-  const { actions, posts, status } = req.body;
+  const { actions, posts, status, progress } = req.body;
 
   const update: Partial<GroupTaskModel> = Object.assign(
     {},
     actions === null ? null : { actions },
     posts === null ? null : { posts },
+    progress === null ? null : { progress },
     status === null ? null : { status }
   );
 

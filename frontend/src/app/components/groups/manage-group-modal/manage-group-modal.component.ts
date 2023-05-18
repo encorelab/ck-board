@@ -88,6 +88,7 @@ export class ManageGroupModalComponent implements OnInit {
       .catch((error) => {
         this.snackbarService.queueSnackbar(error.data.message);
       });
+    this.groupsChanged(false);
   }
 
   updateEditGroupMembers(group: Group): void {

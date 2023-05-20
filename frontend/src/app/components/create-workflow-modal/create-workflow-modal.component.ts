@@ -492,7 +492,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   // Default to current board if no source required
   _placeholderContainer() {
     return {
-      type: ContainerType.BOARD,
+      type: ContainerType.WORKFLOW,
       id: this.board.boardID,
       name: 'CK Workspace',
     };

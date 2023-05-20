@@ -25,6 +25,7 @@ export enum DistributionWorkflowType {
 export enum ContainerType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
+  WORKFLOW = 'WORKFLOW',
 }
 
 export enum TaskActionType {

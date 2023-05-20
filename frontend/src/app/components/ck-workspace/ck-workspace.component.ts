@@ -146,7 +146,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.completeGroupTasks.push(t);
       }
     });
-
     this.socketService.connect(this.user.userID, this.board.boardID);
     return true;
   }
@@ -183,8 +182,19 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     } else {
       postIDs = postIDs.concat(groupTask.groupTask.posts);
     }
+    const submittedPostIDs = [
+      ...Object.keys(groupTask.groupTask.progress),
+    ].filter(
+      (postID) =>
+        groupTask.groupTask.progress[postID].reduce(
+          (partialSum, a) => partialSum + a.amountRequired,
+          0
+        ) == 0
+    );
     const posts = await this.postService.getAll(postIDs);
+    const submittedPosts = await this.postService.getAll(submittedPostIDs);
     this.posts = await this.converters.toHTMLPosts(posts);
+    this.submittedPosts = await this.converters.toHTMLPosts(submittedPosts);
     this.members = await this.userService.getMultipleByIds(
       groupTask.group.members
     );
@@ -212,8 +222,11 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
 
     this.posts = this.posts.filter((p) => p.post.postID !== post.post.postID);
-    this.submittedPosts.push(post);
+    // this.submittedPosts.push(post);
     this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
+    if (this.currentGroupProgress >= 100) {
+      await this.markComplete();
+    }
   }
 
   async markComplete(): Promise<void> {
@@ -267,8 +280,15 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       (sum: number, a: TaskAction) => sum + a.amountRequired,
       0
     );
-
     return amountRequired == 0;
+  }
+
+  createMorePosts(groupTask: ExpandedGroupTask): boolean {
+    return (
+      groupTask.workflow.requiredActions.filter(
+        (a) => a.type === TaskActionType.CREATE_POST
+      )[0].amountRequired === Object.keys(groupTask.groupTask.progress).length
+    );
   }
 
   taskSubmittable(groupTask: ExpandedGroupTask): boolean {
@@ -321,16 +341,11 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       user: this.user,
       onComplete: async (post: Post) => {
         if (this.runningGroupTask) {
-          post.type =
+          post.type = PostType.WORKFLOW;
+          const destinationType =
             PostType[this.runningGroupTask?.workflow.destinations[0].type];
-          if (post.type === PostType.BUCKET) {
+          if (destinationType === PostType.BUCKET) {
             post.boardID = this.board.boardID;
-            const htmlPost = await this.converters.toHTMLPost(post);
-            this.posts.push(htmlPost);
-            await this.canvasService.createBucketPost(
-              this.runningGroupTask.workflow.destinations[0].id,
-              post
-            );
           } else {
             const displayAttributes: DisplayAttributes = {
               position: {
@@ -341,11 +356,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
             };
             post.boardID = this.runningGroupTask?.workflow.destinations[0].id;
             post.displayAttributes = displayAttributes;
-            const htmlPost = await this.converters.toHTMLPost(post);
-            this.posts.push(htmlPost);
-            this.postService.create(post);
           }
-
+          const htmlPost = await this.converters.toHTMLPost(post);
+          this.posts.push(htmlPost);
+          this.postService.create(post);
           this.runningGroupTask.groupTask.progress[post.postID] =
             this.runningGroupTask.workflow.requiredActions.filter(
               (action) => action.type !== TaskActionType.CREATE_POST
@@ -518,7 +532,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       this.socketService.listen(
         SocketEvent.WORKFLOW_POST_SUBMIT,
         (postID: string) => {
+          const submittedPost = this.posts.find((p) => p.post.postID == postID);
           this.posts = this.posts.filter((p) => p.post.postID != postID);
+          if (submittedPost) this.submittedPosts.push(submittedPost);
         }
       )
     );
@@ -575,12 +591,13 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       const createPosts = task.workflow.requiredActions.filter(
         (a) => a.type === TaskActionType.CREATE_POST
       )[0].amountRequired;
+      const postsCreated = Object.keys(task.groupTask.progress).length;
+
       const actionPerPost = total;
       if (total) total = total * createPosts + createPosts;
       else total = createPosts;
-
-      remaining += createPosts - task.groupTask.posts.length;
-      remaining += (createPosts - task.groupTask.posts.length) * actionPerPost;
+      remaining += createPosts - postsCreated;
+      remaining += (createPosts - postsCreated) * actionPerPost;
     } else {
       total *= values.length;
     }

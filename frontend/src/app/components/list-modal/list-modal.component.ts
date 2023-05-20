@@ -163,7 +163,9 @@ export class ListModalComponent implements OnInit, OnDestroy {
   }
 
   async fetchMorePosts(opts?: { size: number; page: number }) {
-    const data = await this.postService.getAllByBoard(this.board.boardID, opts);
+    const data = (
+      await this.postService.getAllByBoard(this.board.boardID, opts)
+    ).filter((post) => post.type !== PostType.WORKFLOW);
     const htmlPosts = await this.converters.toHTMLPosts(data);
     this.length = data.length;
     this.posts = this.posts.concat(htmlPosts);
@@ -184,6 +186,7 @@ export class ListModalComponent implements OnInit, OnDestroy {
     // FIXME: for when pagination api is implemented in
     this.postService
       .getAllByBoard(this.board.boardID, { size, page })
+      .then((posts) => posts.filter((post) => post.type !== PostType.WORKFLOW))
       .then(async (posts: Post[]) => {
         console.log('----', size * page, posts);
         this.length = posts.length;

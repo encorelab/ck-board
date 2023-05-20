@@ -3,6 +3,7 @@ import { Group } from './group';
 export enum ContainerType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
+  WORKFLOW = 'WORKFLOW',
 }
 
 export enum DistributionWorkflowType {

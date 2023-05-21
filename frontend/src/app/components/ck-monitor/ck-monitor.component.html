@@ -44,7 +44,7 @@
     </mat-menu>
   </app-toolbar>
   <mat-sidenav-container class="drawer-container">
-    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
+    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null">
       <h2 class="section-title">All Tasks</h2>
       <mat-list>
         <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
@@ -165,17 +165,19 @@
         </ng-container>
         <mat-divider></mat-divider>
       </mat-list>
-      <h2 class="section-title">Learner Models</h2>
-      <ng-container>
-        <button
-          mat-raised-button
-          color="primary"
-          style="margin-left: 15px"
-          (click)="todoIsVisible = !todoIsVisible; runningTask = null"
-        >
-          {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
-        </button>
-      </ng-container>
+      <div style="padding-bottom:20px">
+          <h2 class="section-title">Learner Models</h2>
+          <ng-container>
+            <button
+            mat-raised-button
+            color="primary"
+            style="margin-left: 15px"
+            (click)="todoIsVisible = !todoIsVisible; runningTask = null"
+            >
+            {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
+          </button>
+        </ng-container>
+      </div>
     </mat-sidenav>
     <mat-sidenav-content>
       <div *ngIf="todoIsVisible" style="margin: 10px">

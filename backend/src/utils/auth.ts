@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { sign, verify } from 'jsonwebtoken';
+import axios from 'axios';
 import { Role, UserModel } from '../models/User';
 import { v4 as uuidv4 } from 'uuid';
 import hmacSHA256 from 'crypto-js/hmac-sha256';
@@ -11,6 +11,8 @@ import { ProjectModel } from '../models/Project';
 import { NotFoundError } from '../errors/client.errors';
 import { addUserToProject } from './project.helpers';
 import { ApplicationError } from '../errors/base.errors';
+import { addToken, checkToken, sign, verify } from './jwt';
+import { SCORE_DOMAIN } from '../constants';
 
 export interface Token {
   email: string;
@@ -18,11 +20,6 @@ export interface Token {
   userID: string;
   role: string;
 }
-
-export const addHours = (numOfHours: number, date = new Date()) => {
-  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
-  return date;
-};
 
 export const getJWTSecret = (): string => {
   const secret = process.env.JWT_SECRET;
@@ -32,6 +29,11 @@ export const getJWTSecret = (): string => {
   }
 
   return secret;
+};
+
+export const addHours = (numOfHours: number, date = new Date()) => {
+  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
+  return date;
 };
 
 export const userToToken = (user: UserModel): Token => {
@@ -54,11 +56,15 @@ export const isAuthenticated = async (
     }
 
     const token = req.headers.authorization.replace('Bearer ', '');
-    res.locals.user = verify(token, getJWTSecret()) as Token;
+    res.locals.user = verify(token);
+
+    const cachedToken = await checkToken(res.locals.user.userID, token);
+    if (cachedToken == null || cachedToken == 'invalid' || cachedToken == 'nil')
+      return res.status(401).end('Invalid token!');
 
     next();
   } catch (e) {
-    return res.status(403).end('Unable to authenticate!');
+    return res.status(401).end('Unable to authenticate!');
   }
 };
 
@@ -121,7 +127,7 @@ export const getOrCreateUser = async (
   paramMap: Map<string, string>
 ): Promise<UserModel | null> => {
   const username = paramMap.get('username') ?? '';
-  const email = `${username}@score.oise.utoronto.ca`;
+  const email = `${username}@${SCORE_DOMAIN}`;
   const role = getRole(paramMap.get('role'));
   try {
     return await createUserIfNecessary(email, username, role);
@@ -218,14 +224,32 @@ export const signInUserWithSso = async (
       return res.status(500).end('Internal Server Error');
     }
   }
-  const sessionToken = generateSessionToken(userModel);
+  const sessionToken = await generateSessionToken(userModel);
   sessionToken.redirectUrl = redirectUrl;
+  await addToken(sessionToken.user.userID, sessionToken.token);
+
+  res.cookie('CK_SESSION', sessionToken.token, {
+    httpOnly: true,
+    domain: process.env.APP_DOMAIN || 'localhost',
+    expires: sessionToken.expiresAt,
+    secure: true,
+  });
   return res.status(200).send(sessionToken);
 };
 
 export const generateSessionToken = (userModel: UserModel): any => {
   const user = userToToken(userModel);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = sign(user);
   const expiresAt = addHours(2);
   return { token, user, expiresAt };
+};
+
+export const logoutSCORE = async (req: Request) => {
+  const scoreAddress = process.env.SCORE_SERVER_ADDRESS || 'http://localhost';
+  return await axios.get(
+    `${scoreAddress + process.env.SCORE_LOGOUT_ENDPOINT}`,
+    {
+      headers: { Cookie: `SESSION=${req.cookies['SESSION']};` },
+    }
+  );
 };

@@ -20,7 +20,7 @@ export class UserService {
 
   async register(user: User) {
     return this.http
-      .post<TokenResponse>('auth/register', user)
+      .post<TokenResponse>('auth/register', user, { withCredentials: true })
       .toPromise()
       .then((result) => {
         localStorage.setItem('user', JSON.stringify(result.user));
@@ -32,15 +32,33 @@ export class UserService {
 
   async login(email: string, password: string): Promise<boolean> {
     return this.http
-      .post<TokenResponse>('auth/login', {
-        email: email,
-        password: password,
-      })
+      .post<TokenResponse>(
+        'auth/login',
+        {
+          email: email,
+          password: password,
+        },
+        { withCredentials: true }
+      )
       .toPromise()
       .then((result) => {
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('access_token', result.token);
         localStorage.setItem('expires_at', result.expiresAt);
+        return true;
+      });
+  }
+
+  async logout(): Promise<boolean> {
+    return this.http
+      .post<TokenResponse>(
+        'auth/logout?score=true',
+        {},
+        { withCredentials: true }
+      )
+      .toPromise()
+      .then(() => {
+        this.clearLocalStorage();
         return true;
       });
   }
@@ -66,7 +84,7 @@ export class UserService {
 
   async ssoLogin(sso: string | null, sig: string | null): Promise<boolean> {
     return this.http
-      .get(`auth/sso/login/${sso}/${sig}`)
+      .get(`auth/sso/login/${sso}/${sig}`, { withCredentials: true })
       .toPromise()
       .then((result: any) => {
         localStorage.setItem('user', JSON.stringify(result.user));
@@ -77,18 +95,18 @@ export class UserService {
       });
   }
 
-  logout() {
-    localStorage.removeItem('user');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('expires_at');
-  }
-
   update(id: string, user: Partial<User>) {
     return this.http.post('auth/' + id, user).toPromise();
   }
 
   delete(id: string) {
     return this.http.delete('auth/' + id).toPromise();
+  }
+
+  clearLocalStorage(): void {
+    localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('expires_at');
   }
 
   public get loggedIn(): boolean {

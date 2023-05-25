@@ -259,7 +259,8 @@ class PersonalBoardAddPost {
     socket: Socket,
     result: PostTagEventInput
   ) {
-    io.to(socket.data.room).emit(this.type, result);
+    // Emitting SocketEvent to specific personalBoard
+    io.to(result.post.boardID).emit(this.type, result);
   }
 }
 

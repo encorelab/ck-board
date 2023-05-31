@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LearnerDataModalComponent } from './learner-data-modal.component';
+import { AddLearnerModalComponent } from './add-learner-modal.component';
 
-describe('LearnerDataModalComponent', () => {
-  let component: LearnerDataModalComponent;
-  let fixture: ComponentFixture<LearnerDataModalComponent>;
+describe('AddLearnerModalComponent', () => {
+  let component: AddLearnerModalComponent;
+  let fixture: ComponentFixture<AddLearnerModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [LearnerDataModalComponent],
+      declarations: [AddLearnerModalComponent],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(LearnerDataModalComponent);
+    fixture = TestBed.createComponent(AddLearnerModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

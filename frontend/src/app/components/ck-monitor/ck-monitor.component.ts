@@ -6,10 +6,6 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import * as Highcharts from 'highcharts';
-import more from 'highcharts/highcharts-more';
-import exporting from 'highcharts/modules/exporting';
-import nodata from 'highcharts/modules/no-data-to-display';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope } from 'src/app/models/board';
@@ -45,12 +41,7 @@ import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
 import { FormControl, FormGroup } from '@angular/forms';
-import { LearnerConfigurationModalComponent } from '../learner-configuration-modal/learner-configuration-modal.component';
-import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-modal.component';
-import LearnerModel, { DimensionType } from 'src/app/models/learner';
-import { createClassEngagementGraph } from 'src/app/utils/highchart';
 import { LearnerService } from 'src/app/services/learner.service';
-import { LearnerModelsComponent } from '../learner-models/learner-models.component';
 
 SwiperCore.use([EffectCards]);
 
@@ -162,7 +153,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   embedded: boolean = false;
 
-  showModel = false;
+  showModels = false;
 
   constructor(
     public userService: UserService,
@@ -427,12 +418,12 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleEngagementModel(): void {
-    if (this.showModel) {
-      this.showModel = false;
+  toggleModels(): void {
+    if (this.showModels) {
+      this.showModels = false;
     } else {
       this.todoIsVisible = false;
-      this.showModel = true;
+      this.showModels = true;
     }
   }
 
@@ -440,7 +431,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     if (this.todoIsVisible) {
       this.todoIsVisible = false;
     } else {
-      this.showModel = false;
+      this.showModels = false;
       this.todoIsVisible = true;
     }
   }

@@ -8,12 +8,11 @@ import { Board } from 'src/app/models/board';
 import LearnerModel, { DimensionType } from 'src/app/models/learner';
 import { AuthUser } from 'src/app/models/user';
 import { LearnerService } from 'src/app/services/learner.service';
-import {
-  createClassEngagementGraph,
-  createStudentEngagementGraph,
-} from 'src/app/utils/highchart';
-import { LearnerConfigurationModalComponent } from '../learner-configuration-modal/learner-configuration-modal.component';
-import { LearnerDataModalComponent } from '../learner-data-modal/learner-data-modal.component';
+import { createClassGraph, createStudentGraph } from 'src/app/utils/highchart';
+import { AddLearnerModalComponent } from '../add-learner-modal/add-learner-modal.component';
+import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { ProjectService } from 'src/app/services/project.service';
+import * as saveAs from 'file-saver';
 
 more(Highcharts);
 exporting(Highcharts);
@@ -29,6 +28,13 @@ export interface LearnerInput {
   board: Board;
 }
 
+export interface ModelCard {
+  model: LearnerModel;
+  dimensionType: DimensionType;
+  chartOptions: Highcharts.Options;
+  updateFlag: boolean;
+}
+
 @Component({
   selector: 'app-learner-models',
   templateUrl: './learner-models.component.html',
@@ -37,94 +43,155 @@ export interface LearnerInput {
 export class LearnerModelsComponent implements OnInit {
   @Input() board: Board;
 
-  engModel: LearnerModel;
+  modelCards: ModelCard[] = [];
 
+  DimensionType: typeof DimensionType = DimensionType;
   Highcharts: typeof Highcharts = Highcharts;
   chartOptions: Highcharts.Options = {};
 
-  DimensionType: typeof DimensionType = DimensionType;
-  dimensionType: DimensionType = DimensionType.DIAGNOSTIC;
-
   idToUser: Map<string, AuthUser> = new Map<string, AuthUser>();
-  modelSubject: AuthUser | null;
+  modelSubject: string = DimensionType.DIAGNOSTIC;
+  classDimensionFilter: DimensionType = DimensionType.DIAGNOSTIC;
 
   updateFlag: boolean = false;
 
   constructor(
     public learnerService: LearnerService,
+    public projectService: ProjectService,
     public dialog: MatDialog
   ) {}
 
   async ngOnInit(): Promise<void> {
     const models = await this.learnerService.getByBoards([this.board.boardID]);
-    if (models?.length > 0) {
-      this.engModel = models[0];
-      models[0].data.map((d) => this.idToUser.set(d.student.userID, d.student));
-      this.refreshModel();
+    for (const model of models) {
+      this.modelCards.push({
+        model: model,
+        dimensionType: DimensionType.DIAGNOSTIC,
+        chartOptions: this.createChartOptions(model),
+        updateFlag: false,
+      });
+      model.data.map((d) => this.idToUser.set(d.student.userID, d.student));
     }
   }
 
-  refreshModel(): void {
-    if (!this.modelSubject) {
-      this.chartOptions = createClassEngagementGraph(
-        this.engModel,
+  createChartOptions(model: LearnerModel): Highcharts.Options {
+    if (
+      this.modelSubject == DimensionType.DIAGNOSTIC ||
+      this.modelSubject == DimensionType.REASSESSMENT
+    ) {
+      return createClassGraph(
+        model,
         {
           onEditData: this.onEditData,
-          onEditDimensions: this.onEditDimensions,
-        },
-        this.dimensionType
-      );
-    } else {
-      this.chartOptions = createStudentEngagementGraph(
-        this.engModel,
-        {
-          onEditData: this.onEditData,
-          onEditDimensions: this.onEditDimensions,
+          onExport: this.onExport,
+          onDeleteModel: this.onDeleteModel,
         },
         this.modelSubject
       );
+    } else {
+      return createStudentGraph(
+        model,
+        {
+          onEditData: this.onEditData,
+          onExport: this.onExport,
+          onDeleteModel: this.onDeleteModel,
+        },
+        this.idToUser.get(this.modelSubject)!
+      );
     }
-
-    this.updateFlag = true;
   }
 
-  onEditData = (): void => {
-    this.dialog.open(LearnerDataModalComponent, {
+  refreshModelCard(model: LearnerModel, modelCard?: ModelCard): void {
+    if (!modelCard) {
+      modelCard = this.modelCards.find(
+        (m) => m.model.modelID === model.modelID
+      );
+    }
+    if (modelCard) {
+      modelCard.model = model;
+      modelCard.chartOptions = this.createChartOptions(model);
+      modelCard.updateFlag = true;
+    }
+  }
+
+  onEditData = (model: LearnerModel): void => {
+    this.dialog.open(AddLearnerModalComponent, {
       data: {
-        model: this.engModel,
-        projectID: this.board.projectID,
-        selectedStudentID: this.modelSubject?.userID,
+        isEditing: true,
+        model: model,
+        board: this.board,
+        selectedStudentID: this.modelSubject,
         onUpdate: (model: LearnerModel) => {
-          this.engModel = model;
-          this.refreshModel();
+          this.refreshModelCard(model);
         },
       },
+      minWidth: 720,
       maxWidth: 1280,
     });
   };
 
-  onEditDimensions = () => {
-    this.dialog.open(LearnerConfigurationModalComponent, {
+  onExport = async (model: LearnerModel): Promise<void> => {
+    const rows: string[] = [
+      'student_id,student_username,dimension,diagnostic,reassessment',
+    ];
+    model.data.forEach((value) => {
+      const { userID, username } = value.student;
+      rows.push(
+        `${userID},${username},${value.dimension},${value.diagnostic},${value.reassessment}`
+      );
+    });
+    const csvArray = rows.join('\r\n');
+    const blob = new Blob([csvArray], { type: 'text/csv' });
+    const projectName = (await this.projectService.get(this.board.projectID))
+      .name;
+    saveAs(blob, `${projectName}_${model.name}.csv`);
+  };
+
+  onDeleteModel = (model: LearnerModel): void => {
+    this.dialog.open(ConfirmModalComponent, {
+      width: '500px',
       data: {
-        model: this.engModel,
-        onUpdate: (model) => {
-          this.engModel = model;
-          this.refreshModel();
+        title: 'Confirmation',
+        message: 'Are you sure you want to delete this learner model?',
+        handleConfirm: async () => {
+          await this.learnerService.deleteModel(model.modelID);
+          this.modelCards = this.modelCards.filter(
+            (m) => m.model.modelID !== model.modelID
+          );
         },
       },
-      maxWidth: 1280,
     });
   };
 
-  dimensionTypeChange(): void {
-    this.refreshModel();
+  dimensionTypeChange(modelCard: ModelCard): void {
+    this.refreshModelCard(modelCard.model);
   }
 
-  modelSubjectChange(): void {
-    this.refreshModel();
+  subjectChange(): void {
+    this.modelCards.map((mc) => this.refreshModelCard(mc.model, mc));
   }
 
-  disableDimensionFilter(): boolean {
-    return this.modelSubject != null;
+  dimTypeFilterChange(dim: DimensionType): void {
+    this.classDimensionFilter = dim;
+  }
+
+  handleCreateModel(): void {
+    this.dialog.open(AddLearnerModalComponent, {
+      data: {
+        isEditing: false,
+        board: this.board,
+        onCreate: (model: LearnerModel) => {
+          this.modelCards.push({
+            model: model,
+            dimensionType: DimensionType.DIAGNOSTIC,
+            chartOptions: this.createChartOptions(model),
+            updateFlag: false,
+          });
+          model.data.map((d) => this.idToUser.set(d.student.userID, d.student));
+        },
+      },
+      minWidth: 720,
+      maxWidth: 1280,
+    });
   }
 }

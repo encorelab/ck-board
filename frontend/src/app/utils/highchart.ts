@@ -4,11 +4,12 @@ import { AuthUser } from '../models/user';
 import sorting from './sorting';
 
 export interface MenuHandlers {
-  onEditDimensions: Function;
   onEditData: Function;
+  onExport: Function;
+  onDeleteModel: Function;
 }
 
-export const createClassEngagementGraph = (
+export const createClassGraph = (
   model: LearnerModel,
   handlers: MenuHandlers,
   dimensionType: DimensionType = DimensionType.DIAGNOSTIC
@@ -40,26 +41,32 @@ export const createClassEngagementGraph = (
       buttons: {
         contextButton: {
           text: 'Edit Model',
-          menuItems: ['dimensions', 'data'],
+          menuItems: ['data', 'export', 'delete'],
         },
       },
       menuItemDefinitions: {
-        dimensions: {
-          text: 'Edit Dimensions',
-          onclick: () => {
-            handlers.onEditDimensions(model);
-          },
-        },
         data: {
           text: 'Edit Data',
           onclick: () => {
             handlers.onEditData(model);
           },
         },
+        export: {
+          text: 'Export via CSV',
+          onclick: () => {
+            handlers.onExport(model);
+          },
+        },
+        delete: {
+          text: 'Delete Model',
+          onclick: () => {
+            handlers.onDeleteModel(model);
+          },
+        },
       },
     },
     title: {
-      text: 'Engagement Model',
+      text: model.name,
     },
     xAxis: {
       categories: dimensions,
@@ -80,7 +87,7 @@ export const createClassEngagementGraph = (
   };
 };
 
-export const createStudentEngagementGraph = (
+export const createStudentGraph = (
   model: LearnerModel,
   handlers: MenuHandlers,
   student: AuthUser
@@ -143,26 +150,32 @@ export const createStudentEngagementGraph = (
       buttons: {
         contextButton: {
           text: 'Edit Model',
-          menuItems: ['dimensions', 'data'],
+          menuItems: ['data', 'export', 'delete'],
         },
       },
       menuItemDefinitions: {
-        dimensions: {
-          text: 'Edit Dimensions',
-          onclick: () => {
-            handlers.onEditDimensions(model);
-          },
-        },
         data: {
           text: 'Edit Data',
           onclick: () => {
             handlers.onEditData(model);
           },
         },
+        export: {
+          text: 'Export via CSV',
+          onclick: () => {
+            handlers.onExport(model);
+          },
+        },
+        delete: {
+          text: 'Delete Model',
+          onclick: () => {
+            handlers.onDeleteModel(model);
+          },
+        },
       },
     },
     title: {
-      text: `${student.username}'s Engagement Model`,
+      text: model.name,
     },
     xAxis: {
       categories: dimensions,

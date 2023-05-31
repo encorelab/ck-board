@@ -14,6 +14,24 @@ export class LearnerService {
       .toPromise();
   }
 
+  createModel(
+    projectID: string,
+    boardID: string,
+    name: string,
+    dimensions: string[],
+    data: DimensionValue[]
+  ): Promise<LearnerModel> {
+    return this.http
+      .post<LearnerModel>('learner/', {
+        projectID,
+        boardID,
+        name,
+        dimensions,
+        data,
+      })
+      .toPromise();
+  }
+
   addDimension(modelID: string, dimension: string): Promise<LearnerModel> {
     return this.http
       .post<LearnerModel>(`learner/${modelID}/addDimension`, { dimension })
@@ -39,5 +57,24 @@ export class LearnerService {
         dimensionValues,
       })
       .toPromise();
+  }
+
+  updateModel(
+    id: string,
+    name: string,
+    dimensions: string[],
+    data: DimensionValue[]
+  ): Promise<LearnerModel> {
+    return this.http
+      .post<LearnerModel>(`learner/${id}/update`, {
+        name,
+        dimensions,
+        modelData: data,
+      })
+      .toPromise();
+  }
+
+  deleteModel(id: string): Promise<LearnerModel> {
+    return this.http.delete<LearnerModel>(`learner/${id}`).toPromise();
   }
 }

@@ -1,28 +1,48 @@
-import mongoose, { mongo } from 'mongoose';
+import { mongo } from 'mongoose';
 import { NotFoundError } from '../errors/client.errors';
 import Learner, {
+  DEFAULT_MODELS,
   DimensionValue,
   LearnerModelModel,
-  LearnerModelType,
 } from '../models/Learner';
 import User from '../models/User';
-import dalUser from './dalUser';
 
-export const createDefault = async (
+export const create = async (
   projectID: string,
   boardID: string,
-  type: LearnerModelType
+  name: string,
+  dimensions: string[],
+  data: DimensionValue[]
 ) => {
   try {
-    const savedModel = await Learner.create({
+    return await Learner.create({
       modelID: new mongo.ObjectId().toString(),
       projectID: projectID,
       boardID: boardID,
-      type: type,
-      dimensions: [],
-      data: [],
+      name: name,
+      dimensions: dimensions,
+      data: data,
     });
-    return savedModel;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const createDefaultModels = async (
+  projectID: string,
+  boardID: string
+) => {
+  try {
+    for (const value of DEFAULT_MODELS) {
+      await Learner.create({
+        modelID: new mongo.ObjectId().toString(),
+        projectID: projectID,
+        boardID: boardID,
+        name: value,
+        dimensions: [],
+        data: [],
+      });
+    }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -151,8 +171,18 @@ export const updateData = async (
   }
 };
 
+export const deleteModel = async (id: string) => {
+  try {
+    const deletedModel = await Learner.findOneAndDelete({ modelID: id });
+    return deletedModel;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 const dalLearnerModel = {
-  createDefault,
+  create,
+  createDefaultModels,
   getByID,
   getByBoards,
   addDimension,
@@ -161,6 +191,7 @@ const dalLearnerModel = {
   removeDimensionValues,
   update,
   updateData,
+  deleteModel,
 };
 
 export default dalLearnerModel;

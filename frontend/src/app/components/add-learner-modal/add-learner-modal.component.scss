@@ -1,0 +1,36 @@
+.dimensions-list {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.csv-help-toggler {
+  padding: 10px 0 0 0 !important;
+}
+
+pre {
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-left: 3px solid #f36d33;
+  color: #666;
+  page-break-inside: avoid;
+  font-family: monospace;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 1.6em;
+  white-space: pre-line;
+  width: 100%;
+  overflow: auto;
+  padding: 0.5em 0.8em;
+  display: block;
+  word-wrap: break-word;
+}
+
+/* Structure */
+table {
+  width: 100%;
+}
+
+.mat-mdc-form-field {
+  font-size: 14px;
+  width: 100%;
+}

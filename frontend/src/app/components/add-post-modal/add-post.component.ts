@@ -36,6 +36,7 @@ export interface AddPostDialog {
   spawnPosition: { left: number; top: number };
   onComplete?: (post: any) => any;
   editingPost?: Post | undefined;
+  disableCreation?: boolean;
 }
 
 @Component({
@@ -52,6 +53,7 @@ export class AddPostComponent {
   correctMultipleChoiceSelected = false;
   editingPost: Post | undefined;
   contentType: ContentType = ContentType.OPEN_RESPONSE_MESSAGE;
+  creationInProgress = false;
 
   title = '';
   message = '';
@@ -94,6 +96,9 @@ export class AddPostComponent {
         : [];
       this.tags = this.editingPost.tags;
       this.correctMultipleChoiceSelected = true;
+    } else {
+      this.title = localStorage.getItem('post_create_title') ?? '';
+      this.message = localStorage.getItem('post_create_message') ?? '';
     }
     this.tagOptions = data.board.tags.filter(
       (n) => !this.tags.map((b) => b.name).includes(n.name)
@@ -237,6 +242,20 @@ export class AddPostComponent {
     };
   }
 
+  getPartialPost(): Partial<Post> {
+    return {
+      postID: generateUniqueID(),
+      userID: this.user.userID,
+      author: this.user.username,
+      contentType: this.contentType,
+      multipleChoice: this.multipleChoiceOptions,
+      title: this.title,
+      desc: this.message,
+      tags: this.tags,
+      displayAttributes: null,
+    };
+  }
+
   async addPost() {
     const post = this.getBoardPost();
     await this.canvasService.createPost(post);
@@ -305,21 +324,41 @@ export class AddPostComponent {
   }
 
   async handleDialogSubmit() {
+    this.creationInProgress = true;
     let post: Post;
-
-    if (this.data.type == PostType.BUCKET && this.data.bucket) {
-      post = await this.addBucketPost();
-    } else if (this.data.type == PostType.LIST) {
-      post = await this.addListPost();
-    } else {
-      post = await this.addPost();
+    if (this.data?.disableCreation) {
+      const _post = this.getPartialPost();
+      if (this.data.onComplete) {
+        this.data.onComplete(_post);
+      }
+      this.dialogRef.close();
+      return;
     }
 
-    if (this.data.onComplete) {
-      this.data.onComplete(post);
-    }
+    localStorage.setItem('post_create_title', this.title);
+    localStorage.setItem('post_create_message', this.message);
+    try {
+      if (this.data.type == PostType.BUCKET && this.data.bucket) {
+        post = await this.addBucketPost();
+      } else if (this.data.type == PostType.LIST) {
+        post = await this.addListPost();
+      } else {
+        post = await this.addPost();
+      }
 
-    this.dialogRef.close();
+      localStorage.removeItem('post_create_title');
+      localStorage.removeItem('post_create_message');
+      if (this.data.onComplete) {
+        this.data.onComplete(post);
+      }
+      this.creationInProgress = false;
+    } catch (e) {
+      this.snackbarService.queueSnackbar(
+        'Unable to create post. Please refresh and try again!'
+      );
+    } finally {
+      this.dialogRef.close();
+    }
   }
 
   onNoClick(): void {

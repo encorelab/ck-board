@@ -10,16 +10,17 @@
   max-height: 75vh;
 }
 
+.mat-paginator {
+  display: flex;
+  justify-content: center;
+}
+
 .spinner {
   margin: 70px auto;
   background: transparent;
 }
 
 .header {
-  display: flex; 
+  display: flex;
   flex-direction: row;
-}
-
-.header > mat-paginator:last-child {
-  margin-left: auto;
 }

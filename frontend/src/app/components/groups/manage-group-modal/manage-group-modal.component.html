@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>Manage Groups</h1>
 <div mat-dialog-content>
-  <mat-tab-group dynamicHeight animationDuration="0ms">
+  <mat-tab-group dynamicHeight animationDuration="0ms" (selectedTabChange)="tabChanged($event)">
     <mat-tab label="Groups">
       <div
         *ngIf="showEdit"
@@ -29,27 +29,7 @@
           [headerText]="'Select students to add to your group:'"
           (updateGroups)="updateEditGroupMembers($event[0])"
         >
-
         </app-move-group-members>
-        <mat-divider style="margin-top: 10px;"></mat-divider>
-        <div class="edit-group-actions">
-          <button 
-            mat-button
-            matTooltip="Back"
-            (click)="closeEdit()"
-          >
-            Back
-          </button>
-          <button
-            type="submit"
-            [disabled]="!editNameControl.valid"
-            mat-button
-            cdkFocusInitial
-            (click)="updateGroup(this.editGroup)"
-          >
-            Update
-          </button>
-        </div>
       </div>
       <mat-list *ngIf="!showEdit">
         <div class="create-group-container">
@@ -125,24 +105,61 @@
         [projectID]="data.project.projectID"
         [headerText]="'Move students manually with drag&drop or randomly using the shuffle button:'"
         (updateGroups)="updateGroups($event)"
+        (groupsChanged)="groupsChanged($event)"
       >
       </app-move-group-members>
-      <mat-divider></mat-divider>
-      <div class="multi-group-actions">
-        <button
-          mat-icon-button
-          matTooltip="Shuffle members between selected groups"
-          (click)="child.shuffleBetweenGroups()"
-        >
-          Shuffle <mat-icon>shuffle</mat-icon>
-        </button>
-        <button
-          mat-button
-          (click)="saveGroups()"
-        >
-          Save Groups
-        </button>
-      </div>
     </mat-tab>
   </mat-tab-group>
+</div>
+<div mat-dialog-actions>
+  <div *ngIf="showEdit && selectedTab === 0" >
+    <button 
+      mat-button
+      matTooltip="Back"
+      (click)="closeEdit()"
+    >
+      Back
+    </button>
+    <button
+      type="submit"
+      [disabled]="!editNameControl.valid"
+      mat-button
+      cdkFocusInitial
+      (click)="updateGroup(this.editGroup)"
+    >
+      Update
+    </button>
+  </div>
+  <div *ngIf="!showEdit && selectedTab === 0">
+    <button 
+      mat-button
+      matTooltip="Back"
+      (click)="closeModal ()"
+    >
+      Close
+    </button>
+  </div>
+  <div class="multi-group-actions" *ngIf="selectedTab === 1" >
+    <button
+      mat-icon-button
+      matTooltip="Shuffle members between selected groups"
+      (click)="child.shuffleBetweenGroups()"
+    >
+      Shuffle <mat-icon>shuffle</mat-icon>
+    </button>
+    <div>
+      <button
+        mat-button
+        (click)="closeModal()"
+      >
+        Close without saving
+      </button>
+      <button
+        mat-button
+        (click)="saveGroups()"
+      >
+        Save Groups
+      </button>
+    </div>
+  </div>
 </div>

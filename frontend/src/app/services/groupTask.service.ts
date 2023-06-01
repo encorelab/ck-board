@@ -21,7 +21,9 @@ export class GroupTaskService {
 
   getGroupTask(groupID: string, workflowID: string): Promise<GroupTask> {
     return this.http
-      .get<GroupTask>('workflows/' + workflowID + '/task/group/' + groupID)
+      .get<GroupTask>(
+        'workflows/task/' + workflowID + '/groupTask/group/' + groupID
+      )
       .toPromise();
   }
 

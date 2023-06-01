@@ -6,6 +6,8 @@ export interface ConfirmModalData {
   message?: string;
   handleConfirm?: Function;
   handleCancel?: Function;
+  confirmLabel?: string;
+  cancelLabel?: string;
 }
 
 @Component({

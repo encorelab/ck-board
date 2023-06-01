@@ -1,7 +1,11 @@
+import { Group } from './group';
+import User from './user';
+
 export enum TodoItemType {
   COGNITION = 'COGNITION',
   SEL = 'SEL',
   BEHAVIOURAL = 'BEHAVIOURAL',
+  ATL = 'ATL',
   CLASS = 'CLASS',
 }
 
@@ -33,4 +37,10 @@ export class TodoItem {
   deadline: Deadline;
   notifications!: string[];
   overdue: boolean;
+}
+
+export class ExpandedTodoItem {
+  todoItem: TodoItem;
+  group: Group;
+  user: User;
 }

@@ -1,11 +1,11 @@
 <h1 mat-dialog-title>
-  <div style="display: flex;">
+  <div style="display: flex">
     <span>CK List</span>
     <button
       mat-icon-button
       matTooltip="Create Post"
       (click)="openAddPostDialog()"
-      style="margin:0; padding:0;line-height: inherit;height: inherit;"
+      style="margin: 0; padding: 0; line-height: inherit; height: inherit"
     >
       <mat-icon class="material-icons-outlined">note_add</mat-icon>
     </button>
@@ -15,7 +15,7 @@
   </button>
 </h1>
 <h3
-  *ngIf="!loading && posts.length == 0"
+  *ngIf="!loading && posts.length === 0"
   style="color: grey; text-align: center"
 >
   No posts created!
@@ -40,15 +40,16 @@
       </mat-chip>
     </div>
   </mat-chip-list>
+  <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
   <mat-menu #menu1="matMenu">
-    <div mat-menu-item *ngIf="filterOptions.length == 0">
+    <div mat-menu-item *ngIf="filterOptions.length === 0">
       No tags available.
     </div>
     <div
       mat-menu-item
       *ngFor="let tag of filterOptions"
       (click)="addFilter(tag)"
-    > 
+    >
       {{ tag.name }}
     </div>
   </mat-menu>
@@ -59,4 +60,12 @@
       (movePostToBoardEvent)="movePostToBoard($event)"
     ></app-html-post>
   </div>
+  <mat-paginator
+    [length]="length"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="pageSizeOptions"
+    [showFirstLastButtons]="true"
+    (page)="pageEvent = pagePosts($event)"
+  >
+  </mat-paginator>
 </div>

@@ -16,6 +16,7 @@ import {
   userToToken,
 } from '../utils/auth';
 import { UserModel } from '../models/User';
+import dalProject from '../repository/dalProject';
 
 const router = Router();
 
@@ -125,6 +126,18 @@ router.get('/:id', isAuthenticated, async (req, res) => {
   }
 
   res.status(200).json(user);
+});
+
+router.get('/project/:id', isAuthenticated, async (req, res) => {
+  const id = req.params.id;
+  const project = await dalProject.getById(id);
+
+  if (!project) {
+    return res.sendStatus(404);
+  }
+
+  const users = await dalUser.findByUserIDs(project.members);
+  res.status(200).json(users);
 });
 
 export default router;

@@ -18,6 +18,7 @@ import auth from './api/auth';
 import trace from './api/trace';
 import groups from './api/groups';
 import todoItems from './api/todoItem';
+import learner from './api/learner';
 import { isAuthenticated } from './utils/auth';
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.use('/api/groups', isAuthenticated, groups);
 app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
+app.use('/api/learner', isAuthenticated, learner);
 
 app.get('*', (req, res) => {
   res.sendFile(

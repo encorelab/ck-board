@@ -1,0 +1,60 @@
+@use '@angular/material' as mat;
+@import '../../../styles.scss';
+
+.graph-toggle {
+  position: absolute;
+  z-index: 99;
+  
+  padding: 20px;
+  width: 130px;
+}
+
+.graphs {
+  display: grid;
+  grid-gap: 0.5em;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+}
+
+.graph {
+  height: 350px;
+  cursor: pointer;
+  border-radius: 4px;
+  @include mat.elevation(2);
+
+  &:hover {
+    @include mat.elevation(5);
+  }
+
+  &-highchart {
+    @extend .graph;
+    width: 100%; 
+    display: inline-block;
+  }
+
+  &-add {
+    @extend .graph;
+    background-color: white;
+  }
+}
+
+.high-chart  .graph {
+
+}
+
+.plus-icon {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: scale(6);
+  color: $accent
+}
+
+.plus-text {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+  color: black;
+
+  position: relative;
+  top: 70%;
+}

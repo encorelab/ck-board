@@ -1,11 +1,17 @@
 import { mongo } from 'mongoose';
-import { ForbiddenError, UnauthorizedError } from '../errors/client.errors';
+import {
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+} from '../errors/client.errors';
 import { InternalServerError } from '../errors/server.errors';
 import { BoardScope, BoardType } from '../models/Board';
 import Project, { ProjectModel } from '../models/Project';
 import { Role, UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
+import dalLearnerModel from '../repository/dalLearnerModel';
 import dalProject from '../repository/dalProject';
+import dalUser from '../repository/dalUser';
 import {
   getDefaultBoardPermissions,
   getDefaultBoardTags,
@@ -15,6 +21,11 @@ export async function addUserToProject(
   user: UserModel,
   code: string
 ): Promise<ProjectModel> {
+  const userDocument = await dalUser.findByUserID(user.userID);
+  if (!userDocument) {
+    throw new NotFoundError('User not found!');
+  }
+
   const project = await dalProject.getByJoinCode(code, user.role);
   if (!project) {
     throw new UnauthorizedError('Invalid Join Code!');
@@ -60,6 +71,22 @@ export async function addUserToProject(
       throw new InternalServerError(
         'Unable to update project with new personal board!'
       );
+  }
+
+  if (user.role == Role.STUDENT) {
+    const models = await dalLearnerModel.getByBoards(project.boards);
+    for (const model of models) {
+      const dimValues = [];
+      for (const dimension of model.dimensions) {
+        dimValues.push({
+          student: userDocument,
+          dimension: dimension,
+          diagnostic: 0,
+          reassessment: 0,
+        });
+      }
+      await dalLearnerModel.addDimensionValues(model.modelID, dimValues);
+    }
   }
 
   return updatedProject;

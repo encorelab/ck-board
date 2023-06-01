@@ -278,7 +278,10 @@ export class AddPostComponent {
     const boards = await this.boardService.getAllPersonal(this.board.projectID);
 
     for (const board of boards) {
-      if (!project.teacherIDs.includes(board.ownerID)) {
+      if (
+        !project.teacherIDs.includes(board.ownerID) ||
+        board.ownerID === this.user.userID
+      ) {
         let post;
         if (this.data.type == PostType.BUCKET && this.data.bucket)
           post = this.getBucketPost();

@@ -52,7 +52,7 @@ export const createClassGraph = (
           },
         },
         export: {
-          text: 'Export via CSV',
+          text: 'Export as CSV',
           onclick: () => {
             handlers.onExport(model);
           },
@@ -161,7 +161,7 @@ export const createStudentGraph = (
           },
         },
         export: {
-          text: 'Export via CSV',
+          text: 'Export as CSV',
           onclick: () => {
             handlers.onExport(model);
           },

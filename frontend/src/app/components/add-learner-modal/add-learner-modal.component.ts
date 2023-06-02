@@ -298,7 +298,9 @@ export class AddLearnerModalComponent implements OnInit {
   }
 
   exportStudentInfo(): void {
-    const rows: string[] = ['student_id,student_username,dimension,diagnostic,reassessment'];
+    const rows: string[] = [
+      'student_id,student_username,dimension,diagnostic,reassessment',
+    ];
     this.idToStudent.forEach((user, id) => {
       rows.push(`${id},${user.username},Sample Dimension, 0, 0`);
     });

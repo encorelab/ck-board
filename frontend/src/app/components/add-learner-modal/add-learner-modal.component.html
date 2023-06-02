@@ -1,146 +1,140 @@
 <h1 mat-dialog-title>{{ data.isEditing ? 'Edit' : 'Create' }} Learner Model</h1>
 <div mat-dialog-content>
-  <mat-tab-group dynamicHeight animationDuration="0ms">
-    <mat-tab label="Information">
-      <mat-form-field appearance="fill" style="padding-top: 10px; width: 100%">
-        <mat-label>Model Name</mat-label>
-        <input
-          name="name"
-          [appAutofocus]="true"
-          [formControl]="nameControl"
-          [errorStateMatcher]="matcher"
-          matInput
-          autocomplete="off"
-          [(ngModel)]="name"
-        />
-        <mat-error *ngIf="!name">Model name is <strong>required</strong> </mat-error>
-        <mat-error *ngIf="name && name.length > 50">
-          Model name is <strong>too long!</strong>
-        </mat-error>
-      </mat-form-field>
-    </mat-tab>
-    <mat-tab label="Data">
-      <div style="display: flex; justify-content: space-between; padding: 20px 20px 15px 0">
-        <mat-radio-group [(ngModel)]="modelDataInputType">
-          <mat-radio-button value="CSV" [disabled]="dimensions.size > 0">
-            Import Data via CSV
-          </mat-radio-button>
-          <mat-radio-button value="MANUAL_ENTRY" [disabled]="importCSV !== null" style="padding: 0 0 0 10px">
-            Manual Entry
-          </mat-radio-button>
-        </mat-radio-group>
-        <mat-chip *ngIf="importCSV !== null || dimensions.size > 0" removable (removed)="askToClearData()">
-          Clear Data
-          <mat-icon matChipRemove>cancel</mat-icon>
-        </mat-chip>
-      </div>
-      <div *ngIf="modelDataInputType === 'MANUAL_ENTRY'" style="padding-top: 10px;">
-        <div style="font-weight: bold; padding: 0 0 10px 0;">Dimensions</div>
-        <mat-form-field appearance="fill">
-          <mat-label>New Dimension Name...</mat-label>
-          <input matInput [(ngModel)]="newDimensionText" (keyup.enter)="addDimension()" />
-        </mat-form-field>
-        <button
-          mat-button
-          [disabled]="newDimensionText.length < 1"
-          color="primary"
-          (click)="addDimension()"
-        >
-          Add Dimension
-        </button>
-      </div>
-      <div *ngIf="modelDataInputType === 'MANUAL_ENTRY' || importCSV !== null" style="margin-bottom: 20px;">
-        <mat-chip-list>
-          <mat-chip *ngFor="let dim of dimensions" selected color="accent" removable (removed)="removeDimension(dim)">
-            {{ dim }}
-            <mat-icon *ngIf="modelDataInputType === 'MANUAL_ENTRY'" matChipRemove>cancel</mat-icon>
-          </mat-chip>
-        </mat-chip-list>
-      </div>
-      <div *ngIf="modelDataInputType === 'CSV' && importCSV === null">
-        <button type="button" mat-raised-button (click)="fileInput.click()" color="accent">Choose File</button>
-        <input hidden (change)="onFileSelected($event)" #fileInput type="file">
-        <mat-error *ngIf="isError" style="padding-top: 10px; font-weight: bold;">
-          {{ errorMessage }}
-        </mat-error>
-        <div>
-          <button class="csv-help-toggler" mat-button style="color: grey;" (click)="toggleCSVHelp()">
-            <mat-icon>info</mat-icon>
-            How to format the CSV file?
-            <mat-icon>{{ showCSVHelp ? 'expand_less' : 'expand_more' }}</mat-icon>
-          </button>
-          <div>
-            <div *ngIf="showCSVHelp" style="width: 55%; float:left">
-              <p>The CSV file must contain 5 ordered columns starting from: student_id, username, dimension, diagnostic value, reassessment value. Each
-                row (line) specifies diagnostic and reassessment values per student and dimension. Diagnostic and reassessment values must be between 0 and 100 (inclusive). 
-                In the example below, the first row corresponding to CarterJones specifies a diagnostic value of 23 and reassessment value of 45 for Dimension1. Remember to include the header row! 
-              </p>
-              <pre>
-                <code [innerHTML]="template"></code>
-              </pre>
-              <p>To find each student's corresponding id, you can search the table or download them via CSV.</p>
-              <button type="button" mat-raised-button (click)="exportStudentInfo()" color="accent" style="margin-left: 10px">Download Student Info</button>
-            </div>
-            <div *ngIf="showCSVHelp" style="width: 40%; float:right">
-              <div style="font-weight: bold; padding: 0 0 10px 0;">Student Info</div>
-              <mat-form-field>
-                <mat-label>Filter</mat-label>
-                <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Carter" #input>
-              </mat-form-field>
-              <table mat-table [dataSource]="dataSource">
-                <ng-container matColumnDef="username">
-                  <th mat-header-cell *matHeaderCellDef> Username </th>
-                  <td mat-cell *matCellDef="let element"> {{element.username}} </td>
-                </ng-container>
-                <ng-container matColumnDef="id">
-                  <th mat-header-cell *matHeaderCellDef> ID </th>
-                  <td mat-cell *matCellDef="let element"> {{element.id}} </td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                <tr class="mat-row" *matNoDataRow>
-                  <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
-                </tr>
-              </table>
-              <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
-            </div>
-          </div>
+  <mat-form-field appearance="fill" style="padding-top: 10px; width: 100%">
+    <mat-label>Model Name</mat-label>
+    <input
+      name="name"
+      [appAutofocus]="true"
+      [formControl]="nameControl"
+      [errorStateMatcher]="matcher"
+      matInput
+      autocomplete="off"
+      [(ngModel)]="name"
+    />
+    <mat-error *ngIf="!name">Model name is <strong>required</strong> </mat-error>
+    <mat-error *ngIf="name && name.length > 50">
+      Model name is <strong>too long!</strong>
+    </mat-error>
+  </mat-form-field>
+  <div style="display: flex; justify-content: space-between; padding: 10px 20px 15px 0">
+    <mat-radio-group [(ngModel)]="modelDataInputType">
+      <mat-radio-button value="CSV" [disabled]="dimensions.size > 0">
+        Import Data via CSV
+      </mat-radio-button>
+      <mat-radio-button value="MANUAL_ENTRY" [disabled]="importCSV !== null" style="padding: 0 0 0 10px">
+        Manual Entry
+      </mat-radio-button>
+    </mat-radio-group>
+    <mat-chip *ngIf="importCSV !== null || dimensions.size > 0" removable (removed)="askToClearData()">
+      Clear Data
+      <mat-icon matChipRemove>cancel</mat-icon>
+    </mat-chip>
+  </div>
+  <div *ngIf="modelDataInputType === 'MANUAL_ENTRY'" style="padding-top: 10px;">
+    <div style="font-weight: bold; padding: 0 0 10px 0;">Dimensions</div>
+    <mat-form-field appearance="fill">
+      <mat-label>New Dimension Name...</mat-label>
+      <input matInput [(ngModel)]="newDimensionText" (keyup.enter)="addDimension()" />
+    </mat-form-field>
+    <button
+      mat-button
+      [disabled]="newDimensionText.length < 1"
+      color="primary"
+      (click)="addDimension()"
+    >
+      Add Dimension
+    </button>
+  </div>
+  <div *ngIf="modelDataInputType === 'MANUAL_ENTRY' || importCSV !== null" style="margin-bottom: 20px;">
+    <mat-chip-list>
+      <mat-chip *ngFor="let dim of dimensions" selected color="accent" removable (removed)="removeDimension(dim)">
+        {{ dim }}
+        <mat-icon *ngIf="modelDataInputType === 'MANUAL_ENTRY'" matChipRemove>cancel</mat-icon>
+      </mat-chip>
+    </mat-chip-list>
+  </div>
+  <div *ngIf="modelDataInputType === 'CSV' && importCSV === null">
+    <button type="button" mat-raised-button (click)="fileInput.click()" color="accent">Choose File</button>
+    <input hidden (change)="onFileSelected($event)" #fileInput type="file">
+    <mat-error *ngIf="isError" style="padding-top: 10px; font-weight: bold;">
+      {{ errorMessage }}
+    </mat-error>
+    <div>
+      <button class="csv-help-toggler" mat-button style="color: grey;" (click)="toggleCSVHelp()">
+        <mat-icon>info</mat-icon>
+        How to format the CSV file?
+        <mat-icon>{{ showCSVHelp ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </button>
+      <div>
+        <div *ngIf="showCSVHelp" style="width: 55%; float:left">
+          <p>The CSV file must contain 5 ordered columns starting from: student_id, username, dimension, diagnostic value, reassessment value. Each
+            row (line) specifies diagnostic and reassessment values per student and dimension. Diagnostic and reassessment values must be between 0 and 100 (inclusive). 
+            In the example below, the first row corresponding to CarterJones specifies a diagnostic value of 23 and reassessment value of 45 for Dimension1. Remember to include the header row! 
+          </p>
+          <pre>
+            <code [innerHTML]="template"></code>
+          </pre>
+          <p>To find each student's corresponding id, you can search the table or download them via CSV.</p>
+          <button type="button" mat-raised-button (click)="exportStudentInfo()" color="accent" style="margin-left: 10px">Download Student Info</button>
         </div>
-      </div>
-      <div *ngIf="importCSV !== null || dimensions.size > 0">
-        <div style="font-weight: bold; padding: 10px 0 0 0;">Select Student & Assessment Type:</div>
-        <div>
-          <mat-form-field appearance="fill" style="padding: 10px 10px;">
-            <mat-label>Student</mat-label>
-            <mat-select [(ngModel)]="selectedStudent" (selectionChange)="studentChange()">
-              <mat-option *ngFor="let item of idToStudent | keyvalue" [value]="item.value">{{item.value.username}}</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="fill" style="padding: 10px 10px;">
-            <mat-label>Assessment</mat-label>
-            <mat-select [(ngModel)]="selectedAssessment" (selectionChange)="assessmentChange()">
-              <mat-option value="Diagnostic">Diagnostic</mat-option>
-              <mat-option value="Re-assessment">Re-assessment</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div style="font-weight: bold; margin-bottom: 10px;">Data Series</div>
-        <div *ngFor="let dimensionValue of filteredDimensions; let i = index;">
+        <div *ngIf="showCSVHelp" style="width: 40%; float:right">
+          <div style="font-weight: bold; padding: 0 0 10px 0;">Student Info</div>
           <mat-form-field>
-            <mat-label>{{dimensionValue.dimension}}</mat-label>
-            <input *ngIf="selectedAssessment === 'Diagnostic'" type="number" [(ngModel)]="dimensionValue.diagnostic" matInput>
-            <input *ngIf="selectedAssessment === 'Re-assessment'" type="number" [(ngModel)]="dimensionValue.reassessment" matInput>
-            <!-- <mat-error *ngIf="formArray[i].hasError('required')">
-              Value is required
-            </mat-error>
-            <mat-error *ngIf="formArray[i].hasError('min') || formArray[i].hasError('max')">
-              Value must be between 0-100
-            </mat-error> -->
+            <mat-label>Filter</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Carter" #input>
           </mat-form-field>
+          <table mat-table [dataSource]="dataSource">
+            <ng-container matColumnDef="username">
+              <th mat-header-cell *matHeaderCellDef> Username </th>
+              <td mat-cell *matCellDef="let element"> {{element.username}} </td>
+            </ng-container>
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef> ID </th>
+              <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
+            </tr>
+          </table>
+          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
         </div>
       </div>
-    </mat-tab>
-  </mat-tab-group>
+    </div>
+  </div>
+  <div *ngIf="importCSV !== null || dimensions.size > 0">
+    <div style="font-weight: bold; padding: 10px 0 0 0;">Select Student & Assessment Type:</div>
+    <div>
+      <mat-form-field appearance="fill" style="padding: 10px 10px;">
+        <mat-label>Student</mat-label>
+        <mat-select [(ngModel)]="selectedStudent" (selectionChange)="studentChange()">
+          <mat-option *ngFor="let item of idToStudent | keyvalue" [value]="item.value">{{item.value.username}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="fill" style="padding: 10px 10px;">
+        <mat-label>Assessment</mat-label>
+        <mat-select [(ngModel)]="selectedAssessment" (selectionChange)="assessmentChange()">
+          <mat-option value="Diagnostic">Diagnostic</mat-option>
+          <mat-option value="Re-assessment">Re-assessment</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div style="font-weight: bold; margin-bottom: 10px;">Data Series</div>
+    <div *ngFor="let dimensionValue of filteredDimensions; let i = index;">
+      <mat-form-field>
+        <mat-label>{{dimensionValue.dimension}}</mat-label>
+        <input *ngIf="selectedAssessment === 'Diagnostic'" type="number" [(ngModel)]="dimensionValue.diagnostic" matInput>
+        <input *ngIf="selectedAssessment === 'Re-assessment'" type="number" [(ngModel)]="dimensionValue.reassessment" matInput>
+        <!-- <mat-error *ngIf="formArray[i].hasError('required')">
+          Value is required
+        </mat-error>
+        <mat-error *ngIf="formArray[i].hasError('min') || formArray[i].hasError('max')">
+          Value must be between 0-100
+        </mat-error> -->
+      </mat-form-field>
+    </div>
+  </div>
   <div mat-dialog-actions>
     <button mat-button (click)="onClose()">Close</button>
     <button mat-button *ngIf="data.isEditing && nameControl.valid" (click)="updateModel()">Update Model</button>

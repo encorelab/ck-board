@@ -51,6 +51,7 @@ import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
 import { FormControl, FormGroup } from '@angular/forms';
+import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
 
 SwiperCore.use([EffectCards]);
 
@@ -78,6 +79,7 @@ class TodoItemDisplay {
   quality?: string;
   overdue: boolean;
   types: TodoItemType[];
+  todoItem: TodoItem;
 }
 
 @Component({
@@ -318,6 +320,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         types: item.type,
         completed: item.completed,
         overdue: overdue,
+        todoItem: todoItem.todoItem,
       };
       data.push(todo);
     }
@@ -515,6 +518,41 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   signOut(): void {
     this.userService.logout();
     this.router.navigate(['login']);
+  }
+
+  async openTodoItemViewModal(rowElement: TodoItemDisplay) {
+    this.dialog.open(TodoItemCardModalComponent, {
+      width: '500px',
+      data: {
+        todoItem: rowElement.todoItem,
+        projectID: this.project.projectID,
+        userID: this.user.userID,
+        group: rowElement.todoItem.groupID
+          ? await this.groupService.getById(rowElement.todoItem.groupID)
+          : null,
+        onComplete: async (t: TodoItem) => {
+          this.todoItems = await this.todoItemService.getByProject(
+            this.project.projectID,
+            'expanded'
+          );
+          this.updateTodoItemDataSource();
+        },
+        onEdit: async (t: TodoItem) => {
+          this.todoItems = await this.todoItemService.getByProject(
+            this.project.projectID,
+            'expanded'
+          );
+          this.updateTodoItemDataSource();
+        },
+        onRestore: async (t: TodoItem) => {
+          this.todoItems = await this.todoItemService.getByProject(
+            this.project.projectID,
+            'expanded'
+          );
+          this.updateTodoItemDataSource();
+        },
+      },
+    });
   }
 
   ngOnDestroy(): void {

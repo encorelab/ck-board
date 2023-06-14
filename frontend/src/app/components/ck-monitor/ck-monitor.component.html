@@ -288,7 +288,7 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="todoColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: todoColumns;"></tr>
+          <tr mat-row *matRowDef="let row; columns: todoColumns;" class="todoItemRow" (click)="openTodoItemViewModal(row)"></tr>
         </table>
       </div>
       <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible">

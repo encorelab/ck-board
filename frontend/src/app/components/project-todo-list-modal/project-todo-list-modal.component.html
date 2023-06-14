@@ -13,13 +13,16 @@
     <mat-sidenav *ngIf="user.role === Role.TEACHER" #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
       <h2 class="section-title">Project Members</h2>
       <mat-list>
-        <mat-list-item *ngFor="let user of projectMembers">
+        <mat-list-item 
+          *ngFor="let user of projectMembers" 
+          [ngStyle]="{ 'background-color': isSelected(user) ? '#e4e4e4' : ''}"
+        >
             <mat-icon *ngIf="user.role === Role.TEACHER" mat-list-icon>school</mat-icon>
             <mat-icon *ngIf="user.role === Role.STUDENT" mat-list-icon>person</mat-icon>
             <h3 matLine> {{user.username}} </h3>
             <span style="flex: 1 1 auto"></span>
-            <button *ngIf="todoModalUser !== user.userID" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="openMemberTodoList(user)">Show Todo</button>
-            <button *ngIf="todoModalUser === user.userID" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="closeTodoList()">Hide Todo</button>
+            <button *ngIf="!isSelected(user)" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="openMemberTodoList(user)">Show Todo</button>
+            <button *ngIf="isSelected(user)" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="closeTodoList()">Hide Todo</button>
         </mat-list-item>
       </mat-list>
     </mat-sidenav>

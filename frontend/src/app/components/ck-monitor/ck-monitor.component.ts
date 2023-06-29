@@ -52,6 +52,7 @@ import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
 import { FormControl, FormGroup } from '@angular/forms';
 import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
+import { LearnerService } from 'src/app/services/learner.service';
 
 SwiperCore.use([EffectCards]);
 
@@ -168,6 +169,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   embedded: boolean = false;
 
+  showModels = false;
+
   constructor(
     public userService: UserService,
     public projectService: ProjectService,
@@ -178,6 +181,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     public socketService: SocketService,
     public snackbarService: SnackbarService,
     public todoItemService: TodoItemService,
+    public learnerService: LearnerService,
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -451,6 +455,24 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this._openDialog(ListModalComponent, {
       board: this.board,
     });
+  }
+
+  toggleModels(): void {
+    if (this.showModels) {
+      this.showModels = false;
+    } else {
+      this.todoIsVisible = false;
+      this.showModels = true;
+    }
+  }
+
+  toggleTodos(): void {
+    if (this.todoIsVisible) {
+      this.todoIsVisible = false;
+    } else {
+      this.showModels = false;
+      this.todoIsVisible = true;
+    }
   }
 
   openGroupDialog(): void {

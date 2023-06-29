@@ -18,6 +18,7 @@ import { MaterialModule } from './material-module';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { SwiperModule } from 'swiper/angular';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { HighchartsChartModule } from 'highcharts-angular';
 
 import { AddPostComponent } from './components/add-post-modal/add-post.component';
 import { FabricPostComponent } from './components/fabric-post/fabric-post.component';
@@ -59,6 +60,8 @@ import { NgxImageCompressService } from 'ngx-image-compress';
 import { CkMonitorComponent } from './components/ck-monitor/ck-monitor.component';
 import { MatSortModule } from '@angular/material/sort';
 import { TodoItemCardModalComponent } from './components/todo-item-card-modal/todo-item-card-modal.component';
+import { LearnerModelsComponent } from './components/learner-models/learner-models.component';
+import { AddLearnerModalComponent } from './components/add-learner-modal/add-learner-modal.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -104,6 +107,8 @@ export function tokenGetter() {
     SsoLoginComponent,
     CkMonitorComponent,
     TodoItemCardModalComponent,
+    LearnerModelsComponent,
+    AddLearnerModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -128,6 +133,7 @@ export function tokenGetter() {
     MaterialModule,
     DragDropModule,
     MatSortModule,
+    HighchartsChartModule,
   ],
   providers: [
     {

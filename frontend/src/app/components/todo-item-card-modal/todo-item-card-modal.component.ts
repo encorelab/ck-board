@@ -129,6 +129,12 @@ export class TodoItemCardModalComponent implements OnInit {
   }
 
   async completeTask() {
+    if (
+      !this.completionQualityFormControl.valid ||
+      this.completionQuality === 'N_A'
+    ) {
+      return;
+    }
     const updatedTodo = await this.todoItemService.update(
       this.data.todoItem.todoItemID,
       {

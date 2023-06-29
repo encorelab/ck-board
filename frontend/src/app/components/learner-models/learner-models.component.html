@@ -1,0 +1,24 @@
+<mat-toolbar>
+  <span>Learner Models</span>
+  <span class="example-spacer"></span>
+  <mat-select style="width: 15%; font-size: 15px" [(ngModel)]="modelSubject" (selectionChange)="subjectChange()" placeholder="Filter Models">
+    <mat-option [value]="DimensionType.DIAGNOSTIC">All Students (Diagnostic)</mat-option>
+    <mat-option [value]="DimensionType.REASSESSMENT">All Students (Reassessment)</mat-option>
+    <mat-option *ngFor="let student of idToUser | keyvalue" [value]="student.key">{{student.value.username}}</mat-option>
+  </mat-select>
+</mat-toolbar>
+<div class="graphs">
+  <div *ngFor="let modelCard of modelCards">
+    <highcharts-chart 
+      class="graph-highchart"
+      [Highcharts]="Highcharts"
+      [options]="modelCard.chartOptions"
+      [(update)]="modelCard.updateFlag"
+      [oneToOne]="true"
+    ></highcharts-chart>
+  </div>
+  <div class="graph-add" (click)="handleCreateModel()">
+    <mat-icon class="plus-icon">add_box</mat-icon>
+    <div class="plus-text">Create Learner Model</div>
+  </div>
+</div>

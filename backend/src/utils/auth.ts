@@ -126,7 +126,6 @@ export const getOrCreateUser = async (
   try {
     return await createUserIfNecessary(email, username, role);
   } catch (err) {
-    console.log(err);
     return null;
   }
 };

@@ -165,18 +165,22 @@
         </ng-container>
         <mat-divider></mat-divider>
       </mat-list>
-      <div style="padding-bottom:20px">
-          <h2 class="section-title">Learner Models</h2>
-          <ng-container>
-            <button
-            mat-raised-button
-            color="primary"
-            style="margin-left: 15px"
-            (click)="todoIsVisible = !todoIsVisible; runningTask = null"
-            >
-            {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
-          </button>
-        </ng-container>
+      <div class="feature-buttons">
+        <button
+          mat-raised-button
+          color="primary"
+          style=""
+          (click)="toggleTodos()"
+        >
+          {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="toggleModels()"
+        >
+          {{ showModels ? 'Hide Learner Models' : 'View Learner Models' }} 
+        </button>
       </div>
     </mat-sidenav>
     <mat-sidenav-content>
@@ -290,10 +294,14 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="todoColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: todoColumns;"></tr>
+          <tr mat-row *matRowDef="let row; columns: todoColumns;" class="todoItemRow" (click)="openTodoItemViewModal(row)"></tr>
         </table>
       </div>
-      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible">
+      <div *ngIf="showModels">
+        <app-learner-models #learner [board]="board"></app-learner-models>
+      </div>
+      <mat-progress-bar style="margin: 20px; width: 95%" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !showModels">
         No task selected!
         <mat-progress-bar class="mat-loading-progress-bar" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
       </div>

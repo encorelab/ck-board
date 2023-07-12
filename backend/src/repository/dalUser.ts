@@ -1,5 +1,6 @@
 import User, { UserModel } from '../models/User';
 import bcrypt from 'bcrypt';
+import { FilterQuery } from 'mongoose';
 
 export const findByUserID = async (userID: string) => {
   try {
@@ -10,9 +11,15 @@ export const findByUserID = async (userID: string) => {
   }
 };
 
-export const findByUserIDs = async (userIDs: string[]) => {
+export const findByUserIDs = async (
+  userIDs: string[],
+  filter?: FilterQuery<UserModel>
+) => {
   try {
-    const users: UserModel[] = await User.find({ userID: { $in: userIDs } });
+    const users: UserModel[] = await User.find({
+      userID: { $in: userIDs },
+      ...filter,
+    });
     return users;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));

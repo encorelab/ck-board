@@ -461,7 +461,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     }
   };
 
-  toggleSubmittedPosts(): void{
+  toggleSubmittedPosts(): void {
     this.showSubmittedPosts = !this.showSubmittedPosts;
   }
 

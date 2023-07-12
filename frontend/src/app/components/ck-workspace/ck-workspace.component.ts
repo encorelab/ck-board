@@ -199,6 +199,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       groupTask.group.members
     );
     this.loading = false;
+    // Show submitted posts by default in generative task workflow
+    if (this.runningGroupTask.workflow.type === TaskWorkflowType.GENERATION) {
+      this.showSubmittedPosts = true;
+    } else {
+      this.showSubmittedPosts = false;
+    }
 
     this._startListening();
   }
@@ -339,6 +345,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       disableCreation: true,
       board: this.board,
       user: this.user,
+      tagRequired: this.hasTagRequirement(this.runningGroupTask!),
       onComplete: async (post: Post) => {
         if (this.runningGroupTask) {
           post.type = PostType.WORKFLOW;
@@ -382,6 +389,11 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
             this.runningGroupTask.groupTask,
           ]);
+
+          for (const _ of post.tags) {
+            await this.onTagEvent(post.postID, 'add');
+          }
+          await this.submitPost(htmlPost);
         }
         return;
       },
@@ -414,6 +426,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         'COMMENT'
       );
     }
+    const post = this.posts.find((post) => post.post.postID === postID);
+    if (post && this.postSubmittable(post)) {
+      await this.submitPost(post);
+    }
   };
 
   onTagEvent = async (postID: string, type: string): Promise<void> => {
@@ -438,7 +454,16 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         'TAG'
       );
     }
+
+    const post = this.posts.find((post) => post.post.postID === postID);
+    if (post && this.postSubmittable(post)) {
+      await this.submitPost(post);
+    }
   };
+
+  toggleSubmittedPosts(): void{
+    this.showSubmittedPosts = !this.showSubmittedPosts;
+  }
 
   private _startListening(): void {
     this.listeners.push(

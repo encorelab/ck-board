@@ -60,7 +60,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   // Common fields between all workflows
   WorkflowType: typeof WorkflowType = WorkflowType;
   taskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
-  workflowType: WorkflowType = WorkflowType.DISTRIBUTION;
+  workflowType: WorkflowType = WorkflowType.GENERATION;
   sourceOptions: (Bucket | Board)[] = [];
   destOptions: (Bucket | Board)[] = [];
 

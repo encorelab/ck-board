@@ -42,20 +42,21 @@
       <p style="font-weight: 500; margin: 0 30px;" [ngStyle]="{'color': statusColor}">{{status}}</p>
     </div>
     <div *ngIf="!todoItem.completed">
-        <mat-form-field appearance="fill">
-          <mat-label>Completion Quality</mat-label>
-          <mat-select
+      <mat-form-field appearance="fill">
+        <mat-label>Completion Quality</mat-label>
+        <mat-select
           [(ngModel)]="completionQuality"
           [formControl]="completionQualityFormControl"
           [errorStateMatcher]="matcher"
           [(value)]="defaultQuality"
-          >
-          <mat-option *ngFor="let option of completionQualityOptions" [value]=option>
-            {{ EXPANDED_COMPLETION_QUALITY[option] }}
-          </mat-option>
-          
-          </mat-select>
-        </mat-form-field>
+          panelClass="completion-quality-panel"
+        >
+        <mat-option *ngFor="let option of completionQualityOptions" [value]=option>
+          {{ EXPANDED_COMPLETION_QUALITY[option] }}
+        </mat-option>
+        
+        </mat-select>
+      </mat-form-field>
       <mat-chip 
         [disabled]="!completionQualityFormControl.valid || completionQuality === 'N_A'" 
         (click)="completeTask()"

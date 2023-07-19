@@ -28,16 +28,12 @@ export const create = async (
   }
 };
 
-export const createDefaultModels = async (
-  projectID: string,
-  boardID: string
-) => {
+export const createDefaultModels = async (projectID: string) => {
   try {
     for (const value of DEFAULT_MODELS) {
       await Learner.create({
         modelID: new mongo.ObjectId().toString(),
         projectID: projectID,
-        boardID: boardID,
         name: value,
         dimensions: [],
         data: [],
@@ -52,6 +48,15 @@ export const getByID = async (modelID: string) => {
   try {
     const model = await Learner.findOne({ modelID });
     return model;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getByProjects = async (projectIDs: string[]) => {
+  try {
+    const models = await Learner.find({ projectID: { $in: projectIDs } });
+    return models;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -185,6 +190,7 @@ const dalLearnerModel = {
   createDefaultModels,
   getByID,
   getByBoards,
+  getByProjects,
   addDimension,
   removeDimension,
   addDimensionValues,

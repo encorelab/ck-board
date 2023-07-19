@@ -25,8 +25,8 @@ export class LearnerModelModel {
   @prop({ required: true })
   public projectID!: string;
 
-  @prop({ required: true })
-  public boardID!: string;
+  @prop({ required: false })
+  public boardID?: string;
 
   @prop({ required: true })
   public name!: string;

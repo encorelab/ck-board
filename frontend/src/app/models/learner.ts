@@ -7,7 +7,8 @@ export enum DimensionType {
 
 export class LearnerModel {
   modelID: string;
-  boardID: string;
+  projectID: string;
+  boardID?: string;
   name: string;
 
   dimensions: string[]; // name of dimensions, must be unique

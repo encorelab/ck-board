@@ -3,7 +3,7 @@ import LearnerModel, { DimensionType, DimensionValue } from '../models/learner';
 import { AuthUser } from '../models/user';
 import sorting from './sorting';
 
-const FILL_TRANSPARENCY = 0.6;
+const FILL_OPACITY = 0.6;
 
 export interface MenuHandlers {
   onEditData: Function;
@@ -127,13 +127,13 @@ export const createStudentGraph = (
     type: 'area',
     name: 'Reassessment',
     data: studentReassessments,
-    opacity: FILL_TRANSPARENCY,
+    opacity: FILL_OPACITY,
   });
   series.push({
     type: 'area',
     name: 'Diagnostic',
     data: studentDiagnostics,
-    opacity: FILL_TRANSPARENCY,
+    opacity: FILL_OPACITY,
   });
   series.push({
     type: 'line',

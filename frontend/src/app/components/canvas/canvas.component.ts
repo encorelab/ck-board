@@ -147,7 +147,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     ]);
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.activatedRoute.queryParams.subscribe((params) => {
       if (params.embedded == 'true') {
         this.embedded = true;
@@ -163,8 +163,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     );
     this.fabricUtils._canvas = this.canvas;
 
-    this.configureBoard();
-
+    await this.configureBoard();
     this.socketService.connect(this.user.userID, this.boardID);
 
     this.initCanvasEventsListener();
@@ -442,7 +441,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   }
 
-  configureBoard() {
+  async configureBoard() {
     const map = this.activatedRoute.snapshot.paramMap;
 
     if (map.has('boardID') && map.has('projectID')) {
@@ -474,31 +473,30 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else if (map.has('projectID')) {
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      const personalBoard = await this.boardService.getPersonal(this.projectID);
+      if (personalBoard) {
+        this.boardID = personalBoard.boardID;
+        this.traceService.setTraceContext(this.projectID, this.boardID);
+      } else this.router.navigate(['error']);
 
-      this.boardService.getPersonal(this.projectID).then((board) => {
-        if (board) {
-          this.boardID = board.boardID;
-          this.traceService.setTraceContext(this.projectID, this.boardID);
-        } else this.router.navigate(['error']);
-        this.postService.getAllByBoard(this.boardID).then((data) => {
-          data.forEach(async (post) => {
-            if (post.type == PostType.BOARD) {
-              const upvotes = await this.upvotesService.getUpvotesByPost(
-                post.postID
-              );
-              const comments = await this.commentService.getCommentsByPost(
-                post.postID
-              );
-              this.canvas.add(
-                new FabricPostComponent(post, {
-                  upvotes: upvotes.length,
-                  comments: comments.length,
-                })
-              );
-            }
-          });
-          if (board) this.intermediateBoardConfig(board);
+      this.postService.getAllByBoard(this.boardID).then((data) => {
+        data.forEach(async (post) => {
+          if (post.type == PostType.BOARD) {
+            const upvotes = await this.upvotesService.getUpvotesByPost(
+              post.postID
+            );
+            const comments = await this.commentService.getCommentsByPost(
+              post.postID
+            );
+            this.canvas.add(
+              new FabricPostComponent(post, {
+                upvotes: upvotes.length,
+                comments: comments.length,
+              })
+            );
+          }
         });
+        if (personalBoard) this.intermediateBoardConfig(personalBoard);
       });
     } else {
       this.router.navigate(['error']);

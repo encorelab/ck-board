@@ -18,6 +18,10 @@ export class UserService {
     return this.http.post<User[]>('auth/multiple', ids).toPromise();
   }
 
+  getByProject(projectID: string): Promise<AuthUser[]> {
+    return this.http.get<AuthUser[]>('auth/project/' + projectID).toPromise();
+  }
+
   async register(user: User) {
     return this.http
       .post<TokenResponse>('auth/register', user)

@@ -154,7 +154,6 @@
           </ng-template>
         </swiper>
         <div class="create-post-button-container">
-
           <button
           *ngIf="!loading && runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && !createMorePosts(runningGroupTask) && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE" 
           class="workflow-create-post"
@@ -186,10 +185,10 @@
           </mat-card>
         </div>
       </div>
-      <button *ngIf="!loading && runningGroupTask && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && !showSubmittedPosts" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="toggleSubmittedPosts()">
+      <button *ngIf="!loading && runningGroupTask && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && !showSubmittedPosts" mat-raised-button color="primary" style="margin: 16px 10px; min-width: unset" (click)="toggleSubmittedPosts()">
         View Completed
       </button>
-      <button *ngIf="!loading && runningGroupTask && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && showSubmittedPosts" mat-raised-button color="primary" style="margin-left: 10px; min-width: unset" (click)="toggleSubmittedPosts()">
+      <button *ngIf="!loading && runningGroupTask && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && showSubmittedPosts" mat-raised-button color="primary" style="margin: 16px 10px; min-width: unset" (click)="toggleSubmittedPosts()">
         View Drafts
       </button>
     </mat-sidenav-content>

@@ -60,9 +60,9 @@
     </mat-tab>
     <mat-tab label="Create Workflow">
       <mat-radio-group [(ngModel)]="workflowType">
-        <mat-radio-button style="margin-top: 20px;" [checked]="true" [value]="WorkflowType.DISTRIBUTION">Distribution Workflow</mat-radio-button>
-        <mat-radio-button style="margin-top: 20px;" [checked]="false" [value]="WorkflowType.GENERATION">Generation Task Workflow</mat-radio-button>
-        <mat-radio-button style="margin-top: 20px;" [checked]="false" [value]="WorkflowType.TASK">Peer Review Workflow</mat-radio-button>
+        <mat-radio-button style="margin-top: 20px;" [checked]="true" [value]="WorkflowType.GENERATION">Generation Task</mat-radio-button>
+        <mat-radio-button style="margin-top: 20px;" [checked]="false" [value]="WorkflowType.TASK">Peer Review</mat-radio-button>
+        <mat-radio-button style="margin-top: 20px;" [checked]="false" [value]="WorkflowType.DISTRIBUTION">Distribution</mat-radio-button>
       </mat-radio-group>
       <div *ngIf="workflowType === WorkflowType.DISTRIBUTION">
         <mat-form-field appearance="fill" style="margin-top: 10px;">
@@ -252,9 +252,6 @@
             ></mat-slider>
           </div>
           <div style="display: flex; flex-direction: column; gap: 10px;">
-            <mat-checkbox [(ngModel)]="commentsRequired">
-              Require minimum 1 comment per post
-            </mat-checkbox>
             <mat-checkbox [(ngModel)]="tagsRequired">
               Require minimum 1 tag per post
             </mat-checkbox>

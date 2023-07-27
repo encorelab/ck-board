@@ -37,6 +37,7 @@ export interface AddPostDialog {
   onComplete?: (post: any) => any;
   editingPost?: Post | undefined;
   disableCreation?: boolean;
+  tagRequired?: boolean;
 }
 
 @Component({
@@ -71,6 +72,8 @@ export class AddPostComponent {
     Validators.maxLength(2000),
   ]);
 
+  tagRequired: boolean = false;
+
   matcher = new MyErrorStateMatcher();
 
   constructor(
@@ -88,6 +91,7 @@ export class AddPostComponent {
     this.board = data.board;
     this.boardType = data.board.type;
     this.editingPost = data.editingPost;
+    this.tagRequired = data?.tagRequired ?? false;
     if (this.editingPost) {
       this.contentType = ContentType.MULTIPLE_CHOICE;
       this.title = this.editingPost.title;

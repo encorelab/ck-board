@@ -3,6 +3,8 @@ import LearnerModel, { DimensionType, DimensionValue } from '../models/learner';
 import { AuthUser } from '../models/user';
 import sorting from './sorting';
 
+const FILL_OPACITY = 0.6;
+
 export interface MenuHandlers {
   onEditData: Function;
   onExport: Function;
@@ -52,7 +54,7 @@ export const createClassGraph = (
           },
         },
         export: {
-          text: 'Export via CSV',
+          text: 'Export as CSV',
           onclick: () => {
             handlers.onExport(model);
           },
@@ -123,13 +125,15 @@ export const createStudentGraph = (
   const series: SeriesOptionsType[] = [];
   series.push({
     type: 'area',
-    name: 'Diagnostic',
-    data: studentDiagnostics,
+    name: 'Reassessment',
+    data: studentReassessments,
+    opacity: FILL_OPACITY,
   });
   series.push({
     type: 'area',
-    name: 'Reassessment',
-    data: studentReassessments,
+    name: 'Diagnostic',
+    data: studentDiagnostics,
+    opacity: FILL_OPACITY,
   });
   series.push({
     type: 'line',
@@ -161,7 +165,7 @@ export const createStudentGraph = (
           },
         },
         export: {
-          text: 'Export via CSV',
+          text: 'Export as CSV',
           onclick: () => {
             handlers.onExport(model);
           },

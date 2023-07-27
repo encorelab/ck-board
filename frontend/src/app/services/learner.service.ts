@@ -8,6 +8,12 @@ import LearnerModel, { DimensionValue } from '../models/learner';
 export class LearnerService {
   constructor(private http: HttpClient) {}
 
+  getByProjects(projectIDs: string[]): Promise<LearnerModel[]> {
+    return this.http
+      .post<LearnerModel[]>('learner/project/many', { projectIDs })
+      .toPromise();
+  }
+
   getByBoards(boardIDs: string[]): Promise<LearnerModel[]> {
     return this.http
       .post<LearnerModel[]>('learner/board/many', { boardIDs })

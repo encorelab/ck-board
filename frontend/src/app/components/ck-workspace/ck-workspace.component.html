@@ -43,8 +43,7 @@
     </mat-menu>
   </app-toolbar>
   <mat-sidenav-container class="drawer-container">
-    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
-      <!-- <div > -->
+    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed;" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null">
         <mat-list *ngIf="activeGroupTasks">
           <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
             Pending Tasks ({{ inactiveGroupTasks.length }})
@@ -94,28 +93,33 @@
       <!-- </div> -->
     </mat-sidenav>
     <mat-sidenav-content>
+      <div *ngIf="!loading && runningGroupTask">
+        <h1>{{runningGroupTask.group.name}}: {{runningGroupTask.workflow.name}}</h1>
+        <h2 style="font-weight: bold;">{{ runningGroupTask.workflow.prompt }} </h2>
+        <section>
+          <ul style="list-style-position: inside; padding-left: 30px; font-weight: bold;">
+            <li *ngIf="hasCommentRequirement(runningGroupTask)">Comment on each post at least once!</li>
+            <li *ngIf="hasTagRequirement(runningGroupTask)">Tag each post at least once!</li>
+            <li *ngIf="hasCreatePostRequirement(runningGroupTask)">Create {{numberOfPosts(runningGroupTask)}} posts</li>
+          </ul>
+        </section>
+      </div>
       <div class="heading no-workflow-select" *ngIf="!runningGroupTask">
         No task selected!
       </div>
       <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
-      <div *ngIf="!loading && runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && !taskSubmittable(runningGroupTask) && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE" class="heading workflow-create-post">
-        <button
-          mat-raised-button
-          matTooltip="Create Post"
-          (click)="addPost()"
-          style="margin: 0; padding: 0; line-height: inherit; height: inherit"
-        >
-          <mat-icon>add</mat-icon>
-        </button>
-      </div>
-      <div *ngIf="!loading" style="display: flex; flex-direction: row;">
+      <div *ngIf="!loading" style="display: flex; flex-direction: row;position: relative;">
         <div class="heading no-posts" *ngIf="runningGroupTask && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && (!posts || posts.length === 0)">
           No posts to review!
         </div>
-        <div class="heading no-posts" *ngIf="runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && (!posts || posts.length === 0)">
+
+        <div class="heading no-posts" *ngIf="runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && !showSubmittedPosts && (!posts || posts.length === 0)">
           Create a Post!
         </div>
 
+        <div class="heading no-posts" *ngIf="runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && showSubmittedPosts && (!submittedPosts|| submittedPosts.length === 0)">
+          No submitted posts!
+        </div>
         <!-- Draft post slider -->
         <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask && !showSubmittedPosts && posts && posts.length > 0">
           <ng-template swiperSlide *ngFor="let htmlPost of posts">
@@ -127,9 +131,8 @@
                 style="width: 360px; height: 100%;">
               </app-html-post>
               <div style="display: flex; flex-direction: row;">
-                <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Previous</button>
-                <button (click)="submitPost(htmlPost)" mat-raised-button color="primary" [disabled]="runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE || !postSubmittable(htmlPost) || runningGroupTask.workflow.type === TaskWorkflowType.GENERATION" style="width: 30%; margin: 0px 5px;">Submit</button>
-                <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Next</button>
+                <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 45%; margin: 0px 5px;">Previous</button>
+                <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 45%; margin: 0px 5px;">Next</button>
               </div>
             </div>
           </ng-template>
@@ -144,27 +147,27 @@
                 style="width: 360px; height: 100%;">
               </app-html-post>
               <div style="display: flex; flex-direction: row;">
-                <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Previous</button>
-                <button mat-raised-button color="primary"  style="width: 30%; margin: 0px 5px;">Submitted!</button>
-                <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 30%; margin: 0px 5px;">Next</button>
+                <button (click)="swiper.swiperRef.slidePrev()" mat-raised-button color="accent" style="width: 45%; margin: 0px 5px;">Previous</button>
+                <button (click)="swiper.swiperRef.slideNext()" mat-raised-button color="accent" style="width: 45%; margin: 0px 5px;">Next</button>
               </div>
             </div>
           </ng-template>
         </swiper>
+        <div class="create-post-button-container">
+          <button
+          *ngIf="!loading && runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && !createMorePosts(runningGroupTask) && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE" 
+          class="workflow-create-post"
+          mat-fab
+          style="position: absolute; bottom:0;"
+          color="accent"
+          matTooltip="Create Post"
+          (click)="addPost()"
+          >
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
         <div *ngIf="runningGroupTask">
           <mat-card class="example-card" style="width: 350px; margin: 10px auto">
-            <mat-card-title>{{runningGroupTask.group.name}}: {{runningGroupTask.workflow.name}}</mat-card-title>
-            <mat-card-content>
-              <p>{{ runningGroupTask.workflow.prompt }} </p>
-              <section>
-                <h5>Actions Required:</h5>
-                <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
-                  <li *ngIf="hasCommentRequirement(runningGroupTask)">Comment on each post at least once!</li>
-                  <li *ngIf="hasTagRequirement(runningGroupTask)">Tag each post at least once!</li>
-                  <li *ngIf="hasCreatePostRequirement(runningGroupTask)">Create {{numberOfPosts(runningGroupTask)}} posts</li>
-                </ul>
-              </section>
-            </mat-card-content>
             <div style="margin-bottom: 10px;">
               <label class="example-margin">Your Group's Progress</label>
               <mat-progress-bar mode="determinate" [value]="currentGroupProgress"></mat-progress-bar>
@@ -173,23 +176,8 @@
               <label class="example-margin">Avg. Group's Progress</label>
               <mat-progress-bar mode="determinate" [value]="averageGroupProgress" color="accent"></mat-progress-bar>
             </div>
-            <div style="padding: 20px 0 20px 0;">
-              <button 
-                mat-raised-button 
-                color="primary" 
-                [disabled]="!taskSubmittable(runningGroupTask)" 
-                (click)="markComplete()"
-              >
-                <span 
-                  matTooltip="You must first submit each post" 
-                  [matTooltipDisabled]="taskSubmittable(runningGroupTask) || runningGroupTask.groupTask.status === GroupTaskStatus.COMPLETE"
-                >
-                  Mark Task Complete
-                </span>
-              </button>
-            </div>
             <section>
-              <h4>Group Members:</h4>
+              <h4 style="font-weight: bold; margin-top:16px;">Group Members:</h4>
               <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
                 <li *ngFor="let member of members">{{member.username}}</li>
               </ul>
@@ -197,6 +185,12 @@
           </mat-card>
         </div>
       </div>
+      <button *ngIf="!loading && runningGroupTask && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && !showSubmittedPosts" mat-raised-button color="primary" style="margin: 16px 10px; min-width: unset" (click)="toggleSubmittedPosts()">
+        View Completed
+      </button>
+      <button *ngIf="!loading && runningGroupTask && runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && showSubmittedPosts" mat-raised-button color="primary" style="margin: 16px 10px; min-width: unset" (click)="toggleSubmittedPosts()">
+        View Drafts
+      </button>
     </mat-sidenav-content>
   </mat-sidenav-container>
 </div>

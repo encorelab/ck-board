@@ -60,7 +60,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   // Common fields between all workflows
   WorkflowType: typeof WorkflowType = WorkflowType;
   taskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
-  workflowType: WorkflowType = WorkflowType.DISTRIBUTION;
+  workflowType: WorkflowType = WorkflowType.GENERATION;
   sourceOptions: (Bucket | Board)[] = [];
   destOptions: (Bucket | Board)[] = [];
 
@@ -492,7 +492,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   // Default to current board if no source required
   _placeholderContainer() {
     return {
-      type: ContainerType.BOARD,
+      type: ContainerType.WORKFLOW,
       id: this.board.boardID,
       name: 'CK Workspace',
     };

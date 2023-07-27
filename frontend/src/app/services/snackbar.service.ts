@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { SnackBarComponent } from '../components/snackbar/snackbar.component';
 
 export interface SnackbarConfig {
@@ -78,6 +78,7 @@ export class SnackbarService implements OnDestroy {
       action: item.configParams.action,
       close: () => this.snackBar._openedSnackBarRef?.dismissWithAction(),
     };
+    config.duration = 5000;
 
     this.snackBar.openFromComponent(SnackBarComponent, config);
   }

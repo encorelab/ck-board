@@ -5,6 +5,7 @@ import more from 'highcharts/highcharts-more';
 import exporting from 'highcharts/modules/exporting';
 import nodata from 'highcharts/modules/no-data-to-display';
 import { Board } from 'src/app/models/board';
+import { Project } from 'src/app/models/project';
 import LearnerModel, { DimensionType } from 'src/app/models/learner';
 import { AuthUser } from 'src/app/models/user';
 import { LearnerService } from 'src/app/services/learner.service';
@@ -42,6 +43,7 @@ export interface ModelCard {
 })
 export class LearnerModelsComponent implements OnInit {
   @Input() board: Board;
+  @Input() project: Project;
 
   modelCards: ModelCard[] = [];
 
@@ -62,7 +64,9 @@ export class LearnerModelsComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    const models = await this.learnerService.getByBoards([this.board.boardID]);
+    const models = await this.learnerService.getByProjects([
+      this.project.projectID,
+    ]);
     for (const model of models) {
       this.modelCards.push({
         model: model,

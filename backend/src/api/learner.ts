@@ -27,6 +27,13 @@ router.post('/board/many', async (req, res) => {
   res.status(200).json(models);
 });
 
+router.post('/project/many', async (req, res) => {
+  const { projectIDs } = req.body;
+
+  const models = await dalLearnerModel.getByProjects(projectIDs);
+  res.status(200).json(models);
+});
+
 router.post('/:id/addDimension', async (req, res) => {
   const { id } = req.params;
   const { dimension } = req.body;

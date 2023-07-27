@@ -174,3 +174,8 @@ mat-sidenav-content {
 .mat-loading-progress-bar{
   margin-top: 10px;
 }
+
+.todoItemRow:hover {
+  cursor: pointer;
+  background: #f5f5f5;
+}

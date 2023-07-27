@@ -59,6 +59,7 @@ export class TodoListModalComponent implements OnInit, OnChanges {
     'task-title',
     'type',
     'group',
+    'quality',
     'completion-date',
     'options',
   ];

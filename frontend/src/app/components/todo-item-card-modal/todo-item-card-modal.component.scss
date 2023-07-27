@@ -21,3 +21,7 @@
 .config-button {
   margin: 5px;
 }
+
+::ng-deep .mat-select-panel.completion-quality-panel {
+  max-height: 800px;
+}

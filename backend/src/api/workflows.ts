@@ -346,10 +346,18 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
 
     // if post from board => move to list view
     // if post from bucket => delete from bucket
-    if (workflow.source.type === ContainerType.BOARD) {
-      await dalPost.update(post, { type: PostType.LIST });
-    } else if (workflow.source.type === ContainerType.BUCKET) {
-      await dalBucket.removePost(workflow.source.id, [post]);
+    if (workflow.source.type === ContainerType.WORKFLOW) {
+      if (destination.type === ContainerType.BOARD) {
+        await dalPost.update(post, { type: PostType.BOARD });
+      } else {
+        await dalPost.update(post, { type: PostType.BUCKET });
+      }
+    } else {
+      if (workflow.source.type === ContainerType.BOARD) {
+        await dalPost.update(post, { type: PostType.LIST });
+      } else if (workflow.source.type === ContainerType.BUCKET) {
+        await dalBucket.removePost(workflow.source.id, [post]);
+      }
     }
 
     Socket.Instance.emit(SocketEvent.WORKFLOW_POST_SUBMIT, post, true);

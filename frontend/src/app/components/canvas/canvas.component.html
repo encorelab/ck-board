@@ -21,7 +21,6 @@
       <mat-menu #navbarMenu="matMenu">
         <button 
           mat-menu-item 
-          *ngIf="user.role === Role.TEACHER"
           (click)="openCkMonitor()"
         >
           <mat-icon>

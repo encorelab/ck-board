@@ -171,6 +171,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
   showModels = false;
 
+  studentView = false;
+
   constructor(
     public userService: UserService,
     public projectService: ProjectService,
@@ -201,9 +203,14 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
-    this.loadWorkspaceData();
+    if (this.user.role === Role.STUDENT) {
+      this.studentView = true;
+      this.loading = false;
+    };
+    await this.loadWorkspaceData();
+    if(this.studentView) this.showModels = true;
   }
 
   async loadWorkspaceData(): Promise<boolean> {
@@ -219,7 +226,9 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     this.board = await this.boardService.get(boardID);
     this.project = await this.projectService.get(projectID);
-    await this.updateWorkflowData(boardID, projectID);
+    console.log(this.project);
+    if (!this.studentView)
+      await this.updateWorkflowData(boardID, projectID);
     this.socketService.connect(this.user.userID, this.board.boardID);
     return true;
   }
@@ -359,6 +368,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.runningTask = task;
     this.todoIsVisible = false;
     this.runningTaskGroupStatus = status;
+    this.showModels = false;
     const progressData = await this._calcAverageProgress(
       this.taskWorkflowGroupMap.get(this.runningTask)
     );
@@ -462,6 +472,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       this.showModels = false;
     } else {
       this.todoIsVisible = false;
+      this.runningTask = null;
       this.showModels = true;
     }
   }
@@ -471,6 +482,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       this.todoIsVisible = false;
     } else {
       this.showModels = false;
+      this.runningTask = null;
       this.todoIsVisible = true;
     }
   }

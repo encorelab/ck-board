@@ -12,7 +12,7 @@
 .graphs {
   display: grid;
   grid-gap: 0.5em;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
 }
 
 .graph {
@@ -57,4 +57,12 @@
 
   position: relative;
   top: 70%;
+}
+
+.heading {
+  font-size: 24px;
+  font-weight: bold;
+  color: grey;
+  text-align: center;
+  margin-top: 30px;
 }

@@ -85,7 +85,10 @@ export class LearnerModelsComponent implements OnInit {
     }
   }
 
-  createChartOptions(model: LearnerModel, enableExporting: boolean): Highcharts.Options {
+  createChartOptions(
+    model: LearnerModel,
+    enableExporting: boolean
+  ): Highcharts.Options {
     if (
       this.modelSubject == DimensionType.DIAGNOSTIC ||
       this.modelSubject == DimensionType.REASSESSMENT
@@ -122,7 +125,10 @@ export class LearnerModelsComponent implements OnInit {
     }
     if (modelCard) {
       modelCard.model = model;
-      modelCard.chartOptions = this.createChartOptions(model, !this.studentView);
+      modelCard.chartOptions = this.createChartOptions(
+        model,
+        !this.studentView
+      );
       modelCard.updateFlag = true;
     }
   }

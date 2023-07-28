@@ -41,7 +41,7 @@ export const createClassGraph = (
       polar: true,
     },
     exporting: {
-      enabled: enableExporting, 
+      enabled: enableExporting,
       buttons: {
         contextButton: {
           text: 'Edit Model',

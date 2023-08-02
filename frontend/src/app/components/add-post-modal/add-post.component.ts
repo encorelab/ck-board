@@ -261,8 +261,10 @@ export class AddPostComponent {
   async handlePersonalBoardCopy() {
     try {
       const project = await this.projectService.get(this.board.projectID);
-      const boards = await this.boardService.getAllPersonal(this.board.projectID);
-  
+      const boards = await this.boardService.getAllPersonal(
+        this.board.projectID
+      );
+
       for (const board of boards) {
         if (!project.teacherIDs.includes(board.ownerID)) {
           let post;
@@ -270,7 +272,7 @@ export class AddPostComponent {
             post = this.getBucketPost();
           else if (this.data.type == PostType.LIST) post = this.getListPost();
           else post = this.getBoardPost();
-  
+
           post.boardID = board.boardID;
           const newPost = await this.postService.create(post);
         }

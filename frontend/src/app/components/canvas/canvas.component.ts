@@ -79,6 +79,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   embedded = false;
 
+  numSavedPosts: number = 0;
+
   zoom = 1;
 
   mode: Mode = Mode.EDIT;
@@ -758,6 +760,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
           post: obj,
           board: this.board,
           commentPress: commentPress,
+          numSavedPosts: this.numSavedPosts,
+          updateNumSavedPosts: (num) => {
+            this.numSavedPosts = num;
+          },
         });
         this.canvasService.readPost(obj.postID);
       }

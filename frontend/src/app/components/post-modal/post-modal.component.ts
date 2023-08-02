@@ -54,6 +54,8 @@ export class PostModalData {
   commentPress?: boolean;
   onCommentEvent?: Function;
   onTagEvent?: Function;
+  numSavedPosts: number = 0;
+  updateNumSavedPosts?: Function;
 }
 
 @Component({
@@ -76,6 +78,8 @@ export class PostModalComponent {
   selectedMultipleChoice: MultipleChoiceOptions;
   isMultipleChoiceSelected = false;
   submitMultipleChoiceAnswer = false;
+
+  numSavedPosts: number;
 
   PostType: typeof PostType = PostType;
 
@@ -126,6 +130,7 @@ export class PostModalComponent {
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
+    this.numSavedPosts = data.numSavedPosts;
     this.contentType = data.post.contentType;
     this.showComments = data?.commentPress ? true : false;
     this.postService.get(data.post.postID).then(async (p: Post) => {
@@ -338,12 +343,21 @@ export class PostModalComponent {
       const personalBoard = await this.boardService.getPersonal(
         this.project.projectID
       );
-  
+
       if (!personalBoard) return;
-  
-      if (this.post.displayAttributes)
-        this.post.displayAttributes.position = this.canvasService.centerPos;
-  
+
+      if (this.post.displayAttributes) {
+        const postOffset = 50 * this.numSavedPosts;
+        this.numSavedPosts += 1;
+        if (this.data.updateNumSavedPosts)
+          this.data.updateNumSavedPosts(this.numSavedPosts);
+        const position = {
+          top: this.canvasService.centerPos.top + postOffset,
+          left: this.canvasService.centerPos.left + postOffset,
+        };
+        this.post.displayAttributes.position = position;
+      }
+
       const post: Post = {
         postID: generateUniqueID(),
         userID: this.user.userID,
@@ -357,14 +371,15 @@ export class PostModalComponent {
         tags: this.tags,
         displayAttributes: this.post.displayAttributes,
       };
-  
+
       const newPost = await this.postService.create(post);
-  
-      if (newPost) 
+
+      if (newPost)
         this.openSnackBar('Successfully copied to your Personal Board');
-      
     } catch (error) {
-      this.openSnackBar('Unable to copy post to your Personal Board. Please refresh and try again!');
+      this.openSnackBar(
+        'Unable to copy post to your Personal Board. Please refresh and try again!'
+      );
     }
   }
 

@@ -284,16 +284,16 @@ export class AddPostComponent {
         this.board.projectID
       );
 
-    for (const board of boards) {
-      if (
-        !project.teacherIDs.includes(board.ownerID) ||
-        board.ownerID === this.user.userID
-      ) {
-        let post;
-        if (this.data.type == PostType.BUCKET && this.data.bucket)
-          post = this.getBucketPost();
-        else if (this.data.type == PostType.LIST) post = this.getListPost();
-        else post = this.getBoardPost();
+      for (const board of boards) {
+        if (
+          !project.teacherIDs.includes(board.ownerID) ||
+          board.ownerID === this.user.userID
+        ) {
+          let post;
+          if (this.data.type == PostType.BUCKET && this.data.bucket)
+            post = this.getBucketPost();
+          else if (this.data.type == PostType.LIST) post = this.getListPost();
+          else post = this.getBoardPost();
 
           post.boardID = board.boardID;
           const newPost = await this.postService.create(post);

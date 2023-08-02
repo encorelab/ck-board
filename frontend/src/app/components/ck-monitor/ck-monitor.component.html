@@ -44,7 +44,7 @@
     </mat-menu>
   </app-toolbar>
   <mat-sidenav-container class="drawer-container">
-    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed">
+    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null">
       <h2 class="section-title">All Tasks</h2>
       <mat-list>
         <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
@@ -165,17 +165,23 @@
         </ng-container>
         <mat-divider></mat-divider>
       </mat-list>
-      <h2 class="section-title">Learner Models</h2>
-      <ng-container>
+      <div class="feature-buttons">
         <button
           mat-raised-button
           color="primary"
-          style="margin-left: 15px"
-          (click)="todoIsVisible = !todoIsVisible; runningTask = null"
+          style=""
+          (click)="toggleTodos()"
         >
           {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
         </button>
-      </ng-container>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="toggleModels()"
+        >
+          {{ showModels ? 'Hide Learner Models' : 'View Learner Models' }} 
+        </button>
+      </div>
     </mat-sidenav>
     <mat-sidenav-content>
       <div *ngIf="todoIsVisible" style="margin: 10px">
@@ -288,10 +294,14 @@
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="todoColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: todoColumns;"></tr>
+          <tr mat-row *matRowDef="let row; columns: todoColumns;" class="todoItemRow" (click)="openTodoItemViewModal(row)"></tr>
         </table>
       </div>
-      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible">
+      <div *ngIf="showModels">
+        <app-learner-models #learner [board]="board" [project]="project"></app-learner-models>
+      </div>
+      <mat-progress-bar style="margin: 20px; width: 95%" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !showModels">
         No task selected!
         <mat-progress-bar class="mat-loading-progress-bar" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
       </div>

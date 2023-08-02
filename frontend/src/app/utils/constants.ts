@@ -79,6 +79,12 @@ export const NEEDS_ATTENTION_TAG: Partial<Tag> = {
   },
 };
 
+export const DEFAULT_MODELS = [
+  'Engagement Model',
+  'SEL Model',
+  'Content Model',
+];
+
 export const DEFAULT_TAGS: Partial<Tag>[] = [
   IDEA_TAG,
   QUESTION_TAG,
@@ -97,6 +103,7 @@ export enum EXPANDED_TODO_TYPE {
   COGNITION = 'Content learning',
   SEL = 'Social-emotional learning',
   BEHAVIOURAL = 'Classroom engagement',
+  ATL = 'ATL skills',
   CLASS = 'Assigned class work',
 }
 
@@ -114,6 +121,7 @@ export enum TODO_TYPE_COLORS {
   COGNITION = '#5bc2cb',
   SEL = '#f67280',
   BEHAVIOURAL = '#e6a129',
+  ATL = '#C3B1E1',
   CLASS = '#88B04B',
 }
 

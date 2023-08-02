@@ -160,6 +160,7 @@
       </mat-card>
     </div>
   </div>
+  <mat-hint class="mat-error" *ngIf="tagRequired && tags.length === 0"> One or more tags <strong>required</strong> </mat-hint>
   <mat-form-field *ngIf="!editingPost" class="tag-form" appearance="standard">
     <mat-chip-list #chipList>
       <mat-chip style="background-color: #78c2c0" [matMenuTriggerFor]="menu1">
@@ -174,7 +175,7 @@
         <mat-icon class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
       </mat-chip>
       <mat-menu #menu1="matMenu">
-        <div mat-menu-item *ngIf="tagOptions && tagOptions.length == 0">
+        <div mat-menu-item *ngIf="tagOptions && tagOptions.length === 0">
           No tags available.
         </div>
         <div
@@ -194,7 +195,7 @@
     *ngIf="!editingPost"
     type="submit"
     [class.spinner]="this.creationInProgress"
-    [disabled]="disabled() || this.creationInProgress"
+    [disabled]="disabled() || this.creationInProgress || (tagRequired && tags.length === 0)"
     mat-button
     (click)="handleDialogSubmit()"
     cdkFocusInitial

@@ -118,3 +118,18 @@ mat-sidenav-content {
   min-height: 90vh;
   overflow: hidden;
 }
+
+.workflow-create-post{
+  margin: 0; 
+  padding: 0; 
+  line-height: inherit; 
+  height: inherit;
+  margin: 20px;
+  background-color: #6c63ff;
+}
+
+.create-post-button-container{
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 20px;
+}

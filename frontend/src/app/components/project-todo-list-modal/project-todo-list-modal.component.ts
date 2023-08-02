@@ -77,4 +77,8 @@ export class ProjectTodoListModalComponent implements OnInit {
     const url = window.location.href + '?embedded=true';
     navigator.clipboard.writeText(url);
   }
+
+  isSelected(user): boolean {
+    return this.todoModalUser === user.userID;
+  }
 }

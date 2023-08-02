@@ -27,6 +27,7 @@ export enum PostType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
   LIST = 'LIST',
+  WORKFLOW = 'WORKFLOW',
 }
 
 export default class Post {

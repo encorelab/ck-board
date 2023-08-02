@@ -36,6 +36,8 @@ export interface AddPostDialog {
   spawnPosition: { left: number; top: number };
   onComplete?: (post: any) => any;
   editingPost?: Post | undefined;
+  disableCreation?: boolean;
+  tagRequired?: boolean;
 }
 
 @Component({
@@ -70,6 +72,8 @@ export class AddPostComponent {
     Validators.maxLength(2000),
   ]);
 
+  tagRequired: boolean = false;
+
   matcher = new MyErrorStateMatcher();
 
   constructor(
@@ -87,6 +91,7 @@ export class AddPostComponent {
     this.board = data.board;
     this.boardType = data.board.type;
     this.editingPost = data.editingPost;
+    this.tagRequired = data?.tagRequired ?? false;
     if (this.editingPost) {
       this.contentType = ContentType.MULTIPLE_CHOICE;
       this.title = this.editingPost.title;
@@ -241,6 +246,20 @@ export class AddPostComponent {
     };
   }
 
+  getPartialPost(): Partial<Post> {
+    return {
+      postID: generateUniqueID(),
+      userID: this.user.userID,
+      author: this.user.username,
+      contentType: this.contentType,
+      multipleChoice: this.multipleChoiceOptions,
+      title: this.title,
+      desc: this.message,
+      tags: this.tags,
+      displayAttributes: null,
+    };
+  }
+
   async addPost() {
     const post = this.getBoardPost();
     await this.canvasService.createPost(post);
@@ -265,13 +284,16 @@ export class AddPostComponent {
         this.board.projectID
       );
 
-      for (const board of boards) {
-        if (!project.teacherIDs.includes(board.ownerID)) {
-          let post;
-          if (this.data.type == PostType.BUCKET && this.data.bucket)
-            post = this.getBucketPost();
-          else if (this.data.type == PostType.LIST) post = this.getListPost();
-          else post = this.getBoardPost();
+    for (const board of boards) {
+      if (
+        !project.teacherIDs.includes(board.ownerID) ||
+        board.ownerID === this.user.userID
+      ) {
+        let post;
+        if (this.data.type == PostType.BUCKET && this.data.bucket)
+          post = this.getBucketPost();
+        else if (this.data.type == PostType.LIST) post = this.getListPost();
+        else post = this.getBoardPost();
 
           post.boardID = board.boardID;
           const newPost = await this.postService.create(post);
@@ -307,6 +329,14 @@ export class AddPostComponent {
   async handleDialogSubmit() {
     this.creationInProgress = true;
     let post: Post;
+    if (this.data?.disableCreation) {
+      const _post = this.getPartialPost();
+      if (this.data.onComplete) {
+        this.data.onComplete(_post);
+      }
+      this.dialogRef.close();
+      return;
+    }
 
     localStorage.setItem('post_create_title', this.title);
     localStorage.setItem('post_create_message', this.message);

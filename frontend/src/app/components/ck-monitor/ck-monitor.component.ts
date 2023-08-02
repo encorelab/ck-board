@@ -51,6 +51,8 @@ import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
 import { FormControl, FormGroup } from '@angular/forms';
+import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
+import { LearnerService } from 'src/app/services/learner.service';
 
 SwiperCore.use([EffectCards]);
 
@@ -78,6 +80,7 @@ class TodoItemDisplay {
   quality?: string;
   overdue: boolean;
   types: TodoItemType[];
+  todoItem: TodoItem;
 }
 
 @Component({
@@ -166,6 +169,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   embedded: boolean = false;
 
+  showModels = false;
+
   constructor(
     public userService: UserService,
     public projectService: ProjectService,
@@ -176,6 +181,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     public socketService: SocketService,
     public snackbarService: SnackbarService,
     public todoItemService: TodoItemService,
+    public learnerService: LearnerService,
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -318,6 +324,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         types: item.type,
         completed: item.completed,
         overdue: overdue,
+        todoItem: todoItem.todoItem,
       };
       data.push(todo);
     }
@@ -450,6 +457,24 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     });
   }
 
+  toggleModels(): void {
+    if (this.showModels) {
+      this.showModels = false;
+    } else {
+      this.todoIsVisible = false;
+      this.showModels = true;
+    }
+  }
+
+  toggleTodos(): void {
+    if (this.todoIsVisible) {
+      this.todoIsVisible = false;
+    } else {
+      this.showModels = false;
+      this.todoIsVisible = true;
+    }
+  }
+
   openGroupDialog(): void {
     this.dialog.open(ManageGroupModalComponent, {
       data: {
@@ -515,6 +540,41 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   signOut(): void {
     this.userService.logout();
     this.router.navigate(['login']);
+  }
+
+  async openTodoItemViewModal(rowElement: TodoItemDisplay) {
+    this.dialog.open(TodoItemCardModalComponent, {
+      width: '500px',
+      data: {
+        todoItem: rowElement.todoItem,
+        projectID: this.project.projectID,
+        userID: this.user.userID,
+        group: rowElement.todoItem.groupID
+          ? await this.groupService.getById(rowElement.todoItem.groupID)
+          : null,
+        onComplete: async (t: TodoItem) => {
+          this.todoItems = await this.todoItemService.getByProject(
+            this.project.projectID,
+            'expanded'
+          );
+          this.updateTodoItemDataSource();
+        },
+        onEdit: async (t: TodoItem) => {
+          this.todoItems = await this.todoItemService.getByProject(
+            this.project.projectID,
+            'expanded'
+          );
+          this.updateTodoItemDataSource();
+        },
+        onRestore: async (t: TodoItem) => {
+          this.todoItems = await this.todoItemService.getByProject(
+            this.project.projectID,
+            'expanded'
+          );
+          this.updateTodoItemDataSource();
+        },
+      },
+    });
   }
 
   ngOnDestroy(): void {

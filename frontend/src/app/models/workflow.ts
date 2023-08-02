@@ -3,6 +3,7 @@ import { Group } from './group';
 export enum ContainerType {
   BOARD = 'BOARD',
   BUCKET = 'BUCKET',
+  WORKFLOW = 'WORKFLOW',
 }
 
 export enum DistributionWorkflowType {
@@ -25,11 +26,18 @@ export class Container {
 export enum WorkflowType {
   DISTRIBUTION = 'DISTRIBUTION',
   TASK = 'TASK',
+  GENERATION = 'GENERATION',
+}
+
+export enum TaskWorkflowType {
+  PEER_REVIEW = 'PEER_REVIEW',
+  GENERATION = 'GENERATION',
 }
 
 export enum TaskActionType {
   COMMENT = 'COMMENT',
   TAG = 'TAG',
+  CREATE_POST = 'CREATE_POST',
 }
 
 export enum GroupTaskStatus {
@@ -86,6 +94,7 @@ export class TaskWorkflow extends Workflow {
   prompt: string;
   requiredActions: TaskAction[];
   assignedGroups: string[];
+  type?: TaskWorkflowType;
 }
 
 const workflows = {

@@ -120,6 +120,10 @@
         <div class="heading no-posts" *ngIf="runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && showSubmittedPosts && (!submittedPosts|| submittedPosts.length === 0)">
           No submitted posts!
         </div>
+
+        <div class="heading no-posts" *ngIf="runningGroupTask && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && showSubmittedPosts && (!submittedPosts|| submittedPosts.length === 0)">
+          No reviewed posts!
+        </div>
         <!-- Draft post slider -->
         <swiper [effect]="'cards'" [grabCursor]="true" class="mySwiper" *ngIf="runningGroupTask && !showSubmittedPosts && posts && posts.length > 0">
           <ng-template swiperSlide *ngFor="let htmlPost of posts">

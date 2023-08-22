@@ -62,6 +62,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { TodoItemCardModalComponent } from './components/todo-item-card-modal/todo-item-card-modal.component';
 import { LearnerModelsComponent } from './components/learner-models/learner-models.component';
 import { AddLearnerModalComponent } from './components/add-learner-modal/add-learner-modal.component';
+import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component';
 
 const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
 
@@ -109,6 +110,7 @@ export function tokenGetter() {
     TodoItemCardModalComponent,
     LearnerModelsComponent,
     AddLearnerModalComponent,
+    CkBucketsComponent,
   ],
   imports: [
     BrowserModule,

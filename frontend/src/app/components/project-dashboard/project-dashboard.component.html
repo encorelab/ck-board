@@ -101,8 +101,8 @@
             <div *ngFor="let board of sharedBoards">
               <mat-card
                 class="card"
-                (click)="handleBoardClick(board.boardID)"
-                (keyup.enter)="handleBoardClick(board.boardID)"
+                (click)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
@@ -164,8 +164,8 @@
             <ng-container *ngFor="let board of studentPersonalBoards">
               <mat-card
                 class="card"
-                (click)="handleBoardClick(board.boardID)"
-                (keyup.enter)="handleBoardClick(board.boardID)"
+                (click)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
@@ -207,8 +207,8 @@
             <ng-container *ngFor="let board of teacherPersonalBoards">
               <mat-card
                 class="card"
-                (click)="handleBoardClick(board.boardID)"
-                (keyup.enter)="handleBoardClick(board.boardID)"
+                (click)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
@@ -267,8 +267,8 @@
         <ng-container *ngFor="let board of studentPersonalBoards.concat(sharedBoards)">
           <mat-card
             class="card"
-            (click)="handleBoardClick(board.boardID)"
-            (keyup.enter)="handleBoardClick(board.boardID)"
+            (click)="handleBoardClick(board.boardID, board.defaultView)"
+            (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
             role="button"
             tabindex="0"
             [attr.aria-label]="'View ' + board.name"

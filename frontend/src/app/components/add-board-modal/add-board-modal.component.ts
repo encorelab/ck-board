@@ -1,14 +1,14 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { UserService } from 'src/app/services/user.service';
-import { Project } from 'src/app/models/project';
-import { FileUploadService } from 'src/app/services/fileUpload.service';
-import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
-import { Tag } from 'src/app/models/tag';
-import Utils, { generateUniqueID } from 'src/app/utils/Utils';
-import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { fabric } from 'fabric';
-import { BoardPermissions, BoardScope, BoardType } from 'src/app/models/board';
+import { BoardPermissions, BoardScope, BoardType, ViewType } from 'src/app/models/board';
+import { Project } from 'src/app/models/project';
+import { Tag } from 'src/app/models/tag';
+import { FileUploadService } from 'src/app/services/fileUpload.service';
+import { UserService } from 'src/app/services/user.service';
+import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
+import { generateUniqueID } from 'src/app/utils/Utils';
+import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -22,6 +22,8 @@ export class AddBoardModalComponent implements OnInit {
 
   permissions: BoardPermissions;
   boardType: BoardType = BoardType.BRAINSTORMING;
+
+  defaultView: ViewType = ViewType.CANVAS;
 
   boardName = '';
   boardScope = BoardScope.PROJECT_SHARED;
@@ -119,6 +121,7 @@ export class AddBoardModalComponent implements OnInit {
         initialZoom: this.initialZoom,
         upvoteLimit: this.upvoteLimit,
         visible: true,
+        defaultView: this.defaultView,
       },
       this.selectedProject
     );

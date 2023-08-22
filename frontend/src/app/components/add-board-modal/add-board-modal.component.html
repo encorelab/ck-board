@@ -77,6 +77,14 @@
           Display task description when board is opened
           </mat-checkbox>
       </p>
+      <p>
+        <label><strong>Default View</strong></label>
+        <mat-radio-group [(ngModel)]="defaultView">
+          <mat-radio-button style="margin-left: 10px;" value="CANVAS">Canvas</mat-radio-button>
+          <mat-radio-button style="margin-left: 10px;" value="WORKSPACE">Workspace</mat-radio-button>
+          <mat-radio-button style="margin-left: 10px;" value="BUCKETS">Buckets</mat-radio-button>
+        </mat-radio-group>
+      </p>
       <h4>Set Background Image:</h4>
       <mat-chip (click)="compressFile()" color="primary" selected>
         <mat-icon class="chip-icon">upload</mat-icon>

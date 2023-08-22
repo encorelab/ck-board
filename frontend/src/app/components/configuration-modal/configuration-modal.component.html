@@ -63,6 +63,16 @@
           </span>
         </mat-chip>
       </div>
+      
+      <br/>
+      <div>
+        <label><strong>Default View</strong></label>
+        <mat-radio-group [(ngModel)]="defaultView">
+          <mat-radio-button style="margin-left: 10px;" value="CANVAS">Canvas</mat-radio-button>
+          <mat-radio-button style="margin-left: 10px;" value="WORKSPACE">Workspace</mat-radio-button>
+          <mat-radio-button style="margin-left: 10px;" value="BUCKETS">Buckets</mat-radio-button>
+        </mat-radio-group>
+      </div>
 
       <h2 class="section-title">Background</h2>
       <div class="image-form">

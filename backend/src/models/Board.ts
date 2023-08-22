@@ -1,8 +1,8 @@
 import {
-  prop,
+  Severity,
   getModelForClass,
   modelOptions,
-  Severity,
+  prop,
   setGlobalOptions,
 } from '@typegoose/typegoose';
 import { TagModel } from './Tag';
@@ -95,6 +95,12 @@ export enum BoardType {
   QUESTION_AUTHORING = 'QUESTION_AUTHORING',
 }
 
+export enum ViewType {
+  CANVAS = 'CANVAS',
+  WORKSPACE = 'WORKSPACE',
+  BUCKETS = 'BUCKETS',
+}
+
 @modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })
 export class BoardModel {
   @prop({ required: true })
@@ -138,6 +144,9 @@ export class BoardModel {
 
   @prop({ required: false })
   public defaultTodoDateRange?: DateRange;
+
+  @prop({ required: false })
+  public defaultView?: ViewType;
 }
 
 export default getModelForClass(BoardModel);

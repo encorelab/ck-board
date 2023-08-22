@@ -39,6 +39,12 @@ export enum BoardType {
   QUESTION_AUTHORING = 'QUESTION_AUTHORING',
 }
 
+export enum ViewType {
+  CANVAS = 'CANVAS',
+  WORKSPACE = 'WORKSPACE',
+  BUCKETS = 'BUCKETS',
+}
+
 export class Board {
   projectID: string;
   boardID: string;
@@ -54,4 +60,5 @@ export class Board {
   upvoteLimit = 5;
   visible: boolean;
   defaultTodoDateRange: DateRange | null;
+  defaultView: ViewType | undefined;
 }

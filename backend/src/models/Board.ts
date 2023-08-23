@@ -85,6 +85,17 @@ export class DateRange {
   public end!: Date;
 }
 
+export class ViewSettings {
+  @prop({ required: false })
+  public allowCanvas?: boolean;
+
+  @prop({ required: false })
+  public allowWorkspace?: boolean;
+
+  @prop({ required: false })
+  public allowBuckets?: boolean;
+}
+
 export enum BoardScope {
   PROJECT_SHARED = 'PROJECT_SHARED',
   PROJECT_PERSONAL = 'PROJECT_PERSONAL',
@@ -147,6 +158,9 @@ export class BoardModel {
 
   @prop({ required: false })
   public defaultView?: ViewType;
+
+  @prop({ required: false, type: () => ViewSettings })
+  public viewSettings?: ViewSettings;
 }
 
 export default getModelForClass(BoardModel);

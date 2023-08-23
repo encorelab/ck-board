@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { fabric } from 'fabric';
-import { BoardPermissions, BoardScope, BoardType, ViewType } from 'src/app/models/board';
+import { BoardPermissions, BoardScope, BoardType, ViewSettings, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import { Tag } from 'src/app/models/tag';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
@@ -23,7 +23,8 @@ export class AddBoardModalComponent implements OnInit {
   permissions: BoardPermissions;
   boardType: BoardType = BoardType.BRAINSTORMING;
 
-  defaultView: ViewType = ViewType.CANVAS;
+  defaultView: ViewType = ViewType.BUCKETS;
+  viewSettings: ViewSettings;
 
   boardName = '';
   boardScope = BoardScope.PROJECT_SHARED;
@@ -68,6 +69,11 @@ export class AddBoardModalComponent implements OnInit {
       showBucketStudent: true,
       showSnackBarStudent: false,
       allowTracing: false,
+    };
+    this.viewSettings = {
+      allowCanvas: false,
+      allowWorkspace: false,
+      allowBuckets: true,
     };
     this.projects = data.projects;
     this.selectedProject = data.defaultProject || '';
@@ -122,6 +128,7 @@ export class AddBoardModalComponent implements OnInit {
         upvoteLimit: this.upvoteLimit,
         visible: true,
         defaultView: this.defaultView,
+        viewSettings: this.viewSettings,
       },
       this.selectedProject
     );

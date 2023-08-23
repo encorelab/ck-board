@@ -99,8 +99,9 @@ export class ProjectDashboardComponent implements OnInit {
         boards: [...projectBoards, board.boardID],
       });
 
+      const view = board.defaultView ? board.defaultView.toLowerCase() : '';
       this.router.navigate([
-        'project/' + selectedProjectID + '/board/' + board.boardID,
+        `project/${this.projectID}/board/${board.boardID}/${view}`,
       ]);
     }
   };
@@ -139,12 +140,11 @@ export class ProjectDashboardComponent implements OnInit {
     });
   }
 
-  handleBoardClick(boardID, defaultView: ViewType | undefined) {
-    let view = '';
-    if (!!defaultView) {
-      view = defaultView.toLowerCase();
-    }
-    this.router.navigate([`project/${this.projectID}/board/${boardID}/${view}`]);
+  handleBoardClick(boardID, defaultView: ViewType | undefined | null) {
+    const view = defaultView ? defaultView.toLowerCase() : '';
+    this.router.navigate([
+      `project/${this.projectID}/board/${boardID}/${view}`,
+    ]);
   }
 
   async handleEditBoard(board: Board) {

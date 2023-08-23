@@ -5,7 +5,7 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { Board, BoardPermissions, BoardScope, ViewType } from 'src/app/models/board';
+import { Board, BoardPermissions, BoardScope, ViewSettings, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import { Tag } from 'src/app/models/tag';
 import { BoardService } from 'src/app/services/board.service';
@@ -39,7 +39,8 @@ export class ConfigurationModalComponent {
   boardName: string;
   questionAuthoringType: string;
 
-  defaultView: ViewType = ViewType.CANVAS;
+  defaultView: ViewType = ViewType.BUCKETS;
+  viewSettings: ViewSettings;
 
   isTeacherPersonalBoard = false;
 
@@ -104,6 +105,7 @@ export class ConfigurationModalComponent {
     );
     if (!!data.board.defaultView) {
       this.defaultView = data.board.defaultView;
+      this.viewSettings = data.board.viewSettings;
     }
   }
 
@@ -189,6 +191,8 @@ export class ConfigurationModalComponent {
 
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,
+      defaultView: this.defaultView,
+      viewSettings: this.viewSettings,
     });
     await this.data.update(board);
     this.dialogRef.close();

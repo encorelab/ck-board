@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Board, ViewType } from 'src/app/models/board';
+import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { PostType } from 'src/app/models/post';
 import { Project } from 'src/app/models/project';
-import { AuthUser } from 'src/app/models/user';
+import { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { PostService } from 'src/app/services/post.service';
@@ -23,7 +23,9 @@ export class CkBucketsComponent implements OnInit {
   user: AuthUser;
   board: Board;
   project: Project;
+  Role: typeof Role = Role;
   ViewType: typeof ViewType = ViewType;
+  BoardScope: typeof BoardScope = BoardScope;
 
   upvoteCounter = 0;
 
@@ -74,6 +76,18 @@ export class CkBucketsComponent implements OnInit {
   intermediateBoardConfig(board: Board) {
     this.board = board;
     this._calcUpvoteCounter();
+  }
+
+  copyEmbedCode() {
+    const url = window.location.href + '?embedded=true';
+    navigator.clipboard.writeText(url);
+  }
+
+  copyPersonalEmbedCode() {
+    const url =
+      window.location.origin +
+      `/project/${this.projectID}/my-personal-board?embedded=true`;
+    navigator.clipboard.writeText(url);
   }
 
   signOut(): void {

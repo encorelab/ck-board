@@ -71,8 +71,8 @@ export class AddBoardModalComponent implements OnInit {
       allowTracing: false,
     };
     this.viewSettings = {
-      allowCanvas: false,
-      allowWorkspace: false,
+      allowCanvas: true,
+      allowWorkspace: true,
       allowBuckets: true,
     };
     this.projects = data.projects;

@@ -1,1 +1,10 @@
-<p>ck-buckets works!</p>
+<app-toolbar *ngIf="user && board"></app-toolbar>
+<!-- TODO: Refactor above section into toolbar component -->
+<div class="container">
+    <h1 mat-dialog-title>
+        <span>CK Buckets</span>
+        <button mat-icon-button [mat-dialog-close] aria-label="Close">
+            <mat-icon>close</mat-icon>
+        </button>
+    </h1>
+</div>

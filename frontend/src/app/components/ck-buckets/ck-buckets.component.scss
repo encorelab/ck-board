@@ -1,0 +1,31 @@
+@use '../../../style/layout/post-list';
+
+.container {
+    margin: 0 auto;
+    max-width: 75vw;
+
+    .mat-dialog-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .mat-dialog-content {
+        max-height: 75vh;
+    }
+
+    .mat-paginator {
+        display: flex;
+        justify-content: center;
+    }
+
+    .spinner {
+        margin: 70px auto;
+        background: transparent;
+    }
+
+    .header {
+        display: flex;
+        flex-direction: row;
+    }
+}

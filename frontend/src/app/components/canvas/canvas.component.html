@@ -19,22 +19,6 @@
         <mat-icon>dehaze</mat-icon>
       </button>
       <mat-menu #navbarMenu="matMenu">
-        <button 
-          mat-menu-item 
-          *ngIf="user.role === Role.TEACHER"
-          (click)="openCkMonitor()"
-        >
-          <mat-icon>
-            <span class="material-symbols-outlined">monitoring</span>
-          </mat-icon>
-          CK Monitor
-        </button>
-        <button mat-menu-item (click)="openWorkspace()">
-          <mat-icon>
-            check_box
-          </mat-icon>
-          CK Workspace
-        </button>
         <button
           mat-menu-item
           *ngIf="user.role === Role.TEACHER && board.scope === BoardScope.PROJECT_SHARED"
@@ -42,16 +26,6 @@
         >
           <mat-icon>timeline</mat-icon>
           Manage Buckets & Workflows
-        </button>
-        <button
-          mat-menu-item
-          *ngIf="
-            !(user.role === Role.STUDENT && !board.permissions.showBucketStudent) && board.scope === BoardScope.PROJECT_SHARED
-          "
-          (click)="showBucketsModal()"
-        >
-          <mat-icon>shopping_basket</mat-icon>
-          View Buckets
         </button>
         <button mat-menu-item (click)="showListModal()">
           <mat-icon>list_alt</mat-icon>

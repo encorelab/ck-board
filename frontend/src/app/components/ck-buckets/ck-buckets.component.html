@@ -26,15 +26,21 @@
 <div class="container d-flex align-items-center justify-content-center">
     <h1 mat-dialog-title><span>CK Buckets</span></h1>
     <div class="buckets">
-        <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0" style="color: grey; text-align: center">No buckets available</h3>
+        <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0"
+            style="color: grey; text-align: center">
+            No buckets available
+        </h3>
         <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index">
             <div class="header">
                 <h3>{{ bucket.name }}</h3>
-                <button mat-icon-button (click)="removeBucketFromView(bucket, idx)"><mat-icon>close</mat-icon></button>
+                <button *ngIf="user.role === Role.TEACHER"
+                    mat-icon-button (click)="removeBucketFromView(bucket, idx)">
+                    <mat-icon>close</mat-icon>
+                </button>
             </div>
-            <h3 *ngIf="bucket.posts.length == 0" style="color: grey">No posts</h3>
+            <h3 *ngIf="bucket.posts.length == 0" style="color: grey">No posts in bucket!</h3>
         </div>
-        <div *ngIf="bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView">
+        <div *ngIf="user.role === Role.TEACHER && bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView">
             <button mat-icon-button matTooltip="Add bucket to view"
                 [matMenuTriggerFor]="bucketsMenu"
                 [hidden]="bucketsOnView.length >= maxBucketsOnView">
@@ -47,5 +53,9 @@
     <button mat-menu-item *ngFor="let bucket of buckets; let idx = index"
         [value]="bucket" (click)="addBucketToView(bucket, idx)">
         {{ bucket.name }}
+    </button>
+    <button *ngIf="user.role === Role.TEACHER && board.scope === BoardScope.PROJECT_SHARED"
+        mat-menu-item (click)="openWorkflowDialog()">
+        Create New Bucket
     </button>
 </mat-menu>

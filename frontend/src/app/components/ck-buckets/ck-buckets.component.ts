@@ -14,6 +14,9 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
 import { HTMLPost } from '../html-post/html-post.component';
+import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { ComponentType } from '@angular/cdk/portal';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-ck-buckets',
@@ -51,6 +54,7 @@ export class CkBucketsComponent implements OnInit {
     public boardService: BoardService,
     public bucketService: BucketService,
     public userService: UserService,
+    public dialog: MatDialog,
     public commentService: CommentService,
     public upvotesService: UpvotesService,
     public snackbarService: SnackbarService,
@@ -157,8 +161,28 @@ export class CkBucketsComponent implements OnInit {
     }
   }
 
+  openWorkflowDialog() {
+    this._openDialog(CreateWorkflowModalComponent, {
+      board: this.board,
+      project: this.project,
+    });
+  }
+
   signOut(): void {
     this.userService.logout();
     this.router.navigate(['login']);
+  }
+
+  private _openDialog(
+    component: ComponentType<unknown>,
+    data: any,
+    width = '700px'
+  ) {
+    this.dialog.open(component, {
+      maxWidth: 1280,
+      width: width,
+      autoFocus: false,
+      data: data,
+    });
   }
 }

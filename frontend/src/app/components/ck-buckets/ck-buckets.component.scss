@@ -1,8 +1,8 @@
 @use '../../../style/layout/post-list';
 
 .container {
-    margin: 0 auto;
-    max-width: 75vw;
+    height: 100vh;
+    padding: 15px;
 
     .mat-dialog-title {
         display: flex;
@@ -27,5 +27,34 @@
     .header {
         display: flex;
         flex-direction: row;
+    }
+
+    .buckets {
+        height: 60vh;
+        border: 1px rgb(196, 193, 193);
+        border-style: solid;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+
+        h3, div {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bucket {
+            flex-direction: column;
+            padding-top: 10px;
+            border: 1px solid rgb(220, 219, 219);
+
+            .header {
+                flex: 0;
+                border-bottom: 1px solid rgb(220, 219, 219);
+                width: 100%;
+            }
+        }
     }
 }

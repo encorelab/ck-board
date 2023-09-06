@@ -23,11 +23,29 @@
         </button>
     </mat-menu>
 </app-toolbar>
-<div class="container">
-    <h1 mat-dialog-title>
-        <span>CK Buckets</span>
-        <button mat-icon-button [mat-dialog-close] aria-label="Close">
-            <mat-icon>close</mat-icon>
-        </button>
-    </h1>
+<div class="container d-flex align-items-center justify-content-center">
+    <h1 mat-dialog-title><span>CK Buckets</span></h1>
+    <div class="buckets">
+        <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0" style="color: grey; text-align: center">No buckets available</h3>
+        <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index">
+            <div class="header">
+                <h3>{{ bucket.name }}</h3>
+                <button mat-icon-button (click)="removeBucketFromView(bucket, idx)"><mat-icon>close</mat-icon></button>
+            </div>
+            <h3 *ngIf="bucket.posts.length == 0" style="color: grey">No posts</h3>
+        </div>
+        <div *ngIf="bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView">
+            <button mat-icon-button matTooltip="Add bucket to view"
+                [matMenuTriggerFor]="bucketsMenu"
+                [hidden]="bucketsOnView.length >= maxBucketsOnView">
+                <mat-icon class="material-icons-outlined">add</mat-icon>
+            </button>
+        </div>
+    </div>
 </div>
+<mat-menu #bucketsMenu="matMenu">
+    <button mat-menu-item *ngFor="let bucket of buckets; let idx = index"
+        [value]="bucket" (click)="addBucketToView(bucket, idx)">
+        {{ bucket.name }}
+    </button>
+</mat-menu>

@@ -397,19 +397,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   };
 
-  showListModal() {
-    this._openDialog(
-      ListModalComponent,
-      {
-        board: this.board,
-        user: this.user,
-        centerX: this.canvas.getCenter().left,
-        centerY: this.canvas.getCenter().top,
-      },
-      '95vw'
-    );
-  }
-
   intermediateBoardConfig(board: Board) {
     this.board = board;
     this._calcUpvoteCounter();
@@ -493,6 +480,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       .then((project) => (this.project = project));
   }
 
+  // TODO: handle board update from toolbar-menu
   configureZoom() {
     if (this.board.initialZoom) {
       const zoom = this.board.initialZoom / 100;
@@ -501,13 +489,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else {
       this.zoom = 1;
     }
-  }
-
-  openWorkflowDialog() {
-    this._openDialog(CreateWorkflowModalComponent, {
-      board: this.board,
-      project: this.project,
-    });
   }
 
   // open dialog to get message for a new post
@@ -543,29 +524,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation);
     this.enableEditMode();
-  }
-
-  openSettingsDialog() {
-    this._openDialog(ConfigurationModalComponent, {
-      project: this.project,
-      board: this.board,
-      update: (board: Board, removed = false) => {
-        const previousBoard = this.board;
-        this.board = board;
-
-        if (previousBoard.initialZoom !== board.initialZoom) {
-          this.configureZoom();
-        }
-      },
-    });
-  }
-
-  openGroupDialog() {
-    this.dialog.open(ManageGroupModalComponent, {
-      data: {
-        project: this.project,
-      },
-    });
   }
 
   lockPostsMovement(value) {
@@ -1028,10 +986,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.router.navigate([`/project/${this.projectID}/todo`]);
   }
 
-  openProjectTodoList() {
-    this.router.navigate([`/project/${this.projectID}/todo`]);
-  }
-
   copyEmbedCode() {
     const url = window.location.href + '?embedded=true';
     navigator.clipboard.writeText(url);
@@ -1042,11 +996,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       window.location.origin +
       `/project/${this.projectID}/my-personal-board?embedded=true`;
     navigator.clipboard.writeText(url);
-  }
-
-  signOut(): void {
-    this.userService.logout();
-    this.router.navigate(['login']);
   }
 
   private _openDialog(

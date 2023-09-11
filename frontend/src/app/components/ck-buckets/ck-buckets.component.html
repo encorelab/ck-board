@@ -6,22 +6,7 @@
         <mat-icon>file_copy</mat-icon>
     </button>
     <span style="flex: 1 1 auto"></span>
-    <button navbarMenu mat-icon-button [matMenuTriggerFor]="navbarMenu">
-        <mat-icon>dehaze</mat-icon>
-    </button>
-    <mat-menu #navbarMenu="matMenu">
-        <button mat-menu-item><mat-icon>list_alt</mat-icon>List Posts</button>
-        <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;color:black" target="_blank">
-            <button mat-menu-item style="text-decoration:none;color:black">
-                <mat-icon>launch</mat-icon>
-                Go to SCORE
-            </button>
-        </a>
-        <button mat-menu-item (click)="signOut()">
-            <mat-icon class="material-icons-outlined">logout</mat-icon>
-            Log Out
-        </button>
-    </mat-menu>
+    <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
 </app-toolbar>
 <div class="container d-flex align-items-center justify-content-center">
     <h1 mat-dialog-title><span>CK Buckets</span></h1>
@@ -54,7 +39,7 @@
         [value]="bucket" (click)="addBucketToView(bucket, idx)">
         {{ bucket.name }}
     </button>
-    <button *ngIf="user.role === Role.TEACHER && board.scope === BoardScope.PROJECT_SHARED"
+    <button *ngIf="user.role === Role.TEACHER && !!board && board.scope === BoardScope.PROJECT_SHARED"
         mat-menu-item (click)="openWorkflowDialog()">
         Create New Bucket
     </button>

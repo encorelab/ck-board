@@ -141,7 +141,7 @@ export class ProjectDashboardComponent implements OnInit {
   }
 
   handleBoardClick(boardID, defaultView: ViewType | undefined | null) {
-    const view = defaultView ? defaultView.toLowerCase() : '';
+    const view = defaultView ? defaultView.toLowerCase() : 'buckets';
     this.router.navigate([
       `project/${this.projectID}/board/${boardID}/${view}`,
     ]);

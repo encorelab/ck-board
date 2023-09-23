@@ -25,7 +25,7 @@
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine> {{workflow.name}} </h3>
             <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
-            <p matLine class="list-task-prompt"> 
+            <p matLine class="list-task-prompt">
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.INACTIVE">
@@ -138,7 +138,6 @@
         <button
           mat-raised-button
           color="primary"
-          style=""
           (click)="toggleTodos()"
         >
           {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 

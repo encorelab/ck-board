@@ -1,22 +1,23 @@
 import { Injectable } from '@angular/core';
 import {
-  CanActivate,
   ActivatedRouteSnapshot,
-  RouterStateSnapshot,
+  CanActivate,
   Router,
+  RouterStateSnapshot,
 } from '@angular/router';
-import { AuthGuard } from './auth.guard';
-import { BoardService } from '../services/board.service';
-import { UserService } from '../services/user.service';
 import { Board, BoardScope } from '../models/board';
 import { Role } from '../models/user';
+import { BoardService } from '../services/board.service';
+import { UserService } from '../services/user.service';
 import { getErrorMessage, getErrorStatus } from '../utils/Utils';
+import { AuthGuard } from './auth.guard';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BoardGuard implements CanActivate {
   board: Board;
+  expectedParamLen: number = 5;
 
   constructor(
     public boardService: BoardService,

@@ -17,6 +17,7 @@ import { HTMLPost } from '../html-post/html-post.component';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { ComponentType } from '@angular/cdk/portal';
 import { MatDialog } from '@angular/material/dialog';
+import { ProjectService } from 'src/app/services/project.service';
 
 @Component({
   selector: 'app-ck-buckets',
@@ -52,6 +53,7 @@ export class CkBucketsComponent implements OnInit {
   constructor(
     public postService: PostService,
     public boardService: BoardService,
+    public projectService: ProjectService,
     public bucketService: BucketService,
     public userService: UserService,
     public dialog: MatDialog,
@@ -95,8 +97,14 @@ export class CkBucketsComponent implements OnInit {
         });
         this.boardService.get(this.boardID).then((board) => {
           if (board) this.board = board;
+          if (!board.viewSettings?.allowBuckets) {
+            this.router.navigateByUrl(`project/${this.projectID}/board/${this.boardID}/${board.defaultView?.toLowerCase()}`);
+          }
         });
       });
+      this.projectService
+      .get(this.projectID)
+      .then((project) => {this.project = project});
     }
   }
 

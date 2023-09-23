@@ -45,19 +45,24 @@ const routes: Routes = [
     canActivate: [SsoGuard, AuthGuard, ProjectGuard],
   },
   {
+    path: 'project/:projectID/board/:boardID/canvas',
+    component: CanvasComponent,
+    canActivate: [AuthGuard, ProjectGuard, BoardGuard],
+  },
+  {
     path: 'project/:projectID/board/:boardID/workspace',
     component: CkWorkspaceComponent,
-    canActivate: [AuthGuard, ProjectGuard],
+    canActivate: [AuthGuard, ProjectGuard, BoardGuard],
   },
   {
     path: 'project/:projectID/board/:boardID/buckets',
     component: CkBucketsComponent,
-    canActivate: [AuthGuard, ProjectGuard],
+    canActivate: [AuthGuard, ProjectGuard, BoardGuard],
   },
   {
     path: 'project/:projectID/board/:boardID/monitor',
     component: CkMonitorComponent,
-    canActivate: [AuthGuard, ProjectGuard],
+    canActivate: [AuthGuard, ProjectGuard, BoardGuard],
   },
   {
     path: 'project/:projectID/todo',

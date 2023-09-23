@@ -112,7 +112,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public snackbarService: SnackbarService,
     public dialog: MatDialog,
     public fileUploadService: FileUploadService,
@@ -442,6 +441,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
         });
         this.boardService.get(this.boardID).then((board) => {
           if (board) this.intermediateBoardConfig(board);
+          if (this.board && !this.board.viewSettings?.allowCanvas) {
+            this.router.navigateByUrl(
+              `project/${this.projectID}/board/${this.boardID}/${this.board.defaultView?.toLowerCase()}`
+            );
+          }
         });
       });
     } else if (map.has('projectID')) {

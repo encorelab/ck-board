@@ -33,11 +33,7 @@ import { Group } from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
 import Converters from 'src/app/utils/converters';
 import { PostService } from 'src/app/services/post.service';
-import {
-  NEEDS_ATTENTION_TAG,
-  POST_TAGGED_BORDER_THICKNESS,
-  SocketEvent,
-} from 'src/app/utils/constants';
+import { SocketEvent } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
 import { interval, Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
@@ -135,6 +131,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       projectID,
       this.user.userID
     );
+
+    if (!this.board.viewSettings?.allowWorkspace) {
+      this.router.navigateByUrl(`project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`);
+    }
 
     const tasks = await this.workflowService.getGroupTasks(boardID, 'expanded');
     tasks.forEach((t) => {

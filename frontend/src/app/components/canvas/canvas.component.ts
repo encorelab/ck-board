@@ -442,9 +442,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.boardService.get(this.boardID).then((board) => {
           if (board) this.intermediateBoardConfig(board);
           if (this.board && !this.board.viewSettings?.allowCanvas) {
-            this.router.navigateByUrl(
-              `project/${this.projectID}/board/${this.boardID}/${this.board.defaultView?.toLowerCase()}`
-            );
+            this.router.navigateByUrl(`project/${this.projectID}/board/${this.boardID}/${this.board.defaultView?.toLowerCase()}`);
           }
         });
       });

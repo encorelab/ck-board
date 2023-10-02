@@ -1,4 +1,6 @@
+import { ComponentType } from '@angular/cdk/portal';
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
@@ -9,15 +11,13 @@ import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { PostService } from 'src/app/services/post.service';
+import { ProjectService } from 'src/app/services/project.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
-import { HTMLPost } from '../html-post/html-post.component';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
-import { ComponentType } from '@angular/cdk/portal';
-import { MatDialog } from '@angular/material/dialog';
-import { ProjectService } from 'src/app/services/project.service';
+import { HTMLPost } from '../html-post/html-post.component';
 
 @Component({
   selector: 'app-ck-buckets',
@@ -39,16 +39,9 @@ export class CkBucketsComponent implements OnInit {
   ViewType: typeof ViewType = ViewType;
   BoardScope: typeof BoardScope = BoardScope;
 
-  posts: HTMLPost[];
-
-  length = 0;
-  pageSize = 8;
-  pageSizeOptions: number[] = [4, 8, 12, 16];
-  pageEvent: PageEvent;
-
   maxBucketsOnView = 4;
   bucketsOnView: any[] = [];
-  loading = true;
+  loading = false;
 
   constructor(
     public postService: PostService,
@@ -68,14 +61,14 @@ export class CkBucketsComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     await this.configureBoard();
-    this.fetchBuckets();
+    this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
+      this.buckets = buckets;
+    });
   }
 
   async ngOnDestroy() {
     this.snackbarService.ngOnDestroy();
-    // this.activeBucket = null;
     this.buckets = [];
-    this.posts = [];
   }
 
   async configureBoard(): Promise<void> {
@@ -97,7 +90,7 @@ export class CkBucketsComponent implements OnInit {
         });
         this.boardService.get(this.boardID).then((board) => {
           if (board) this.board = board;
-          if (!board.viewSettings?.allowBuckets) {
+          if (board.viewSettings && !board.viewSettings.allowBuckets) {
             this.router.navigateByUrl(`project/${this.projectID}/board/${this.boardID}/${board.defaultView?.toLowerCase()}`);
           }
         });
@@ -108,39 +101,12 @@ export class CkBucketsComponent implements OnInit {
     }
   }
 
-  fetchBuckets(): void {
-    this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-      this.buckets = buckets;
-      if (this.buckets.length > 0) {
-        this.loadBucket(this.buckets[0]);
-      } else {
-        this.loading = false;
-      }
-    });
-  }
-
-  loadBucket(bucket: any, event?: any): void {
-    // this.activeBucket = bucket;
-    // this.activeBucketName = bucket.name;
-    // this.paginator.pageIndex = 0;
-    // this.loadBucketPosts(bucket);
-  }
-
-  loadBucketPosts(bucket: any, event?: any): PageEvent {
-    this.posts = [];
-    this.loading = true;
-
-    const size = event ? event.pageSize : this.pageSize;
-    const page = event ? event.pageIndex : 0;
-    this.postService
-      .getAllByBucket(bucket.bucketID, { page, size })
-      .then(async ({ posts, count }) => {
-        this.length = count;
-        this.posts = await this.converters.toHTMLPosts(posts);
-        this.loading = false;
-      });
-
-    return event;
+  async loadBucketPosts(bucket: any) {
+    if (!bucket.htmlPosts) {
+      this.loading = true;
+      bucket.htmlPosts = await this.converters.toHTMLPosts(bucket.posts);
+      this.loading = false;
+    }
   }
 
   copyEmbedCode() {
@@ -159,6 +125,7 @@ export class CkBucketsComponent implements OnInit {
     if (bucket && index >= 0 && index < this.buckets.length) {
       this.buckets.splice(index, 1);
       this.bucketsOnView.push(bucket);
+      this.loadBucketPosts(bucket);
     }
   }
 

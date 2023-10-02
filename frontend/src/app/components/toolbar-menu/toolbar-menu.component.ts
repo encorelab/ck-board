@@ -10,6 +10,7 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
 import { ListModalComponent } from '../list-modal/list-modal.component';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
+import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 
 @Component({
   selector: 'app-toolbar-menu',
@@ -85,6 +86,19 @@ export class ToolbarMenuComponent implements OnInit {
         project: this.project,
       },
     });
+  }
+
+  showBucketsModal() {
+    this._openDialog(
+      BucketsModalComponent,
+      {
+        board: this.board,
+        user: this.user,
+        centerX: 0,
+        centerY: 0,
+      },
+      '95vw'
+    );
   }
 
   signOut(): void {

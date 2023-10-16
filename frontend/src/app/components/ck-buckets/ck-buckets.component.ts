@@ -4,7 +4,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
-import { PostType } from 'src/app/models/post';
 import { Project } from 'src/app/models/project';
 import { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
@@ -17,7 +16,7 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
-import { HTMLPost } from '../html-post/html-post.component';
+import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-ck-buckets',
@@ -31,6 +30,7 @@ export class CkBucketsComponent implements OnInit {
   projectID: string;
 
   buckets: any[] = [];
+  // posts: any[] = [];
 
   user: AuthUser;
   board: Board;
@@ -69,35 +69,30 @@ export class CkBucketsComponent implements OnInit {
   async ngOnDestroy() {
     this.snackbarService.ngOnDestroy();
     this.buckets = [];
+    // this.posts = [];
   }
 
   async configureBoard(): Promise<void> {
     const map = this.activatedRoute.snapshot.paramMap;
     if (map.has('boardID') && map.has('projectID')) {
       this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-      this.projectID =
-        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-      this.postService.getAllByBoard(this.boardID).then((data) => {
-        data.forEach(async (post) => {
-          if (post.type == PostType.BOARD) {
-            const upvotes = await this.upvotesService.getUpvotesByPost(
-              post.postID
-            );
-            const comments = await this.commentService.getCommentsByPost(
-              post.postID
-            );
-          }
-        });
-        this.boardService.get(this.boardID).then((board) => {
-          if (board) this.board = board;
-          if (board.viewSettings && !board.viewSettings.allowBuckets) {
-            this.router.navigateByUrl(`project/${this.projectID}/board/${this.boardID}/${board.defaultView?.toLowerCase()}`);
-          }
-        });
+      this.projectID = this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      this.boardService.get(this.boardID).then(board => {
+        if (board) this.board = board;
+        if (board.viewSettings && !board.viewSettings.allowBuckets) {
+          this.router.navigateByUrl(
+            `project/${this.projectID}/board/${
+              this.boardID
+            }/${board.defaultView?.toLowerCase()}`
+          );
+        }
       });
-      this.projectService
-      .get(this.projectID)
-      .then((project) => {this.project = project});
+      // this.postService.getAllByBoard(this.boardID).then(data => {
+      //   this.posts = data;
+      // });
+      this.projectService.get(this.projectID).then(project => {
+        this.project = project;
+      });
     }
   }
 
@@ -133,6 +128,29 @@ export class CkBucketsComponent implements OnInit {
     if (bucket) {
       this.buckets.push(bucket);
       this.bucketsOnView.splice(index, 1);
+    }
+  }
+
+  dragDropPostInBucket(event: CdkDragDrop<any[]>) {
+    if (event.previousContainer !== event.container) {
+      const post = event.previousContainer.data[event.previousIndex].post;
+      if (!post) return;
+      // transfer the html post
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+      // persist post transfer with db
+      const sourceBucketId = event.previousContainer.element.nativeElement.dataset.bucket;
+      const targetBucketId = event.container.element.nativeElement.dataset.bucket;
+      if (sourceBucketId) {
+        this.bucketService.remove(sourceBucketId, post.postID);
+      }
+      if (targetBucketId) {
+        this.bucketService.add(targetBucketId, post.postID);
+      }
     }
   }
 

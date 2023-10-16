@@ -10,12 +10,13 @@
 </app-toolbar>
 <div class="container d-flex align-items-center justify-content-center">
     <h1 mat-dialog-title><span>CK Buckets</span></h1>
-    <div class="buckets">
+    <div class="buckets" cdkDropListGroup>
         <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0"
             style="color: grey; text-align: center">
             No buckets available
         </h3>
-        <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index">
+        <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index" cdkDropList [cdkDropListData]="bucket.htmlPosts"
+            (cdkDropListDropped)="dragDropPostInBucket($event)" [attr.data-bucket]="bucket.bucketID" cdkDropListSortingDisabled>
             <div class="header">
                 <h3>{{ bucket.name }}</h3>
                 <button *ngIf="user.role === Role.TEACHER"
@@ -24,10 +25,10 @@
                 </button>
             </div>
             <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
-            <h3 *ngIf="bucket.posts.length == 0" style="color: grey">No posts in bucket!</h3>
+            <h3 *ngIf="bucket.htmlPosts && bucket.htmlPosts.length == 0" style="color: grey">No posts in bucket!</h3>
             <ng-container *ngIf="bucket.htmlPosts && bucket.htmlPosts.length > 0">
                 <div *ngFor="let post of bucket.htmlPosts">
-                    <app-html-post [post]="post"></app-html-post>
+                    <app-html-post [post]="post" cdkDrag></app-html-post>
                 </div>
             </ng-container>
         </div>

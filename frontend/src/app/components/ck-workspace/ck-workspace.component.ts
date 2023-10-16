@@ -133,7 +133,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
 
     if (!this.board.viewSettings?.allowWorkspace) {
-      this.router.navigateByUrl(`project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`);
+      this.router.navigateByUrl(
+        `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
+      );
     }
 
     const tasks = await this.workflowService.getGroupTasks(boardID, 'expanded');

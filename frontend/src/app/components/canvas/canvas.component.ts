@@ -17,7 +17,6 @@ import { BoardService } from '../../services/board.service';
 import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
-import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import {
@@ -442,7 +441,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
         this.boardService.get(this.boardID).then((board) => {
           if (board) this.intermediateBoardConfig(board);
           if (this.board && !this.board.viewSettings?.allowCanvas) {
-            this.router.navigateByUrl(`project/${this.projectID}/board/${this.boardID}/${this.board.defaultView?.toLowerCase()}`);
+            this.router.navigateByUrl(
+              `project/${this.projectID}/board/${
+                this.boardID
+              }/${this.board.defaultView?.toLowerCase()}`
+            );
           }
         });
       });

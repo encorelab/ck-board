@@ -8,9 +8,8 @@ describe('CkBucketsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ CkBucketsComponent ]
-    })
-    .compileComponents();
+      declarations: [CkBucketsComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

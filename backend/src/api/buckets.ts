@@ -20,7 +20,7 @@ router.post('/:id', async (req, res) => {
     {},
     name === null ? null : { name },
     posts === null ? null : { posts },
-    addedToView === null ? null : { addedToView },
+    addedToView === null ? null : { addedToView }
   );
 
   const updatedBucket = await dalBucket.update(id, bucket);

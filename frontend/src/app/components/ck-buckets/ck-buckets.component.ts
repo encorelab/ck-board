@@ -60,7 +60,7 @@ export class CkBucketsComponent implements OnInit {
     this.user = this.userService.user!;
     await this.configureBoard();
     this.loading = true;
-    await this.bucketService.getAllByBoard(this.boardID).then(buckets => {
+    await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
       for (let bucket of buckets) {
         if (bucket.addedToView) {
           this.bucketsOnView.push(bucket);
@@ -77,8 +77,9 @@ export class CkBucketsComponent implements OnInit {
     const map = this.activatedRoute.snapshot.paramMap;
     if (map.has('boardID') && map.has('projectID')) {
       this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-      this.projectID = this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-      this.boardService.get(this.boardID).then(board => {
+      this.projectID =
+        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      this.boardService.get(this.boardID).then((board) => {
         if (board) this.board = board;
         if (board.viewSettings && !board.viewSettings.allowBuckets) {
           this.router.navigateByUrl(
@@ -91,7 +92,7 @@ export class CkBucketsComponent implements OnInit {
       // this.postService.getAllByBoard(this.boardID).then(data => {
       //   this.posts = data;
       // });
-      this.projectService.get(this.projectID).then(project => {
+      this.projectService.get(this.projectID).then((project) => {
         this.project = project;
       });
     }
@@ -146,8 +147,10 @@ export class CkBucketsComponent implements OnInit {
         event.currentIndex
       );
       // persist post transfer with db
-      const sourceBucketId = event.previousContainer.element.nativeElement.dataset.bucket;
-      const targetBucketId = event.container.element.nativeElement.dataset.bucket;
+      const sourceBucketId =
+        event.previousContainer.element.nativeElement.dataset.bucket;
+      const targetBucketId =
+        event.container.element.nativeElement.dataset.bucket;
       if (sourceBucketId) {
         this.bucketService.remove(sourceBucketId, post.postID);
       }

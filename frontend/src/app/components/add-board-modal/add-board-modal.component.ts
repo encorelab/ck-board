@@ -1,7 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { fabric } from 'fabric';
-import { BoardPermissions, BoardScope, BoardType, ViewSettings, ViewType } from 'src/app/models/board';
+import {
+  BoardPermissions,
+  BoardScope,
+  BoardType,
+  ViewSettings,
+  ViewType,
+} from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import { Tag } from 'src/app/models/tag';
 import { FileUploadService } from 'src/app/services/fileUpload.service';

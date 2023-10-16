@@ -10,7 +10,8 @@
 </app-toolbar>
 <div class="container d-flex align-items-center justify-content-center">
     <h1 mat-dialog-title><span>CK Buckets</span></h1>
-    <div class="buckets" cdkDropListGroup>
+    <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
+    <div *ngIf="!loading" class="buckets" cdkDropListGroup>
         <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0"
             style="color: grey; text-align: center">
             No buckets available
@@ -24,7 +25,6 @@
                     <mat-icon>close</mat-icon>
                 </button>
             </div>
-            <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
             <h3 *ngIf="bucket.htmlPosts && bucket.htmlPosts.length == 0" style="color: grey">No posts in bucket!</h3>
             <ng-container *ngIf="bucket.htmlPosts && bucket.htmlPosts.length > 0">
                 <div *ngFor="let post of bucket.htmlPosts">

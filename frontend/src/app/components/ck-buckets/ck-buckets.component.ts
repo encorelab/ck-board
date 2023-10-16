@@ -1,7 +1,8 @@
+import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ComponentType } from '@angular/cdk/portal';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
@@ -11,12 +12,10 @@ import { BucketService } from 'src/app/services/bucket.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { PostService } from 'src/app/services/post.service';
 import { ProjectService } from 'src/app/services/project.service';
-import { SnackbarService } from 'src/app/services/snackbar.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
-import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-ck-buckets',
@@ -52,7 +51,6 @@ export class CkBucketsComponent implements OnInit {
     public dialog: MatDialog,
     public commentService: CommentService,
     public upvotesService: UpvotesService,
-    public snackbarService: SnackbarService,
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute
@@ -61,15 +59,18 @@ export class CkBucketsComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     await this.configureBoard();
-    this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-      this.buckets = buckets;
+    this.loading = true;
+    await this.bucketService.getAllByBoard(this.boardID).then(buckets => {
+      for (let bucket of buckets) {
+        if (bucket.addedToView) {
+          this.bucketsOnView.push(bucket);
+          this.loadBucketPosts(bucket);
+        } else {
+          this.buckets.push(bucket);
+        }
+      }
     });
-  }
-
-  async ngOnDestroy() {
-    this.snackbarService.ngOnDestroy();
-    this.buckets = [];
-    // this.posts = [];
+    this.loading = false;
   }
 
   async configureBoard(): Promise<void> {
@@ -121,6 +122,7 @@ export class CkBucketsComponent implements OnInit {
       this.buckets.splice(index, 1);
       this.bucketsOnView.push(bucket);
       this.loadBucketPosts(bucket);
+      this.bucketService.update(bucket.bucketID, { addedToView: true });
     }
   }
 
@@ -128,6 +130,7 @@ export class CkBucketsComponent implements OnInit {
     if (bucket) {
       this.buckets.push(bucket);
       this.bucketsOnView.splice(index, 1);
+      this.bucketService.update(bucket.bucketID, { addedToView: false });
     }
   }
 

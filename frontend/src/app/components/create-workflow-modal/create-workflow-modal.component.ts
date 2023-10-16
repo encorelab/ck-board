@@ -169,6 +169,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       boardID: this.data.board.boardID,
       name: this.bucketName,
       posts: [],
+      addedToView: false,
     };
 
     this.bucketService.create(bucket).then(() => {

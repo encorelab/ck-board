@@ -226,7 +226,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     this.board = await this.boardService.get(boardID);
     this.project = await this.projectService.get(projectID);
-    console.log(this.project);
     if (!this.studentView) await this.updateWorkflowData(boardID, projectID);
     this.socketService.connect(this.user.userID, this.board.boardID);
     return true;

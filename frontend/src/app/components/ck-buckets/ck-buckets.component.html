@@ -25,8 +25,7 @@
             style="color: grey; text-align: center">
             No buckets available
         </h3>
-        <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index" cdkDropList [cdkDropListData]="bucket.htmlPosts"
-            (cdkDropListDropped)="dragDropPostInBucket($event)" [attr.data-bucket]="bucket.bucketID" cdkDropListSortingDisabled>
+        <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index" >
             <div class="header">
                 <h3>{{ bucket.name }}</h3>
                 <button *ngIf="user.role === Role.TEACHER"
@@ -34,12 +33,15 @@
                     <mat-icon>close</mat-icon>
                 </button>
             </div>
-            <h3 *ngIf="bucket.htmlPosts && bucket.htmlPosts.length == 0" style="color: grey">No posts in bucket!</h3>
-            <ng-container *ngIf="bucket.htmlPosts && bucket.htmlPosts.length > 0">
+            <div class="post-list" cdkDropList [cdkDropListData]="bucket.htmlPosts"
+            (cdkDropListDropped)="dragDropPostInBucket($event)" [attr.data-bucket]="bucket.bucketID" cdkDropListSortingDisabled>
+              <h3 *ngIf="bucket.htmlPosts && bucket.htmlPosts.length == 0" style="color: grey">No posts in bucket!</h3>
+              <ng-container *ngIf="bucket.htmlPosts && bucket.htmlPosts.length > 0" >
                 <div *ngFor="let post of bucket.htmlPosts">
-                    <app-html-post [post]="post" cdkDrag></app-html-post>
+                  <app-html-post [post]="post" cdkDrag style="width: 100%"></app-html-post>
                 </div>
-            </ng-container>
+              </ng-container>
+            </div>
         </div>
         <div *ngIf="user.role === Role.TEACHER && bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView">
             <button mat-icon-button matTooltip="Add bucket to view"

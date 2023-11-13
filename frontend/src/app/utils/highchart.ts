@@ -14,7 +14,8 @@ export interface MenuHandlers {
 export const createClassGraph = (
   model: LearnerModel,
   handlers: MenuHandlers,
-  dimensionType: DimensionType = DimensionType.DIAGNOSTIC
+  dimensionType: DimensionType = DimensionType.DIAGNOSTIC,
+  enableExporting: boolean = true
 ): Highcharts.Options => {
   const dimensions = model.dimensions;
   const studentToDims: Map<string, DimensionValue[]> = sorting.groupItemBy(
@@ -40,6 +41,7 @@ export const createClassGraph = (
       polar: true,
     },
     exporting: {
+      enabled: enableExporting,
       buttons: {
         contextButton: {
           text: 'Edit Model',
@@ -92,7 +94,8 @@ export const createClassGraph = (
 export const createStudentGraph = (
   model: LearnerModel,
   handlers: MenuHandlers,
-  student: AuthUser
+  student: AuthUser,
+  enableExporting: boolean = true
 ): Highcharts.Options => {
   const dimToData: Map<string, DimensionValue[]> = sorting.groupItemBy(
     model.data,
@@ -151,6 +154,7 @@ export const createStudentGraph = (
       polar: true,
     },
     exporting: {
+      enabled: enableExporting,
       buttons: {
         contextButton: {
           text: 'Edit Model',

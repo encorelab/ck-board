@@ -12,8 +12,8 @@
 
     <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
   </app-toolbar>
-  <mat-sidenav-container class="drawer-container">
-    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null">
+  <mat-sidenav-container class="drawer-container" [ngStyle]="{'padding-top': !embedded ? '56px' : '0px', 'padding-bottom': embedded ? '64px' : '0px' }">
+    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null" *ngIf="!studentView">
       <h2 class="section-title">All Tasks</h2>
       <mat-list>
         <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
@@ -266,16 +266,16 @@
         </table>
       </div>
       <div *ngIf="showModels">
-        <app-learner-models #learner [board]="board" [project]="project"></app-learner-models>
+        <app-learner-models #learner [board]="board" [project]="project" [studentView]="studentView"></app-learner-models>
       </div>
       <mat-progress-bar style="margin: 20px; width: 95%" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
-      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !showModels">
+      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !showModels && !studentView">
         No task selected!
         <mat-progress-bar class="mat-loading-progress-bar" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
       </div>
       <div style="display: flex; flex-direction: row;">
         <div *ngIf="runningTask && !todoIsVisible">
-          <mat-card class="example-card" style="width: 500px; margin: 20px 20px 10px 10px">
+          <mat-card style="margin: 7px; padding: 16px 4px;">
             <mat-card-title>Task Progress</mat-card-title>
             <div class="mat-elevation-z3 table_style">
               <table mat-table [dataSource]="runningTaskTableData" class="table">

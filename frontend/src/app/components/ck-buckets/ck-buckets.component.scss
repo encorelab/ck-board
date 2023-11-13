@@ -51,20 +51,21 @@
         }
 
         .bucket {
-            flex-direction: column;
-            display: flex;
+            display: block;
             padding-top: 10px;
             border: 1px solid rgb(220, 219, 219);
 
-            .post-list{
+            .post-list-view{
               display: grid;
               grid-gap: 1em;
-              grid-template-columns: minmax(280px, 1fr);
+              grid-template-columns: repeat(auto-fill, 280px);
+              grid-auto-rows: minmax(100px, auto);
+              grid-auto-flow: dense;
               padding: 10px 0;
             }
 
             .header {
-                flex: 0;
+                top: 0;
                 border-bottom: 1px solid rgb(220, 219, 219);
                 width: 100%;
             }

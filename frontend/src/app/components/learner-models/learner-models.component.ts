@@ -14,6 +14,7 @@ import { AddLearnerModalComponent } from '../add-learner-modal/add-learner-modal
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { ProjectService } from 'src/app/services/project.service';
 import * as saveAs from 'file-saver';
+import { UserService } from 'src/app/services/user.service';
 
 more(Highcharts);
 exporting(Highcharts);
@@ -44,6 +45,7 @@ export interface ModelCard {
 export class LearnerModelsComponent implements OnInit {
   @Input() board: Board;
   @Input() project: Project;
+  @Input() studentView?: boolean = false;
 
   modelCards: ModelCard[] = [];
 
@@ -60,6 +62,7 @@ export class LearnerModelsComponent implements OnInit {
   constructor(
     public learnerService: LearnerService,
     public projectService: ProjectService,
+    public userService: UserService,
     public dialog: MatDialog
   ) {}
 
@@ -71,14 +74,21 @@ export class LearnerModelsComponent implements OnInit {
       this.modelCards.push({
         model: model,
         dimensionType: DimensionType.DIAGNOSTIC,
-        chartOptions: this.createChartOptions(model),
+        chartOptions: this.createChartOptions(model, !this.studentView),
         updateFlag: false,
       });
       model.data.map((d) => this.idToUser.set(d.student.userID, d.student));
     }
+    if (this.studentView) {
+      this.modelSubject = this.userService.user?.userID ?? '';
+      this.subjectChange();
+    }
   }
 
-  createChartOptions(model: LearnerModel): Highcharts.Options {
+  createChartOptions(
+    model: LearnerModel,
+    enableExporting: boolean
+  ): Highcharts.Options {
     if (
       this.modelSubject == DimensionType.DIAGNOSTIC ||
       this.modelSubject == DimensionType.REASSESSMENT
@@ -90,7 +100,8 @@ export class LearnerModelsComponent implements OnInit {
           onExport: this.onExport,
           onDeleteModel: this.onDeleteModel,
         },
-        this.modelSubject
+        this.modelSubject,
+        enableExporting
       );
     } else {
       return createStudentGraph(
@@ -100,7 +111,8 @@ export class LearnerModelsComponent implements OnInit {
           onExport: this.onExport,
           onDeleteModel: this.onDeleteModel,
         },
-        this.idToUser.get(this.modelSubject)!
+        this.idToUser.get(this.modelSubject)!,
+        enableExporting
       );
     }
   }
@@ -113,7 +125,10 @@ export class LearnerModelsComponent implements OnInit {
     }
     if (modelCard) {
       modelCard.model = model;
-      modelCard.chartOptions = this.createChartOptions(model);
+      modelCard.chartOptions = this.createChartOptions(
+        model,
+        !this.studentView
+      );
       modelCard.updateFlag = true;
     }
   }
@@ -188,7 +203,7 @@ export class LearnerModelsComponent implements OnInit {
           this.modelCards.push({
             model: model,
             dimensionType: DimensionType.DIAGNOSTIC,
-            chartOptions: this.createChartOptions(model),
+            chartOptions: this.createChartOptions(model, !this.studentView),
             updateFlag: false,
           });
           model.data.map((d) => this.idToUser.set(d.student.userID, d.student));

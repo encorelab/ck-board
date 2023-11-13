@@ -36,7 +36,7 @@
     }
 
     .buckets {
-        height: 60vh;
+        min-height: 60vh;
         border: 1px rgb(196, 193, 193);
         border-style: solid;
         border-radius: 4px;
@@ -60,7 +60,7 @@
               display: grid;
               grid-gap: 1em;
               grid-template-columns: minmax(280px, 1fr);
-              padding-bottom: 10px;
+              padding: 10px 0;
             }
 
             .header {

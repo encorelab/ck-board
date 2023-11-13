@@ -4,6 +4,12 @@
     height: 100vh;
     padding: 15px;
 
+    .heading{
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
     .mat-dialog-title {
         display: flex;
         align-items: center;

@@ -176,6 +176,9 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.loadBucketsBoards();
       this.openSnackBar('Bucket: ' + bucket.name + ' created succesfully!');
       this.bucketNameFormControl.reset();
+      if (this.data?.onBucketCreation) {
+        this.data?.onBucketCreation(bucket);
+      }
     });
   }
 

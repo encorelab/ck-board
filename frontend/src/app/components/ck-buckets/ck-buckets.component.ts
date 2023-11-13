@@ -164,6 +164,11 @@ export class CkBucketsComponent implements OnInit {
     this._openDialog(CreateWorkflowModalComponent, {
       board: this.board,
       project: this.project,
+      onBucketCreation: (bucket: any) => {
+        this.bucketsOnView.push(bucket);
+        this.loadBucketPosts(bucket);
+        this.bucketService.update(bucket.bucketID, { addedToView: true });
+      }
     });
   }
 

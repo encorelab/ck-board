@@ -27,7 +27,12 @@ import {
   SocketEvent,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
-import { Board, BoardPermissions, BoardScope } from 'src/app/models/board';
+import {
+  Board,
+  BoardPermissions,
+  BoardScope,
+  ViewType,
+} from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
@@ -94,6 +99,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   upvoteCounter = 0;
 
   unsubListeners: Subscription[] = [];
+
+  viewType = ViewType.CANVAS;
 
   @HostListener('wheel', ['$event'])
   onMouseWheel(e: WheelEvent) {

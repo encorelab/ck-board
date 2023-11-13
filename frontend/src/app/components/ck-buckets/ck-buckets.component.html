@@ -6,6 +6,7 @@
         <mat-icon>file_copy</mat-icon>
     </button>
     <span style="flex: 1 1 auto"></span>
+    <app-view-navigation [boardID]="boardID" [currentView]="viewType"></app-view-navigation>
     <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
 </app-toolbar>
 <div class="container d-flex align-items-center justify-content-center">

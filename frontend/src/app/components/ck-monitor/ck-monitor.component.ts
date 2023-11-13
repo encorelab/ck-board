@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Board, BoardScope } from 'src/app/models/board';
+import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
@@ -172,6 +172,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   showModels = false;
 
   studentView = false;
+  viewType = ViewType.MONITOR;
 
   constructor(
     public userService: UserService,

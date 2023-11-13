@@ -42,6 +42,8 @@ export class CkBucketsComponent implements OnInit {
   bucketsOnView: any[] = [];
   loading = false;
 
+  viewType = ViewType.BUCKETS;
+
   constructor(
     public postService: PostService,
     public boardService: BoardService,

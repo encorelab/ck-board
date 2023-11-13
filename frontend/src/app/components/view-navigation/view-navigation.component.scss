@@ -1,0 +1,31 @@
+.view-navigation-container {
+  display: flex;
+  justify-content: flex-end; /* Align to the right side of the container */
+  align-items: center;
+
+  button {
+    padding: 0 5px;
+  }
+
+  .disabled {
+    display: none;
+  }
+
+  .material-icons{
+    margin-right: 1px;
+  }
+
+  @media screen and (max-width: 750px) {
+    .label {
+      display: none;
+    }
+
+    button {
+      min-width: 0;
+    }
+
+    .material-icons{
+      margin-right: 0;
+    }
+  }
+}

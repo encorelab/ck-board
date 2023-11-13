@@ -9,7 +9,7 @@
     <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
       <mat-icon>keyboard_return</mat-icon>
     </button>
-
+    <app-view-navigation [boardID]="board.boardID" [currentView]="viewType"></app-view-navigation>
     <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
   </app-toolbar>
   <mat-sidenav-container class="drawer-container" [ngStyle]="{'padding-top': !embedded ? '56px' : '0px', 'padding-bottom': embedded ? '64px' : '0px' }">

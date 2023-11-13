@@ -1,0 +1,8 @@
+<div class="view-navigation-container">
+  <div *ngFor="let view of AppViews" [ngClass]="{ 'disabled': view.viewType === currentView || !view.allowed}">
+    <button mat-button routerLink="{{'/project/'+board.projectID+'/board/'+board.boardID + '/' + view.urlPath}}" matTooltip="{{view.displayName}}">
+      <span class="material-icons">{{view.icon}}</span>
+      <span class="label">{{view.displayName}}</span>
+    </button>
+  </div>
+</div>

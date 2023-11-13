@@ -139,13 +139,17 @@ export class CkBucketsComponent implements OnInit {
     if (event.previousContainer !== event.container) {
       const post = event.previousContainer.data[event.previousIndex].post;
       if (!post) return;
+      if (event.container.data.filter((p) => p.post.postID === post.postID).length === 0) {
+        transferArrayItem(
+          event.previousContainer.data,
+          event.container.data,
+          event.previousIndex,
+          event.currentIndex
+        );
+      } else {
+        event.previousContainer.data.splice(event.previousIndex);
+      }
       // transfer the html post
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
       // persist post transfer with db
       const sourceBucketId =
         event.previousContainer.element.nativeElement.dataset.bucket;

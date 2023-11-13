@@ -6,7 +6,7 @@
         <mat-icon>timeline</mat-icon>
         Manage Buckets & Workflows
     </button>
-    <button mat-menu-item (click)="showListModal()">
+    <button mat-menu-item *ngIf="user.role === Role.TEACHER" (click)="showListModal()">
         <mat-icon>list_alt</mat-icon>
         List Posts
     </button>

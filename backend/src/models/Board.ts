@@ -94,6 +94,9 @@ export class ViewSettings {
 
   @prop({ required: false })
   public allowBuckets?: boolean;
+
+  @prop({ required: false })
+  public allowMonitor?: boolean;
 }
 
 export enum BoardScope {
@@ -110,6 +113,7 @@ export enum ViewType {
   CANVAS = 'CANVAS',
   WORKSPACE = 'WORKSPACE',
   BUCKETS = 'BUCKETS',
+  MONITOR = 'MONITOR'
 }
 
 @modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })

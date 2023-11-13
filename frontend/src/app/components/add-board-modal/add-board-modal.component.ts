@@ -80,6 +80,7 @@ export class AddBoardModalComponent implements OnInit {
       allowCanvas: true,
       allowWorkspace: true,
       allowBuckets: true,
+      allowMonitor: true,
     };
     this.projects = data.projects;
     this.selectedProject = data.defaultProject || '';

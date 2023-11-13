@@ -33,6 +33,7 @@ export class ViewSettings {
   allowCanvas: boolean | undefined;
   allowWorkspace: boolean | undefined;
   allowBuckets: boolean | undefined;
+  allowMonitor: boolean | undefined;
 }
 
 export enum BoardScope {
@@ -49,6 +50,7 @@ export enum ViewType {
   CANVAS = 'CANVAS',
   WORKSPACE = 'WORKSPACE',
   BUCKETS = 'BUCKETS',
+  MONITOR = 'MONITOR'
 }
 
 export class Board {

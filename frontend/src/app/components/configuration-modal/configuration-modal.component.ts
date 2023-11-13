@@ -5,7 +5,13 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { Board, BoardPermissions, BoardScope, ViewSettings, ViewType } from 'src/app/models/board';
+import {
+  Board,
+  BoardPermissions,
+  BoardScope,
+  ViewSettings,
+  ViewType,
+} from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import { Tag } from 'src/app/models/tag';
 import { BoardService } from 'src/app/services/board.service';
@@ -103,7 +109,7 @@ export class ConfigurationModalComponent {
     this.isTeacherPersonalBoard = this.project.teacherIDs.includes(
       this.board.ownerID
     );
-    if (!!data.board.defaultView) {
+    if (data.board.defaultView) {
       this.defaultView = data.board.defaultView;
       this.viewSettings = data.board.viewSettings;
     }

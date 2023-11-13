@@ -113,7 +113,7 @@ export enum ViewType {
   CANVAS = 'CANVAS',
   WORKSPACE = 'WORKSPACE',
   BUCKETS = 'BUCKETS',
-  MONITOR = 'MONITOR'
+  MONITOR = 'MONITOR',
 }
 
 @modelOptions({ schemaOptions: { collection: 'boards', timestamps: true } })

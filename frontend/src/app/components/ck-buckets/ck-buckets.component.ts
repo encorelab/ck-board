@@ -61,7 +61,7 @@ export class CkBucketsComponent implements OnInit {
     await this.configureBoard();
     this.loading = true;
     await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-      for (let bucket of buckets) {
+      for (const bucket of buckets) {
         if (bucket.addedToView) {
           this.bucketsOnView.push(bucket);
           this.loadBucketPosts(bucket);
@@ -139,7 +139,10 @@ export class CkBucketsComponent implements OnInit {
     if (event.previousContainer !== event.container) {
       const post = event.previousContainer.data[event.previousIndex].post;
       if (!post) return;
-      if (event.container.data.filter((p) => p.post.postID === post.postID).length === 0) {
+      if (
+        event.container.data.filter((p) => p.post.postID === post.postID)
+          .length === 0
+      ) {
         transferArrayItem(
           event.previousContainer.data,
           event.container.data,
@@ -172,7 +175,7 @@ export class CkBucketsComponent implements OnInit {
         this.bucketsOnView.push(bucket);
         this.loadBucketPosts(bucket);
         this.bucketService.update(bucket.bucketID, { addedToView: true });
-      }
+      },
     });
   }
 

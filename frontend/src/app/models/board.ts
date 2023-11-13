@@ -50,7 +50,7 @@ export enum ViewType {
   CANVAS = 'CANVAS',
   WORKSPACE = 'WORKSPACE',
   BUCKETS = 'BUCKETS',
-  MONITOR = 'MONITOR'
+  MONITOR = 'MONITOR',
 }
 
 export class Board {

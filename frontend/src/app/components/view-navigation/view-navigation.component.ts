@@ -27,6 +27,20 @@ export class ViewNavigationComponent implements OnInit {
     this.board = await this.boardService.get(this.boardID);
     this.AppViews = [
       {
+        viewType: ViewType.CANVAS,
+        urlPath: 'canvas',
+        icon: 'dashboard',
+        displayName: 'Canvas',
+        allowed: this.board.viewSettings?.allowCanvas ?? false,
+      },
+      {
+        viewType: ViewType.BUCKETS,
+        urlPath: 'buckets',
+        icon: 'view_week',
+        displayName: 'Bucket View',
+        allowed: this.board.viewSettings?.allowBuckets ?? false,
+      },
+      {
         viewType: ViewType.WORKSPACE,
         urlPath: 'workspace',
         icon: 'check_box',
@@ -39,20 +53,6 @@ export class ViewNavigationComponent implements OnInit {
         icon: 'trending_up',
         displayName: 'CK Monitor',
         allowed: this.board.viewSettings?.allowMonitor ?? false,
-      },
-      {
-        viewType: ViewType.CANVAS,
-        urlPath: 'canvas',
-        icon: 'border_color',
-        displayName: 'Canvas',
-        allowed: this.board.viewSettings?.allowCanvas ?? false,
-      },
-      {
-        viewType: ViewType.BUCKETS,
-        urlPath: 'buckets',
-        icon: 'view_week',
-        displayName: 'Bucket View',
-        allowed: this.board.viewSettings?.allowBuckets ?? false,
       },
     ];
   }

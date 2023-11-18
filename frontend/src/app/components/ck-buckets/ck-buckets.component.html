@@ -20,38 +20,39 @@
       </button>
       <h1 mat-title style="margin: 0"><span>CK Buckets</span></h1>
     </div>
-    <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
-    <div *ngIf="!loading" class="buckets" cdkDropListGroup>
-        <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0"
-            style="color: grey; text-align: center">
-            No buckets available
-        </h3>
-        <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index" cdkDropList [cdkDropListData]="bucket.htmlPosts"
-          (cdkDropListDropped)="dragDropPostInBucket($event)" [attr.data-bucket]="bucket.bucketID" cdkDropListSortingDisabled >
-          <div class="header">
-              <h3>{{ bucket.name }}</h3>
-              <button *ngIf="user.role === Role.TEACHER"
-                  mat-icon-button (click)="removeBucketFromView(bucket, idx)">
-                  <mat-icon>close</mat-icon>
-              </button>
-          </div>
-          <h3 *ngIf="bucket.htmlPosts && bucket.htmlPosts.length == 0" style="color: grey; margin-top: 10px;">No posts in bucket!</h3>
-          <div class="post-list-view" >
-            <ng-container *ngIf="bucket.htmlPosts && bucket.htmlPosts.length > 0" >
-              <div *ngFor="let post of bucket.htmlPosts">
-                <app-html-post [post]="post" cdkDrag style="width: 100%"></app-html-post>
-              </div>
-            </ng-container>
-          </div>
-        </div>
-        <div *ngIf="user.role === Role.TEACHER && bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView">
-            <button mat-icon-button matTooltip="Add bucket to view"
-                [matMenuTriggerFor]="bucketsMenu"
-                [hidden]="bucketsOnView.length >= maxBucketsOnView">
-                <mat-icon class="material-icons-outlined">add</mat-icon>
+    <div class="buckets" cdkDropListGroup >
+      <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0"
+          style="color: grey; text-align: center">
+          No buckets available
+      </h3>
+      
+      <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index" cdkDropList [cdkDropListData]="bucket.htmlPosts"
+        (cdkDropListDropped)="dragDropPostInBucket($event)" [attr.data-bucket]="bucket.bucketID" cdkDropListSortingDisabled >
+        <div class="header">
+            <h3>{{ bucket.name }}</h3>
+            <button *ngIf="user.role === Role.TEACHER"
+                mat-icon-button (click)="removeBucketFromView(bucket, idx)">
+                <mat-icon>close</mat-icon>
             </button>
         </div>
-    </div>
+        <mat-spinner class="spinner" *ngIf="bucket.loading"></mat-spinner>
+        <h3 *ngIf="bucket.htmlPosts && bucket.htmlPosts.length == 0" style="color: grey; margin-top: 10px;text-align: center;">No posts in bucket!</h3>
+        <div class="post-list-view" *ngIf="!bucket.loading">
+          <ng-container *ngIf="bucket.htmlPosts && bucket.htmlPosts.length > 0" >
+            <div *ngFor="let post of bucket.htmlPosts">
+              <app-html-post [post]="post" cdkDrag style="width: 100%"></app-html-post>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="user.role === Role.TEACHER && bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView" class="addBucket">
+          <button mat-icon-button matTooltip="Add bucket to view"
+              [matMenuTriggerFor]="bucketsMenu"
+              [hidden]="bucketsOnView.length >= maxBucketsOnView">
+              <mat-icon class="material-icons-outlined">add</mat-icon>
+          </button>
+      </div>
+  </div>
 </div>
 <mat-menu #bucketsMenu="matMenu">
     <button mat-menu-item *ngFor="let bucket of buckets; let idx = index"

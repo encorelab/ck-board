@@ -40,7 +40,6 @@ export class CkBucketsComponent implements OnInit {
 
   maxBucketsOnView = 4;
   bucketsOnView: any[] = [];
-  loading = false;
 
   viewType = ViewType.BUCKETS;
 
@@ -61,7 +60,6 @@ export class CkBucketsComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     await this.configureBoard();
-    this.loading = true;
     await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
       for (const bucket of buckets) {
         if (bucket.addedToView) {
@@ -72,7 +70,6 @@ export class CkBucketsComponent implements OnInit {
         }
       }
     });
-    this.loading = false;
   }
 
   async configureBoard(): Promise<void> {
@@ -102,9 +99,9 @@ export class CkBucketsComponent implements OnInit {
 
   async loadBucketPosts(bucket: any) {
     if (!bucket.htmlPosts) {
-      this.loading = true;
+      bucket.loading = true;
       bucket.htmlPosts = await this.converters.toHTMLPosts(bucket.posts);
-      this.loading = false;
+      bucket.loading = false;
     }
   }
 

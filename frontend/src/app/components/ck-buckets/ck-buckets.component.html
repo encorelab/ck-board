@@ -19,6 +19,14 @@
         <mat-icon>arrow_back</mat-icon>
       </button>
       <h1 mat-title style="margin: 0"><span>CK Buckets</span></h1>
+      <span style="flex: 1 1 auto"></span>
+      <div *ngIf="user.role === Role.TEACHER && bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView">
+          <button mat-icon-button matTooltip="Add bucket to view"
+              [matMenuTriggerFor]="bucketsMenu"
+              [hidden]="bucketsOnView.length >= maxBucketsOnView">
+              <mat-icon class="material-icons-outlined">add</mat-icon>
+          </button>
+      </div>
     </div>
     <div class="buckets" cdkDropListGroup >
       <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0"
@@ -44,13 +52,6 @@
             </div>
           </ng-container>
         </div>
-      </div>
-      <div *ngIf="user.role === Role.TEACHER && bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView" class="addBucket">
-          <button mat-icon-button matTooltip="Add bucket to view"
-              [matMenuTriggerFor]="bucketsMenu"
-              [hidden]="bucketsOnView.length >= maxBucketsOnView">
-              <mat-icon class="material-icons-outlined">add</mat-icon>
-          </button>
       </div>
   </div>
 </div>

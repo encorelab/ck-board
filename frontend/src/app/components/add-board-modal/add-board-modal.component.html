@@ -12,10 +12,7 @@
         >
           Idea generation
         </mat-radio-button>
-        <mat-radio-button 
-          style="margin-left: 10px" 
-          value="QUESTION_AUTHORING"
-        >
+        <mat-radio-button style="margin-left: 10px" value="QUESTION_AUTHORING">
           Question Authoring
         </mat-radio-button>
       </mat-radio-group>
@@ -60,8 +57,8 @@
         >
         <mat-slider
           class="slider"
-          min="0"
-          max="10"
+          min="1"
+          max="20"
           step="1"
           [(ngModel)]="upvoteLimit"
           thumbLabel
@@ -75,7 +72,7 @@
       <p>
         <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent">
           Display task description when board is opened
-          </mat-checkbox>
+        </mat-checkbox>
       </p>
       <h4>Set Background Image:</h4>
       <mat-chip (click)="compressFile()" color="primary" selected>

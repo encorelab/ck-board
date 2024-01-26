@@ -36,6 +36,8 @@ import { PostService } from 'src/app/services/post.service';
 import {
   NEEDS_ATTENTION_TAG,
   POST_TAGGED_BORDER_THICKNESS,
+  STUDENT_POST_COLOR,
+  TEACHER_POST_COLOR,
   SocketEvent,
 } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
@@ -360,6 +362,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
                 top: 150,
               },
               lock: !this.board.permissions.allowStudentMoveAny,
+              fillColor: this.defaultPostFill(),
             };
             post.boardID = this.runningGroupTask?.workflow.destinations[0].id;
             post.displayAttributes = displayAttributes;
@@ -654,5 +657,11 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: data,
     });
+  }
+
+  defaultPostFill() {
+    return this.userService.user?.role === Role.TEACHER
+      ? TEACHER_POST_COLOR
+      : STUDENT_POST_COLOR;
   }
 }

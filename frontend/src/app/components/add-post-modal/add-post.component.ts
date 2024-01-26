@@ -260,7 +260,7 @@ export class AddPostComponent {
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      displayAttributes: null,
+      displayAttributes: { fillColor: this.defaultPostFill() },
     };
   }
 

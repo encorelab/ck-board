@@ -282,41 +282,37 @@ export class AddPostComponent {
   }
 
   async handlePersonalBoardCopy() {
-    const project = await this.projectService.get(this.board.projectID);
-    const boards = await this.boardService.getAllPersonal(this.board.projectID);
+    try {
+      const project = await this.projectService.get(this.board.projectID);
+      const boards = await this.boardService.getAllPersonal(
+        this.board.projectID
+      );
 
-    for (const board of boards) {
-      if (
-        !project.teacherIDs.includes(board.ownerID) ||
-        board.ownerID === this.user.userID
-      ) {
-        let post;
-        if (this.data.type == PostType.BUCKET && this.data.bucket)
-          post = this.getBucketPost();
-        else if (this.data.type == PostType.LIST) post = this.getListPost();
-        else post = this.getBoardPost();
+      for (const board of boards) {
+        if (
+          !project.teacherIDs.includes(board.ownerID) ||
+          board.ownerID === this.user.userID
+        ) {
+          let post;
+          if (this.data.type == PostType.BUCKET && this.data.bucket)
+            post = this.getBucketPost();
+          else if (this.data.type == PostType.LIST) post = this.getListPost();
+          else post = this.getBoardPost();
 
-        post.boardID = board.boardID;
-        const newPost = await this.postService.create(post);
-        const postInput = {
-          originalPostID: post.postID,
-          newPostID: newPost.postID,
-          personalBoardID: board.boardID,
-          post: post,
-        };
-        if (newPost) {
-          this.socketService.emit(
-            SocketEvent.PERSONAL_BOARD_ADD_POST,
-            postInput
-          );
+          post.boardID = board.boardID;
+          const newPost = await this.postService.create(post);
         }
       }
+      this.snackbarService.queueSnackbar(
+        'Successfully copied post to all student personal boards.'
+      );
+    } catch (error) {
+      this.snackbarService.queueSnackbar(
+        'Unable to copy posts. Please refresh and try again!'
+      );
+    } finally {
+      this.dialogRef.close();
     }
-    this.snackbarService.queueSnackbar(
-      'Successfully copied post to all student personal boards.'
-    );
-
-    this.dialogRef.close();
   }
 
   async updateMultipleChoicePost() {

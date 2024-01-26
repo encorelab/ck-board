@@ -8,7 +8,7 @@ export class DisplayAttributes {
   lock?: boolean;
   borderWidth?: number;
   borderColor?: string;
-  fillColor?: string;
+  fillColor: string;
   opacity?: number;
 }
 
@@ -43,5 +43,5 @@ export default class Post {
   author: string;
   tags: Tag[];
 
-  displayAttributes: DisplayAttributes | null;
+  displayAttributes: DisplayAttributes;
 }

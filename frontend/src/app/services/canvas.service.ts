@@ -171,10 +171,8 @@ export class CanvasService {
     const update: Partial<Post> = { tags };
 
     if (tag.specialAttributes) {
-      update.displayAttributes = this.fabricUtils.applyTagFeatures(
-        post.postID,
-        tag
-      );
+      const updatedAttr = this.fabricUtils.applyTagFeatures(post.postID, tag);
+      if (updatedAttr) update.displayAttributes = updatedAttr;
     }
     const savedPost = await this.postService.update(post.postID, update);
     this.socketService.emit(SocketEvent.POST_TAG_ADD, {
@@ -202,7 +200,9 @@ export class CanvasService {
     }
 
     if (tag.specialAttributes) {
-      update.displayAttributes = this.fabricUtils.resetTagFeatures(post.postID);
+      update.displayAttributes = await this.fabricUtils.resetTagFeatures(
+        post.postID
+      );
     }
 
     const savedPost = await this.postService.update(post.postID, update);

@@ -45,8 +45,8 @@ export class DisplayAttributes {
   @prop({ required: false })
   public borderColor?: string;
 
-  @prop({ required: false })
-  public fillColor?: string;
+  @prop({ required: true })
+  public fillColor!: string;
 
   @prop({ required: false })
   public opacity?: number;
@@ -84,8 +84,8 @@ export class PostModel {
   @prop({ required: true, type: () => [TagModel] })
   public tags!: TagModel[];
 
-  @prop({ required: false, type: () => DisplayAttributes })
-  public displayAttributes?: DisplayAttributes;
+  @prop({ required: true, type: () => DisplayAttributes })
+  public displayAttributes!: DisplayAttributes;
 }
 
 export default getModelForClass(PostModel);

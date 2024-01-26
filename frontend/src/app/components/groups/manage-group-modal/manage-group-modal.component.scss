@@ -13,16 +13,6 @@
     margin-bottom: 20px;
 }
 
-.edit-group-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.edit-group-actions > button {
-    margin-top: 10px;
-}
-
 .select-groups-container {
     margin-top: 20px;
     display: flex;
@@ -32,6 +22,7 @@
 
 .multi-group-actions {
     padding-top: 10px;
+    width: 100%;
     display: flex;
     justify-content: space-between;
 }

@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import Post, { PostType } from '../models/post';
 
@@ -53,7 +53,11 @@ export class PostService {
   }
 
   create(post: Post) {
-    return this.http.post<Post>('posts/', post).toPromise();
+    return this.http
+      .post<Post>('posts/', post, {
+        headers: new HttpHeaders({ timeout: `${5000}` }),
+      })
+      .toPromise();
   }
 
   update(postID: string, value: Partial<Post>): Promise<Post> {

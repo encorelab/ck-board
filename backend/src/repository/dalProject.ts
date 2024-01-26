@@ -2,6 +2,7 @@ import { UnauthorizedError } from '../errors/client.errors';
 import Project, { ProjectModel } from '../models/Project';
 import mongoose from 'mongoose';
 import dalBoard from './dalBoard';
+import dalLearnerModel from './dalLearnerModel';
 import { Role } from '../models/User';
 
 export const getById = async (id: string) => {
@@ -57,6 +58,7 @@ export const addTeacher = async (code: string, userID: string) => {
 export const create = async (project: ProjectModel) => {
   try {
     const savedProject = await Project.create(project);
+    await dalLearnerModel.createDefaultModels(project.projectID);
     return savedProject;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));

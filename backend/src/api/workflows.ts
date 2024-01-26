@@ -15,7 +15,7 @@ import dalGroupTask from '../repository/dalGroupTask';
 import dalPost from '../repository/dalPost';
 import dalWorkflow from '../repository/dalWorkflow';
 import Socket from '../socket/socket';
-import { movePostsToDestination } from '../utils/workflow.helpers';
+import { isTask, movePostsToDestination } from '../utils/workflow.helpers';
 
 const router = Router();
 
@@ -268,17 +268,52 @@ router.get('/task/groupTask/board/:boardID/user/:userID', async (req, res) => {
  */
 router.post('/task/groupTask/:groupTaskID', async (req, res) => {
   const { groupTaskID } = req.params;
-  const { actions, posts, status } = req.body;
+  const { actions, posts, status, progress } = req.body;
 
   const update: Partial<GroupTaskModel> = Object.assign(
     {},
     actions === null ? null : { actions },
     posts === null ? null : { posts },
+    progress === null ? null : { progress },
     status === null ? null : { status }
   );
 
   const updatedGroupTask = await dalGroupTask.update(groupTaskID, update);
   res.status(200).json(updatedGroupTask);
+});
+
+/**
+ * Update progress of running workflow's group task.
+ */
+router.post('/task/:workflowID/groupTask/:groupTaskID', async (req, res) => {
+  const { workflowID, groupTaskID } = req.params;
+  const { postID, delta, type } = req.body;
+
+  const workflow = await dalWorkflow.getById(workflowID);
+  const task = await dalGroupTask.getById(groupTaskID);
+  if (!workflow || !task || !isTask<TaskWorkflowModel>(workflow)) {
+    return res.status(404).end('Valid task workflow or group task not found!');
+  }
+
+  const progress = task.progress.get(postID);
+  const action = progress?.find((a) => a.type === type);
+  if (!action) {
+    return res
+      .status(400)
+      .end(`Unable to find ${type} action in task progress!`);
+  }
+
+  const newAmountReq = action.amountRequired + delta;
+  const limit = workflow.requiredActions.find((a) => a.type === type);
+  if (limit && !(newAmountReq > limit.amountRequired || newAmountReq < 0)) {
+    action.amountRequired = newAmountReq;
+  }
+
+  await dalGroupTask.update(groupTaskID, task);
+
+  Socket.Instance.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [task], true);
+
+  res.status(200).json(task);
 });
 
 /**
@@ -311,10 +346,18 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
 
     // if post from board => move to list view
     // if post from bucket => delete from bucket
-    if (workflow.source.type === ContainerType.BOARD) {
-      await dalPost.update(post, { type: PostType.LIST });
-    } else if (workflow.source.type === ContainerType.BUCKET) {
-      await dalBucket.removePost(workflow.source.id, [post]);
+    if (workflow.source.type === ContainerType.WORKFLOW) {
+      if (destination.type === ContainerType.BOARD) {
+        await dalPost.update(post, { type: PostType.BOARD });
+      } else {
+        await dalPost.update(post, { type: PostType.BUCKET });
+      }
+    } else {
+      if (workflow.source.type === ContainerType.BOARD) {
+        await dalPost.update(post, { type: PostType.LIST });
+      } else if (workflow.source.type === ContainerType.BUCKET) {
+        await dalBucket.removePost(workflow.source.id, [post]);
+      }
     }
 
     Socket.Instance.emit(SocketEvent.WORKFLOW_POST_SUBMIT, post, true);
@@ -327,13 +370,14 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
 });
 
 /**
- * Mark group task as complete.
+ * Update Group Task status to Complete/Active
  */
-router.post('/task/groupTask/:groupTaskID/complete', async (req, res) => {
+router.post('/task/groupTask/:groupTaskID/status', async (req, res) => {
   const { groupTaskID } = req.params;
+  const { status } = req.body;
 
   const updatedGroupTask = await dalGroupTask.update(groupTaskID, {
-    status: GroupTaskStatus.COMPLETE,
+    status: status,
   });
   res.status(200).json(updatedGroupTask);
 });

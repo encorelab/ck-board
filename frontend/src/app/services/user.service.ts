@@ -11,11 +11,17 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   getOneById(id: string): Promise<User> {
-    return this.http.get<User>('auth/' + id).toPromise();
+    return this.http
+      .get<User>('auth/' + id, { headers: { cache: 'true' } })
+      .toPromise();
   }
 
   getMultipleByIds(ids: string[]) {
     return this.http.post<User[]>('auth/multiple', ids).toPromise();
+  }
+
+  getByProject(projectID: string): Promise<AuthUser[]> {
+    return this.http.get<AuthUser[]>('auth/project/' + projectID).toPromise();
   }
 
   async register(user: User) {

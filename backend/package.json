@@ -10,8 +10,10 @@
     "express": "^4.17.3",
     "express-jwt": "^7.7.0",
     "jsonwebtoken": "^8.5.1",
+    "migrate-mongo": "^9.0.0",
     "mongo-dot-notation": "^3.1.0",
     "mongoose": "^6.3.2",
+    "mongoose-autopopulate": "^0.17.1",
     "nodemon": "^2.0.16",
     "prettier": "^2.6.2",
     "socket.io": "^4.4.1",
@@ -22,7 +24,11 @@
     "dev": "ts-node-dev --respawn ./src/server.ts",
     "style:linter": "eslint . --fix --ext .ts",
     "style:formatter": "prettier --check \"**/*.{js,jsx,ts,tsx}\"",
-    "style": "prettier --write \"**/*.{js,jsx,ts,tsx}\""
+    "style": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
+    "migrate:create": "sh -c 'ts-node node_modules/.bin/migrate-mongo create $0 -f migrate-mongo-config.ts' ",
+    "migrate:status": "ts-node node_modules/.bin/migrate-mongo status -f migrate-mongo-config.ts",
+    "migrate:undo-last": "ts-node node_modules/.bin/migrate-mongo down -f migrate-mongo-config.ts && npm run migrate:status",
+    "migrate": "ts-node node_modules/.bin/migrate-mongo up -f migrate-mongo-config.ts"
   },
   "name": "backend",
   "version": "1.0.0",
@@ -36,6 +42,7 @@
     "@typescript-eslint/eslint-plugin": "^5.22.0",
     "@typescript-eslint/parser": "^5.22.0",
     "eslint": "^8.17.0",
+    "migrate-mongo": "^9.0.0",
     "ts-node": "^10.7.0",
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.6.4"

@@ -1,15 +1,8 @@
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  TemplateRef,
-  HostListener,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 import Post, { PostType } from '../../models/post';
 
@@ -26,6 +19,7 @@ import {
   POST_MOVING_FILL,
   POST_MOVING_OPACITY,
   SocketEvent,
+  STUDENT_POST_COLOR,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import { Board, BoardPermissions, BoardScope } from 'src/app/models/board';
@@ -36,7 +30,6 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
-import { POST_COLOR } from 'src/app/utils/constants';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
@@ -49,7 +42,6 @@ import { getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
-import { DistributionWorkflow } from 'src/app/models/workflow';
 import Upvote from 'src/app/models/upvote';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
@@ -112,7 +104,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public snackbarService: SnackbarService,
     public dialog: MatDialog,
     public fileUploadService: FileUploadService,
@@ -147,7 +138,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     ]);
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.activatedRoute.queryParams.subscribe((params) => {
       if (params.embedded == 'true') {
         this.embedded = true;
@@ -155,11 +146,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
 
     this.user = this.userService.user!;
-    this.canvas = new fabric.Canvas('canvas', this.fabricUtils.canvasConfig);
+    this.canvas = new fabric.Canvas(
+      'canvas',
+      this.embedded
+        ? this.fabricUtils.embeddedCanvasConfig
+        : this.fabricUtils.canvasConfig
+    );
     this.fabricUtils._canvas = this.canvas;
 
-    this.configureBoard();
-
+    await this.configureBoard();
     this.socketService.connect(this.user.userID, this.boardID);
 
     this.initCanvasEventsListener();
@@ -255,8 +250,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const { left, top } = post.displayAttributes.position;
 
-    this.fabricUtils.animateToPosition(existing, left, top, () => {
-      existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
+    this.fabricUtils.animateToPosition(existing, left, top, async () => {
+      const fill = await this.fabricUtils.defaultPostColor(post.userID);
+      existing = this.fabricUtils.setFillColor(
+        existing,
+        fill ?? STUDENT_POST_COLOR
+      );
       existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
       existing = this.fabricUtils.setPostMovement(
         existing,
@@ -437,7 +436,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   }
 
-  configureBoard() {
+  async configureBoard() {
     const map = this.activatedRoute.snapshot.paramMap;
 
     if (map.has('boardID') && map.has('projectID')) {
@@ -469,31 +468,30 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else if (map.has('projectID')) {
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      const personalBoard = await this.boardService.getPersonal(this.projectID);
+      if (personalBoard) {
+        this.boardID = personalBoard.boardID;
+        this.traceService.setTraceContext(this.projectID, this.boardID);
+      } else this.router.navigate(['error']);
 
-      this.boardService.getPersonal(this.projectID).then((board) => {
-        if (board) {
-          this.boardID = board.boardID;
-          this.traceService.setTraceContext(this.projectID, this.boardID);
-        } else this.router.navigate(['error']);
-        this.postService.getAllByBoard(this.boardID).then((data) => {
-          data.forEach(async (post) => {
-            if (post.type == PostType.BOARD) {
-              const upvotes = await this.upvotesService.getUpvotesByPost(
-                post.postID
-              );
-              const comments = await this.commentService.getCommentsByPost(
-                post.postID
-              );
-              this.canvas.add(
-                new FabricPostComponent(post, {
-                  upvotes: upvotes.length,
-                  comments: comments.length,
-                })
-              );
-            }
-          });
-          if (board) this.intermediateBoardConfig(board);
+      this.postService.getAllByBoard(this.boardID).then((data) => {
+        data.forEach(async (post) => {
+          if (post.type == PostType.BOARD) {
+            const upvotes = await this.upvotesService.getUpvotesByPost(
+              post.postID
+            );
+            const comments = await this.commentService.getCommentsByPost(
+              post.postID
+            );
+            this.canvas.add(
+              new FabricPostComponent(post, {
+                upvotes: upvotes.length,
+                comments: comments.length,
+              })
+            );
+          }
         });
+        if (personalBoard) this.intermediateBoardConfig(personalBoard);
       });
     } else {
       this.router.navigate(['error']);
@@ -636,6 +634,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
       this.updateAuthorNames(post.postID, 'Anonymous');
     } else {
+      console.log('can');
       this.userService.getOneById(post.userID).then((user: any) => {
         this.updateAuthorNames(post.postID, user.username);
       });
@@ -798,13 +797,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
       }
     };
 
-    const handleDroppedPost = (e) => {
+    const handleDroppedPost = async (e) => {
       if (!isMovingPost) return;
 
       let obj = e.target;
       isMovingPost = false;
 
-      obj = this.fabricUtils.setFillColor(obj, POST_COLOR);
+      const fill = await this.fabricUtils.defaultPostColor(obj.userID);
+      obj = this.fabricUtils.setFillColor(obj, fill ?? STUDENT_POST_COLOR);
       obj = this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
       this.canvas.renderAll();
 
@@ -1064,6 +1064,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       window.location.origin +
       `/project/${this.projectID}/my-personal-board?embedded=true`;
     navigator.clipboard.writeText(url);
+  }
+
+  signOut(): void {
+    this.userService.logout();
+    this.router.navigate(['login']);
   }
 
   private _openDialog(

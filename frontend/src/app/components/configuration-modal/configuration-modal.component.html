@@ -17,8 +17,8 @@
         </mat-form-field>
       </div>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.allowTracing"
-          >Allow tracing of board activity
+        <mat-checkbox [(ngModel)]="permissions.allowTracing">
+          Enable logging of all user activities
         </mat-checkbox>
       </p>
       <p>
@@ -26,20 +26,6 @@
           >Display task description when board is opened
         </mat-checkbox>
       </p>
-      <div>
-        <mat-label style="font-weight: bold"
-          >Initial Zoom: {{ initialZoom }}%</mat-label
-        >
-        <mat-slider
-          class="slider"
-          min="0"
-          max="200"
-          step="5"
-          [(ngModel)]="initialZoom"
-          thumbLabel
-        ></mat-slider>
-      </div>
-
       <h2 class="section-title">Voting</h2>
       <div>
         <mat-label style="font-weight: bold"
@@ -66,7 +52,20 @@
         </mat-chip>
       </div>
 
-      <h2 class="section-title">Background</h2>
+      <h2 class="section-title">Board</h2>
+      <div>
+        <mat-label style="font-weight: bold"
+          >Initial Zoom: {{ initialZoom }}%</mat-label
+        >
+        <mat-slider
+          class="slider"
+          min="0"
+          max="200"
+          step="5"
+          [(ngModel)]="initialZoom"
+          thumbLabel
+        ></mat-slider>
+      </div>
       <div class="image-form">
         <div class="container">
           <mat-chip

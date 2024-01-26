@@ -255,20 +255,6 @@ export class ConfigurationModalComponent {
     });
   }
 
-  openVoteResetDialog() {
-    this.dialog.open(ConfirmModalComponent, {
-      width: '500px',
-      data: {
-        title: 'Confirmation',
-        message:
-          'Are you sure you want to reset each members upvote counter (to renew the number of available upvotes)?',
-        handleConfirm: async () => {
-          await this.upvoteService.removeByBoard(this.boardID);
-        },
-      },
-    });
-  }
-
   async copyConfiguration() {
     let boards = await this.boardService.getMultipleBy(this.project.boards, {
       scope: BoardScope.PROJECT_PERSONAL,

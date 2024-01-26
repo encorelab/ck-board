@@ -45,6 +45,7 @@ export class AddTodoListModalComponent implements OnInit {
     TodoItemType.COGNITION,
     TodoItemType.SEL,
     TodoItemType.BEHAVIOURAL,
+    TodoItemType.ATL,
     TodoItemType.CLASS,
   ];
   selectedGroup: Group | undefined;
@@ -58,6 +59,16 @@ export class AddTodoListModalComponent implements OnInit {
   restoring = false;
 
   TODO_TITLE_MAX_LENGTH = TODO_TITLE_MAX_LENGTH;
+
+  todoTypeTooltip = `
+    Content learning (i.e., learning strategies for memorization, recall, or application of knowledge)
+
+    Social-emotional learning (i.e., supports for developing your emotional awareness, stress management, motivation, math identity, relationships, or critical/creative thinking)
+
+    ATL skills (i.e., thining skills, self-management skills, and research skills)
+
+    Classroom engagement (i.e., practices for improving learning engagement, e.g., note-taking, asking questions, designing/explaining/suggesting ideas, or generating/sharing ideas with classmates)
+  `;
 
   constructor(
     public dialogRef: MatDialogRef<AddTodoListModalComponent>,

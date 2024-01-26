@@ -12,7 +12,6 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { PostService } from 'src/app/services/post.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
-import { POST_COLOR } from 'src/app/utils/constants';
 import { getErrorMessage } from 'src/app/utils/Utils';
 import Upvote from 'src/app/models/upvote';
 
@@ -47,13 +46,15 @@ export interface HTMLPost {
 export class HtmlPostComponent implements OnInit {
   @Input() post: HTMLPost;
   @Input() disableDownload: boolean = false;
+  @Input() onCommentEvent: Function;
+  @Input() onTagEvent: Function;
   @Output() movePostToBoardEvent = new EventEmitter<string>();
 
   exists = true;
 
   user: AuthUser;
 
-  postColor: string = POST_COLOR;
+  postColor: string;
 
   showUsername = false;
 
@@ -72,6 +73,7 @@ export class HtmlPostComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.userService.user!;
+    this.postColor = this.post.post.displayAttributes.fillColor;
   }
 
   openPostDialog(commentPress = false) {
@@ -84,6 +86,8 @@ export class HtmlPostComponent implements OnInit {
           post: this.post.post,
           board: this.post.board,
           commentPress: commentPress,
+          onCommentEvent: this.onCommentEvent,
+          onTagEvent: this.onTagEvent,
         },
       })
       .afterClosed()

@@ -88,15 +88,21 @@
 
 .drawer-container {
   position: absolute;
-  top: 56px;
   left: 0;
   right: 0;
   bottom: 0;
   overflow: auto;
 
   @media (min-width: breakpoint('sm', 'min')) {
-    top: 64px;
+    padding-top: 64px;
   }
+}
+
+.feature-buttons {
+  display: flex; 
+  flex-direction: column; 
+  padding: 20px; 
+  row-gap: 10px;
 }
 
 .subheader-button {
@@ -115,15 +121,60 @@ mat-sidenav {
 }
 
 mat-sidenav-content {
-  padding: 10px;
+  padding-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 
-  min-height: 80vh;
+  min-height: 90vh;
+  overflow: hidden;
 }
 
 .table {
   width: 100%;
 }
 
+.graph-toggle {
+  position: absolute;
+  z-index: 99;
+  
+  padding: 20px;
+  width: 130px;
+}
+
+.mat-table {
+  overflow-x: scroll;
+}
+
+.mat-header-cell {
+  min-width: 120px;
+}
+
+.mat-column-type {
+  min-width: 200px;
+}
+
+.mat-cell {
+  padding: 10px !important;
+}
+
+.mat-column-progress{
+  padding: 0 8px;
+}
+
+.mat-column-action{
+  padding: 0 8px;
+}
+
+.example-spacer {
+  flex: 1 1 auto;
+}
+
+.mat-loading-progress-bar{
+  margin-top: 10px;
+}
+
+.todoItemRow:hover {
+  cursor: pointer;
+  background: #f5f5f5;
+}

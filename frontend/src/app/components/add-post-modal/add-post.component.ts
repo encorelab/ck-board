@@ -11,22 +11,24 @@ import Post, {
   MultipleChoiceOptions,
 } from 'src/app/models/post';
 import { Tag } from 'src/app/models/tag';
-import User from 'src/app/models/user';
-import { BoardService } from 'src/app/services/board.service';
+import User, { Role } from 'src/app/models/user';
 import { CanvasService } from 'src/app/services/canvas.service';
+import { UserService } from 'src/app/services/user.service';
+import { BoardService } from 'src/app/services/board.service';
 import { PostService } from 'src/app/services/post.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { SocketService } from 'src/app/services/socket.service';
 import {
   NEEDS_ATTENTION_TAG,
-  POST_COLOR,
   POST_TAGGED_BORDER_THICKNESS,
+  STUDENT_POST_COLOR,
+  TEACHER_POST_COLOR,
   SocketEvent,
 } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Utils, { generateUniqueID } from 'src/app/utils/Utils';
+import { generateUniqueID } from 'src/app/utils/Utils';
 
 export interface AddPostDialog {
   type: PostType;
@@ -36,6 +38,8 @@ export interface AddPostDialog {
   spawnPosition: { left: number; top: number };
   onComplete?: (post: any) => any;
   editingPost?: Post | undefined;
+  disableCreation?: boolean;
+  tagRequired?: boolean;
 }
 
 @Component({
@@ -52,6 +56,7 @@ export class AddPostComponent {
   correctMultipleChoiceSelected = false;
   editingPost: Post | undefined;
   contentType: ContentType = ContentType.OPEN_RESPONSE_MESSAGE;
+  creationInProgress = false;
 
   title = '';
   message = '';
@@ -69,9 +74,12 @@ export class AddPostComponent {
     Validators.maxLength(2000),
   ]);
 
+  tagRequired: boolean = false;
+
   matcher = new MyErrorStateMatcher();
 
   constructor(
+    public userService: UserService,
     public canvasService: CanvasService,
     public boardService: BoardService,
     public projectService: ProjectService,
@@ -86,6 +94,7 @@ export class AddPostComponent {
     this.board = data.board;
     this.boardType = data.board.type;
     this.editingPost = data.editingPost;
+    this.tagRequired = data?.tagRequired ?? false;
     if (this.editingPost) {
       this.contentType = ContentType.MULTIPLE_CHOICE;
       this.title = this.editingPost.title;
@@ -94,6 +103,9 @@ export class AddPostComponent {
         : [];
       this.tags = this.editingPost.tags;
       this.correctMultipleChoiceSelected = true;
+    } else {
+      this.title = localStorage.getItem('post_create_title') ?? '';
+      this.message = localStorage.getItem('post_create_message') ?? '';
     }
     this.tagOptions = data.board.tags.filter(
       (n) => !this.tags.map((b) => b.name).includes(n.name)
@@ -188,6 +200,7 @@ export class AddPostComponent {
       borderWidth: containsAttentionTag
         ? POST_TAGGED_BORDER_THICKNESS
         : undefined,
+      fillColor: this.defaultPostFill(),
     };
 
     return {
@@ -217,7 +230,7 @@ export class AddPostComponent {
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      displayAttributes: null,
+      displayAttributes: { fillColor: this.defaultPostFill() },
     };
   }
 
@@ -233,7 +246,21 @@ export class AddPostComponent {
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      displayAttributes: null,
+      displayAttributes: { fillColor: this.defaultPostFill() },
+    };
+  }
+
+  getPartialPost(): Partial<Post> {
+    return {
+      postID: generateUniqueID(),
+      userID: this.user.userID,
+      author: this.user.username,
+      contentType: this.contentType,
+      multipleChoice: this.multipleChoiceOptions,
+      title: this.title,
+      desc: this.message,
+      tags: this.tags,
+      displayAttributes: { fillColor: this.defaultPostFill() },
     };
   }
 
@@ -259,7 +286,10 @@ export class AddPostComponent {
     const boards = await this.boardService.getAllPersonal(this.board.projectID);
 
     for (const board of boards) {
-      if (!project.teacherIDs.includes(board.ownerID)) {
+      if (
+        !project.teacherIDs.includes(board.ownerID) ||
+        board.ownerID === this.user.userID
+      ) {
         let post;
         if (this.data.type == PostType.BUCKET && this.data.bucket)
           post = this.getBucketPost();
@@ -305,21 +335,47 @@ export class AddPostComponent {
   }
 
   async handleDialogSubmit() {
+    this.creationInProgress = true;
     let post: Post;
-
-    if (this.data.type == PostType.BUCKET && this.data.bucket) {
-      post = await this.addBucketPost();
-    } else if (this.data.type == PostType.LIST) {
-      post = await this.addListPost();
-    } else {
-      post = await this.addPost();
+    if (this.data?.disableCreation) {
+      const _post = this.getPartialPost();
+      if (this.data.onComplete) {
+        this.data.onComplete(_post);
+      }
+      this.dialogRef.close();
+      return;
     }
 
-    if (this.data.onComplete) {
-      this.data.onComplete(post);
-    }
+    localStorage.setItem('post_create_title', this.title);
+    localStorage.setItem('post_create_message', this.message);
+    try {
+      if (this.data.type == PostType.BUCKET && this.data.bucket) {
+        post = await this.addBucketPost();
+      } else if (this.data.type == PostType.LIST) {
+        post = await this.addListPost();
+      } else {
+        post = await this.addPost();
+      }
 
-    this.dialogRef.close();
+      localStorage.removeItem('post_create_title');
+      localStorage.removeItem('post_create_message');
+      if (this.data.onComplete) {
+        this.data.onComplete(post);
+      }
+      this.creationInProgress = false;
+    } catch (e) {
+      this.snackbarService.queueSnackbar(
+        'Unable to create post. Please refresh and try again!'
+      );
+    } finally {
+      this.dialogRef.close();
+    }
+  }
+
+  defaultPostFill() {
+    return this.userService.user?.role === Role.TEACHER
+      ? TEACHER_POST_COLOR
+      : STUDENT_POST_COLOR;
   }
 
   onNoClick(): void {

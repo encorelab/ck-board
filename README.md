@@ -78,6 +78,12 @@ $ cd frontend    # Go into frontend folder
 $ ng serve --port 4201      # Run Angular app; Will start application on http://localhost:4201/
 ```
 
+## Running database migrations
+
+Switch to the `/backend` directory.
+
+
+
 ## Running unit tests
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).

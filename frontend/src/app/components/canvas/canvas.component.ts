@@ -1,15 +1,8 @@
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  TemplateRef,
-  HostListener,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 import Post, { PostType } from '../../models/post';
 
@@ -25,6 +18,7 @@ import {
   POST_MOVING_FILL,
   POST_MOVING_OPACITY,
   SocketEvent,
+  STUDENT_POST_COLOR,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
 import {
@@ -40,7 +34,6 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
-import { POST_COLOR } from 'src/app/utils/constants';
 import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
@@ -53,7 +46,6 @@ import { getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
-import { DistributionWorkflow } from 'src/app/models/workflow';
 import Upvote from 'src/app/models/upvote';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
@@ -82,6 +74,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   finalClientY = 0;
 
   embedded = false;
+
+  numSavedPosts: number = 0;
 
   zoom = 1;
 
@@ -148,7 +142,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
       [SocketEvent.WORKFLOW_POST_SUBMIT, this.handleWorkflowPost],
       [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
-      [SocketEvent.PERSONAL_BOARD_ADD_POST, this.handlePersonalBoardAddPost],
     ]);
   }
 
@@ -264,8 +257,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const { left, top } = post.displayAttributes.position;
 
-    this.fabricUtils.animateToPosition(existing, left, top, () => {
-      existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
+    this.fabricUtils.animateToPosition(existing, left, top, async () => {
+      const fill = await this.fabricUtils.defaultPostColor(post.userID);
+      existing = this.fabricUtils.setFillColor(
+        existing,
+        fill ?? STUDENT_POST_COLOR
+      );
       existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
       existing = this.fabricUtils.setPostMovement(
         existing,
@@ -401,6 +398,31 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.canvas.add(fabricPost);
     }
   };
+  showBucketsModal() {
+    this._openDialog(
+      BucketsModalComponent,
+      {
+        board: this.board,
+        user: this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top,
+      },
+      '95vw'
+    );
+  }
+
+  showListModal() {
+    this._openDialog(
+      ListModalComponent,
+      {
+        board: this.board,
+        user: this.user,
+        centerX: this.canvas.getCenter().left,
+        centerY: this.canvas.getCenter().top,
+      },
+      '95vw'
+    );
+  }
 
   intermediateBoardConfig(board: Board) {
     this.board = board;
@@ -596,6 +618,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
       this.updateAuthorNames(post.postID, 'Anonymous');
     } else {
+      console.log('can');
       this.userService.getOneById(post.userID).then((user: any) => {
         this.updateAuthorNames(post.postID, user.username);
       });
@@ -712,6 +735,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
           post: obj,
           board: this.board,
           commentPress: commentPress,
+          numSavedPosts: this.numSavedPosts,
+          updateNumSavedPosts: (num) => {
+            this.numSavedPosts = num;
+          },
         });
         this.canvasService.readPost(obj.postID);
       }
@@ -746,13 +773,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
       }
     };
 
-    const handleDroppedPost = (e) => {
+    const handleDroppedPost = async (e) => {
       if (!isMovingPost) return;
 
       let obj = e.target;
       isMovingPost = false;
 
-      obj = this.fabricUtils.setFillColor(obj, POST_COLOR);
+      const fill = await this.fabricUtils.defaultPostColor(obj.userID);
+      obj = this.fabricUtils.setFillColor(obj, fill ?? STUDENT_POST_COLOR);
       obj = this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
       this.canvas.renderAll();
 

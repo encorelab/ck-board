@@ -46,7 +46,7 @@ export class BoardService {
 
   copyConfiguration(boardID: string, boards: string[]) {
     return this.http
-      .post<any>(`boards/${boardID}/copy-configuration/`, { boards })
+      .post<string[]>(`boards/${boardID}/copy-configuration/`, { boards })
       .toPromise();
   }
 }

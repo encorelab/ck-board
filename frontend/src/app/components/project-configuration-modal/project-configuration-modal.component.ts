@@ -21,6 +21,8 @@ export class ProjectConfigurationModalComponent implements OnInit {
 
   Role: typeof Role = Role;
 
+  loading: boolean = false;
+
   constructor(
     public dialogRef: MatDialogRef<ProjectConfigurationModalComponent>,
     public boardService: BoardService,
@@ -34,22 +36,32 @@ export class ProjectConfigurationModalComponent implements OnInit {
     this.membershipDisabledEditable = this.project.membershipDisabled;
   }
 
-  async ngOnInit() {
-    this.members = (
-      await this.userService.getMultipleByIds(this.project.members)
-    ).sort((a, b) => b.role.charCodeAt(0) - a.role.charCodeAt(0));
-  }
-
-  async handleDialogSubmit() {
-    this.project = await this.projectService.update(this.project.projectID, {
-      name: this.nameEditable,
-      membershipDisabled: this.membershipDisabledEditable,
-      members: this.members.map((user) => user.userID),
+  ngOnInit(): void {
+    this.userService.getMultipleByIds(this.project.members).then((users) => {
+      this.members = users.sort(
+        (a, b) => b.role.charCodeAt(0) - a.role.charCodeAt(0)
+      );
     });
-    this.close();
   }
 
-  async removeUser(_user: User) {
+  handleDialogSubmit(): void {
+    this.loading = true;
+    this.projectService
+      .update(this.project.projectID, {
+        name: this.nameEditable,
+        membershipDisabled: this.membershipDisabledEditable,
+        members: this.members.map((user) => user.userID),
+      })
+      .then((project) => {
+        this.project = project;
+      })
+      .finally(() => {
+        this.close();
+        this.loading = false;
+      });
+  }
+
+  removeUser(_user: User): void {
     this.members = this.members.filter((user) => user.userID !== _user.userID);
   }
 

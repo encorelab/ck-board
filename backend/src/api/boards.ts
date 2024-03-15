@@ -98,7 +98,7 @@ router.post('/:boardID/copy-configuration', async (req, res) => {
   );
 
   await dalBoard.updateMany(boards, updatedBoard);
-  res.status(200);
+  res.status(200).json(boards);
 });
 
 router.get('/:id', async (req, res) => {

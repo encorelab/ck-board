@@ -9,39 +9,8 @@
     <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
       <mat-icon>keyboard_return</mat-icon>
     </button>
-
-    <button navbarMenu mat-icon-button [matMenuTriggerFor]="navbarMenu">
-      <mat-icon>dehaze</mat-icon>
-    </button>
-
-    <mat-menu #navbarMenu="matMenu">
-      <button
-        *ngIf="user && user.role === Role.TEACHER"
-        mat-menu-item
-        (click)="openGroupDialog()"
-      >
-        <mat-icon>group_work</mat-icon>
-        Manage Groups
-      </button>
-      <button mat-menu-item *ngIf="!(user && user.role === Role.STUDENT && !board.permissions.showBucketStudent)" (click)="showBucketsModal()">
-        <mat-icon>shopping_basket</mat-icon>
-        View Buckets
-      </button>
-      <button mat-menu-item (click)="showListModal()">
-        <mat-icon>list_alt</mat-icon>
-        List Posts
-      </button>
-      <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;color:black" target="_blank" >
-        <button mat-menu-item style="text-decoration:none;color:black">
-          <mat-icon>launch</mat-icon>
-          Go to SCORE
-        </button>
-      </a>
-      <button mat-menu-item (click)="signOut()">
-        <mat-icon class="material-icons-outlined">logout</mat-icon>
-        Log Out
-      </button>
-    </mat-menu>
+    <app-view-navigation [boardID]="board.boardID" [currentView]="viewType"></app-view-navigation>
+    <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
   </app-toolbar>
   <mat-sidenav-container class="drawer-container" [ngStyle]="{'padding-top': !embedded ? '56px' : '0px', 'padding-bottom': embedded ? '64px' : '0px' }">
     <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null" *ngIf="!studentView">
@@ -56,7 +25,7 @@
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine> {{workflow.name}} </h3>
             <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
-            <p matLine class="list-task-prompt"> 
+            <p matLine class="list-task-prompt">
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.INACTIVE">
@@ -169,7 +138,6 @@
         <button
           mat-raised-button
           color="primary"
-          style=""
           (click)="toggleTodos()"
         >
           {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 

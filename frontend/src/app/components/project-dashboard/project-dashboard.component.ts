@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Board, BoardScope } from 'src/app/models/board';
+import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
@@ -99,8 +99,9 @@ export class ProjectDashboardComponent implements OnInit {
         boards: [...projectBoards, board.boardID],
       });
 
+      const view = board.defaultView ? board.defaultView.toLowerCase() : '';
       this.router.navigate([
-        'project/' + selectedProjectID + '/board/' + board.boardID,
+        `project/${this.projectID}/board/${board.boardID}/${view}`,
       ]);
     }
   };
@@ -139,8 +140,11 @@ export class ProjectDashboardComponent implements OnInit {
     });
   }
 
-  handleBoardClick(boardID) {
-    this.router.navigate(['project/' + this.projectID + '/board/' + boardID]);
+  handleBoardClick(boardID, defaultView: ViewType | undefined | null) {
+    const view = defaultView ? defaultView.toLowerCase() : 'buckets';
+    this.router.navigate([
+      `project/${this.projectID}/board/${boardID}/${view}`,
+    ]);
   }
 
   async handleEditBoard(board: Board) {

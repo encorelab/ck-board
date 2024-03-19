@@ -6,4 +6,6 @@ export default class Bucket {
 
   name: string;
   posts: string[];
+
+  addedToView: boolean = false;
 }

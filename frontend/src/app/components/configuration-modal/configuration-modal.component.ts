@@ -1,29 +1,34 @@
 import { Component, Inject } from '@angular/core';
 import {
+  MAT_DIALOG_DATA,
   MatDialog,
   MatDialogRef,
-  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { PostType } from '../../models/post';
-import { BoardService } from 'src/app/services/board.service';
-import { PostService } from '../../services/post.service';
-import { UserService } from 'src/app/services/user.service';
-import { UpvotesService } from 'src/app/services/upvotes.service';
-import { FileUploadService } from 'src/app/services/fileUpload.service';
-import { Tag } from 'src/app/models/tag';
+import { Router } from '@angular/router';
 import {
-  TAG_DEFAULT_COLOR,
+  Board,
+  BoardPermissions,
+  BoardScope,
+  ViewSettings,
+  ViewType,
+} from 'src/app/models/board';
+import { Project } from 'src/app/models/project';
+import { Tag } from 'src/app/models/tag';
+import { BoardService } from 'src/app/services/board.service';
+import { CanvasService } from 'src/app/services/canvas.service';
+import { FileUploadService } from 'src/app/services/fileUpload.service';
+import { SocketService } from 'src/app/services/socket.service';
+import { UpvotesService } from 'src/app/services/upvotes.service';
+import { UserService } from 'src/app/services/user.service';
+import { ImageSettings } from 'src/app/utils/FabricUtils';
+import { generateUniqueID } from 'src/app/utils/Utils';
+import {
   POST_TAGGED_BORDER_THICKNESS,
   SocketEvent,
+  TAG_DEFAULT_COLOR,
 } from 'src/app/utils/constants';
-import { CanvasService } from 'src/app/services/canvas.service';
-import { Project } from 'src/app/models/project';
-import { Board, BoardScope, BoardPermissions } from 'src/app/models/board';
-import { generateUniqueID } from 'src/app/utils/Utils';
-import { Router } from '@angular/router';
+import { PostService } from '../../services/post.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
-import { ImageSettings } from 'src/app/utils/FabricUtils';
-import { SocketService } from 'src/app/services/socket.service';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -39,6 +44,9 @@ export class ConfigurationModalComponent {
   boardID: string;
   boardName: string;
   questionAuthoringType: string;
+
+  defaultView: ViewType = ViewType.BUCKETS;
+  viewSettings: ViewSettings;
 
   isTeacherPersonalBoard = false;
 
@@ -101,6 +109,10 @@ export class ConfigurationModalComponent {
     this.isTeacherPersonalBoard = this.project.teacherIDs.includes(
       this.board.ownerID
     );
+    if (data.board.defaultView) {
+      this.defaultView = data.board.defaultView;
+      this.viewSettings = data.board.viewSettings;
+    }
   }
 
   async addTag() {
@@ -185,6 +197,8 @@ export class ConfigurationModalComponent {
 
     board = await this.boardService.update(this.boardID, {
       initialZoom: this.initialZoom,
+      defaultView: this.defaultView,
+      viewSettings: this.viewSettings,
     });
     await this.data.update(board);
     this.dialogRef.close();

@@ -10,7 +10,6 @@ import { BoardService } from '../../services/board.service';
 import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
-import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import {
@@ -22,7 +21,12 @@ import {
   STUDENT_POST_COLOR,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
-import { Board, BoardPermissions, BoardScope } from 'src/app/models/board';
+import {
+  Board,
+  BoardPermissions,
+  BoardScope,
+  ViewType,
+} from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
@@ -89,6 +93,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   upvoteCounter = 0;
 
   unsubListeners: Subscription[] = [];
+
+  viewType = ViewType.CANVAS;
 
   @HostListener('wheel', ['$event'])
   onMouseWheel(e: WheelEvent) {
@@ -383,6 +389,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
   };
 
+  handlePersonalBoardAddPost = (postData: any) => {
+    if (
+      postData.post.type === PostType.BOARD &&
+      this.board.scope === BoardScope.PROJECT_PERSONAL
+    ) {
+      const fabricPost = new FabricPostComponent(postData.post);
+      this.canvas.add(fabricPost);
+    }
+  };
   showBucketsModal() {
     this._openDialog(
       BucketsModalComponent,
@@ -454,6 +469,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
         });
         this.boardService.get(this.boardID).then((board) => {
           if (board) this.intermediateBoardConfig(board);
+          if (this.board && !this.board.viewSettings?.allowCanvas) {
+            this.router.navigateByUrl(
+              `project/${this.projectID}/board/${
+                this.boardID
+              }/${this.board.defaultView?.toLowerCase()}`
+            );
+          }
         });
       });
     } else if (map.has('projectID')) {
@@ -492,6 +514,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       .then((project) => (this.project = project));
   }
 
+  // TODO: handle board update from toolbar-menu
   configureZoom() {
     if (this.board.initialZoom) {
       const zoom = this.board.initialZoom / 100;
@@ -500,13 +523,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else {
       this.zoom = 1;
     }
-  }
-
-  openWorkflowDialog() {
-    this._openDialog(CreateWorkflowModalComponent, {
-      board: this.board,
-      project: this.project,
-    });
   }
 
   // open dialog to get message for a new post
@@ -542,29 +558,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation);
     this.enableEditMode();
-  }
-
-  openSettingsDialog() {
-    this._openDialog(ConfigurationModalComponent, {
-      project: this.project,
-      board: this.board,
-      update: (board: Board, removed = false) => {
-        const previousBoard = this.board;
-        this.board = board;
-
-        if (previousBoard.initialZoom !== board.initialZoom) {
-          this.configureZoom();
-        }
-      },
-    });
-  }
-
-  openGroupDialog() {
-    this.dialog.open(ManageGroupModalComponent, {
-      data: {
-        project: this.project,
-      },
-    });
   }
 
   lockPostsMovement(value) {
@@ -646,18 +639,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const isTeacher = this.user.role == Role.TEACHER;
     this.showAddPost =
       (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher;
-  }
-
-  openWorkspace() {
-    this.router.navigate([
-      `/project/${this.projectID}/board/${this.boardID}/workspace`,
-    ]);
-  }
-
-  openCkMonitor() {
-    this.router.navigate([
-      `/project/${this.projectID}/board/${this.boardID}/monitor`,
-    ]);
   }
 
   openTaskDialog() {
@@ -1045,10 +1026,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.router.navigate([`/project/${this.projectID}/todo`]);
   }
 
-  openProjectTodoList() {
-    this.router.navigate([`/project/${this.projectID}/todo`]);
-  }
-
   copyEmbedCode() {
     const url = window.location.href + '?embedded=true';
     navigator.clipboard.writeText(url);
@@ -1059,11 +1036,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       window.location.origin +
       `/project/${this.projectID}/my-personal-board?embedded=true`;
     navigator.clipboard.writeText(url);
-  }
-
-  signOut(): void {
-    this.userService.logout();
-    this.router.navigate(['login']);
   }
 
   private _openDialog(

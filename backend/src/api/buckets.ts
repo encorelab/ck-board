@@ -14,12 +14,13 @@ router.post('/', async (req, res) => {
 
 router.post('/:id', async (req, res) => {
   const id = req.params.id;
-  const { name, posts } = req.body;
+  const { name, posts, addedToView } = req.body;
 
   const bucket: Partial<BucketModel> = Object.assign(
     {},
     name === null ? null : { name },
-    posts === null ? null : { posts }
+    posts === null ? null : { posts },
+    addedToView === null ? null : { addedToView }
   );
 
   const updatedBucket = await dalBucket.update(id, bucket);

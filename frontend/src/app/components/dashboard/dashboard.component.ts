@@ -118,8 +118,9 @@ export class DashboardComponent implements OnInit {
 
   createBoard = (board: Board, selectedProjectID: string) => {
     this.boardService.create(board).then((_) => {
+      const view = board.defaultView ? board.defaultView.toLowerCase() : '';
       this.router.navigate([
-        'project/' + selectedProjectID + '/board/' + board.boardID,
+        `project/${board.projectID}/board/${board.boardID}/${view}`,
       ]);
     });
     const projectBoards = this.yourProjects.find(

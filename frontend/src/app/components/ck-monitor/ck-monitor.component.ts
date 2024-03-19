@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Board, BoardScope } from 'src/app/models/board';
+import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
@@ -172,6 +172,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   showModels = false;
 
   studentView = false;
+  viewType = ViewType.MONITOR;
 
   constructor(
     public userService: UserService,
@@ -226,6 +227,13 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     this.board = await this.boardService.get(boardID);
     this.project = await this.projectService.get(projectID);
+
+    if (!this.board.viewSettings?.allowMonitor) {
+      this.router.navigateByUrl(
+        `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
+      );
+    }
+
     if (!this.studentView) await this.updateWorkflowData(boardID, projectID);
     this.socketService.connect(this.user.userID, this.board.boardID);
     return true;

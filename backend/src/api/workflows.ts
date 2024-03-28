@@ -311,7 +311,7 @@ router.post('/task/:workflowID/groupTask/:groupTaskID', async (req, res) => {
 
   await dalGroupTask.update(groupTaskID, task);
 
-  Socket.Instance.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [task], true);
+  Socket.Instance.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [task], workflow.boardID);
 
   res.status(200).json(task);
 });
@@ -360,7 +360,7 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
       }
     }
 
-    Socket.Instance.emit(SocketEvent.WORKFLOW_POST_SUBMIT, post, true);
+    Socket.Instance.emit(SocketEvent.WORKFLOW_POST_SUBMIT, post, workflow.boardID);
     return res.status(200).json(updatedGroupTask);
   } catch (e) {
     return res.status(500).end('Unable to submit post!');

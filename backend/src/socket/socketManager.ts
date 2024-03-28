@@ -21,7 +21,6 @@ class SocketManager {
     this._userToSocket.set(userID, sockets);
   }
 
-
   removeByUserId(userID: string): boolean {
     return this._userToSocket.delete(userID);
   }

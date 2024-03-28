@@ -31,7 +31,7 @@ class Socket {
       cors: {
         origin: ['http://localhost:4200', 'http://localhost:4201'],
       },
-      adapter: createAdapter(redis.getPublisher, redis.getSubscriber)
+      adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
     });
 
     this._io = io;
@@ -52,7 +52,7 @@ class Socket {
         socket.leave(room);
         console.log(`Socket ${socket.id} left room ${room}`);
         events.map((e) => socket.removeAllListeners(e.type.toString()));
-        
+
         // Remove the specific socketId for the user from the SocketManager
         this._socketManager.removeBySocketId(socket.id);
         this._logUserSocketsAndRooms(user);
@@ -76,7 +76,7 @@ class Socket {
 
   /**
    * Emits an event to a specific room.
-   * 
+   *
    * @param event The type of event being emitted.
    * @param eventData Data associated with the event.
    * @param roomId The ID of the room to which the event should be emitted.
@@ -86,7 +86,7 @@ class Socket {
     if (!this._io) {
       throw new Error('IO not initialized. Please invoke init() first.');
     }
-  
+
     this._io.to(roomId).emit(event, eventData);
   }
 
@@ -123,7 +123,7 @@ class Socket {
 
   /**
    * Logs the sockets and their corresponding rooms for a given user.
-   * 
+   *
    * @param userId The ID of the user whose sockets and rooms to log.
    */
   private _logUserSocketsAndRooms(userId: string): void {
@@ -133,16 +133,18 @@ class Socket {
     }
 
     console.log(`User ${userId} =>`);
-    socketIds.forEach(socketId => {
+    socketIds.forEach((socketId) => {
       const socket = this._io?.sockets.sockets.get(socketId);
       if (socket && socket.data.room) {
         console.log(`\tSocket ID: ${socketId}, Room: ${socket.data.room}`);
       } else {
-        console.log(`\tSocket ID: ${socketId} is not currently connected or has no room.`);
+        console.log(
+          `\tSocket ID: ${socketId} is not currently connected or has no room.`
+        );
       }
     });
     console.log('');
-  } 
+  }
 }
 
 export default Socket;

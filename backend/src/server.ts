@@ -19,6 +19,7 @@ import groups from './api/groups';
 import todoItems from './api/todoItem';
 import learner from './api/learner';
 import { isAuthenticated } from './utils/auth';
+import RedisClient from './utils/redis';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -28,13 +29,23 @@ const dbUrl = process.env.DB_URL;
 const dbName = process.env.DB_NAME;
 const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
+const redisHost = process.env.REDIS_HOST || 'localhost';
+const redisPort = (process.env.REDIS_PORT || 6379) as number;
+const redisPassword = process.env.REDIS_PASSWORD || '';
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 const server = http.createServer(app);
 
+const redis = new RedisClient({
+  host: redisHost,
+  port: redisPort,
+  password: redisPassword,
+});
+
 const socket = Socket.Instance;
-socket.init();
+socket.init(redis);
 
 app.use('/api/projects', isAuthenticated, projects);
 app.use('/api/boards', isAuthenticated, boards);
@@ -49,6 +60,14 @@ app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
+
+const shutdown = async () => {
+  await redis.disconnect();
+  process.exit(0);
+};
+
+// Handle termination signals
+process.on('SIGINT', shutdown);
 
 mongoose
   .connect(dbURI)

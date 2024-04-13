@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
+title: 'BUG: '
 labels: bug
 assignees: ''
 
@@ -18,8 +18,8 @@ Steps to reproduce:
 3. Scroll down to '....'
 4. See error
 
-**Proposed fix**
-[A clear, concise description of what you expected to happen]
+**Proposed tasks to fix**
+- [ ] [List of tasks to complete proposed fix]
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.

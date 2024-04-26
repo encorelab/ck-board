@@ -712,18 +712,30 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   initCtrlKeyListener() {
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Control') {
-          this.ctrlPressed = true;
-          this.enablePanMode();
+      /* Switch to pan mode on Ctrl press, only if not already holding right-click down */
+      if (!this.rightClickDown && event.key === 'Control') {
+
+        this.ctrlPressed = true;
+        this.prevMode = this.mode;
+        this.enablePanMode();
       }
     });
 
     document.addEventListener('keyup', (event) => {
       if (event.key === 'Control') {
-          this.ctrlPressed = false;
+        this.ctrlPressed = false;
+        if (this.prevMode === Mode.EDIT) {
           this.enableEditMode();
+        }
       }
     });
+
+    return () => {
+      if (document.removeAllListeners) {
+        document.removeAllListeners('keydown');
+        document.removeAllListeners('keyup');
+      }  
+    };
   }
 
   initPostClickListener() {
@@ -874,7 +886,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const mouseDown = (opt) => {
       const { e: options } = opt;
-      if (options.button === 2 || options.which === 3) {
+
+      /* Switch to pan mode on right-click, only if ctrl is not already pressed */
+      if (!this.ctrlPressed && (options.button === 2 || options.which === 3)) {
         this.prevMode = this.mode;
         this.enablePanMode();
         this.rightClickDown = true;

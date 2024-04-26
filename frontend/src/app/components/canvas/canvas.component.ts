@@ -79,7 +79,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   zoom = 1;
 
-  ctrlPressed = false;  
+  ctrlPressed = false;
   rightClickDown = false;
 
   mode: Mode = Mode.EDIT;
@@ -714,7 +714,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     document.addEventListener('keydown', (event) => {
       /* Switch to pan mode on Ctrl press, only if not already holding right-click down */
       if (!this.rightClickDown && event.key === 'Control') {
-
         this.ctrlPressed = true;
         this.prevMode = this.mode;
         this.enablePanMode();
@@ -734,7 +733,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       if (document.removeAllListeners) {
         document.removeAllListeners('keydown');
         document.removeAllListeners('keyup');
-      }  
+      }
     };
   }
 
@@ -900,7 +899,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
         const options = opt.e as unknown as WheelEvent;
         this.initialClientX = options.clientX;
         this.initialClientY = options.clientY;
-      } 
+      }
     };
 
     const mouseUp = (opt) => {

@@ -79,7 +79,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   zoom = 1;
 
+  ctrlPressed = false;
+  rightClickDown = false;
+
   mode: Mode = Mode.EDIT;
+  prevMode: Mode = Mode.EDIT;
   modeType = Mode;
   Role: typeof Role = Role;
   BoardScope: typeof BoardScope = BoardScope;
@@ -171,6 +175,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initCanvasEventsListener() {
+    const unsubCtrl = this.initCtrlKeyListener();
     const unsubMoving = this.initMovingPostListener();
     const unsubExpand = this.initPostClickListener();
     const unsubUpvote = this.initUpvoteClickListener();
@@ -183,6 +188,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const unsubArrowKeyUnlock = this.unlockArrowKeysWhenModalClose();
 
     return [
+      unsubCtrl,
       unsubUpvote,
       unsubExpand,
       unsubModal,
@@ -704,6 +710,33 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   };
 
+  initCtrlKeyListener() {
+    document.addEventListener('keydown', (event) => {
+      /* Switch to pan mode on Ctrl press, only if not already holding right-click down */
+      if (!this.rightClickDown && event.key === 'Control') {
+        this.ctrlPressed = true;
+        this.prevMode = this.mode;
+        this.enablePanMode();
+      }
+    });
+
+    document.addEventListener('keyup', (event) => {
+      if (event.key === 'Control') {
+        this.ctrlPressed = false;
+        if (this.prevMode === Mode.EDIT) {
+          this.enableEditMode();
+        }
+      }
+    });
+
+    return () => {
+      if (document.removeAllListeners) {
+        document.removeAllListeners('keydown');
+        document.removeAllListeners('keyup');
+      }
+    };
+  }
+
   initPostClickListener() {
     let isDragging = false;
     let isMouseDown = false;
@@ -851,6 +884,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     let isPanning = false;
 
     const mouseDown = (opt) => {
+      const { e: options } = opt;
+
+      /* Switch to pan mode on right-click, only if ctrl is not already pressed */
+      if (!this.ctrlPressed && (options.button === 2 || options.which === 3)) {
+        this.prevMode = this.mode;
+        this.enablePanMode();
+        this.rightClickDown = true;
+      }
+
       if (this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
@@ -861,6 +903,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
 
     const mouseUp = (opt) => {
+      if (this.rightClickDown) {
+        this.rightClickDown = false;
+        if (this.prevMode === Mode.EDIT) {
+          this.enableEditMode();
+        }
+      }
       isPanning = false;
       this.canvas.selection = true;
       const options = opt.e as unknown as WheelEvent;

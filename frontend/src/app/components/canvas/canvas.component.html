@@ -66,21 +66,23 @@
             *ngIf="mode === modeType.EDIT"
             mat-fab
             color="accent"
-            matTooltip="Mode: Move Posts"
+            matTooltip="Switch to Move Posts Mode"
             matTooltipPosition="before"
             (click)="enablePanMode()"
           >
-            <mat-icon>open_with</mat-icon>
+          <span style="padding-left: 1px;" class="material-symbols-outlined">
+            arrow_selector_tool
+          </span>
           </button>
           <button
             *ngIf="mode === modeType.PAN"
             mat-fab
             color="accent"
-            matTooltip="Mode: Pan Canvas"
+            matTooltip="Switch to Pan Mode (Right-click/Ctrl+click)"
             matTooltipPosition="before"
             (click)="enableEditMode()"
           >
-            <mat-icon style="padding-right: 3px">pan_tool</mat-icon>
+            <mat-icon style="padding-right: 3px;">pan_tool</mat-icon>
           </button>
         </div>
       </div>

@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Board, BoardScope } from 'src/app/models/board';
+import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
@@ -36,6 +36,8 @@ import { PostService } from 'src/app/services/post.service';
 import {
   NEEDS_ATTENTION_TAG,
   POST_TAGGED_BORDER_THICKNESS,
+  STUDENT_POST_COLOR,
+  TEACHER_POST_COLOR,
   SocketEvent,
 } from 'src/app/utils/constants';
 import { SocketService } from 'src/app/services/socket.service';
@@ -89,6 +91,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   TaskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
   embedded: boolean = false; // If standalone board embed
+  viewType = ViewType.WORKSPACE;
 
   constructor(
     public userService: UserService,
@@ -135,6 +138,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       projectID,
       this.user.userID
     );
+
+    if (!this.board.viewSettings?.allowWorkspace) {
+      this.router.navigateByUrl(
+        `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
+      );
+    }
 
     const tasks = await this.workflowService.getGroupTasks(boardID, 'expanded');
     tasks.forEach((t) => {
@@ -360,6 +369,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
                 top: 150,
               },
               lock: !this.board.permissions.allowStudentMoveAny,
+              fillColor: this.defaultPostFill(),
             };
             post.boardID = this.runningGroupTask?.workflow.destinations[0].id;
             post.displayAttributes = displayAttributes;
@@ -654,5 +664,11 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: data,
     });
+  }
+
+  defaultPostFill() {
+    return this.userService.user?.role === Role.TEACHER
+      ? TEACHER_POST_COLOR
+      : STUDENT_POST_COLOR;
   }
 }

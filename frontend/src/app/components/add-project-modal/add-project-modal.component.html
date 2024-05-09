@@ -1,51 +1,47 @@
 <h1 mat-dialog-title>Project Configuration</h1>
 <div mat-dialog-content>
-  <mat-tab-group dynamicHeight animationDuration="0ms">
-    <mat-tab label="Project">
-      <mat-form-field
-        appearance="outline"
-        style="width: 100%; margin-top: 20px"
-      >
-        <mat-label>Project Name</mat-label>
-        <input
-          matInput
-          [(ngModel)]="name"
-          #projectNameInput="ngModel"
-          required
-        />
-        <mat-error *ngIf="projectNameInput.invalid">
-          Project name is required.
-        </mat-error>
-      </mat-form-field>
-      <h5 style="color: grey">Membership Settings:</h5>
-      <mat-checkbox [(ngModel)]="membershipDisabledEditable" #tooltip="matTooltip"
-          matTooltip="Setting can be updated after project creation.">
-        Restrict users from joining this project
-      </mat-checkbox>
-    </mat-tab>
-    <mat-tab label="Personal Boards">
-      <div style="margin-top: 20px">
-        <mat-checkbox [(ngModel)]="personalBoardSetting.enabled" #tooltip="matTooltip"
-          matTooltip="All future project members will have a personal board assigned to them. These boards
-          will be private and only visible to teachers and the assigned member.">
-          Create Personal Boards for Project Members
-        </mat-checkbox>
-        <div *ngIf="personalBoardSetting.enabled" style="margin-top: 20px;">
-          <mat-chip-list>
-            <mat-chip *ngIf="personalBoardSetting.bgImage">
-              Image Saved!
-              <mat-icon class="cancel" (click)="removeBgImg()">cancel</mat-icon>
-            </mat-chip>
-            <mat-chip *ngIf="!personalBoardSetting.bgImage" (click)="compressFile()" color="primary" selected #tooltip="matTooltip"
-            matTooltip="All personal boards created will be equipped with the uploaded background image, by default.">
-              <mat-icon class="chip-icon">upload</mat-icon>
-              Upload Default Background Image For Personal Boards
-            </mat-chip>
-          </mat-chip-list>
-        </div>
-      </div>
-    </mat-tab>
-  </mat-tab-group>
+  <mat-form-field
+    appearance="outline"
+    style="width: 100%"
+  >
+    <mat-label>Project Name</mat-label>
+    <input
+      matInput
+      [(ngModel)]="name"
+      #projectNameInput="ngModel"
+      required
+    />
+    <mat-error *ngIf="projectNameInput.invalid">
+      Project name is required.
+    </mat-error>
+  </mat-form-field>
+  <h5 style="color: grey">Membership Settings:</h5>
+  <div class="membership-checkbox-list">
+    <mat-checkbox
+      [(ngModel)]="personalBoardSetting.enabled"
+      #tooltip="matTooltip"
+      matTooltip="All future project members will have a personal board assigned to them. These boards
+      will be private and only visible to teachers and the assigned member."
+    > Create Personal Boards for Project Members
+    </mat-checkbox>
+    <mat-checkbox [(ngModel)]="membershipDisabledEditable" #tooltip="matTooltip"
+        matTooltip="Setting can be updated after project creation.">
+      Restrict users from joining this project
+    </mat-checkbox>
+  </div>
+  <div *ngIf="personalBoardSetting.enabled" style="margin-top: 20px;">
+    <mat-chip-list>
+      <mat-chip *ngIf="personalBoardSetting.bgImage">
+        Image Saved!
+        <mat-icon class="cancel" (click)="removeBgImg()">cancel</mat-icon>
+      </mat-chip>
+      <mat-chip *ngIf="!personalBoardSetting.bgImage" (click)="compressFile()" color="primary" selected #tooltip="matTooltip"
+      matTooltip="All personal boards created will be equipped with the uploaded background image, by default.">
+        <mat-icon class="chip-icon">upload</mat-icon>
+        Upload Default Background Image For Personal Boards
+      </mat-chip>
+    </mat-chip-list>
+  </div>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>

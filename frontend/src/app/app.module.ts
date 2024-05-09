@@ -62,6 +62,9 @@ import { MatSortModule } from '@angular/material/sort';
 import { TodoItemCardModalComponent } from './components/todo-item-card-modal/todo-item-card-modal.component';
 import { LearnerModelsComponent } from './components/learner-models/learner-models.component';
 import { AddLearnerModalComponent } from './components/add-learner-modal/add-learner-modal.component';
+import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component';
+import { ToolbarMenuComponent } from './components/toolbar-menu/toolbar-menu.component';
+import { ViewNavigationComponent } from './components/view-navigation/view-navigation.component';
 
 const config: SocketIoConfig = {
   url: 'https://ck-board.oise.utoronto.ca/',
@@ -112,6 +115,9 @@ export function tokenGetter() {
     TodoItemCardModalComponent,
     LearnerModelsComponent,
     AddLearnerModalComponent,
+    CkBucketsComponent,
+    ToolbarMenuComponent,
+    ViewNavigationComponent,
   ],
   imports: [
     BrowserModule,

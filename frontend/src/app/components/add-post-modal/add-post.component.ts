@@ -11,22 +11,24 @@ import Post, {
   MultipleChoiceOptions,
 } from 'src/app/models/post';
 import { Tag } from 'src/app/models/tag';
-import User from 'src/app/models/user';
-import { BoardService } from 'src/app/services/board.service';
+import User, { Role } from 'src/app/models/user';
 import { CanvasService } from 'src/app/services/canvas.service';
+import { UserService } from 'src/app/services/user.service';
+import { BoardService } from 'src/app/services/board.service';
 import { PostService } from 'src/app/services/post.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { SocketService } from 'src/app/services/socket.service';
 import {
   NEEDS_ATTENTION_TAG,
-  POST_COLOR,
   POST_TAGGED_BORDER_THICKNESS,
+  STUDENT_POST_COLOR,
+  TEACHER_POST_COLOR,
   SocketEvent,
 } from 'src/app/utils/constants';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import Utils, { generateUniqueID } from 'src/app/utils/Utils';
+import { generateUniqueID } from 'src/app/utils/Utils';
 
 export interface AddPostDialog {
   type: PostType;
@@ -77,6 +79,7 @@ export class AddPostComponent {
   matcher = new MyErrorStateMatcher();
 
   constructor(
+    public userService: UserService,
     public canvasService: CanvasService,
     public boardService: BoardService,
     public projectService: ProjectService,
@@ -197,6 +200,7 @@ export class AddPostComponent {
       borderWidth: containsAttentionTag
         ? POST_TAGGED_BORDER_THICKNESS
         : undefined,
+      fillColor: this.defaultPostFill(),
     };
 
     return {
@@ -226,7 +230,7 @@ export class AddPostComponent {
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      displayAttributes: null,
+      displayAttributes: { fillColor: this.defaultPostFill() },
     };
   }
 
@@ -242,7 +246,7 @@ export class AddPostComponent {
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      displayAttributes: null,
+      displayAttributes: { fillColor: this.defaultPostFill() },
     };
   }
 
@@ -256,7 +260,7 @@ export class AddPostComponent {
       title: this.title,
       desc: this.message,
       tags: this.tags,
-      displayAttributes: null,
+      displayAttributes: { fillColor: this.defaultPostFill() },
     };
   }
 
@@ -278,41 +282,37 @@ export class AddPostComponent {
   }
 
   async handlePersonalBoardCopy() {
-    const project = await this.projectService.get(this.board.projectID);
-    const boards = await this.boardService.getAllPersonal(this.board.projectID);
+    try {
+      const project = await this.projectService.get(this.board.projectID);
+      const boards = await this.boardService.getAllPersonal(
+        this.board.projectID
+      );
 
-    for (const board of boards) {
-      if (
-        !project.teacherIDs.includes(board.ownerID) ||
-        board.ownerID === this.user.userID
-      ) {
-        let post;
-        if (this.data.type == PostType.BUCKET && this.data.bucket)
-          post = this.getBucketPost();
-        else if (this.data.type == PostType.LIST) post = this.getListPost();
-        else post = this.getBoardPost();
+      for (const board of boards) {
+        if (
+          !project.teacherIDs.includes(board.ownerID) ||
+          board.ownerID === this.user.userID
+        ) {
+          let post;
+          if (this.data.type == PostType.BUCKET && this.data.bucket)
+            post = this.getBucketPost();
+          else if (this.data.type == PostType.LIST) post = this.getListPost();
+          else post = this.getBoardPost();
 
-        post.boardID = board.boardID;
-        const newPost = await this.postService.create(post);
-        const postInput = {
-          originalPostID: post.postID,
-          newPostID: newPost.postID,
-          personalBoardID: board.boardID,
-          post: post,
-        };
-        if (newPost) {
-          this.socketService.emit(
-            SocketEvent.PERSONAL_BOARD_ADD_POST,
-            postInput
-          );
+          post.boardID = board.boardID;
+          const newPost = await this.postService.create(post);
         }
       }
+      this.snackbarService.queueSnackbar(
+        'Successfully copied post to all student personal boards.'
+      );
+    } catch (error) {
+      this.snackbarService.queueSnackbar(
+        'Unable to copy posts. Please refresh and try again!'
+      );
+    } finally {
+      this.dialogRef.close();
     }
-    this.snackbarService.queueSnackbar(
-      'Successfully copied post to all student personal boards.'
-    );
-
-    this.dialogRef.close();
   }
 
   async updateMultipleChoicePost() {
@@ -366,6 +366,12 @@ export class AddPostComponent {
     } finally {
       this.dialogRef.close();
     }
+  }
+
+  defaultPostFill() {
+    return this.userService.user?.role === Role.TEACHER
+      ? TEACHER_POST_COLOR
+      : STUDENT_POST_COLOR;
   }
 
   onNoClick(): void {

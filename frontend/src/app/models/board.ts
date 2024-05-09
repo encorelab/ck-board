@@ -29,6 +29,13 @@ export class DateRange {
   end: Date;
 }
 
+export class ViewSettings {
+  allowCanvas: boolean | undefined;
+  allowWorkspace: boolean | undefined;
+  allowBuckets: boolean | undefined;
+  allowMonitor: boolean | undefined;
+}
+
 export enum BoardScope {
   PROJECT_SHARED = 'PROJECT_SHARED',
   PROJECT_PERSONAL = 'PROJECT_PERSONAL',
@@ -37,6 +44,13 @@ export enum BoardScope {
 export enum BoardType {
   BRAINSTORMING = 'BRAINSTORMING',
   QUESTION_AUTHORING = 'QUESTION_AUTHORING',
+}
+
+export enum ViewType {
+  CANVAS = 'CANVAS',
+  WORKSPACE = 'WORKSPACE',
+  BUCKETS = 'BUCKETS',
+  MONITOR = 'MONITOR',
 }
 
 export class Board {
@@ -54,4 +68,6 @@ export class Board {
   upvoteLimit = 5;
   visible: boolean;
   defaultTodoDateRange: DateRange | null;
+  defaultView: ViewType | undefined | null;
+  viewSettings: ViewSettings | undefined | null;
 }

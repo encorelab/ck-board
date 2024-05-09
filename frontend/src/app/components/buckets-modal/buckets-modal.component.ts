@@ -235,12 +235,14 @@ export class BucketsModalComponent implements OnInit, OnDestroy {
       (tag) => tag.name == NEEDS_ATTENTION_TAG.name
     );
 
+    const fill = await this.fabricUtils.defaultPostColor(htmlPost.post.userID);
     const renderAttr: DisplayAttributes = {
       position: {
         left: this.Xoffset,
         top: this.Yoffset,
       },
       lock: !this.board.permissions.allowStudentMoveAny,
+      fillColor: fill,
       borderColor: containsAttentionTag ? NEEDS_ATTENTION_TAG.color : undefined,
       borderWidth: containsAttentionTag
         ? POST_TAGGED_BORDER_THICKNESS

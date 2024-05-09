@@ -3,10 +3,7 @@
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Board">
       <div class="board-name-form">
-        <mat-form-field
-          appearance="outline"
-          style="width: 100%;"
-        >
+        <mat-form-field appearance="outline" style="width: 100%">
           <mat-label>Board Name</mat-label>
           <input
             matInput
@@ -20,15 +17,70 @@
         </mat-form-field>
       </div>
       <p>
-        <mat-checkbox [(ngModel)]="permissions.allowTracing"
-          >Allow tracing of board activity
+        <mat-checkbox [(ngModel)]="permissions.allowTracing">
+          Enable logging of all user activities
         </mat-checkbox>
       </p>
       <p>
         <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent"
           >Display task description when board is opened
-          </mat-checkbox>
+        </mat-checkbox>
       </p>
+      <h2 class="section-title">Voting</h2>
+      <div>
+        <mat-label style="font-weight: bold"
+          >Maximum Upvotes Per Student: {{ upvoteLimit }}</mat-label
+        >
+        <mat-slider
+          class="slider"
+          min="1"
+          max="20"
+          step="1"
+          [(ngModel)]="upvoteLimit"
+          thumbLabel
+        ></mat-slider>
+        <mat-chip
+          class="config-button"
+          mat-raised-button
+          color="warn"
+          (click)="openVoteDeleteDialog()"
+          style="text-align: center"
+          selected
+        >
+          <mat-icon class="chip-icon">clear_all</mat-icon>
+          <span style="width: 100%; text-align: center"> Clear Votes </span>
+        </mat-chip>
+      </div>
+      
+      <ng-container *ngIf="!!viewSettings">
+        <br />
+        <p>
+          <label><strong>Default View</strong></label>
+          <mat-radio-group [(ngModel)]="defaultView">
+            <mat-radio-button style="margin-left: 10px;" value="CANVAS"
+              [disabled]="viewSettings.allowCanvas === false">Canvas</mat-radio-button>
+            <mat-radio-button style="margin-left: 10px;" value="WORKSPACE"
+              [disabled]="viewSettings.allowWorkspace === false">Workspace</mat-radio-button>
+            <mat-radio-button style="margin-left: 10px;" value="BUCKETS"
+              [disabled]="viewSettings.allowBuckets === false">Buckets</mat-radio-button>
+            <mat-radio-button style="margin-left: 10px;" value="MONITOR"
+              [disabled]="viewSettings.allowMonitor === false">Monitor</mat-radio-button>
+          </mat-radio-group>
+        </p>
+        <p>
+          <label><strong>Enable/Disable Views</strong></label>
+          <mat-checkbox style="margin-left: 10px;" [(ngModel)]="viewSettings.allowCanvas"
+            [disabled]="defaultView === 'CANVAS'">Canvas</mat-checkbox>
+          <mat-checkbox style="margin-left: 10px;" [(ngModel)]="viewSettings.allowWorkspace"
+            [disabled]="defaultView === 'WORKSPACE'">Workspace</mat-checkbox>
+          <mat-checkbox style="margin-left: 10px;" [(ngModel)]="viewSettings.allowBuckets"
+            [disabled]="defaultView === 'BUCKETS'">Buckets</mat-checkbox>
+          <mat-checkbox style="margin-left: 10px;" [(ngModel)]="viewSettings.allowMonitor"
+            [disabled]="defaultView === 'MONITOR'">Monitor</mat-checkbox>
+        </p>
+      </ng-container>
+      
+      <h2 class="section-title">Board</h2>
       <div>
         <mat-label style="font-weight: bold"
           >Initial Zoom: {{ initialZoom }}%</mat-label
@@ -42,29 +94,6 @@
           thumbLabel
         ></mat-slider>
       </div>
-      
-      <h2 class="section-title">Voting</h2>
-      <div>
-        <mat-label style="font-weight: bold"
-          >Maximum Upvotes Per Student: {{ upvoteLimit }}</mat-label
-        >
-        <mat-slider
-          class="slider"
-          min="0"
-          max="10"
-          step="1"
-          [(ngModel)]="upvoteLimit"
-          thumbLabel
-        ></mat-slider>
-        <mat-chip class="config-button" mat-raised-button color="warn" (click)="openVoteDeleteDialog()" style="text-align: center" selected>
-          <mat-icon class="chip-icon" >clear_all</mat-icon>
-          <span style="width: 100%;text-align: center;">
-          Clear Votes
-          </span>
-        </mat-chip>
-      </div>
-
-      <h2 class="section-title">Background</h2>
       <div class="image-form">
         <div class="container">
           <mat-chip
@@ -73,7 +102,9 @@
             selected
             (click)="compressFile()"
           >
-            <mat-icon class="chip-icon" (click)="removeImage()">upload</mat-icon>
+            <mat-icon class="chip-icon" (click)="removeImage()"
+              >upload</mat-icon
+            >
             <span>Upload New Background Image</span>
           </mat-chip>
           <mat-chip
@@ -89,7 +120,9 @@
         </div>
         <div *ngIf="currentBgImage">
           <div style="margin-top: 15px">
-            <mat-label style="font-weight: bold">Background Size: {{ backgroundScale }}%</mat-label>
+            <mat-label style="font-weight: bold"
+              >Background Size: {{ backgroundScale }}%</mat-label
+            >
             <mat-slider
               class="slider"
               min="0"
@@ -104,43 +137,60 @@
             <div class="bg-position-form">
               <mat-form-field>
                 <mat-label>Background Pos X</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  [(ngModel)]="backgroundPosX"
-                />
+                <input matInput type="number" [(ngModel)]="backgroundPosX" />
               </mat-form-field>
               <mat-form-field>
                 <mat-label>Background Pos Y</mat-label>
-                <input
-                  matInput
-                  type="number"
-                  [(ngModel)]="backgroundPosY"
-                />
+                <input matInput type="number" [(ngModel)]="backgroundPosY" />
               </mat-form-field>
             </div>
           </div>
         </div>
       </div>
       <h2 class="section-title">Content Settings</h2>
-      <div style="display: grid; grid-template-columns: 1fr 1fr;">
-        <mat-chip class="config-button" *ngIf="board.scope === BoardScope.PROJECT_PERSONAL" mat-raised-button color="accent" (click)="copyConfiguration()" style="text-align: center" selected>
-          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">file_copy</mat-icon>
-          <span style="width: 100%; text-align: center; font-size: smaller;">
-            Copy Configuration to all Personal {{isTeacherPersonalBoard ? 'Teacher' : 'Student'}} Boards
+      <div style="display: grid; grid-template-columns: 1fr 1fr">
+        <mat-chip
+          class="config-button"
+          *ngIf="board.scope === BoardScope.PROJECT_PERSONAL"
+          mat-raised-button
+          color="accent"
+          (click)="copyConfiguration()"
+          style="text-align: center"
+          selected
+        >
+          <mat-icon class="chip-icon" style="width: 0px; overflow: initial"
+            >file_copy</mat-icon
+          >
+          <span style="width: 100%; text-align: center; font-size: smaller">
+            Copy Configuration to all Personal
+            {{ isTeacherPersonalBoard ? 'Teacher' : 'Student' }} Boards
           </span>
         </mat-chip>
-        <mat-chip class="config-button" mat-raised-button color="warn" (click)="handleClearBoard()" style="text-align: center" selected>
-          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">clear_all</mat-icon>
-          <span style="width: 100%;text-align: center;">
-          Clear Board
-          </span>
+        <mat-chip
+          class="config-button"
+          mat-raised-button
+          color="warn"
+          (click)="handleClearBoard()"
+          style="text-align: center"
+          selected
+        >
+          <mat-icon class="chip-icon" style="width: 0px; overflow: initial"
+            >clear_all</mat-icon
+          >
+          <span style="width: 100%; text-align: center"> Clear Board </span>
         </mat-chip>
-        <mat-chip class="config-button" mat-raised-button color="warn" (click)="handleDeleteBoard()" style="text-align: center" selected>
-          <mat-icon class="chip-icon" style="width: 0px;overflow: initial;">delete</mat-icon>
-          <span style="width: 100%;text-align: center;">
-          Delete Board
-          </span>
+        <mat-chip
+          class="config-button"
+          mat-raised-button
+          color="warn"
+          (click)="handleDeleteBoard()"
+          style="text-align: center"
+          selected
+        >
+          <mat-icon class="chip-icon" style="width: 0px; overflow: initial"
+            >delete</mat-icon
+          >
+          <span style="width: 100%; text-align: center"> Delete Board </span>
         </mat-chip>
       </div>
     </mat-tab>
@@ -175,7 +225,8 @@
       <h2 style="margin-top: 20px">Post Features</h2>
       <p>
         <mat-checkbox [(ngModel)]="permissions.allowStudentMoveAny"
-          >Allow students to move any post</mat-checkbox>
+          >Allow students to move any post</mat-checkbox
+        >
       </p>
       <h2 style="margin-top: 20px">Post Features</h2>
       <p>
@@ -224,7 +275,15 @@
             [ngStyle]="{ 'background-color': tag.color }"
           >
             {{ tag.name }}
-            <mat-icon *ngIf="tag?.specialAttributes?.borderWidth !== _POST_TAGGED_BORDER_THICKNESS" class="cancel" (click)="removeTag(tag)">cancel</mat-icon>
+            <mat-icon
+              *ngIf="
+                tag?.specialAttributes?.borderWidth !==
+                _POST_TAGGED_BORDER_THICKNESS
+              "
+              class="cancel"
+              (click)="removeTag(tag)"
+              >cancel</mat-icon
+            >
           </mat-chip>
         </mat-chip-list>
       </div>

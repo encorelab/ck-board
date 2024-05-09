@@ -13,6 +13,9 @@ export class BucketModel {
 
   @prop({ required: true })
   public posts!: string[];
+
+  @prop({ required: false })
+  public addedToView?: boolean;
 }
 
 export default getModelForClass(BucketModel);

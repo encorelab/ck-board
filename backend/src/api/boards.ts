@@ -60,6 +60,8 @@ router.post('/:id', async (req, res) => {
     upvoteLimit,
     visible,
     defaultTodoDateRange,
+    defaultView,
+    viewSettings,
   } = req.body;
 
   const board: Partial<BoardModel> = Object.assign(
@@ -73,7 +75,9 @@ router.post('/:id', async (req, res) => {
     initialZoom === undefined ? null : { initialZoom },
     upvoteLimit === undefined ? null : { upvoteLimit },
     visible === undefined ? true : { visible },
-    defaultTodoDateRange === undefined ? null : { defaultTodoDateRange }
+    defaultTodoDateRange === undefined ? null : { defaultTodoDateRange },
+    defaultView === undefined ? null : { defaultView },
+    viewSettings === undefined ? null : { viewSettings }
   );
 
   const updatedBoard = await dalBoard.update(id, board);

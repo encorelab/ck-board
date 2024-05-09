@@ -14,98 +14,14 @@
         <mat-icon>file_copy</mat-icon>
       </button>
       <span style="flex: 1 1 auto"></span>
-      <!-- HAMBURGER -->
-      <button navbarMenu mat-icon-button [matMenuTriggerFor]="navbarMenu">
-        <mat-icon>dehaze</mat-icon>
-      </button>
-      <mat-menu #navbarMenu="matMenu">
-        <button 
-          mat-menu-item 
-          *ngIf="user.role === Role.TEACHER"
-          (click)="openCkMonitor()"
-        >
-          <mat-icon>
-            <span class="material-symbols-outlined">monitoring</span>
-          </mat-icon>
-          CK Monitor
-        </button>
-        <button mat-menu-item (click)="openWorkspace()">
-          <mat-icon>
-            check_box
-          </mat-icon>
-          CK Workspace
-        </button>
-        <button
-          mat-menu-item
-          *ngIf="user.role === Role.TEACHER && board.scope === BoardScope.PROJECT_SHARED"
-          (click)="openWorkflowDialog()"
-        >
-          <mat-icon>timeline</mat-icon>
-          Manage Buckets & Workflows
-        </button>
-        <button
-          mat-menu-item
-          *ngIf="
-            !(user.role === Role.STUDENT && !board.permissions.showBucketStudent) && board.scope === BoardScope.PROJECT_SHARED
-          "
-          (click)="showBucketsModal()"
-        >
-          <mat-icon>shopping_basket</mat-icon>
-          View Buckets
-        </button>
-        <button mat-menu-item (click)="showListModal()">
-          <mat-icon>list_alt</mat-icon>
-          List Posts
-        </button>
-        <button
-          mat-menu-item
-          *ngIf="user && user.role === Role.STUDENT"
-          (click)="openTodoList()"
-        >
-          <mat-icon>assignment</mat-icon>
-          Todo List
-        </button>
-        <button
-          mat-menu-item
-          *ngIf="user && user.role === Role.TEACHER"
-          (click)="openProjectTodoList()"
-        >
-          <mat-icon>assignment_ind</mat-icon>
-          View All Todo Lists
-        </button>
-        <button
-          *ngIf="user.role === Role.TEACHER && board.scope === BoardScope.PROJECT_SHARED"
-          mat-menu-item
-          (click)="openGroupDialog()"
-        >
-          <mat-icon>group_work</mat-icon>
-          Manage Groups
-        </button>
-        <button
-          *ngIf="user.role === Role.TEACHER"
-          mat-menu-item
-          (click)="openSettingsDialog()"
-        >
-          <mat-icon>settings</mat-icon>
-          Adjust Settings
-        </button>
-        <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;color:black" target="_blank" >
-          <button mat-menu-item style="text-decoration:none;color:black">
-            <mat-icon>launch</mat-icon>
-            Go to SCORE
-          </button>
-        </a>
-        <button mat-menu-item (click)="signOut()">
-          <mat-icon class="material-icons-outlined">logout</mat-icon>
-          Log Out
-        </button>
-      </mat-menu>
+      <app-view-navigation [boardID]="boardID" [currentView]="viewType"></app-view-navigation>
       <div *ngIf="board">
         <app-notification-dropdown
           [user]="user"
           [board]="board"
         ></app-notification-dropdown>
       </div>
+      <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
     </app-toolbar>
     <div class="canvas-area">
       <canvas id="canvas" (window:resize)="onResize($event)"></canvas>
@@ -150,21 +66,23 @@
             *ngIf="mode === modeType.EDIT"
             mat-fab
             color="accent"
-            matTooltip="Mode: Move Posts"
+            matTooltip="Switch to Move Posts Mode"
             matTooltipPosition="before"
             (click)="enablePanMode()"
           >
-            <mat-icon>open_with</mat-icon>
+          <span style="padding-left: 1px;" class="material-symbols-outlined">
+            arrow_selector_tool
+          </span>
           </button>
           <button
             *ngIf="mode === modeType.PAN"
             mat-fab
             color="accent"
-            matTooltip="Mode: Pan Canvas"
+            matTooltip="Switch to Pan Mode (Right-click/Ctrl+click)"
             matTooltipPosition="before"
             (click)="enableEditMode()"
           >
-            <mat-icon style="padding-right: 3px">pan_tool</mat-icon>
+            <mat-icon style="padding-right: 3px;">pan_tool</mat-icon>
           </button>
         </div>
       </div>

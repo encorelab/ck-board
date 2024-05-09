@@ -57,3 +57,7 @@ app-toolbar {
     @include mat.elevation(5);
   }
 }
+
+.mat-card {
+  padding: 16px 36px 16px 16px;
+}

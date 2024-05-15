@@ -104,7 +104,6 @@
       }
     }
   },
-  "defaultProject": "ck-board",
   "cli": {
     "defaultCollection": "@angular-eslint/schematics",
     "analytics": false

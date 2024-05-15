@@ -8,8 +8,9 @@ describe('SsoLoginComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SsoLoginComponent],
-    }).compileComponents();
+    declarations: [SsoLoginComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

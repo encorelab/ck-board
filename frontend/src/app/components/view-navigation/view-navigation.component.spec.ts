@@ -8,8 +8,9 @@ describe('ViewNavigationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ViewNavigationComponent],
-    }).compileComponents();
+    declarations: [ViewNavigationComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

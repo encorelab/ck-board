@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
-import { AngularFirestore } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import User, { Role } from 'src/app/models/user';
 import Utils, { generateUniqueID } from 'src/app/utils/Utils';

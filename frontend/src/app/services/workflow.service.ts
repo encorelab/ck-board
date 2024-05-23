@@ -12,6 +12,7 @@ import {
 import { BucketService } from './bucket.service';
 import { PostService } from './post.service';
 import { UserService } from './user.service';
+import { lastValueFrom } from 'rxjs'; // Import lastValueFrom
 
 @Injectable({
   providedIn: 'root',
@@ -24,164 +25,84 @@ export class WorkflowService {
     public http: HttpClient
   ) {}
 
-  getAll(boardID: string): Promise<Workflow[]> {
-    return this.http.get<Workflow[]>('workflows/boards/' + boardID).toPromise();
+  getAll(boardID: string): Promise<Workflow[] | undefined> {
+    return lastValueFrom(this.http.get<Workflow[]>(`workflows/boards/${boardID}`));
   }
 
-  getDistribution(boardID: string): Promise<Workflow[]> {
-    return this.http
-      .get<DistributionWorkflow[]>('workflows/distribution/boards/' + boardID)
-      .toPromise();
+  getDistribution(boardID: string): Promise<Workflow[] | undefined> {
+    return lastValueFrom(this.http.get<DistributionWorkflow[]>(`workflows/distribution/boards/${boardID}`));
   }
 
-  createDistribution(
-    workflow: DistributionWorkflow
-  ): Promise<DistributionWorkflow> {
-    return this.http
-      .post<DistributionWorkflow>('workflows/distribution/', workflow)
-      .toPromise();
+  createDistribution(workflow: DistributionWorkflow): Promise<DistributionWorkflow | undefined> {
+    return lastValueFrom(this.http.post<DistributionWorkflow>('workflows/distribution/', workflow));
   }
 
-  updateDistribution(
-    workflowID: string,
-    workflow: Partial<DistributionWorkflow>
-  ): Promise<DistributionWorkflow> {
-    return this.http
-      .put<DistributionWorkflow>(
-        'workflows/distribution/' + workflowID,
-        workflow
-      )
-      .toPromise();
+  updateDistribution(workflowID: string, workflow: Partial<DistributionWorkflow>): Promise<DistributionWorkflow | undefined> {
+    return lastValueFrom(this.http.put<DistributionWorkflow>(`workflows/distribution/${workflowID}`, workflow));
   }
 
-  removeDistribution(workflowID: string): Promise<DistributionWorkflow> {
-    return this.http
-      .delete<DistributionWorkflow>('workflows/distribution/' + workflowID)
-      .toPromise();
+  removeDistribution(workflowID: string): Promise<DistributionWorkflow | undefined> {
+    return lastValueFrom(this.http.delete<DistributionWorkflow>(`workflows/distribution/${workflowID}`));
   }
 
   runDistribution(workflowID: string): Promise<any> {
-    return this.http
-      .post<any>('workflows/distribution/' + workflowID, {})
-      .toPromise();
+    return lastValueFrom(this.http.post<any>(`workflows/distribution/${workflowID}`, {}));
   }
 
-  getTask(boardID: string): Promise<TaskWorkflow[]> {
-    return this.http
-      .get<TaskWorkflow[]>('workflows/task/boards/' + boardID + '?active=false')
-      .toPromise();
+  getTask(boardID: string): Promise<TaskWorkflow[] | undefined> {
+    return lastValueFrom(this.http.get<TaskWorkflow[]>(`workflows/task/boards/${boardID}?active=false`));
   }
 
-  getActiveTasks(boardID: string): Promise<TaskWorkflow[]> {
-    return this.http
-      .get<TaskWorkflow[]>('workflows/task/boards/' + boardID + '?active=true')
-      .toPromise();
+  getActiveTasks(boardID: string): Promise<TaskWorkflow[] | undefined> {
+    return lastValueFrom(this.http.get<TaskWorkflow[]>(`workflows/task/boards/${boardID}?active=true`));
   }
 
-  createTask(workflow: TaskWorkflow): Promise<TaskWorkflow> {
-    return this.http
-      .post<TaskWorkflow>('workflows/task/', workflow)
-      .toPromise();
+  createTask(workflow: TaskWorkflow): Promise<TaskWorkflow | undefined> {
+    return lastValueFrom(this.http.post<TaskWorkflow>('workflows/task/', workflow));
   }
 
-  updateTask(
-    workflowID: string,
-    workflow: Partial<TaskWorkflow>
-  ): Promise<TaskWorkflow> {
-    return this.http
-      .put<TaskWorkflow>('workflows/task/' + workflowID, workflow)
-      .toPromise();
+  updateTask(workflowID: string, workflow: Partial<TaskWorkflow>): Promise<TaskWorkflow | undefined> {
+    return lastValueFrom(this.http.put<TaskWorkflow>(`workflows/task/${workflowID}`, workflow));
   }
 
-  removeTask(workflowID: string): Promise<TaskWorkflow> {
-    return this.http
-      .delete<TaskWorkflow>('workflows/task/' + workflowID)
-      .toPromise();
+  removeTask(workflowID: string): Promise<TaskWorkflow | undefined> {
+    return lastValueFrom(this.http.delete<TaskWorkflow>(`workflows/task/${workflowID}`));
   }
 
   runTask(workflowID: string): Promise<any> {
-    return this.http.post<any>('workflows/task/' + workflowID, {}).toPromise();
+    return lastValueFrom(this.http.post<any>(`workflows/task/${workflowID}`, {}));
   }
 
-  getGroupTaskByWorkflowGroup<T extends GroupTaskEntity>(
-    groupID: string,
-    workflowID: string,
-    representation: T
-  ): Promise<GroupTaskType<T>[]> {
-    return this.http
-      .get<GroupTaskType<T>[]>(
-        `workflows/task/${workflowID}/groupTask/group/${groupID}?representation=${representation}`
-      )
-      .toPromise();
+  getGroupTaskByWorkflowGroup<T extends GroupTaskEntity>(groupID: string, workflowID: string, representation: T): Promise<GroupTaskType<T>[] | undefined> {
+    return lastValueFrom(this.http.get<GroupTaskType<T>[]>(`workflows/task/${workflowID}/groupTask/group/${groupID}?representation=${representation}`));
   }
 
-  getGroupTasks<T extends GroupTaskEntity>(
-    boardID: string,
-    representation: T
-  ): Promise<GroupTaskType<T>[]> {
-    return this.http
-      .get<GroupTaskType<T>[]>(
-        `workflows/task/groupTask/board/${boardID}/user/${this.userService.user?.userID}?representation=${representation}`
-      )
-      .toPromise();
+  getGroupTasks<T extends GroupTaskEntity>(boardID: string, representation: T): Promise<GroupTaskType<T>[] | undefined> {
+    return lastValueFrom(this.http.get<GroupTaskType<T>[]>(`workflows/task/groupTask/board/${boardID}/user/${this.userService.user?.userID}?representation=${representation}`));
   }
 
-  getGroupTasksByWorkflow<T extends GroupTaskEntity>(
-    workflowID: string,
-    representation: T
-  ): Promise<GroupTaskType<T>[]> {
-    return this.http
-      .get<GroupTaskType<T>[]>(
-        `workflows/task/${workflowID}/groupTask?representation=${representation}`
-      )
-      .toPromise();
+  getGroupTasksByWorkflow<T extends GroupTaskEntity>(workflowID: string, representation: T): Promise<GroupTaskType<T>[] | undefined> {
+    return lastValueFrom(this.http.get<GroupTaskType<T>[]>(`workflows/task/${workflowID}/groupTask?representation=${representation}`));
   }
 
-  updateGroupTask(
-    groupTaskID: string,
-    update: Partial<GroupTask>
-  ): Promise<GroupTask> {
-    return this.http
-      .post<GroupTask>('workflows/task/groupTask/' + groupTaskID, update)
-      .toPromise();
+  updateGroupTask(groupTaskID: string, update: Partial<GroupTask>): Promise<GroupTask | undefined> {
+    return lastValueFrom(this.http.post<GroupTask>('workflows/task/groupTask/' + groupTaskID, update));
   }
 
-  updateTaskProgress(
-    workflowID: string,
-    groupTaskID: string,
-    postID: string,
-    delta: number,
-    type: string
-  ): Promise<GroupTask> {
-    return this.http
-      .post<GroupTask>(
-        `workflows/task/${workflowID}/groupTask/${groupTaskID}`,
-        { postID, delta, type }
-      )
-      .toPromise();
+  updateTaskProgress(workflowID: string, groupTaskID: string, postID: string, delta: number, type: string): Promise<GroupTask | undefined> {
+    return lastValueFrom(this.http.post<GroupTask>(`workflows/task/${workflowID}/groupTask/${groupTaskID}`, { postID, delta, type }));
   }
 
-  submitPost(groupTaskID: string, post: string): Promise<GroupTask> {
-    return this.http
-      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/submit`, {
-        post,
-      })
-      .toPromise();
+  submitPost(groupTaskID: string, post: string): Promise<GroupTask | undefined> {
+    return lastValueFrom(this.http.post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/submit`, { post }));
   }
 
-  markGroupTaskComplete(groupTaskID: string): Promise<GroupTask> {
-    return this.http
-      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/status`, {
-        status: GroupTaskStatus.COMPLETE,
-      })
-      .toPromise();
+  markGroupTaskComplete(groupTaskID: string): Promise<GroupTask | undefined> {
+    return lastValueFrom(this.http.post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/status`, { status: GroupTaskStatus.COMPLETE }));
   }
 
-  markGroupTaskActive(groupTaskID: string): Promise<GroupTask> {
-    return this.http
-      .post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/status`, {
-        status: GroupTaskStatus.ACTIVE,
-      })
-      .toPromise();
+  markGroupTaskActive(groupTaskID: string): Promise<GroupTask | undefined> {
+    return lastValueFrom(this.http.post<GroupTask>(`workflows/task/groupTask/${groupTaskID}/status`, { status: GroupTaskStatus.ACTIVE }));
   }
 }
+

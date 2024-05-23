@@ -1,56 +1,51 @@
 import { Injectable } from '@angular/core';
-import { AngularFireStorage } from '@angular/fire/storage';
+import { HttpClient } from '@angular/common/http';
 import { NgxImageCompressService } from 'ngx-image-compress';
+import { environment } from 'src/environments/environment';
+import { lastValueFrom } from 'rxjs'; // Import lastValueFrom
 
 @Injectable({
   providedIn: 'root',
 })
 export class FileUploadService {
-  filePath = '/images/';
+  private apiUrl = `${environment.backendUrl}/api`; 
 
   constructor(
-    private storage: AngularFireStorage,
+    private http: HttpClient,
     private imageCompress: NgxImageCompressService
   ) {}
 
   /**
-   * Uploads a Image to firebase
-   * @param file base64 encode string representation of an Image to be uploaded to firebase
-   * @returns Promise for getDownloadUrl which returns a downloadUrl string
+   * Uploads a file to MongoDB GridFS via the backend API.
+   *
+   * @param file - The base64 encoded file data.
+   * @returns A Promise that resolves with the filename of the uploaded file.
    */
-  async upload(file: string) {
-    // generate filename from timestamp
-    const contentType = file.substring(
-      file.indexOf(':') + 1,
-      file.indexOf(';')
-    );
-    const extension = contentType.substring(contentType.indexOf('/') + 1);
-    const filename = this.filePath + Date.now() + '.' + extension;
-    const ref = this.storage.ref(filename);
-    const base64String = file.substring(file.indexOf(',') + 1);
-    const task = ref.putString(base64String, 'base64', {
-      contentType: contentType,
-    });
-    return task
-      .snapshotChanges()
-      .toPromise()
-      .then(() => {
-        return ref.getDownloadURL().toPromise();
-      });
+  async upload(file: string): Promise<string> {
+    const compressedFile = await this.compressFile();
+    const response$ = this.http.post(`${this.apiUrl}/upload`, { file: compressedFile }, { responseType: 'text' });
+    return await lastValueFrom(response$); 
   }
 
   /**
-   * Deletes file specified by downloadUrl
-   * @param downloadUrl String representing the firebase downloadurl
-   * @returns Promise for the delete action
+   * Downloads a file from MongoDB GridFS by filename via the backend API.
+   *
+   * @param filename - The name of the file to download.
+   * @returns A Promise that resolves with the file's content as a base64 data URL.
    */
-  delete(downloadUrl: string) {
-    return this.storage.storage.refFromURL(downloadUrl).delete();
+  async download(filename: string): Promise<string> {
+    const response$ = this.http.get(`${this.apiUrl}/download/${filename}`, { responseType: 'text' });
+    return await lastValueFrom(response$); 
   }
 
-  download(filename: string) {
-    const ref = this.storage.ref(filename);
-    return ref.getDownloadURL().toPromise();
+  /**
+   * Deletes a file from MongoDB GridFS by filename via the backend API.
+   *
+   * @param filename - The name of the file to delete.
+   */
+  async delete(filename: string): Promise<void> {
+    const response$ = this.http.delete(`${this.apiUrl}/delete/${filename}`);
+    return await lastValueFrom(response$);
   }
 
   /**

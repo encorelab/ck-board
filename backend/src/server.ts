@@ -19,14 +19,11 @@ import groups from './api/groups';
 import todoItems from './api/todoItem';
 import learner from './api/learner';
 import { isAuthenticated } from './utils/auth';
+import db from './database/db';
+
 dotenv.config();
 
 const port = process.env.PORT || 8001;
-const dbUsername = process.env.DB_USER;
-const dbPassword = process.env.DB_PASSWORD;
-const dbUrl = process.env.DB_URL;
-const dbName = process.env.DB_NAME;
-const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
 const app = express();
 app.use(cors());
@@ -50,11 +47,10 @@ app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
 
-mongoose
-  .connect(dbURI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    server.listen(port);
-    console.log('HTTP server running at ' + port);
-  })
-  .catch((err) => console.log(err));
+db.getConnection().once('open', () => {  
+  console.log('Connected to MongoDB'); 
+  server.listen(port);
+  console.log('HTTP server running at ' + port);
+});
+
+db.getConnection().on('error', (err) => console.log(err));

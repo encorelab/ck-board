@@ -53,6 +53,7 @@ export enum SocketEvent {
 
 export const STUDENT_POST_COLOR = '#FFF7C0';
 export const TEACHER_POST_COLOR = '#BBC4F7';
+export const DEFAULT_POST_COLOR = '#FFF7C0';
 
 export const POST_DEFAULT_OPACITY = 1;
 export const POST_DEFAULT_BORDER = 'black';

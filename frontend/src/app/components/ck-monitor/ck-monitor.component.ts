@@ -226,7 +226,14 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     }
 
     this.board = await this.boardService.get(boardID);
+    if (!this.board) {
+      return this.router.navigate(['error']); 
+    }
+
     this.project = await this.projectService.get(projectID);
+    if (!this.project) {
+      return this.router.navigate(['error']); 
+    }
 
     if (!this.board.viewSettings?.allowMonitor) {
       this.router.navigateByUrl(
@@ -261,56 +268,62 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       this.user.userID
     );
 
-    this.taskWorkflows = await this.workflowService.getActiveTasks(boardID);
-
+    const tasks = await this.workflowService.getActiveTasks(boardID);
+    this.taskWorkflows = tasks ? tasks : []; 
+    
     for (let i = 0; i < this.taskWorkflows.length; i++) {
       const groupTasks = await this.workflowService.getGroupTasksByWorkflow(
         this.taskWorkflows[i].workflowID,
         'expanded'
       );
-      groupTasks.sort((a, b) =>
-        this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
-      );
-      this.taskWorkflowNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks.map((group) => {
-          return {
-            groupName: group.group.name,
-            groupStatus: group.groupTask.status,
-          };
-        })
-      );
-      this.taskWorkflowGroupMap.set(this.taskWorkflows[i], groupTasks);
-      this.taskWorkflowGroupNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks
-          .filter((group) => group.groupTask.status != GroupTaskStatus.COMPLETE)
-          .map((group) => group.group.name)
-      );
-      this.taskWorkflowCompleteGroupNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks
-          .filter(
-            (group) => group.groupTask.status === GroupTaskStatus.COMPLETE
-          )
-          .map((group) => group.group.name)
-      );
-      let activeCount = 0,
-        completedCount = 0;
 
-      for (let i = 0; groupTasks && i < groupTasks.length; i++) {
-        activeCount += Number(
-          groupTasks[i].groupTask.status == GroupTaskStatus.ACTIVE
+      if (groupTasks && groupTasks.length > 0) {
+        groupTasks.sort((a, b) =>
+          this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
         );
-        completedCount += Number(
-          groupTasks[i].groupTask.status == GroupTaskStatus.COMPLETE
+        this.taskWorkflowNameMap.set(
+          this.taskWorkflows[i],
+          groupTasks.map((group) => {
+            return {
+              groupName: group.group.name,
+              groupStatus: group.groupTask.status,
+            };
+          })
         );
+        this.taskWorkflowGroupMap.set(this.taskWorkflows[i], groupTasks);
+        this.taskWorkflowGroupNameMap.set(
+          this.taskWorkflows[i],
+          groupTasks
+            .filter((group) => group.groupTask.status != GroupTaskStatus.COMPLETE)
+            .map((group) => group.group.name)
+        );
+        this.taskWorkflowCompleteGroupNameMap.set(
+          this.taskWorkflows[i],
+          groupTasks
+            .filter(
+              (group) => group.groupTask.status === GroupTaskStatus.COMPLETE
+            )
+            .map((group) => group.group.name)
+        );
+        let activeCount = 0,
+          completedCount = 0;
+
+        for (let i = 0; groupTasks && i < groupTasks.length; i++) {
+          activeCount += Number(
+            groupTasks[i].groupTask.status == GroupTaskStatus.ACTIVE
+          );
+          completedCount += Number(
+            groupTasks[i].groupTask.status == GroupTaskStatus.COMPLETE
+          );
+        }
+
+        if (activeCount + completedCount != groupTasks.length)
+          inactiveTaskWorkflows.push(this.taskWorkflows[i]);
+        if (completedCount) completeTaskWorkflows.push(this.taskWorkflows[i]);
+        if (activeCount) activeTaskWorkflows.push(this.taskWorkflows[i]);
+      } else {
+        console.log(`No group tasks found for workflow ${this.taskWorkflows[i].workflowID}`);
       }
-
-      if (activeCount + completedCount != groupTasks.length)
-        inactiveTaskWorkflows.push(this.taskWorkflows[i]);
-      if (completedCount) completeTaskWorkflows.push(this.taskWorkflows[i]);
-      if (activeCount) activeTaskWorkflows.push(this.taskWorkflows[i]);
     }
     this.inactiveTaskWorkflows = inactiveTaskWorkflows;
     this.completeTaskWorkflows = completeTaskWorkflows;
@@ -391,7 +404,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   ): Promise<void> {
     const groupTasks = this.taskWorkflowGroupMap.get(workflow);
     const groupTasksTableFormat: MonitorData[] = [];
-    if (groupTasks) {
+    if (groupTasks && groupTasks.length > 0) {
       for (let i = 0; i < groupTasks.length; i++) {
         if (groupTasks[i].groupTask.status == status) {
           const groupMembers: string[] = [];
@@ -415,6 +428,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
           });
         }
       }
+    } else {
+      console.log(`No group tasks with status ${status} found for workflow ${workflow.workflowID}`);
     }
     this.runningTaskTableData = new MatTableDataSource<MonitorData>(
       groupTasksTableFormat

@@ -43,9 +43,16 @@ export class FileUploadService {
    *
    * @param filename - The name of the file to delete.
    */
-  async delete(filename: string): Promise<void> {
-    const response$ = this.http.delete(`${this.apiUrl}/delete/${filename}`);
-    return await lastValueFrom(response$);
+  async delete(filename: string): Promise<boolean> {
+    try {
+      const response$ = this.http.delete(`${this.apiUrl}/delete/${filename}`, { observe: 'response' });
+      await lastValueFrom(response$);
+      return true; // Deletion succeeded
+    } catch (error) {
+      // Handle the error and return false to indicate failure
+      console.error('Error deleting file:', error);
+      return false;
+    }
   }
 
   /**

@@ -17,6 +17,7 @@ import {
 } from '../utils/auth';
 import { UserModel } from '../models/User';
 import dalProject from '../repository/dalProject';
+import { IsSsoEnabledResponse } from '@shared/shared-types'
 
 const router = Router();
 
@@ -66,9 +67,10 @@ router.post('/multiple', async (req, res) => {
 });
 
 router.get('/is-sso-enabled', async (req, res) => {
-  res.status(200).send({
+  const response: IsSsoEnabledResponse = {
     isSsoEnabled: isSsoEnabled(),
-  });
+  };
+  res.status(200).send(response);
 });
 
 router.get('/sso/handshake', async (req, res) => {

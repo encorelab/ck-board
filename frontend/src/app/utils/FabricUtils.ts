@@ -11,6 +11,7 @@ import {
   POST_DEFAULT_OPACITY,
   STUDENT_POST_COLOR,
   TEACHER_POST_COLOR,
+  DEFAULT_POST_COLOR,
 } from './constants';
 import { numDigits, generateUniqueID } from './Utils';
 
@@ -462,9 +463,15 @@ export class FabricUtils {
    * @param userID id of user
    * @returns color as string
    */
+
   async defaultPostColor(userID: string): Promise<string> {
-    const user = await this.userService.getOneById(userID);
-    return user.role === Role.TEACHER ? TEACHER_POST_COLOR : STUDENT_POST_COLOR;
+    try {
+      const user = await this.userService.getOneById(userID);
+      return user?.role === Role.TEACHER ? TEACHER_POST_COLOR : STUDENT_POST_COLOR; 
+    } catch (error) {
+      console.error(`Error fetching user data for default post color: ${error}`);
+      return DEFAULT_POST_COLOR; // Return the default color
+    }
   }
 
   /**

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import User, { AuthUser, TokenResponse } from '../models/user';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -10,77 +11,100 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  getOneById(id: string): Promise<User> {
-    return this.http
-      .get<User>('auth/' + id, { headers: { cache: 'true' } })
-      .toPromise();
+  async getOneById(id: string): Promise<User | undefined> {
+    return lastValueFrom(this.http.get<User>(`auth/${id}`, { headers: { cache: 'true' } }));
   }
 
-  getMultipleByIds(ids: string[]) {
-    return this.http.post<User[]>('auth/multiple', ids).toPromise();
+  async getMultipleByIds(ids: string[]): Promise<User[] | undefined> {
+    return lastValueFrom(this.http.post<User[]>('auth/multiple', ids));
   }
 
-  getByProject(projectID: string): Promise<AuthUser[]> {
-    return this.http.get<AuthUser[]>('auth/project/' + projectID).toPromise();
+  async getByProject(projectID: string): Promise<AuthUser[] | undefined> {
+    return lastValueFrom(this.http.get<AuthUser[]>(`auth/project/${projectID}`));
   }
 
-  async register(user: User) {
-    return this.http
-      .post<TokenResponse>('auth/register', user)
-      .toPromise()
-      .then((result) => {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        localStorage.setItem('access_token', result.token);
-        localStorage.setItem('expires_at', result.expiresAt);
-        return true;
-      });
+  async register(user: User): Promise<boolean> {
+    try {
+      const result: TokenResponse = await lastValueFrom(this.http.post<TokenResponse>('auth/register', user));
+      localStorage.setItem('user', JSON.stringify(result.user));
+      localStorage.setItem('access_token', result.token);
+      localStorage.setItem('expires_at', result.expiresAt);
+      return true;
+    } catch (error) {
+      // Handle registration error (e.g., log, show error message)
+      console.error('Registration error:', error);
+      return false;
+    }
   }
 
   async login(email: string, password: string): Promise<boolean> {
-    return this.http
-      .post<TokenResponse>('auth/login', {
-        email: email,
-        password: password,
-      })
-      .toPromise()
-      .then((result) => {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        localStorage.setItem('access_token', result.token);
-        localStorage.setItem('expires_at', result.expiresAt);
-        return true;
-      });
+    try {
+      const result: TokenResponse = await lastValueFrom(this.http.post<TokenResponse>('auth/login', { email, password }));
+      localStorage.setItem('user', JSON.stringify(result.user));
+      localStorage.setItem('access_token', result.token);
+      localStorage.setItem('expires_at', result.expiresAt);
+      return true;
+    } catch (error) {
+      // Handle login error
+      console.error('Login error:', error);
+      return false;
+    }
   }
 
   async isSsoEnabled(): Promise<boolean> {
-    return this.http
-      .get('auth/is-sso-enabled')
-      .toPromise()
-      .then((response: any) => {
-        return response.isSsoEnabled;
-      });
+    try {
+      const response = await lastValueFrom(this.http.get('auth/is-sso-enabled'));
+      return response.isSsoEnabled;
+    } catch (error) {
+      // Handle error while checking SSO status
+      console.error('Error checking SSO status:', error);
+      return false; // Or handle the error in a way that makes sense for your app
+    }
   }
 
-  async trySsoLogin(attemptedUrl: string): Promise<any> {
-    return this.http
-      .get('auth/sso/handshake')
-      .toPromise()
-      .then((response: any) => {
+  async trySsoLogin(attemptedUrl: string): Promise<boolean> {
+    try {
+      const response = await lastValueFrom(this.http.get('auth/sso/handshake'));
+      if (response && response.scoreSsoEndpoint && response.sig && response.sso) { // Check if the response properties exist
         window.location.href = `${response.scoreSsoEndpoint}?sig=${response.sig}&sso=${response.sso}&redirectUrl=${attemptedUrl}`;
-        return false;
-      });
+        return false; // Or return a value that indicates the redirect was initiated
+      } else {
+        // Handle the case where the response is not as expected
+        console.error('Invalid response from SSO handshake:', response);
+        return false; // Or throw an error, depending on your error handling strategy
+      }
+    } catch (error) {
+      // Handle errors that occur during the request
+      console.error('Error initiating SSO login:', error);
+      return false; // Or throw an error
+    }
   }
-
+  
   async ssoLogin(sso: string | null, sig: string | null): Promise<boolean> {
-    return this.http
-      .get(`auth/sso/login/${sso}/${sig}`)
-      .toPromise()
-      .then((result: any) => {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        localStorage.setItem('access_token', result.token);
-        localStorage.setItem('expires_at', result.expiresAt);
+    try {
+      if (!sso || !sig) {
+        // Handle the case where SSO parameters are missing
+        console.error('Missing SSO parameters');
+        return false; // Or throw an error
+      }
+      const result: TokenResponse = await lastValueFrom(this.http.get<TokenResponse>(`auth/sso/login/${sso}/${sig}`));
+      localStorage.setItem('user', JSON.stringify(result.user));
+      localStorage.setItem('access_token', result.token);
+      localStorage.setItem('expires_at', result.expiresAt);
+  
+      // Ensure redirectUrl exists before using it
+      if (result.redirectUrl) { 
         window.location.href = result.redirectUrl;
-        return true;
-      });
+      } else {
+        console.error('Missing redirectUrl in SSO login response');
+        // Optionally redirect to a default page or handle the error differently
+      }
+      return true;
+    } catch (error) {
+      // Handle errors that occur during the request
+      console.error('Error completing SSO login:', error);
+      return false; // Or throw an error
+    }
   }
 
   logout() {
@@ -89,12 +113,13 @@ export class UserService {
     localStorage.removeItem('expires_at');
   }
 
-  update(id: string, user: Partial<User>) {
-    return this.http.post('auth/' + id, user).toPromise();
+  async update(id: string, user: Partial<User>): Promise<User | undefined> {
+    return lastValueFrom(this.http.post<User>(`auth/${id}`, user));
   }
 
-  delete(id: string) {
-    return this.http.delete('auth/' + id).toPromise();
+  async delete(id: string): Promise<void> {
+    const response$ = this.http.delete(`auth/${id}`);
+    return await lastValueFrom(response$);
   }
 
   public get loggedIn(): boolean {

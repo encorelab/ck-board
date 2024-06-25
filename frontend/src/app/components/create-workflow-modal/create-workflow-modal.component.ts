@@ -149,7 +149,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       })
       .then((data) => {
         data.forEach((board: Board) => {
-          if (board.boardID != this.board.boardID) this.destOptions.push(board);
+          this.destOptions.push(board);
         });
       });
   }

@@ -110,18 +110,7 @@
                 <mat-card-title class="title accent">
                   <mat-icon color="accent">picture_in_picture</mat-icon>
                   <span>{{ board.name }}</span>
-                </mat-card-title>
-                <button
-                  mat-icon-button
-                  class="accent"
-                  *ngIf="user && user.role === Role.TEACHER"
-                  matTooltip="Toggle Visibility"
-                  (click)="toggleBoardVisibility($event, board)"
-                >
-                  <mat-icon *ngIf="board.visible">visibility</mat-icon>
-                  <mat-icon *ngIf="!board.visible">visibility_off</mat-icon>
-                </button>
-                <button 
+                  <button 
                 *ngIf="user && user.role === Role.TEACHER"
                 mat-icon-button
                 [matMenuTriggerFor]="boardOptions"
@@ -133,6 +122,18 @@
                     more_vert
                   </mat-icon>
                 </button>
+                </mat-card-title>
+                <button
+                  mat-icon-button
+                  class="accent"
+                  *ngIf="user && user.role === Role.TEACHER"
+                  matTooltip="Toggle Visibility"
+                  (click)="toggleBoardVisibility($event, board)"
+                >
+                  <mat-icon *ngIf="board.visible">visibility</mat-icon>
+                  <mat-icon *ngIf="!board.visible">visibility_off</mat-icon>
+                </button>
+                
                 <mat-menu #boardOptions="matMenu">
                   <button mat-menu-item (click)="handleEditBoard(board)">
                     Edit

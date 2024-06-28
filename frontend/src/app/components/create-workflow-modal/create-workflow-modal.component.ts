@@ -43,15 +43,17 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
   styleUrls: ['./create-workflow-modal.component.scss'],
 })
 export class CreateWorkflowModalComponent implements OnInit {
-  selected = new FormControl(0);
+  // Properties
+  selected = new FormControl(0);  // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
 
-  board: Board;
-  buckets: Bucket[];
-  boardBuckets: Bucket[];
-  workflows: any[] = [];
-  tags: Tag[];
-  upvoteLimit: number;
-  selectedTag: string;
+  // Data models
+  board: Board;                      // Current board
+  buckets: Bucket[];                  // All buckets
+  boardBuckets: Bucket[];             // Buckets associated with the current board
+  workflows: any[] = [];              // List of workflows
+  tags: Tag[];                        // Available tags for the board
+  upvoteLimit: number;                // Upvote limit for the board
+  selectedTag: string;                // Selected tag for filtering (if applicable)
 
   bucketName = '';
   workflowName = '';
@@ -116,20 +118,23 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.board = this.data.board;
-    this.tags = this.data.board.tags;
-    this.loadGroups();
-    this.upvoteLimit = this.data.board.upvoteLimit;
-    this.loadBucketsBoards();
-    this.loadWorkflows();
+    // Initialization
+    this.board = this.data.board;        // Load the current board from the passed data
+    this.tags = this.data.board.tags;     // Load tags associated with the board
+    this.loadGroups();                 // Load groups associated with the project
+    this.upvoteLimit = this.data.board.upvoteLimit;  // Load the upvote limit for the board
+    this.loadBucketsBoards();            // Load buckets and boards for source/destination options
+    this.loadWorkflows();               // Load existing workflows for the board
   }
 
+  // Fetches groups for the project
   async loadGroups() {
     this.groupOptions = await this.groupService.getByProjectId(
       this.data.project.projectID
     );
   }
 
+  // Loads buckets and boards, updates source/destination options.
   async loadBucketsBoards(): Promise<void> {
     this.sourceOptions = [];
     this.destOptions = [];
@@ -149,11 +154,12 @@ export class CreateWorkflowModalComponent implements OnInit {
       })
       .then((data) => {
         data.forEach((board: Board) => {
-          this.destOptions.push(board);
+          this.destOptions.push(board); // TODO Confirm that this worked to add the canvas, it worked for me
         });
       });
   }
 
+  // Fetches workflows for the board from the workflowService.
   async loadWorkflows(): Promise<void> {
     return this.workflowService.getAll(this.board.boardID).then((workflows) => {
       this.workflows = [];
@@ -163,6 +169,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a new bucket and updates UI.
   createBucket(): void {
     const bucket: Bucket = {
       bucketID: generateUniqueID(),
@@ -182,10 +189,12 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Toggles visibility of bucket deletion controls.
   toggleDeleteBoard() {
     this.showDelete = !this.showDelete;
   }
 
+  // Opens a confirmation dialog and deletes the bucket.
   deleteBucket(bucket: Bucket) {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
@@ -204,6 +213,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a distribution workflow.
   createDistributionWorkflow(): void {
     if (!this._distributionWorkflowTypeSelected()) return;
 
@@ -215,6 +225,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a peer review workflow.
   createPeerReviewWorkflow(): void {
     if (!this._actionSelected()) return;
 
@@ -226,6 +237,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a generation task workflow.
   createGenerationTaskWorkflow(): void {
     if (!this._validGenerationTaskWorkflow()) return;
     const workflow: TaskWorkflow = this._assembleGenerationTaskWorkflow();
@@ -236,6 +248,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Runs the specified workflow (task or distribution).
   runWorkflow(e, workflow: TaskWorkflow | DistributionWorkflow): void {
     e.stopPropagation();
 
@@ -265,6 +278,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     }
   }
 
+  // Opens a confirmation dialog and deletes the workflow.
   async deleteWorkflow(
     e,
     workflow: TaskWorkflow | DistributionWorkflow
@@ -291,14 +305,17 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Closes the dialog.
   onNoClick(): void {
     this.dialogRef.close();
   }
 
+  // Displays a snackbar message.
   openSnackBar(message: string): void {
     this.snackbarService.queueSnackbar(message);
   }
 
+  // Resets the workflow creation form.
   _clearWorkflowForm() {
     this.workflowNameFormControl.reset();
     this.sourceFormControl.reset();
@@ -310,16 +327,19 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.postGeneration = 1;
   }
 
+  // Type guard to check if an object is a Board.
   _isBoard(object: Board | Bucket): object is Board {
     return (object as Board).tags !== undefined;
   }
 
+  // Type guard to check if an object is a TaskWorkflow.
   _isTaskWorkflow(
     object: DistributionWorkflow | TaskWorkflow
   ): object is TaskWorkflow {
     return (object as TaskWorkflow).requiredActions !== undefined;
   }
 
+  // Checks if a distribution workflow form is valid.
   _validDistributionWorkflow(): boolean {
     return (
       this.workflowNameFormControl.valid &&

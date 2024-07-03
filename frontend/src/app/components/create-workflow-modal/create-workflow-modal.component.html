@@ -92,9 +92,11 @@
               <mat-option
                 *ngFor="let option of sourceOptions"
                 [value]="option"
-                >{{ option.name }}</mat-option
+                >
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
+                {{ option.name }}</mat-option
               >
-              <!-- TODO: Add BUCKET and CANVAS labels as we did for destinations -->
             </mat-select>
             <mat-error *ngIf="sourceFormControl.hasError('required')"
               >Source required!</mat-error
@@ -110,8 +112,8 @@
               multiple
             >
               <mat-option *ngFor="let option of destOptions" [value]="option">
-                <!-- <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container> TODO uncomment to add label -->
-                <!-- <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container> TODO uncomment to add label -->
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
                 {{ option.name }}
               </mat-option>
             </mat-select>
@@ -198,8 +200,10 @@
           <mat-form-field appearance="fill" style="font-size: 14px !important">
             <mat-label>Source</mat-label>
             <mat-select [(ngModel)]="taskSource" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
-              <mat-option *ngFor="let option of sourceOptions" [value]="option">{{ option.name }}</mat-option>
-              <!-- TODO: Add BUCKET and CANVAS labels as we did for destinations -->
+              <mat-option *ngFor="let option of sourceOptions" [value]="option">
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
+                {{ option.name }}</mat-option>
             </mat-select>
             <mat-error *ngIf="sourceFormControl.hasError('required')">Source required!</mat-error>
           </mat-form-field>
@@ -207,8 +211,10 @@
           <mat-form-field appearance="fill" style="font-size: 14px !important">
             <mat-label>Destination</mat-label>
             <mat-select [(ngModel)]="taskDestination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
-              <mat-option *ngFor="let option of destOptions" [value]="option">{{ option.name }}</mat-option>
-              <!-- TODO: Add BUCKET and CANVAS labels as we did for destinations -->
+              <mat-option *ngFor="let option of destOptions" [value]="option">
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
+                {{ option.name }}</mat-option>
             </mat-select>
             <mat-error *ngIf="destinationFormControl.hasError('required')">Destination required!</mat-error>
           </mat-form-field>
@@ -255,9 +261,11 @@
           <mat-form-field appearance="fill" style="font-size: 14px !important">
             <mat-label>Destination</mat-label>
             <mat-select [(ngModel)]="taskDestination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
-              <mat-option *ngFor="let option of destOptions" [value]="option">{{ option.name }}</mat-option>
-              <!-- <mat-option [value]="board" >{{ board.name }}</mat-option> TODO notice that the board is added here in addition to the backend load function -->
-              <!-- TODO: Add BUCKET and CANVAS labels as we did for destinations -->
+              <mat-option *ngFor="let option of destOptions" [value]="option">
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
+                {{ option.name }}</mat-option>
+              <mat-option [value]="board" >{{ board.name }}</mat-option> 
             </mat-select>
             <mat-error *ngIf="destinationFormControl.hasError('required')">Destination required!</mat-error>
           </mat-form-field>

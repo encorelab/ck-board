@@ -73,7 +73,7 @@
         </mat-list>
       <!-- </div> -->
     </mat-sidenav>
-    <mat-sidenav-content>
+    <mat-sidenav-content class="content-container">
       <div *ngIf="!loading && runningGroupTask">
         <h1>{{runningGroupTask.group.name}}: {{runningGroupTask.workflow.name}}</h1>
         <h2 style="font-weight: bold;">{{ runningGroupTask.workflow.prompt }} </h2>

@@ -8,26 +8,26 @@
 
 
 
-.header-container {
-  display: flex;
-  flex-direction: column;
-
-  .toolbar {
-    width: 100%; 
-    z-index: 999;
-  }
-
-  .header{
-    display: flex;
-    flex-direction: row;
-    z-index: 999;
-    background-color: gray;
-    align-items: center;
-    justify-content:left;
-  }
+.toolbar {
+  position: fixed; /* Keep toolbar fixed at the top */
+  top: 0;
+  width: 100%;
+  z-index: 1000; /* Ensure toolbar stays on top */
+  background-color: #f5f5f5; 
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  background-color: #fcfcfc; 
+  border-bottom: 1px solid #ddd; 
+  margin-top: 64px;
+}
 
+.header h1 {
+  margin: 0 16px; /* Add margin to the left of the h1 */
+}
 
 .list-task-prompt {
   color: gray;
@@ -118,6 +118,7 @@
 }
 
 mat-sidenav {
+  top: 105px;
   width: 30%;
   height: 100%;
 }

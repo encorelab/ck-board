@@ -1,4 +1,5 @@
 <div>
+  <div class="header-container">
   <app-toolbar class="toolbar" *ngIf="user && project && board && !embedded" [user]="user" style="width: 100%;">
     <span *ngIf="board">{{ this.board.name }}</span>
     <button mat-icon-button *ngIf="user.role === Role.TEACHER" (click)="copyEmbedCode()" matTooltip="Copy embeddable URL">
@@ -11,8 +12,16 @@
     <app-view-navigation [boardID]="board.boardID" [currentView]="viewType"></app-view-navigation>
     <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
   </app-toolbar>
+
+  <div class="header">
+    <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
+      <mat-icon>keyboard_return</mat-icon>
+    </button>
+    <h1 style="margin: 0">Your Workspace</h1>
+  </div>
+</div>
   <mat-sidenav-container class="drawer-container">
-    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed;" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null">
+    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="100" style="position: fixed;" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null">
         <mat-list *ngIf="activeGroupTasks">
           <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
             Pending Tasks ({{ inactiveGroupTasks.length }})

@@ -6,14 +6,28 @@
   background: transparent;
 }
 
-.toolbar {
-  width: 100%; 
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
+
+
+.header-container {
+  display: flex;
+  flex-direction: column;
+
+  .toolbar {
+    width: 100%; 
+    z-index: 999;
+  }
+
+  .header{
+    display: flex;
+    flex-direction: row;
+    z-index: 999;
+    background-color: gray;
+    align-items: center;
+    justify-content:left;
+  }
 }
+
+
 
 .list-task-prompt {
   color: gray;
@@ -88,7 +102,6 @@
 
 .drawer-container {
   position: absolute;
-  padding-top: 56px;
   left: 0;
   right: 0;
   bottom: 0;

@@ -16,7 +16,7 @@
   background-color: #f5f5f5; 
 }
 
-.header {
+.view-header {
   position: fixed; 
   top: 64px; 
   left: 0;
@@ -29,7 +29,7 @@
   z-index: 1000;
 }
 
-.header h1 {
+.view-header h1 {
   margin: 0 16px; /* Add margin to the left of the h1 */
 }
 

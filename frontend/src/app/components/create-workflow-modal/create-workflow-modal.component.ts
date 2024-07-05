@@ -139,24 +139,28 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.sourceOptions = [];
     this.destOptions = [];
     this.boardBuckets = [];
-
-    this.bucketService
-      .getAllByBoard(this.data.board.boardID)
-      .then((buckets) => {
-        this.sourceOptions = this.sourceOptions.concat(buckets);
-        this.destOptions = this.destOptions.concat(buckets);
-        this.boardBuckets = this.boardBuckets.concat(buckets);
-        this.sourceOptions.push(this.board);
-      });
-    this.boardService
-      .getMultipleBy(this.data.project.boards, {
+  
+    try {
+      // 1. Fetch Project Boards
+      const projectBoards = await this.boardService.getMultipleBy(this.data.project.boards, {
         scope: BoardScope.PROJECT_SHARED,
-      })
-      .then((data) => {
-        data.forEach((board: Board) => {
-          this.destOptions.push(board); // TODO Confirm that this worked to add the canvas, it worked for me
-        });
       });
+
+      // Add project boards FIRST
+      // this.destOptions = this.destOptions.concat(projectBoards); // TODO: Uncomment to add all canvas from the project
+      // this.sourceOptions = this.sourceOptions.concat(projectBoards); // TODO: Uncomment to add all canvases from the prjoect
+  
+      // 2. Fetch Buckets
+      const buckets = await this.bucketService.getAllByBoard(this.data.board.boardID);
+      this.boardBuckets = this.boardBuckets.concat(buckets);
+  
+      // 3. Add buckets SECOND
+      this.sourceOptions = this.sourceOptions.concat(buckets);
+      this.destOptions = this.destOptions.concat(buckets);
+
+    } catch (error) {
+      console.error("Error loading boards and buckets:", error); 
+    }
   }
 
   // Fetches workflows for the board from the workflowService.

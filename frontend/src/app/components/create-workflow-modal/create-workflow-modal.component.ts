@@ -147,8 +147,8 @@ export class CreateWorkflowModalComponent implements OnInit {
       });
 
       // Add project boards FIRST
-      // this.destOptions = this.destOptions.concat(projectBoards); // TODO: Uncomment to add all canvas from the project
-      // this.sourceOptions = this.sourceOptions.concat(projectBoards); // TODO: Uncomment to add all canvases from the prjoect
+      this.destOptions = this.destOptions.concat(projectBoards);
+      this.sourceOptions = this.sourceOptions.concat(projectBoards);
   
       // 2. Fetch Buckets
       const buckets = await this.bucketService.getAllByBoard(this.data.board.boardID);

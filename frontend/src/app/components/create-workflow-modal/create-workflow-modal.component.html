@@ -93,7 +93,7 @@
                 *ngFor="let option of sourceOptions"
                 [value]="option"
                 >
-                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">CANVAS:</ng-container>
                 <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
                 {{ option.name }}</mat-option
               >
@@ -112,7 +112,7 @@
               multiple
             >
               <mat-option *ngFor="let option of destOptions" [value]="option">
-                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">CANVAS:</ng-container>
                 <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
                 {{ option.name }}
               </mat-option>
@@ -201,7 +201,7 @@
             <mat-label>Source</mat-label>
             <mat-select [(ngModel)]="taskSource" [formControl]="sourceFormControl" [errorStateMatcher]="matcher">
               <mat-option *ngFor="let option of sourceOptions" [value]="option">
-                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">CANVAS:</ng-container>
                 <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
                 {{ option.name }}</mat-option>
             </mat-select>
@@ -212,7 +212,7 @@
             <mat-label>Destination</mat-label>
             <mat-select [(ngModel)]="taskDestination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
               <mat-option *ngFor="let option of destOptions" [value]="option">
-                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">CANVAS:</ng-container>
                 <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
                 {{ option.name }}</mat-option>
             </mat-select>
@@ -262,10 +262,9 @@
             <mat-label>Destination</mat-label>
             <mat-select [(ngModel)]="taskDestination" [formControl]="destinationFormControl" [errorStateMatcher]="matcher">
               <mat-option *ngFor="let option of destOptions" [value]="option">
-                <ng-container *ngIf="option.hasOwnProperty('projectID')">BOARD:</ng-container>
+                <ng-container *ngIf="option.hasOwnProperty('projectID')">CANVAS:</ng-container>
                 <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
                 {{ option.name }}</mat-option>
-              <mat-option [value]="board" >{{ board.name }}</mat-option> 
             </mat-select>
             <mat-error *ngIf="destinationFormControl.hasError('required')">Destination required!</mat-error>
           </mat-form-field>

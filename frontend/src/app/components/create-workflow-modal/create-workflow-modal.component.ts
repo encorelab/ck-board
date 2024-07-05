@@ -154,7 +154,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       })
       .then((data) => {
         data.forEach((board: Board) => {
-          this.destOptions.push(board); // TODO Confirm that this worked to add the canvas, it worked for me
+          this.destOptions.push(board); 
         });
       });
   }

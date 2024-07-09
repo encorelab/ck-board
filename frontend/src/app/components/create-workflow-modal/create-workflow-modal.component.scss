@@ -16,6 +16,13 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  div {
+    display: block;
+  }
+  mat-error {
+    width: 100%;
+    font-size: 75%;
+  }
 }
 
 .arrow-icon-md {

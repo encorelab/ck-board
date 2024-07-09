@@ -82,33 +82,38 @@
           >
         </mat-form-field>
         <div class="source-destination">
-          <mat-form-field appearance="fill" style="font-size: 14px !important">
-            <mat-label>Source</mat-label>
-            <mat-select
-              [(ngModel)]="distributionSource"
-              [formControl]="sourceFormControl"
-              [errorStateMatcher]="matcher"
-            >
-              <mat-option
-                *ngFor="let option of sourceOptions"
-                [value]="option"
-                >
-                <ng-container *ngIf="option.hasOwnProperty('projectID')">CANVAS:</ng-container>
-                <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
-                {{ option.name }}</mat-option
+          <div>
+            <mat-form-field appearance="fill" style="font-size: 14px !important">
+              <mat-label>Source</mat-label>
+              <mat-select
+                [(ngModel)]="distributionSource"
+                [formControl]="sourceFormControl"
+                (ngModelChange)="_validDistributionWorkflow()"
               >
-            </mat-select>
-            <mat-error *ngIf="sourceFormControl.hasError('required')"
-              >Source required!</mat-error
-            >
-          </mat-form-field>
+                <mat-option
+                  *ngFor="let option of sourceOptions"
+                  [value]="option"
+                  >
+                  <ng-container *ngIf="option.hasOwnProperty('projectID')">CANVAS:</ng-container>
+                  <ng-container *ngIf="!option.hasOwnProperty('projectID')">BUCKET:</ng-container>
+                  {{ option.name }}</mat-option
+                >
+              </mat-select>
+              <mat-error *ngIf="sourceFormControl.hasError('required')"
+                >Source required!</mat-error
+              >
+            </mat-form-field>
+            <mat-error *ngIf="sourceDestinationMatchError.value">
+              Source and destination cannot be the same!
+            </mat-error>
+          </div>
           <mat-icon class="arrow-icon-lg">arrow_right_alt</mat-icon>
           <mat-form-field appearance="fill" style="font-size: 14px !important">
             <mat-label>Destination</mat-label>
             <mat-select
               [(ngModel)]="distributionDestinations"
               [formControl]="destinationFormControl"
-              [errorStateMatcher]="matcher"
+              (ngModelChange)="_validDistributionWorkflow()"
               multiple
             >
               <mat-option *ngFor="let option of destOptions" [value]="option">

@@ -68,9 +68,9 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   // Fields for distribution workflow creation
   distributionSource: Board | Bucket;
-  distributionDestinations: (Bucket | Board)[];
+  distributionDestinations: (Bucket | Board)[] = [];
   postsPerBucket: number;
-  distributionWorkflowType: DistributionWorkflowType;
+  distributionWorkflowType: DistributionWorkflowType = DistributionWorkflowType.RANDOM;
   removeFromSource = false;
 
   // Fields for peer review workflow and generation task workflow creation
@@ -90,6 +90,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   workflowNameFormControl = new FormControl('valid', [Validators.required]);
   sourceFormControl = new FormControl('valid', [Validators.required]);
   destinationFormControl = new FormControl('valid', [Validators.required]);
+
+  sourceDestinationMatchError = new FormControl(false);
 
   groupsFormControl = new FormControl('valid', [Validators.required]);
   promptFormControl = new FormControl('valid', [Validators.required]);
@@ -344,13 +346,16 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   // Checks if a distribution workflow form is valid.
-  _validDistributionWorkflow(): boolean {
-    return (
-      this.workflowNameFormControl.valid &&
-      this.sourceFormControl.valid &&
-      this.destinationFormControl.valid
-    );
-  }
+  _validDistributionWorkflow(): boolean { 
+    const allowMatch = this.distributionDestinations.length > 1;
+    const isMatch = this.distributionSource && 
+      this.distributionDestinations.some(dest => dest.name === this.distributionSource.name); 
+    this.sourceDestinationMatchError.setValue(!allowMatch && isMatch);
+  return (allowMatch || !isMatch) && 
+    this.workflowNameFormControl.valid && 
+    this.sourceFormControl.valid && 
+    this.destinationFormControl.valid;  
+}
 
   _ppbSelected(): boolean {
     return this.postsPerBucket != null && this.postsPerBucket > 0;

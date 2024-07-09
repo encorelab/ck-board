@@ -44,16 +44,16 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 })
 export class CreateWorkflowModalComponent implements OnInit {
   // Properties
-  selected = new FormControl(0);  // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
+  selected = new FormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
 
   // Data models
-  board: Board;                      // Current board
-  buckets: Bucket[];                  // All buckets
-  boardBuckets: Bucket[];             // Buckets associated with the current board
-  workflows: any[] = [];              // List of workflows
-  tags: Tag[];                        // Available tags for the board
-  upvoteLimit: number;                // Upvote limit for the board
-  selectedTag: string;                // Selected tag for filtering (if applicable)
+  board: Board; // Current board
+  buckets: Bucket[]; // All buckets
+  boardBuckets: Bucket[]; // Buckets associated with the current board
+  workflows: any[] = []; // List of workflows
+  tags: Tag[]; // Available tags for the board
+  upvoteLimit: number; // Upvote limit for the board
+  selectedTag: string; // Selected tag for filtering (if applicable)
 
   bucketName = '';
   workflowName = '';
@@ -70,7 +70,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   distributionSource: Board | Bucket;
   distributionDestinations: (Bucket | Board)[] = [];
   postsPerBucket: number;
-  distributionWorkflowType: DistributionWorkflowType = DistributionWorkflowType.RANDOM;
+  distributionWorkflowType: DistributionWorkflowType =
+    DistributionWorkflowType.RANDOM;
   removeFromSource = false;
 
   // Fields for peer review workflow and generation task workflow creation
@@ -121,12 +122,12 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   ngOnInit(): void {
     // Initialization
-    this.board = this.data.board;        // Load the current board from the passed data
-    this.tags = this.data.board.tags;     // Load tags associated with the board
-    this.loadGroups();                 // Load groups associated with the project
-    this.upvoteLimit = this.data.board.upvoteLimit;  // Load the upvote limit for the board
-    this.loadBucketsBoards();            // Load buckets and boards for source/destination options
-    this.loadWorkflows();               // Load existing workflows for the board
+    this.board = this.data.board; // Load the current board from the passed data
+    this.tags = this.data.board.tags; // Load tags associated with the board
+    this.loadGroups(); // Load groups associated with the project
+    this.upvoteLimit = this.data.board.upvoteLimit; // Load the upvote limit for the board
+    this.loadBucketsBoards(); // Load buckets and boards for source/destination options
+    this.loadWorkflows(); // Load existing workflows for the board
   }
 
   // Fetches groups for the project
@@ -141,27 +142,31 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.sourceOptions = [];
     this.destOptions = [];
     this.boardBuckets = [];
-  
+
     try {
       // 1. Fetch Project Boards
-      const projectBoards = await this.boardService.getMultipleBy(this.data.project.boards, {
-        scope: BoardScope.PROJECT_SHARED,
-      });
+      const projectBoards = await this.boardService.getMultipleBy(
+        this.data.project.boards,
+        {
+          scope: BoardScope.PROJECT_SHARED,
+        }
+      );
 
       // Add project boards FIRST
       this.destOptions = this.destOptions.concat(projectBoards);
       this.sourceOptions = this.sourceOptions.concat(projectBoards);
-  
+
       // 2. Fetch Buckets
-      const buckets = await this.bucketService.getAllByBoard(this.data.board.boardID);
+      const buckets = await this.bucketService.getAllByBoard(
+        this.data.board.boardID
+      );
       this.boardBuckets = this.boardBuckets.concat(buckets);
-  
+
       // 3. Add buckets SECOND
       this.sourceOptions = this.sourceOptions.concat(buckets);
       this.destOptions = this.destOptions.concat(buckets);
-
     } catch (error) {
-      console.error("Error loading boards and buckets:", error); 
+      console.error('Error loading boards and buckets:', error);
     }
   }
 
@@ -346,16 +351,21 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   // Checks if a distribution workflow form is valid.
-  _validDistributionWorkflow(): boolean { 
+  _validDistributionWorkflow(): boolean {
     const allowMatch = this.distributionDestinations.length > 1;
-    const isMatch = this.distributionSource && 
-      this.distributionDestinations.some(dest => dest.name === this.distributionSource.name); 
+    const isMatch =
+      this.distributionSource &&
+      this.distributionDestinations.some(
+        (dest) => dest.name === this.distributionSource.name
+      );
     this.sourceDestinationMatchError.setValue(!allowMatch && isMatch);
-  return (allowMatch || !isMatch) && 
-    this.workflowNameFormControl.valid && 
-    this.sourceFormControl.valid && 
-    this.destinationFormControl.valid;  
-}
+    return (
+      (allowMatch || !isMatch) &&
+      this.workflowNameFormControl.valid &&
+      this.sourceFormControl.valid &&
+      this.destinationFormControl.valid
+    );
+  }
 
   _ppbSelected(): boolean {
     return this.postsPerBucket != null && this.postsPerBucket > 0;

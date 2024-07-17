@@ -11,7 +11,7 @@ import {
   TodoItemType,
   CompletionQuality,
 } from 'src/app/models/todoItem';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import {
   EXPANDED_TODO_TYPE,
@@ -51,7 +51,7 @@ export class TodoItemCardModalComponent implements OnInit {
   completionQuality: CompletionQuality = CompletionQuality.N_A;
   defaultQuality = CompletionQuality.N_A;
 
-  completionQualityFormControl = new FormControl('valid', [
+  completionQualityFormControl = new UntypedFormControl('valid', [
     Validators.required,
   ]);
   matcher = new MyErrorStateMatcher();

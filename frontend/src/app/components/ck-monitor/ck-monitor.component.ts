@@ -50,7 +50,7 @@ import {
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
 import { LearnerService } from 'src/app/services/learner.service';
 
@@ -156,9 +156,9 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     'completion-notes',
   ];
 
-  todoDeadlineRange = new FormGroup({
-    start: new FormControl(null),
-    end: new FormControl(null),
+  todoDeadlineRange = new UntypedFormGroup({
+    start: new UntypedFormControl(null),
+    end: new UntypedFormControl(null),
   });
 
   Role: typeof Role = Role;

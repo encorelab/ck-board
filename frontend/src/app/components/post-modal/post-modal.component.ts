@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import {
   MatDialog,
   MatDialogRef,
@@ -96,11 +96,11 @@ export class PostModalComponent {
   showAuthorName: boolean;
 
   error = '';
-  titleControl = new FormControl('', [
+  titleControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(50),
   ]);
-  descControl = new FormControl('', [Validators.maxLength(2000)]);
+  descControl = new UntypedFormControl('', [Validators.maxLength(2000)]);
   matcher = new MyErrorStateMatcher();
 
   newComment: string;

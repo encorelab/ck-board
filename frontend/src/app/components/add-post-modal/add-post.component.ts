@@ -1,6 +1,6 @@
 import { T } from '@angular/cdk/keycodes';
 import { Component, Inject } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Board, BoardType } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
@@ -64,12 +64,12 @@ export class AddPostComponent {
   tags: Tag[] = [];
   tagOptions: Tag[] = [];
 
-  titleControl = new FormControl('', [
+  titleControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(50),
   ]);
-  msgControl = new FormControl('', [Validators.maxLength(2000)]);
-  questionPromptControl = new FormControl('', [
+  msgControl = new UntypedFormControl('', [Validators.maxLength(2000)]);
+  questionPromptControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(2000),
   ]);

@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import {
   AbstractControl,
-  FormControl,
+  UntypedFormControl,
   ValidationErrors,
   ValidatorFn,
   Validators,
@@ -44,7 +44,7 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 })
 export class CreateWorkflowModalComponent implements OnInit {
   // Properties
-  selected = new FormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
+  selected = new UntypedFormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
 
   // Data models
   board: Board; // Current board
@@ -84,23 +84,23 @@ export class CreateWorkflowModalComponent implements OnInit {
   tagsRequired = false;
   postGeneration = 1;
 
-  bucketNameFormControl = new FormControl('valid', [
+  bucketNameFormControl = new UntypedFormControl('valid', [
     Validators.required,
     this._forbiddenNameValidator(),
   ]);
-  workflowNameFormControl = new FormControl('valid', [Validators.required]);
-  sourceFormControl = new FormControl('valid', [Validators.required]);
-  destinationFormControl = new FormControl('valid', [Validators.required]);
+  workflowNameFormControl = new UntypedFormControl('valid', [Validators.required]);
+  sourceFormControl = new UntypedFormControl('valid', [Validators.required]);
+  destinationFormControl = new UntypedFormControl('valid', [Validators.required]);
 
-  sourceDestinationMatchError = new FormControl(false);
+  sourceDestinationMatchError = new UntypedFormControl(false);
 
-  groupsFormControl = new FormControl('valid', [Validators.required]);
-  promptFormControl = new FormControl('valid', [Validators.required]);
+  groupsFormControl = new UntypedFormControl('valid', [Validators.required]);
+  promptFormControl = new UntypedFormControl('valid', [Validators.required]);
 
-  workflowTypeFormControl = new FormControl('valid', [Validators.required]);
-  removeFromSourceFormControl = new FormControl('valid', [Validators.required]);
+  workflowTypeFormControl = new UntypedFormControl('valid', [Validators.required]);
+  removeFromSourceFormControl = new UntypedFormControl('valid', [Validators.required]);
 
-  tagsFormControl = new FormControl();
+  tagsFormControl = new UntypedFormControl();
 
   matcher = new MyErrorStateMatcher();
   snackbarConfig: MatSnackBarConfig;

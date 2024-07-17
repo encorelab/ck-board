@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import {
   MatDialog,
   MatDialogRef,
@@ -33,8 +33,8 @@ export class ManageGroupModalComponent implements OnInit {
   selectedTab: Number = 0;
   groupsHasChanged = false;
 
-  groupNameControl = new FormControl('', [Validators.required]);
-  editNameControl = new FormControl('', [Validators.required]);
+  groupNameControl = new UntypedFormControl('', [Validators.required]);
+  editNameControl = new UntypedFormControl('', [Validators.required]);
   matcher = new MyErrorStateMatcher();
 
   constructor(

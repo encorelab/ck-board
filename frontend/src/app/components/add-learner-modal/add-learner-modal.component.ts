@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import {
   MatDialogRef,
   MAT_DIALOG_DATA,
@@ -71,7 +71,7 @@ export class AddLearnerModalComponent implements OnInit {
 06e209ee-0500-4777-bb6a-9cd44a74dd80, AbbyCruise, Dimension 2, 76, 54`;
 
   idToStudent: Map<string, AuthUser> = new Map<string, AuthUser>();
-  nameControl = new FormControl('', [
+  nameControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(50),
   ]);

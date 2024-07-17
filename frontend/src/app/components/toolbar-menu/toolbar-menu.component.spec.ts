@@ -8,8 +8,9 @@ describe('ToolbarMenuComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ToolbarMenuComponent],
-    }).compileComponents();
+    declarations: [ToolbarMenuComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

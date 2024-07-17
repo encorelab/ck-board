@@ -8,8 +8,9 @@ describe('ProjectNotificationDropdownComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ProjectNotificationDropdownComponent],
-    }).compileComponents();
+    declarations: [ProjectNotificationDropdownComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

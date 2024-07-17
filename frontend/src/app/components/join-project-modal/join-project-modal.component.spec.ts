@@ -8,8 +8,9 @@ describe('JoinProjectModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [JoinProjectModalComponent],
-    }).compileComponents();
+    declarations: [JoinProjectModalComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

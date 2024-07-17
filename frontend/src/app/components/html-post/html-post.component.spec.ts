@@ -8,8 +8,9 @@ describe('BucketPostComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [BucketPostComponent],
-    }).compileComponents();
+    declarations: [BucketPostComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

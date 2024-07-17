@@ -8,8 +8,9 @@ describe('ProjectTodoListModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ProjectTodoListModalComponent],
-    }).compileComponents();
+    declarations: [ProjectTodoListModalComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

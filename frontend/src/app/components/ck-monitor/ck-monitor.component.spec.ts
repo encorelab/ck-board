@@ -8,8 +8,9 @@ describe('CkMonitorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CkMonitorComponent],
-    }).compileComponents();
+    declarations: [CkMonitorComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

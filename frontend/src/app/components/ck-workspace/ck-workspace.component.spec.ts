@@ -8,8 +8,9 @@ describe('CkWorkspaceComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CkWorkspaceComponent],
-    }).compileComponents();
+    declarations: [CkWorkspaceComponent],
+    teardown: { destroyAfterEach: false }
+}).compileComponents();
   });
 
   beforeEach(() => {

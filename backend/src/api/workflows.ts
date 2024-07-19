@@ -7,6 +7,7 @@ import { PostType } from '../models/Post';
 import {
   ContainerType,
   DistributionWorkflowModel,
+  AIClassificationWorkflowModel,
   TaskWorkflowModel,
   WorkflowType,
 } from '../models/Workflow';
@@ -102,6 +103,98 @@ router.get('/distribution/boards/:id', async (req, res) => {
 
 /**
  * Delete an existing distribution workflow.
+ */
+router.delete('/distribution/:id', async (req, res) => {
+  const id = req.params.id;
+
+  await dalWorkflow.remove(WorkflowType.DISTRIBUTION, id);
+
+  res.status(200).end();
+});
+
+/**
+ *
+ *
+ * AI CLASSIFICATION WORKFLOW API
+ *
+ *
+ */
+
+/**
+ * Create a new AI classification workflow.
+ */
+router.post('/ai-classification', async (req, res) => {
+  const workflow: AIClassificationWorkflowModel = req.body;
+
+  const savedWorkflow = await dalWorkflow.create(
+    WorkflowType.AI_CLASSIFICATION,
+    workflow
+  );
+  res.status(200).json(savedWorkflow);
+});
+
+/**
+ * Runs a AI classification workflow.
+ */
+router.post('/ai-classification/:id', async (req, res) => {
+  const id: string = req.params.id;
+
+  const workflow = await dalWorkflow.updateDistribution(id, {
+    active: true,
+  });
+
+  if (!workflow) return res.status(404).end('Workflow not found!');
+
+  await WorkflowManager.Instance.run(workflow);
+
+  return res.status(200).json('Workflow complete!');
+});
+
+/**
+ * Update an existing AI classification workflow.
+ */
+router.put('/ai-classification/:id', async (req, res) => {
+  const id = req.params.id;
+  const { name, active, source, destinations, postsPerDestination } = req.body;
+
+  const workflow: Partial<AIClassificationWorkflowModel> = Object.assign(
+    {},
+    name === null ? null : { name },
+    active === null ? null : { active },
+    source === null ? null : { source },
+    destinations === null ? null : { destinations },
+    postsPerDestination === null ? null : { postsPerDestination }
+  );
+
+  const updatedWorkflow = await dalWorkflow.updateDistribution(id, workflow);
+  res.status(200).json(updatedWorkflow);
+});
+
+/**
+ * Get all workflows for a board.
+ */
+router.get('/boards/:id', async (req, res) => {
+  const id = req.params.id;
+
+  const workflows = await dalWorkflow.getAllByBoardId(id);
+  res.status(200).json(workflows);
+});
+
+/**
+ * Get all AI classification workflows for a board.
+ */
+router.get('/distribution/boards/:id', async (req, res) => {
+  const id = req.params.id;
+
+  const workflows = await dalWorkflow.getByBoardId(
+    WorkflowType.DISTRIBUTION,
+    id
+  );
+  res.status(200).json(workflows);
+});
+
+/**
+ * Delete an existing AI classification workflow.
  */
 router.delete('/distribution/:id', async (req, res) => {
   const id = req.params.id;

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
+  AIClassificationWorkflow,
   DistributionWorkflow,
   GroupTask,
   GroupTaskEntity,
@@ -63,6 +64,44 @@ export class WorkflowService {
   runDistribution(workflowID: string): Promise<any> {
     return this.http
       .post<any>('workflows/distribution/' + workflowID, {})
+      .toPromise();
+  }
+
+  getAIClassification(boardID: string): Promise<Workflow[]> {
+    return this.http
+      .get<AIClassificationWorkflow[]>('workflows/ai-classification/boards/' + boardID)
+      .toPromise();
+  }
+
+  createAIClassification(
+    workflow: AIClassificationWorkflow
+  ): Promise<AIClassificationWorkflow> {
+    return this.http
+      .post<AIClassificationWorkflow>('workflows/ai-classification/', workflow)
+      .toPromise();
+  }
+
+  updateAIClassification(
+    workflowID: string,
+    workflow: Partial<AIClassificationWorkflow>
+  ): Promise<AIClassificationWorkflow> {
+    return this.http
+      .put<AIClassificationWorkflow>(
+        'workflows/ai-classification/' + workflowID,
+        workflow
+      )
+      .toPromise();
+  }
+
+  removeAIClassification(workflowID: string): Promise<AIClassificationWorkflow> {
+    return this.http
+      .delete<AIClassificationWorkflow>('workflows/ai-classification/' + workflowID)
+      .toPromise();
+  }
+
+  runAIClassification(workflowID: string): Promise<any> {
+    return this.http
+      .post<any>('workflows/ai-classification/' + workflowID, {})
       .toPromise();
   }
 

@@ -26,6 +26,7 @@ import {
   TaskWorkflow,
   WorkflowType,
   TaskWorkflowType,
+  AIClassificationWorkflow,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
@@ -83,6 +84,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   commentsRequired = false;
   tagsRequired = false;
   postGeneration = 1;
+  numCategoryGeneration = 2;
 
   bucketNameFormControl = new FormControl('valid', [
     Validators.required,
@@ -91,6 +93,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   workflowNameFormControl = new FormControl('valid', [Validators.required]);
   sourceFormControl = new FormControl('valid', [Validators.required]);
   destinationFormControl = new FormControl('valid', [Validators.required]);
+  numClassificationsFormControl = new FormControl('valid', [Validators.required]);
 
   sourceDestinationMatchError = new FormControl(false);
 
@@ -259,8 +262,20 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a AI classification workflow.
+  createAIClassificationWorkflow(): void {
+    if (!this._validAIClassificationWorkflow()) return;
+
+    const workflow: AIClassificationWorkflow = this._assembleAIClassificationWorkflow();
+    this.workflowService.createAIClassification(workflow).then(async () => {
+      await this.loadWorkflows();
+      this.selected.setValue(2);
+      this._clearWorkflowForm();
+    });
+  }
+
   // Runs the specified workflow (task or distribution).
-  runWorkflow(e, workflow: TaskWorkflow | DistributionWorkflow): void {
+  runWorkflow(e, workflow: TaskWorkflow | DistributionWorkflow | AIClassificationWorkflow): void {
     e.stopPropagation();
 
     if (this._isTaskWorkflow(workflow)) {
@@ -275,9 +290,20 @@ export class CreateWorkflowModalComponent implements OnInit {
             'Unable to activate task workflow! Something went wrong.'
           );
         });
-    } else {
+    } else if (this._isDistributionWorkflow(workflow)) {
       this.canvasService
         .runDistributionWorkflow(workflow)
+        .then(async () => {
+          this.openSnackBar(
+            'Workflow: ' + workflow.name + ' completed successfully!'
+          );
+        })
+        .catch(() => {
+          this.openSnackBar('Cancelled workflow! Something went wrong.');
+        });
+    } else {
+      this.canvasService
+        .runAIClassificationWorkflow(workflow)
         .then(async () => {
           this.openSnackBar(
             'Workflow: ' + workflow.name + ' completed successfully!'
@@ -336,6 +362,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.removeFromSourceFormControl.reset();
     this.removeFromSource = false;
     this.postGeneration = 1;
+    this.numCategoryGeneration = 2;
   }
 
   // Type guard to check if an object is a Board.
@@ -345,9 +372,15 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   // Type guard to check if an object is a TaskWorkflow.
   _isTaskWorkflow(
-    object: DistributionWorkflow | TaskWorkflow
+    object: DistributionWorkflow | TaskWorkflow | AIClassificationWorkflow
   ): object is TaskWorkflow {
     return (object as TaskWorkflow).requiredActions !== undefined;
+  }
+
+  // Type guard to check if an object is a DistributionWorkflow.
+  _isDistributionWorkflow(object: DistributionWorkflow | TaskWorkflow | AIClassificationWorkflow
+  ): object is DistributionWorkflow {
+    return (object as DistributionWorkflow).removeFromSource !== undefined;
   }
 
   // Checks if a distribution workflow form is valid.
@@ -430,6 +463,13 @@ export class CreateWorkflowModalComponent implements OnInit {
     );
   }
 
+  _validAIClassificationWorkflow(): boolean {
+    return (
+      this.workflowNameFormControl.valid &&
+      this.sourceFormControl.valid
+    );
+  }
+
   _actionSelected(): boolean {
     return this.commentsRequired || this.tagsRequired;
   }
@@ -498,6 +538,22 @@ export class CreateWorkflowModalComponent implements OnInit {
       type: this.taskWorkflowType.GENERATION,
     };
 
+    return workflow;
+  }
+
+  _assembleAIClassificationWorkflow(): AIClassificationWorkflow {
+    const workflowID: string = generateUniqueID();
+
+    const workflow: AIClassificationWorkflow = {
+      workflowID: workflowID,
+      boardID: this.board.boardID,
+      active: false,
+      name: this.workflowName,
+      source: this._mapToContainer(this.taskSource),
+      destinations: [this._placeholderContainer()],
+      removeFromSource: this.removeFromSource,
+    };
+    
     return workflow;
   }
 

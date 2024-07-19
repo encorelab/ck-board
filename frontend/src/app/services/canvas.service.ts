@@ -5,7 +5,7 @@ import { Board, BoardPermissions } from '../models/board';
 import Comment from '../models/comment';
 import Post, { PostType } from '../models/post';
 import { Tag } from '../models/tag';
-import { DistributionWorkflow, TaskWorkflow } from '../models/workflow';
+import { DistributionWorkflow, TaskWorkflow, AIClassificationWorkflow } from '../models/workflow';
 import { SocketEvent } from '../utils/constants';
 import { FabricUtils, ImageSettings } from '../utils/FabricUtils';
 import { generateUniqueID } from '../utils/Utils';
@@ -346,6 +346,12 @@ export class CanvasService {
     await this.workflowService.runTask(workflow.workflowID);
 
     this.socketService.emit(SocketEvent.WORKFLOW_RUN_TASK, workflow);
+  }
+
+  async runAIClassificationWorkflow(workflow: AIClassificationWorkflow): Promise<void> {
+    await this.workflowService.runAIClassification(workflow.workflowID);
+
+    this.socketService.emit(SocketEvent.WORKFLOW_RUN_AI_CLASSIFICATION, workflow);
   }
 
   async readPost(postID: string) {

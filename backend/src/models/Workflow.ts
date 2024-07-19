@@ -9,6 +9,7 @@ export enum WorkflowType {
   DISTRIBUTION = 'DISTRIBUTION',
   TASK = 'TASK',
   GENERATION = 'GENERATION',
+  AI_CLASSIFICATION = 'AI_CLASSIFICATION',
 }
 
 export enum TaskWorkflowType {
@@ -85,6 +86,14 @@ export class WorkflowModel {
 export class DistributionWorkflowModel extends WorkflowModel {
   @prop({ required: true, type: () => DistributionWorkflowTypeModel })
   public distributionWorkflowType!: DistributionWorkflowTypeModel;
+
+  @prop({ required: true })
+  public removeFromSource!: boolean;
+}
+
+export class AIClassificationWorkflowModel extends WorkflowModel {
+  @prop({ required: true, type: () => AIClassificationWorkflowModel })
+  public aiClassificationWorkflowType!: AIClassificationWorkflowModel;
 
   @prop({ required: true })
   public removeFromSource!: boolean;

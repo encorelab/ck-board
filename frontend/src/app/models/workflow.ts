@@ -27,6 +27,7 @@ export enum WorkflowType {
   DISTRIBUTION = 'DISTRIBUTION',
   TASK = 'TASK',
   GENERATION = 'GENERATION',
+  AI_CLASSIFICATION = 'AI_CLASSIFICATION',
 }
 
 export enum TaskWorkflowType {
@@ -38,6 +39,7 @@ export enum TaskActionType {
   COMMENT = 'COMMENT',
   TAG = 'TAG',
   CREATE_POST = 'CREATE_POST',
+  CREATE_CATEGORIES = 'CREATE_CATEGORIES',
 }
 
 export enum GroupTaskStatus {
@@ -95,6 +97,10 @@ export class TaskWorkflow extends Workflow {
   requiredActions: TaskAction[];
   assignedGroups: string[];
   type?: TaskWorkflowType;
+}
+
+export class AIClassificationWorkflow extends Workflow {
+  removeFromSource: boolean;
 }
 
 const workflows = {

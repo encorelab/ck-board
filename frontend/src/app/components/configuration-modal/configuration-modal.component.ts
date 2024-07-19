@@ -16,7 +16,7 @@ import { Project } from 'src/app/models/project';
 import { Tag } from 'src/app/models/tag';
 import { BoardService } from 'src/app/services/board.service';
 import { CanvasService } from 'src/app/services/canvas.service';
-import { FileUploadService } from 'src/app/services/fileUpload.service';
+// import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
@@ -84,7 +84,7 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public upvoteService: UpvotesService,
     public canvasService: CanvasService,
-    public fileUploadService: FileUploadService,
+//    public fileUploadService: FileUploadService,
     public socketService: SocketService,
     private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -134,24 +134,24 @@ export class ConfigurationModalComponent {
   }
 
   compressFile() {
-    this.fileUploadService.compressFile().then(async (compressedImage) => {
-      this.newCompressedImage = compressedImage;
+    // this.fileUploadService.compressFile().then(async (compressedImage) => {
+    //   this.newCompressedImage = compressedImage;
 
-      const board = await this.canvasService.updateBoardImage(
-        this.boardID,
-        this.newCompressedImage
-      );
-      this.data.update(board);
-      this.currentBgImage = board.bgImage;
-      if (board.bgImage) {
-        this.bgImgSettings = board.bgImage.imgSettings;
-        this.backgroundPosX = board.bgImage.imgSettings.left;
-        this.backgroundPosY = board.bgImage.imgSettings.top;
-        this.backgroundScale = board.bgImage
-          ? Math.round(board.bgImage.imgSettings.scaleX * 100)
-          : 100;
-      }
-    });
+    //   const board = await this.canvasService.updateBoardImage(
+    //     this.boardID,
+    //     this.newCompressedImage
+    //   );
+    //   this.data.update(board);
+    //   this.currentBgImage = board.bgImage;
+    //   if (board.bgImage) {
+    //     this.bgImgSettings = board.bgImage.imgSettings;
+    //     this.backgroundPosX = board.bgImage.imgSettings.left;
+    //     this.backgroundPosY = board.bgImage.imgSettings.top;
+    //     this.backgroundScale = board.bgImage
+    //       ? Math.round(board.bgImage.imgSettings.scaleX * 100)
+    //       : 100;
+    //   }
+    // });
   }
 
   async updateBoardImageSettings(): Promise<Board> {

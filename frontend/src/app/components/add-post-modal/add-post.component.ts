@@ -1,7 +1,7 @@
 import { T } from '@angular/cdk/keycodes';
 import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { Board, BoardType } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
 import Post, {

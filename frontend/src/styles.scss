@@ -6,30 +6,39 @@
 
 $font-family-default: '"Roboto", sans-serif';
 
-$custom-typography: mat.define-typography-config(
+$custom-typography: mat.define-legacy-typography-config(
   $font-family: $font-family-default,
 );
-@include mat.core($custom-typography);
+// TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
+//  The following line adds:
+//    1. Default typography styles for all components
+//    2. Styles for typography hierarchy classes (e.g. .mat-headline-1)
+//  If you specify typography styles for the components you use elsewhere, you should delete this line.
+//  If you don't need the default component typographies but still want the hierarchy styles,
+//  you can delete this line and instead use:
+//    `@include mat.legacy-typography-hierarchy($custom-typography);`
+@include mat.all-legacy-component-typographies($custom-typography);
+@include mat.legacy-core();
 
-@include mat.core-theme(light.$ckb-light-theme);
-@include mat.autocomplete-theme(light.$ckb-light-theme);
-@include mat.button-theme(light.$ckb-light-theme);
-@include mat.card-theme(light.$ckb-light-theme);
-@include mat.checkbox-theme(light.$ckb-light-theme);
-@include mat.chips-theme(light.$ckb-light-theme);
-@include mat.dialog-theme(light.$ckb-light-theme);
-@include mat.form-field-theme(light.$ckb-light-theme);
+@include mat.legacy-core-theme(light.$ckb-light-theme);
+@include mat.legacy-autocomplete-theme(light.$ckb-light-theme);
+@include mat.legacy-button-theme(light.$ckb-light-theme);
+@include mat.legacy-card-theme(light.$ckb-light-theme);
+@include mat.legacy-checkbox-theme(light.$ckb-light-theme);
+@include mat.legacy-chips-theme(light.$ckb-light-theme);
+@include mat.legacy-dialog-theme(light.$ckb-light-theme);
+@include mat.legacy-form-field-theme(light.$ckb-light-theme);
 @include mat.grid-list-theme(light.$ckb-light-theme);
 @include mat.icon-theme(light.$ckb-light-theme);
-@include mat.input-theme(light.$ckb-light-theme);
-@include mat.list-theme(light.$ckb-light-theme);
-@include mat.menu-theme(light.$ckb-light-theme);
-@include mat.select-theme(light.$ckb-light-theme);
-@include mat.slide-toggle-theme(light.$ckb-light-theme);
-@include mat.snack-bar-theme(light.$ckb-light-theme);
-@include mat.tabs-theme(light.$ckb-light-theme);
+@include mat.legacy-input-theme(light.$ckb-light-theme);
+@include mat.legacy-list-theme(light.$ckb-light-theme);
+@include mat.legacy-menu-theme(light.$ckb-light-theme);
+@include mat.legacy-select-theme(light.$ckb-light-theme);
+@include mat.legacy-slide-toggle-theme(light.$ckb-light-theme);
+@include mat.legacy-snack-bar-theme(light.$ckb-light-theme);
+@include mat.legacy-tabs-theme(light.$ckb-light-theme);
 @include mat.toolbar-theme(light.$ckb-light-theme);
-@include mat.tooltip-theme(light.$ckb-light-theme);
+@include mat.legacy-tooltip-theme(light.$ckb-light-theme);
 
 $color-config: mat.get-color-config(light.$ckb-light-theme);
 $accent-palette: map.get($color-config, 'accent');

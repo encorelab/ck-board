@@ -7,11 +7,11 @@ import {
   Validators,
 } from '@angular/forms';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-  MatDialog,
-} from '@angular/material/dialog';
-import { MatSnackBarConfig } from '@angular/material/snack-bar';
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialog as MatDialog,
+} from '@angular/material/legacy-dialog';
+import { MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
 import { Board, BoardScope } from 'src/app/models/board';
 import { Tag } from 'src/app/models/tag';
 import Bucket from 'src/app/models/bucket';

@@ -1,9 +1,9 @@
 import { Component, OnInit, Inject, Input, OnChanges } from '@angular/core';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-  MatDialog,
-} from '@angular/material/dialog';
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialog as MatDialog,
+} from '@angular/material/legacy-dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { GroupService } from 'src/app/services/group.service';
 import { TodoItem, CompletionQuality } from 'src/app/models/todoItem';
@@ -12,7 +12,7 @@ import {
   TODO_TYPE_COLORS,
   EXPANDED_COMPLETION_QUALITY,
 } from 'src/app/utils/constants';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AddTodoListModalComponent } from '../add-todo-list-modal/add-todo-list-modal.component';
 import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';

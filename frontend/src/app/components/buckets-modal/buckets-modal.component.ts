@@ -1,9 +1,9 @@
 import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { Board } from 'src/app/models/board';
 import User from 'src/app/models/user';
 import { BucketService } from 'src/app/services/bucket.service';
@@ -24,7 +24,7 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from 'src/app/utils/converters';
 import Upvote from 'src/app/models/upvote';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator, LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 
 @Component({
   selector: 'app-buckets-modal',

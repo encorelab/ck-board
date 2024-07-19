@@ -1,19 +1,19 @@
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
-import { MatOption } from '@angular/material/core';
-import { MatSelect } from '@angular/material/select';
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
+import { MatLegacyOption as MatOption } from '@angular/material/legacy-core';
+import { MatLegacySelect as MatSelect } from '@angular/material/legacy-select';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { ConfirmModalComponent } from '../../confirm-modal/confirm-modal.component';
 import { MoveGroupMembersComponent } from '../move-group-members/move-group-members.component';
 import { GroupService } from 'src/app/services/group.service';
 import { Group } from 'src/app/models/group';
-import { MatTabChangeEvent } from '@angular/material/tabs';
+import { MatLegacyTabChangeEvent as MatTabChangeEvent } from '@angular/material/legacy-tabs';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 
 @Component({

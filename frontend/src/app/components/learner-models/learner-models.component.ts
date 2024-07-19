@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import * as Highcharts from 'highcharts';
 import more from 'highcharts/highcharts-more';
 import exporting from 'highcharts/modules/exporting';

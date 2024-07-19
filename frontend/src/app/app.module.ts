@@ -49,7 +49,7 @@ import { CkWorkspaceComponent } from './components/ck-workspace/ck-workspace.com
 import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
 import { MoveGroupMembersComponent } from './components/groups/move-group-members/move-group-members.component';
 
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { AutofocusDirective } from './autofocus.directive';
 import { TodoListModalComponent } from './components/todo-list-modal/todo-list-modal.component';
 import { AddTodoListModalComponent } from './components/add-todo-list-modal/add-todo-list-modal.component';

@@ -19,6 +19,12 @@ export const isDistribution = <T extends WorkflowModel>(
   return doc?.__t === WorkflowType.DISTRIBUTION;
 };
 
+export const isAIClassification = <T extends WorkflowModel>(
+  doc: Document & KeyStringAny
+): doc is DocumentType<T> => {
+  return doc?.__t === WorkflowType.AI_CLASSIFICATION;
+};
+
 export const isTask = <T extends WorkflowModel>(
   doc: Document & KeyStringAny
 ): doc is DocumentType<T> => {

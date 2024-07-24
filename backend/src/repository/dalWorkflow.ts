@@ -4,6 +4,7 @@ import {
   Workflow,
   WorkflowType,
   DistributionWorkflow,
+  AIClassificationWorkflow,
   TaskWorkflow,
 } from '../models/Workflow';
 import dalGroupTask from './dalGroupTask';
@@ -63,6 +64,8 @@ export const create = async (type: WorkflowType, workflow: WorkflowModel) => {
       return await DistributionWorkflow.create(workflow);
     } else if (type == WorkflowType.TASK) {
       return await TaskWorkflow.create(workflow);
+    } else if (type == WorkflowType.AI_CLASSIFICATION) {
+      return await AIClassificationWorkflow.create(workflow);
     }
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -75,6 +78,21 @@ export const updateDistribution = async (
 ) => {
   try {
     return await DistributionWorkflow.findOneAndUpdate(
+      { workflowID: id },
+      update,
+      { new: true }
+    );
+  } catch (err) {
+    throw new Error('500');
+  }
+};
+
+export const updateAIClassification = async (
+  id: string,
+  update: Partial<WorkflowModel>
+) => {
+  try {
+    return await AIClassificationWorkflow.findOneAndUpdate(
       { workflowID: id },
       update,
       { new: true }
@@ -131,6 +149,7 @@ const dalWorkflow = {
   getByBoardId,
   create,
   updateDistribution,
+  updateAIClassification,
   updateTask,
   remove,
   removeByBoard,

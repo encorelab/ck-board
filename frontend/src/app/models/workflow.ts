@@ -100,6 +100,7 @@ export class TaskWorkflow extends Workflow {
 }
 
 export class AIClassificationWorkflow extends Workflow {
+  numCategoryGeneration: number;
   removeFromSource: boolean;
 }
 

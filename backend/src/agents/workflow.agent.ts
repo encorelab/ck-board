@@ -14,6 +14,7 @@ import {
   DistributionWorkflowType,
   Container,
   TaskWorkflowType,
+  AIClassificationWorkflowModel,
 } from '../models/Workflow';
 import dalBucket from '../repository/dalBucket';
 import dalPost from '../repository/dalPost';
@@ -23,6 +24,7 @@ import dalVote from '../repository/dalVote';
 import { convertPostsFromID } from '../utils/converter';
 import {
   isDistribution,
+  isAIClassification,
   isTask,
   cloneManyToBoard,
   distribute,
@@ -49,6 +51,8 @@ class WorkflowManager {
   async run(workflow: Document<any, BeAnObject, any> & WorkflowModel) {
     if (isDistribution<DistributionWorkflowModel>(workflow)) {
       this.runDistributionWorkflow(workflow);
+    } else if (isAIClassification<AIClassificationWorkflowModel>(workflow)) {
+      this.runAIClassification(workflow); 
     } else if (isTask<TaskWorkflowModel>(workflow)) {
       await this.runTaskWorkflow(workflow);
       this.runningWorkflows.push(workflow);
@@ -87,6 +91,24 @@ class WorkflowManager {
         removeFromSource
       );
     }
+
+    await dalWorkflow.updateDistribution(workflow.workflowID, {
+      active: false,
+    });
+
+    return posts;
+  }
+
+  async runAIClassification(workflow: AIClassificationWorkflowModel) {
+    const { source, numCategoryGeneration, removeFromSource } = workflow;
+    let posts;
+    
+    posts = this.runAIClassificationWorkflow(
+      workflow,
+      source,
+      numCategoryGeneration,
+      removeFromSource
+    );
 
     await dalWorkflow.updateDistribution(workflow.workflowID, {
       active: false,
@@ -248,6 +270,43 @@ class WorkflowManager {
     if (removeFromSource) {
       return removePostFromSource(source, filteredPosts);
     }
+  }
+
+  async runAIClassificationWorkflow(
+    workflow: AIClassificationWorkflowModel,
+    source: Container,
+    numCategoryGeneration: number,
+    removeFromSource: boolean
+  ) {
+    /* let sourcePosts;
+    if (source.type == ContainerType.BOARD) {
+      sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
+      sourcePosts = sourcePosts.map((p) => p.postID);
+    } else {
+      const bucket: BucketModel | null = await dalBucket.getById(source.id);
+      sourcePosts = bucket ? bucket.posts : [];
+    }
+    const split: string[][] = await distribute(
+      shuffle(sourcePosts),
+      workflow.distributionWorkflowType.data
+    );
+
+    for (let i = 0; i < destinations.length; i++) {
+      const destination = destinations[i];
+      const posts = split[i];
+
+      if (destination.type == ContainerType.BOARD) {
+        const originals: PostModel[] = await convertPostsFromID(posts);
+        const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
+        await dalPost.createMany(copied);
+      } else {
+        await dalBucket.addPost(destination.id, posts);
+      }
+    }
+
+    if (removeFromSource) {
+      return removePostFromSource(source, sourcePosts);
+    } */
   }
 
   async randomDistributionWorkflow(

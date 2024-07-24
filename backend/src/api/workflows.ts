@@ -139,7 +139,7 @@ router.post('/ai-classification', async (req, res) => {
 router.post('/ai-classification/:id', async (req, res) => {
   const id: string = req.params.id;
 
-  const workflow = await dalWorkflow.updateDistribution(id, {
+  const workflow = await dalWorkflow.updateAIClassification(id, {
     active: true,
   });
 
@@ -155,25 +155,24 @@ router.post('/ai-classification/:id', async (req, res) => {
  */
 router.put('/ai-classification/:id', async (req, res) => {
   const id = req.params.id;
-  const { name, active, source, destinations, postsPerDestination } = req.body;
+  const { name, active, source, numCategoryGeneration } = req.body;
 
   const workflow: Partial<AIClassificationWorkflowModel> = Object.assign(
     {},
     name === null ? null : { name },
     active === null ? null : { active },
     source === null ? null : { source },
-    destinations === null ? null : { destinations },
-    postsPerDestination === null ? null : { postsPerDestination }
+    numCategoryGeneration === null ? null : { numCategoryGeneration }
   );
 
-  const updatedWorkflow = await dalWorkflow.updateDistribution(id, workflow);
+  const updatedWorkflow = await dalWorkflow.updateAIClassification(id, workflow);
   res.status(200).json(updatedWorkflow);
 });
 
 /**
  * Get all workflows for a board.
  */
-router.get('/boards/:id', async (req, res) => {
+router.get('/ai-classification/boards/:id', async (req, res) => {
   const id = req.params.id;
 
   const workflows = await dalWorkflow.getAllByBoardId(id);
@@ -183,11 +182,11 @@ router.get('/boards/:id', async (req, res) => {
 /**
  * Get all AI classification workflows for a board.
  */
-router.get('/distribution/boards/:id', async (req, res) => {
+router.get('/ai-classification/boards/:id', async (req, res) => {
   const id = req.params.id;
 
   const workflows = await dalWorkflow.getByBoardId(
-    WorkflowType.DISTRIBUTION,
+    WorkflowType.AI_CLASSIFICATION,
     id
   );
   res.status(200).json(workflows);
@@ -196,10 +195,10 @@ router.get('/distribution/boards/:id', async (req, res) => {
 /**
  * Delete an existing AI classification workflow.
  */
-router.delete('/distribution/:id', async (req, res) => {
+router.delete('/ai-classification/:id', async (req, res) => {
   const id = req.params.id;
 
-  await dalWorkflow.remove(WorkflowType.DISTRIBUTION, id);
+  await dalWorkflow.remove(WorkflowType.AI_CLASSIFICATION, id);
 
   res.status(200).end();
 });

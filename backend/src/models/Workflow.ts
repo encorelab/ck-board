@@ -92,8 +92,8 @@ export class DistributionWorkflowModel extends WorkflowModel {
 }
 
 export class AIClassificationWorkflowModel extends WorkflowModel {
-  @prop({ required: true, type: () => AIClassificationWorkflowModel })
-  public aiClassificationWorkflowType!: AIClassificationWorkflowModel;
+  @prop({ required: true })
+  public numCategoryGeneration!: number;
 
   @prop({ required: true })
   public removeFromSource!: boolean;
@@ -119,6 +119,13 @@ export const DistributionWorkflow = getDiscriminatorModelForClass(
   DistributionWorkflowModel,
   WorkflowType.DISTRIBUTION
 );
+
+export const AIClassificationWorkflow = getDiscriminatorModelForClass(
+  Workflow,
+  AIClassificationWorkflowModel,
+  WorkflowType.AI_CLASSIFICATION
+);
+
 export const TaskWorkflow = getDiscriminatorModelForClass(
   Workflow,
   TaskWorkflowModel,

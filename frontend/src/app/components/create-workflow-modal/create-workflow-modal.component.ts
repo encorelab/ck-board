@@ -551,6 +551,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       name: this.workflowName,
       source: this._mapToContainer(this.taskSource),
       destinations: [this._placeholderContainer()],
+      numCategoryGeneration: this.numCategoryGeneration,
       removeFromSource: this.removeFromSource,
     };
     

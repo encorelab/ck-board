@@ -124,6 +124,8 @@ export const remove = async (type: WorkflowType, id: string) => {
       deleted = await DistributionWorkflow.findOneAndDelete({ workflowID: id });
     } else if (type == WorkflowType.TASK) {
       deleted = await TaskWorkflow.findOneAndDelete({ workflowID: id });
+    } else if (type == WorkflowType.AI_CLASSIFICATION) {
+      deleted = await AIClassificationWorkflow.findOneAndDelete({ workflowID: id });
     }
     await dalGroupTask.removeByWorkflow(id);
     return deleted;

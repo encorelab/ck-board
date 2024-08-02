@@ -16,6 +16,7 @@ import {
   TaskWorkflowType,
   AIClassificationWorkflowModel,
 } from '../models/Workflow';
+import { generateUniqueID } from '../utils/bucket.helpers';
 import dalBucket from '../repository/dalBucket';
 import dalPost from '../repository/dalPost';
 import dalWorkflow from '../repository/dalWorkflow';
@@ -102,7 +103,6 @@ class WorkflowManager {
   async runAIClassification(workflow: AIClassificationWorkflowModel) {
     const { source, numCategoryGeneration, removeFromSource } = workflow;
     let posts;
-    
     posts = this.runAIClassificationWorkflow(
       workflow,
       source,
@@ -110,7 +110,7 @@ class WorkflowManager {
       removeFromSource
     );
 
-    await dalWorkflow.updateDistribution(workflow.workflowID, {
+    await dalWorkflow.updateAIClassification(workflow.workflowID, {
       active: false,
     });
 
@@ -278,15 +278,22 @@ class WorkflowManager {
     numCategoryGeneration: number,
     removeFromSource: boolean
   ) {
-    /* let sourcePosts;
+    let sourcePosts;
     if (source.type == ContainerType.BOARD) {
       sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
       sourcePosts = sourcePosts.map((p) => p.postID);
     } else {
-      const bucket: BucketModel | null = await dalBucket.getById(source.id);
-      sourcePosts = bucket ? bucket.posts : [];
+      const sourceBucket: BucketModel | null = await dalBucket.getById(source.id);
+      sourcePosts = sourceBucket ? sourceBucket.posts : [];
     }
-    const split: string[][] = await distribute(
+    const newBucket = new BucketModel();
+    newBucket.bucketID = generateUniqueID(); 
+    newBucket.boardID = workflow.boardID;
+    newBucket.name = 'Test Bucket 1';
+    newBucket.posts = [];
+    const destinationBucket: BucketModel = await dalBucket.create(newBucket);
+
+    /* const split: string[][] = await distribute(
       shuffle(sourcePosts),
       workflow.distributionWorkflowType.data
     );
@@ -306,7 +313,7 @@ class WorkflowManager {
 
     if (removeFromSource) {
       return removePostFromSource(source, sourcePosts);
-    } */
+    }*/
   }
 
   async randomDistributionWorkflow(

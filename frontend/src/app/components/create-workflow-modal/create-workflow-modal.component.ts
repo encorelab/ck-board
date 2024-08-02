@@ -58,6 +58,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   bucketName = '';
   workflowName = '';
+  classificationTheme = '';
   showDelete = false;
 
   // Common fields between all workflows
@@ -94,6 +95,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   sourceFormControl = new FormControl('valid', [Validators.required]);
   destinationFormControl = new FormControl('valid', [Validators.required]);
   numClassificationsFormControl = new FormControl('valid', [Validators.required]);
+  classificationThemeFormControl = new FormControl('valid', [Validators.required]);
 
   sourceDestinationMatchError = new FormControl(false);
 
@@ -290,18 +292,7 @@ export class CreateWorkflowModalComponent implements OnInit {
             'Unable to activate task workflow! Something went wrong.'
           );
         });
-    } else if (this._isDistributionWorkflow(workflow)) {
-      this.canvasService
-        .runDistributionWorkflow(workflow)
-        .then(async () => {
-          this.openSnackBar(
-            'Workflow: ' + workflow.name + ' completed successfully!'
-          );
-        })
-        .catch(() => {
-          this.openSnackBar('Cancelled workflow! Something went wrong.');
-        });
-    } else {
+    } else if (this._isAIClassificationWorkflow(workflow)) {
       this.canvasService
         .runAIClassificationWorkflow(workflow)
         .then(async () => {
@@ -310,9 +301,20 @@ export class CreateWorkflowModalComponent implements OnInit {
           );
         })
         .catch(() => {
-          this.openSnackBar('Cancelled workflow! Something went wrong.');
+          this.openSnackBar('Cancelled AI workflow! Something went wrong.');
         });
-    }
+    } else {
+      this.canvasService
+        .runDistributionWorkflow(workflow)
+        .then(async () => {
+          this.openSnackBar(
+            'Workflow: ' + workflow.name + ' completed successfully!'
+          );
+        })
+        .catch(() => {
+          this.openSnackBar('Cancelled distribution workflow! Something went wrong.');
+        });
+    } 
   }
 
   // Opens a confirmation dialog and deletes the workflow.
@@ -359,6 +361,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.destinationFormControl.reset();
     this.tagsFormControl.reset();
     this.workflowTypeFormControl.reset();
+    this.classificationThemeFormControl.reset();
     this.removeFromSourceFormControl.reset();
     this.removeFromSource = false;
     this.postGeneration = 1;
@@ -381,6 +384,12 @@ export class CreateWorkflowModalComponent implements OnInit {
   _isDistributionWorkflow(object: DistributionWorkflow | TaskWorkflow | AIClassificationWorkflow
   ): object is DistributionWorkflow {
     return (object as DistributionWorkflow).removeFromSource !== undefined;
+  }
+
+  // Type guard to check if an object is a AIClassificationWorkflow.
+  _isAIClassificationWorkflow(object: DistributionWorkflow | TaskWorkflow | AIClassificationWorkflow
+  ): object is AIClassificationWorkflow {
+    return (object as AIClassificationWorkflow).classificationTheme !== undefined;
   }
 
   // Checks if a distribution workflow form is valid.
@@ -466,7 +475,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   _validAIClassificationWorkflow(): boolean {
     return (
       this.workflowNameFormControl.valid &&
-      this.sourceFormControl.valid
+      this.sourceFormControl.valid &&
+      this.classificationThemeFormControl.valid
     );
   }
 
@@ -551,6 +561,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       name: this.workflowName,
       source: this._mapToContainer(this.taskSource),
       destinations: [this._placeholderContainer()],
+      classificationTheme: this.classificationTheme,
       numCategoryGeneration: this.numCategoryGeneration,
       removeFromSource: this.removeFromSource,
     };

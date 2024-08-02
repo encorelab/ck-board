@@ -93,6 +93,9 @@ export class DistributionWorkflowModel extends WorkflowModel {
 
 export class AIClassificationWorkflowModel extends WorkflowModel {
   @prop({ required: true })
+  public classificationTheme!: string;
+
+  @prop({ required: true })
   public numCategoryGeneration!: number;
 
   @prop({ required: true })

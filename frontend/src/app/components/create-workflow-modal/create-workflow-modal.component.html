@@ -470,6 +470,21 @@
             >
           </mat-form-field>
         </div>
+        <div>
+          <mat-form-field appearance="fill"
+          style="font-size: 14px !important">
+            <mat-label>Classification Theme</mat-label>
+            <input
+              [formControl]="classificationThemeFormControl"
+              [errorStateMatcher]="matcher"
+              matInput
+              [(ngModel)]="classificationTheme"
+            />
+            <mat-error *ngIf="classificationThemeFormControl.hasError('required')"
+              >Classification theme name required!</mat-error
+            >
+          </mat-form-field>
+        </div>
         <section>
           <h4 style="font-weight: bold">Workflow Actions:</h4>
           <div>

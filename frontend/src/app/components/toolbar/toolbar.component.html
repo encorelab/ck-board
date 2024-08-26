@@ -16,7 +16,7 @@
   >
     {{ user.username }}
   </button>
-  <span *ngIf="!showSignOut" class="username-span">{{ user.username }}</span>
+  <span *ngIf="!showSignOut && !mobile" class="username-span">{{ user.username }}</span>
 
   <ng-content select="[navbarMenu]"></ng-content>
 

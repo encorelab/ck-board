@@ -93,6 +93,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   embedded: boolean = false; // If standalone board embed
   viewType = ViewType.WORKSPACE;
 
+  mobile: boolean = false;
+
   constructor(
     public userService: UserService,
     public projectService: ProjectService,
@@ -117,6 +119,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (window.screen.width === 360) { // 768px portrait
+      this.mobile = true;
+    }
     this.user = this.userService.user!;
     this.loadWorkspaceData();
   }

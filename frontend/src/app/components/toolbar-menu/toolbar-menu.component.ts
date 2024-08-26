@@ -19,6 +19,7 @@ import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component'
 })
 export class ToolbarMenuComponent implements OnInit {
   user: AuthUser;
+  mobile: boolean = false;
 
   @Input()
   board: Board;
@@ -37,6 +38,9 @@ export class ToolbarMenuComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.userService.user!;
+    if (window.screen.width < 700) {
+      this.mobile = true;
+    }
   }
 
   openWorkflowDialog() {

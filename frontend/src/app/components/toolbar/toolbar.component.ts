@@ -24,7 +24,7 @@ export class ToolbarComponent implements OnInit {
   constructor(private userService: UserService, private router: Router) {}
 
   ngOnInit(): void {
-    if (window.screen.width < 700) { // 768px portrait
+    if (window.screen.width < 700) {
     this.mobile = true;
     }
   }

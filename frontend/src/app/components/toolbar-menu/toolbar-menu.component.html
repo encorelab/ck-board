@@ -2,6 +2,7 @@
     <mat-icon>dehaze</mat-icon>
 </button>
 <mat-menu #navbarMenu="matMenu">
+    <div class="menu-username" *ngIf="mobile">{{user.username}} <hr style="border: 1px solid #3a34b3;"> </div>
     <button mat-menu-item *ngIf="user.role === Role.TEACHER && !!board && board.scope === BoardScope.PROJECT_SHARED" (click)="openWorkflowDialog()">
         <mat-icon>timeline</mat-icon>
         Manage Buckets & Workflows

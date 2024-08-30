@@ -11,7 +11,7 @@
 </app-toolbar>
 <div class="container d-flex align-items-center justify-content-center">
     <div class="heading">
-      <button
+      <button *ngIf="project"
         mat-icon-button
         routerLink="{{'/project/'+project.projectID}}"
         aria-label="Return to Dashboard"

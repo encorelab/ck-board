@@ -17,7 +17,7 @@ import { MatLegacyAutocompleteModule as MatAutocompleteModule } from '@angular/m
 import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
-import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/material/legacy-progress-bar';
+import { MatProgressBarModule as MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatLegacySlideToggleModule as MatSlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatLegacyRadioModule as MatRadioModule } from '@angular/material/legacy-radio';

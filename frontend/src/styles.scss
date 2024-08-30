@@ -72,3 +72,25 @@ a {
 .wide-snackbar {
   max-width: 75% !important;
 }
+
+/* mat-slider - temp legacy fix */
+.slider .mat-slider-track-wrapper {
+  background-color: #3a34b3;
+}
+
+.slider .mat-slider-thumb {
+  background-color: #f44336;
+}
+
+.slider .mat-slider-thumb-label {
+  background-color: #f44336;
+}
+
+.slider .mat-slider-thumb-label-text {
+  color: white;
+}
+
+/* radio button - temp legacy fix */
+.mat-radio-checked .mat-radio-inner-circle {
+  background-color: #3a34b3;
+}

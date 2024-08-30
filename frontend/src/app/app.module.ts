@@ -8,7 +8,7 @@ import { JwtModule } from '@auth0/angular-jwt';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-
+import { MatLegacySliderModule } from '@angular/material/legacy-slider';
 
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -133,6 +133,7 @@ export function tokenGetter() {
     SwiperModule,
     MaterialModule,
     DragDropModule,
+    MatLegacySliderModule,
     MatSortModule,
     HighchartsChartModule,
   ],

@@ -107,7 +107,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
-    public dialog: MatDialog,
+    private dialog: MatDialog,
     private snackbarService: SnackbarService,
     public bucketService: BucketService,
     public boardService: BoardService,

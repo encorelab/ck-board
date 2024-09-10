@@ -16,6 +16,12 @@
   background-color: #f5f5f5; 
 }
 
+.toolbarTitle{
+  display: inline-block;  /* Makes the element behave like a box */
+  white-space: nowrap;  /* Prevents text from wrapping */
+  overflow: hidden;  /* Hides overflowing content */
+  text-overflow: ellipsis;  /* Adds "..." to overflowing content */
+}
 .view-header {
   position: fixed; 
   top: 64px; 

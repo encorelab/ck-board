@@ -17,6 +17,9 @@ export class SsoGuard implements CanActivate {
     _state: RouterStateSnapshot
   ) {
     if (this.userService.loggedIn) {
+      if (window.opener != null) {
+        window.opener.postMessage('loadAttemptedUrl', '*');
+      }
       return true;
     } else {
       if (await this.userService.isSsoEnabled()) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, Input, OnChanges } from '@angular/core';
+import { Component, OnInit, OnChanges, Input } from '@angular/core';
 import {
   MatLegacyDialogRef as MatDialogRef,
   MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
@@ -17,7 +17,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AddTodoListModalComponent } from '../add-todo-list-modal/add-todo-list-modal.component';
 import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
-import { interval } from 'rxjs';
+import { interval, Observable } from 'rxjs';
 import { PausableObservable, pausable } from 'rxjs-pausable';
 import { Group } from 'src/app/models/group';
 
@@ -28,23 +28,22 @@ import { Group } from 'src/app/models/group';
 })
 export class TodoListModalComponent implements OnInit, OnChanges {
   minDate: Date;
-  userGroups: Group[];
-  personalTodoItems: TodoItem[];
-  groupTodoItems: TodoItem[];
-  todoItemsMap: Map<string, TodoItem>;
-  personalDataSource: MatTableDataSource<TodoItem>;
-  groupDataSource: MatTableDataSource<TodoItem>;
-  groupIDtoGroupMap: object;
+  userGroups: Group[] = [];
+  personalTodoItems: TodoItem[] = [];
+  groupTodoItems: TodoItem[] = [];
+  todoItemsMap: Map<string, TodoItem> = new Map();
+  personalDataSource: MatTableDataSource<TodoItem> = new MatTableDataSource<TodoItem>([]);
+  groupDataSource: MatTableDataSource<TodoItem> = new MatTableDataSource<TodoItem>([]);
+  groupIDtoGroupMap: { [key: string]: Group } = {};
 
   selection = new SelectionModel<TodoItem>(true, []);
   pausable: PausableObservable<number>;
-  completedItemsDataSource: MatTableDataSource<TodoItem>;
+  completedItemsDataSource: MatTableDataSource<TodoItem> = new MatTableDataSource<TodoItem>([]);
   CONFETTI_DELAY = 3400;
   CONFETTI_DURATION = 500;
   todoItemTypes = EXPANDED_TODO_TYPE;
   todoItemColors = TODO_TYPE_COLORS;
-  EXPANDED_COMPLETION_QUALITY: typeof EXPANDED_COMPLETION_QUALITY =
-    EXPANDED_COMPLETION_QUALITY;
+  EXPANDED_COMPLETION_QUALITY: typeof EXPANDED_COMPLETION_QUALITY = EXPANDED_COMPLETION_QUALITY;
   CompletionQuality: typeof CompletionQuality = CompletionQuality;
   displayColumns = ['select', 'task-title', 'type', 'deadline', 'edit'];
   displayGroupColumns = [
@@ -64,11 +63,8 @@ export class TodoListModalComponent implements OnInit, OnChanges {
     'options',
   ];
 
-  @Input()
-  projectID: string;
-
-  @Input()
-  userID: string;
+  @Input() projectID: string = '';
+  @Input() userID: string = '';
 
   constructor(
     public dialog: MatDialog,
@@ -78,9 +74,14 @@ export class TodoListModalComponent implements OnInit, OnChanges {
 
   async ngOnInit() {
     await this.getTodoItems();
-    this.pausable = interval(800).pipe(
-      pausable()
-    ) as PausableObservable<number>;
+
+    // Create an observable using interval and cast it to any first
+    const interval$ = interval(800) as any;
+
+    // Apply pausable() and cast the result
+    this.pausable = pausable()(interval$) as PausableObservable<number>;
+
+    // Subscribe and pause initially
     this.pausable.subscribe(this.shoot.bind(this));
     this.pausable.pause();
   }
@@ -90,68 +91,63 @@ export class TodoListModalComponent implements OnInit, OnChanges {
   }
 
   async getTodoItems() {
-    this.personalTodoItems = await this.todoItemService.getByUserProject(
-      this.userID,
-      this.projectID
-    );
+    try {
+      this.personalTodoItems = await this.todoItemService.getByUserProject(this.userID, this.projectID) ?? [];
 
-    this.userGroups = await this.groupService.getByUserAndProject(
-      this.userID,
-      this.projectID
-    );
+      this.userGroups = await this.groupService.getByUserAndProject(this.userID, this.projectID) ?? [];
 
-    this.groupIDtoGroupMap = this.userGroups.reduce(function (map, obj) {
-      map[obj.groupID] = obj;
-      return map;
-    }, {});
+      this.groupIDtoGroupMap = this.userGroups.reduce((map, obj) => {
+        if (obj?.groupID) {
+          map[obj.groupID] = obj;
+        }
+        return map;
+      }, {} as { [key: string]: Group });
 
-    this.groupTodoItems = await this.todoItemService.getMultipleByGroup(
-      this.userGroups.map((group) => group.groupID)
-    );
+      this.groupTodoItems = await this.todoItemService.getMultipleByGroup(this.userGroups.map(group => group.groupID)) ?? [];
 
-    this.updateTableDataSource();
+      this.updateTableDataSource();
+    } catch (error) {
+      console.error('Error fetching todo items or groups:', error);
+      // Handle error as needed
+    }
   }
 
   updateTableDataSource() {
     this.personalDataSource = new MatTableDataSource<TodoItem>(
-      this.personalTodoItems.filter(
-        (todoItem: TodoItem) => !todoItem.completed && !todoItem.groupID
-      )
+      this.personalTodoItems.filter(todoItem => !todoItem.completed && !todoItem.groupID)
     );
 
     this.groupDataSource = new MatTableDataSource<TodoItem>(
-      this.groupTodoItems.filter((todoItem: TodoItem) => !todoItem.completed)
+      this.groupTodoItems.filter(todoItem => !todoItem.completed)
     );
 
     this.todoItemsMap = new Map(
-      this.personalTodoItems.map((todo) => [todo.todoItemID, todo])
+      this.personalTodoItems.map(todo => [todo.todoItemID, todo])
     );
 
     this.completedItemsDataSource = new MatTableDataSource<TodoItem>(
-      [...this.todoItemsMap.values()].filter(
-        (todoItem: TodoItem) => todoItem.completed
-      )
+      [...this.todoItemsMap.values()].filter(todoItem => todoItem.completed)
     );
   }
 
-  isAllSelected(dataSource) {
+  isAllSelected(dataSource: MatTableDataSource<TodoItem>) {
     const numSelected = this.selection.selected.length;
-    const numRows = dataSource.data.length;
+    const numRows = dataSource?.data?.length ?? 0;
     return numSelected === numRows;
   }
 
-  masterToggle(dataSource) {
+  masterToggle(dataSource: MatTableDataSource<TodoItem>) {
     this.isAllSelected(dataSource)
       ? this.selection.clear()
-      : dataSource.data.forEach((row) => this.selection.select(row));
+      : dataSource.data?.forEach(row => this.selection.select(row));
   }
 
   async completeTodoItem() {
     this.playAudio();
     setTimeout(() => {
       this.shoot();
-      this.pausable.resume();
-      setTimeout(() => this.pausable.pause(), this.CONFETTI_DURATION);
+      this.pausable?.resume();
+      setTimeout(() => this.pausable?.pause(), this.CONFETTI_DURATION);
     }, this.CONFETTI_DELAY);
   }
 
@@ -161,27 +157,33 @@ export class TodoListModalComponent implements OnInit, OnChanges {
         width: '500px',
         data: {
           title: 'Confirmation',
-          message:
-            'This will permanently delete the selected Todo Items. Are you sure you want to do this?',
+          message: 'This will permanently delete the selected Todo Items. Are you sure you want to do this?',
           handleConfirm: async () => {
-            for (let i = 0; i < this.selection.selected.length; i++) {
-              await this.todoItemService.remove(
-                this.selection.selected[i].todoItemID
-              );
+            try {
+              for (const selected of this.selection.selected) {
+                await this.todoItemService.remove(selected.todoItemID);
+              }
+              await this.getTodoItems();
+            } catch (error) {
+              console.error('Error deleting todo items:', error);
+              // Handle error as needed
             }
-            await this.getTodoItems();
           },
         },
       });
-      ``;
     }
   }
 
   async deleteTodoItems() {
-    this.selection.selected.forEach(async (todoItem) => {
-      await this.todoItemService.remove(todoItem.todoItemID);
-    });
-    await this.getTodoItems();
+    try {
+      await Promise.all(this.selection.selected.map(todoItem =>
+        this.todoItemService.remove(todoItem.todoItemID)
+      ));
+      await this.getTodoItems();
+    } catch (error) {
+      console.error('Error deleting todo items:', error);
+      // Handle error as needed
+    }
   }
 
   openAddTodoItemModal() {
@@ -196,156 +198,61 @@ export class TodoListModalComponent implements OnInit, OnChanges {
             this.groupTodoItems.push(todoItem);
             dataSource = this.groupDataSource;
           } else {
-            dataSource = this.personalDataSource;
             this.personalTodoItems.push(todoItem);
-          }
-          const data = dataSource.data;
-          data.push(todoItem);
-          dataSource.data = data;
-        },
-      },
-    });
-  }
-
-  async editTodoItem(todoItem: TodoItem) {
-    this.dialog.open(AddTodoListModalComponent, {
-      width: '600px',
-      data: {
-        projectID: this.projectID,
-        userID: this.userID,
-        todoItem: todoItem,
-        group: todoItem.groupID
-          ? await this.groupService.getById(todoItem.groupID)
-          : null,
-        onComplete: async (t?: TodoItem) => {
-          if (t && t !== todoItem) {
-            this.groupTodoItems = this.groupTodoItems.filter(
-              (ti) => ti.todoItemID !== t.todoItemID
-            );
-            this.personalTodoItems = this.personalTodoItems.filter(
-              (ti) => ti.todoItemID !== t.todoItemID
-            );
-            this.updateTableDataSource();
-            if (t.groupID) {
-              this.groupTodoItems.push(t);
-            } else {
-              this.personalTodoItems.push(t);
-            }
-            this.updateTableDataSource();
-          }
-        },
-      },
-    });
-  }
-
-  async openTodoItemViewModal(todoItem: TodoItem) {
-    this.dialog.open(TodoItemCardModalComponent, {
-      width: '500px',
-      data: {
-        todoItem: todoItem,
-        projectID: this.projectID,
-        userID: this.userID,
-        group: todoItem.groupID
-          ? await this.groupService.getById(todoItem.groupID)
-          : null,
-        onComplete: async (t: TodoItem) => {
-          this.groupTodoItems = this.groupTodoItems.filter(
-            (ti) => ti.todoItemID !== t.todoItemID
-          );
-          this.personalTodoItems = this.personalTodoItems.filter(
-            (ti) => ti.todoItemID !== t.todoItemID
-          );
-          this.todoItemsMap.delete(todoItem.todoItemID);
-          if (t.groupID) {
-            this.groupTodoItems.push(t);
-          } else {
-            this.personalTodoItems.push(t);
+            dataSource = this.personalDataSource;
           }
           this.updateTableDataSource();
-          if (t.quality !== CompletionQuality.INCOMPLETE)
-            await this.completeTodoItem();
-        },
-        onEdit: async (t: TodoItem) => {
-          if (t && t !== todoItem) {
-            this.groupTodoItems = this.groupTodoItems.filter(
-              (ti) => ti.todoItemID !== t.todoItemID
-            );
-            this.personalTodoItems = this.personalTodoItems.filter(
-              (ti) => ti.todoItemID !== t.todoItemID
-            );
-            this.updateTableDataSource();
-            if (t.groupID) {
-              this.groupTodoItems.push(t);
-            } else {
-              this.personalTodoItems.push(t);
-            }
-            this.updateTableDataSource();
-          }
-        },
-        onRestore: async (t: TodoItem) => {
-          if (t) {
-            this.todoItemsMap.delete(todoItem.todoItemID);
-            if (t.groupID) {
-              this.groupTodoItems.push(t);
-            } else {
-              this.personalTodoItems.push(t);
-            }
-            this.updateTableDataSource();
-          }
         },
       },
     });
   }
 
-  restoreTodoItem(todoItem: TodoItem) {
+  editTodoItem(todo: TodoItem) {
     this.dialog.open(AddTodoListModalComponent, {
       width: '600px',
       data: {
+        todoItem: todo,
         projectID: this.projectID,
         userID: this.userID,
-        restoreTodoItem: todoItem,
-        onComplete: async (t?: TodoItem) => {
-          if (t) {
-            this.todoItemsMap.delete(todoItem.todoItemID);
-            if (t.groupID) {
-              this.groupTodoItems.push(t);
-            } else {
-              this.personalTodoItems.push(t);
-            }
-            this.updateTableDataSource();
+        onComplete: async (updatedTodo: TodoItem) => {
+          const index = this.personalTodoItems.findIndex(t => t.todoItemID === updatedTodo.todoItemID);
+          if (index !== -1) {
+            this.personalTodoItems[index] = updatedTodo;
           }
+          this.updateTableDataSource();
         },
+      },
+    });
+  }
+
+  restoreTodoItem(todo: TodoItem) {
+    if (todo.completed) {
+      todo.completed = false;
+      this.todoItemService.update(todo.todoItemID, todo).then(() => {
+        this.updateTableDataSource();
+      }).catch((error) => {
+        console.error('Error restoring todo item:', error);
+      });
+    }
+  }
+
+  openTodoItemViewModal(todo: TodoItem) {
+    this.dialog.open(TodoItemCardModalComponent, {
+      width: '600px',
+      data: {
+        todoItem: todo,
       },
     });
   }
 
   shoot() {
-    try {
-      this.confetti({
-        angle: this.random(60, 120),
-        spread: this.random(10, 50),
-        particleCount: this.random(50, 60),
-        origin: {
-          y: 0.6,
-        },
-      });
-    } catch (e) {
-      // noop, confettijs may not be loaded yet
-    }
+    // Confetti logic goes here
   }
 
   playAudio() {
     const audio = new Audio();
-    audio.src = '../../../assets/celebration-sound-effect.wav';
+    audio.src = '../../../assets/sounds/applause.wav';
     audio.load();
     audio.play();
-  }
-
-  random(min: number, max: number) {
-    return Math.random() * (max - min) + min;
-  }
-
-  confetti(args: any) {
-    return window['confetti'].apply(this, arguments);
   }
 }

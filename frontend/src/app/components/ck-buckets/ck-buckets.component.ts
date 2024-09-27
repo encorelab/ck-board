@@ -29,10 +29,8 @@ export class CkBucketsComponent implements OnInit {
   projectID: string;
 
   buckets: any[] = [];
-  // posts: any[] = [];
-
   user: AuthUser;
-  board: Board;
+  board: Board | undefined;
   project: Project;
   Role: typeof Role = Role;
   ViewType: typeof ViewType = ViewType;
@@ -40,7 +38,6 @@ export class CkBucketsComponent implements OnInit {
 
   maxBucketsOnView = 4;
   bucketsOnView: any[] = [];
-
   viewType = ViewType.BUCKETS;
 
   constructor(
@@ -78,8 +75,9 @@ export class CkBucketsComponent implements OnInit {
       this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-      this.boardService.get(this.boardID).then((board) => {
-        if (board) this.board = board;
+      const board = await this.boardService.get(this.boardID);
+      if (board) {
+        this.board = board;
         if (board.viewSettings && !board.viewSettings.allowBuckets) {
           this.router.navigateByUrl(
             `project/${this.projectID}/board/${
@@ -87,10 +85,10 @@ export class CkBucketsComponent implements OnInit {
             }/${board.defaultView?.toLowerCase()}`
           );
         }
-      });
-      // this.postService.getAllByBoard(this.boardID).then(data => {
-      //   this.posts = data;
-      // });
+      } else{
+        this.board = undefined;
+      }
+
       this.projectService.get(this.projectID).then((project) => {
         this.project = project;
       });

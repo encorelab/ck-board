@@ -288,6 +288,7 @@ export class AddPostComponent {
         this.board.projectID
       );
 
+      if(boards){
       for (const board of boards) {
         if (
           !project.teacherIDs.includes(board.ownerID) ||
@@ -303,6 +304,7 @@ export class AddPostComponent {
           const newPost = await this.postService.create(post);
         }
       }
+    }
       this.snackbarService.queueSnackbar(
         'Successfully copied post to all student personal boards.'
       );
@@ -332,7 +334,7 @@ export class AddPostComponent {
 
   async handleDialogSubmit() {
     this.creationInProgress = true;
-    let post: Post;
+    let post: Post | undefined;
     if (this.data?.disableCreation) {
       const _post = this.getPartialPost();
       if (this.data.onComplete) {

@@ -225,7 +225,13 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       return this.router.navigate(['error']);
     }
 
-    this.board = await this.boardService.get(boardID);
+    const fetchedBoard = await this.boardService.get(boardID);
+    if (!fetchedBoard) {
+        this.router.navigate(['error']);
+        return false; // or true depending on your flow
+    }
+    this.board = fetchedBoard;
+    
     this.project = await this.projectService.get(projectID);
 
     if (!this.board.viewSettings?.allowMonitor) {

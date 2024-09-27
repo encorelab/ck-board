@@ -58,7 +58,7 @@ export class ConfigurationModalComponent {
 
   permissions: BoardPermissions;
 
-  tags: Tag[];
+  tags: Tag[] = [];
   newTagText = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
   _POST_TAGGED_BORDER_THICKNESS = POST_TAGGED_BORDER_THICKNESS;
@@ -174,34 +174,39 @@ export class ConfigurationModalComponent {
   }
 
   async handleDialogSubmit() {
-    let board: Board;
+    let board: Board | undefined;
     board = await this.canvasService.updateBoardName(
       this.boardID,
       this.boardName.trim()
     );
-    board = await this.canvasService.updateBoardTask(
-      this.boardID,
-      this.taskTitle,
-      this.taskMessage
-    );
-    board = await this.canvasService.updateBoardPermissions(
-      this.boardID,
-      this.permissions
-    );
-    board = await this.canvasService.updateBoardUpvotes(
-      this.boardID,
-      this.upvoteLimit
-    );
+    if (board) {
+      board = await this.canvasService.updateBoardTask(
+        this.boardID,
+        this.taskTitle,
+        this.taskMessage
+      );
+      board = await this.canvasService.updateBoardPermissions(
+        this.boardID,
+        this.permissions
+      );
+      board = await this.canvasService.updateBoardUpvotes(
+        this.boardID,
+        this.upvoteLimit
+      );
 
-    if (this.currentBgImage) board = await this.updateBoardImageSettings();
+      if (this.currentBgImage) board = await this.updateBoardImageSettings();
 
-    board = await this.boardService.update(this.boardID, {
-      initialZoom: this.initialZoom,
-      defaultView: this.defaultView,
-      viewSettings: this.viewSettings,
-    });
-    await this.data.update(board);
-    this.dialogRef.close();
+      board = await this.boardService.update(this.boardID, {
+        initialZoom: this.initialZoom,
+        defaultView: this.defaultView,
+        viewSettings: this.viewSettings,
+      });
+
+      if (board) {
+        await this.data.update(board);
+        this.dialogRef.close();
+      }
+    }
   }
 
   async ngOnDestroy(): Promise<void> {
@@ -273,17 +278,20 @@ export class ConfigurationModalComponent {
     let boards = await this.boardService.getMultipleBy(this.project.boards, {
       scope: BoardScope.PROJECT_PERSONAL,
     });
-    boards = boards.filter((b) => {
-      if (this.isTeacherPersonalBoard) {
-        return this.project.teacherIDs.includes(b.ownerID);
-      } else {
-        return !this.project.teacherIDs.includes(b.ownerID);
-      }
-    });
 
-    await this.boardService.copyConfiguration(
-      this.boardID,
-      boards.map((b) => b.boardID)
-    );
+    if (boards) {
+      boards = boards.filter((b) => {
+        if (this.isTeacherPersonalBoard) {
+          return this.project.teacherIDs.includes(b.ownerID);
+        } else {
+          return !this.project.teacherIDs.includes(b.ownerID);
+        }
+      });
+
+      await this.boardService.copyConfiguration(
+        this.boardID,
+        boards.map((b) => b.boardID)
+      );
+    }
   }
 }

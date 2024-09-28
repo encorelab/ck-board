@@ -8,9 +8,9 @@ describe('LearnerModelsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [LearnerModelsComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [LearnerModelsComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

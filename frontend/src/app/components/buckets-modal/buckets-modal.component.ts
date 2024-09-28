@@ -24,7 +24,10 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { HTMLPost } from '../html-post/html-post.component';
 import Converters from 'src/app/utils/converters';
 import Upvote from 'src/app/models/upvote';
-import { MatLegacyPaginator as MatPaginator, LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import {
+  MatLegacyPaginator as MatPaginator,
+  LegacyPageEvent as PageEvent,
+} from '@angular/material/legacy-paginator';
 
 @Component({
   selector: 'app-buckets-modal',

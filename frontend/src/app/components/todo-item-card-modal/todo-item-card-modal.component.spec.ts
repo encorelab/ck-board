@@ -8,9 +8,9 @@ describe('TodoItemCardModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [TodoItemCardModalComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [TodoItemCardModalComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

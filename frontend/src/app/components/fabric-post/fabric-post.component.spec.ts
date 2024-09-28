@@ -8,9 +8,9 @@ describe('PostComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [PostComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [PostComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

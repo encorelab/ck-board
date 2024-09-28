@@ -134,8 +134,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     const fetchedBoard = await this.boardService.get(boardID);
     if (!fetchedBoard) {
-        this.router.navigate(['error']);
-        return false; // or true depending on your flow
+      this.router.navigate(['error']);
+      return false; // or true depending on your flow
     }
     this.board = fetchedBoard;
     this.project = await this.projectService.get(projectID);

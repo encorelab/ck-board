@@ -8,9 +8,9 @@ describe('CkBucketsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [CkBucketsComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [CkBucketsComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

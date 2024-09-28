@@ -8,9 +8,9 @@ describe('AddTodoListModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [AddTodoListModalComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [AddTodoListModalComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

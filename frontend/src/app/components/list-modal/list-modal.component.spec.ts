@@ -8,9 +8,9 @@ describe('ListModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [ListModalComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [ListModalComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

@@ -8,9 +8,9 @@ describe('RegisterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [RegisterComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [RegisterComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

@@ -32,18 +32,22 @@ export class TodoListModalComponent implements OnInit, OnChanges {
   personalTodoItems: TodoItem[] = [];
   groupTodoItems: TodoItem[] = [];
   todoItemsMap: Map<string, TodoItem> = new Map();
-  personalDataSource: MatTableDataSource<TodoItem> = new MatTableDataSource<TodoItem>([]);
-  groupDataSource: MatTableDataSource<TodoItem> = new MatTableDataSource<TodoItem>([]);
+  personalDataSource: MatTableDataSource<TodoItem> =
+    new MatTableDataSource<TodoItem>([]);
+  groupDataSource: MatTableDataSource<TodoItem> =
+    new MatTableDataSource<TodoItem>([]);
   groupIDtoGroupMap: { [key: string]: Group } = {};
 
   selection = new SelectionModel<TodoItem>(true, []);
   pausable: PausableObservable<number>;
-  completedItemsDataSource: MatTableDataSource<TodoItem> = new MatTableDataSource<TodoItem>([]);
+  completedItemsDataSource: MatTableDataSource<TodoItem> =
+    new MatTableDataSource<TodoItem>([]);
   CONFETTI_DELAY = 3400;
   CONFETTI_DURATION = 500;
   todoItemTypes = EXPANDED_TODO_TYPE;
   todoItemColors = TODO_TYPE_COLORS;
-  EXPANDED_COMPLETION_QUALITY: typeof EXPANDED_COMPLETION_QUALITY = EXPANDED_COMPLETION_QUALITY;
+  EXPANDED_COMPLETION_QUALITY: typeof EXPANDED_COMPLETION_QUALITY =
+    EXPANDED_COMPLETION_QUALITY;
   CompletionQuality: typeof CompletionQuality = CompletionQuality;
   displayColumns = ['select', 'task-title', 'type', 'deadline', 'edit'];
   displayGroupColumns = [
@@ -92,9 +96,17 @@ export class TodoListModalComponent implements OnInit, OnChanges {
 
   async getTodoItems() {
     try {
-      this.personalTodoItems = await this.todoItemService.getByUserProject(this.userID, this.projectID) ?? [];
+      this.personalTodoItems =
+        (await this.todoItemService.getByUserProject(
+          this.userID,
+          this.projectID
+        )) ?? [];
 
-      this.userGroups = await this.groupService.getByUserAndProject(this.userID, this.projectID) ?? [];
+      this.userGroups =
+        (await this.groupService.getByUserAndProject(
+          this.userID,
+          this.projectID
+        )) ?? [];
 
       this.groupIDtoGroupMap = this.userGroups.reduce((map, obj) => {
         if (obj?.groupID) {
@@ -103,7 +115,10 @@ export class TodoListModalComponent implements OnInit, OnChanges {
         return map;
       }, {} as { [key: string]: Group });
 
-      this.groupTodoItems = await this.todoItemService.getMultipleByGroup(this.userGroups.map(group => group.groupID)) ?? [];
+      this.groupTodoItems =
+        (await this.todoItemService.getMultipleByGroup(
+          this.userGroups.map((group) => group.groupID)
+        )) ?? [];
 
       this.updateTableDataSource();
     } catch (error) {
@@ -114,19 +129,21 @@ export class TodoListModalComponent implements OnInit, OnChanges {
 
   updateTableDataSource() {
     this.personalDataSource = new MatTableDataSource<TodoItem>(
-      this.personalTodoItems.filter(todoItem => !todoItem.completed && !todoItem.groupID)
+      this.personalTodoItems.filter(
+        (todoItem) => !todoItem.completed && !todoItem.groupID
+      )
     );
 
     this.groupDataSource = new MatTableDataSource<TodoItem>(
-      this.groupTodoItems.filter(todoItem => !todoItem.completed)
+      this.groupTodoItems.filter((todoItem) => !todoItem.completed)
     );
 
     this.todoItemsMap = new Map(
-      this.personalTodoItems.map(todo => [todo.todoItemID, todo])
+      this.personalTodoItems.map((todo) => [todo.todoItemID, todo])
     );
 
     this.completedItemsDataSource = new MatTableDataSource<TodoItem>(
-      [...this.todoItemsMap.values()].filter(todoItem => todoItem.completed)
+      [...this.todoItemsMap.values()].filter((todoItem) => todoItem.completed)
     );
   }
 
@@ -139,7 +156,7 @@ export class TodoListModalComponent implements OnInit, OnChanges {
   masterToggle(dataSource: MatTableDataSource<TodoItem>) {
     this.isAllSelected(dataSource)
       ? this.selection.clear()
-      : dataSource.data?.forEach(row => this.selection.select(row));
+      : dataSource.data?.forEach((row) => this.selection.select(row));
   }
 
   async completeTodoItem() {
@@ -157,7 +174,8 @@ export class TodoListModalComponent implements OnInit, OnChanges {
         width: '500px',
         data: {
           title: 'Confirmation',
-          message: 'This will permanently delete the selected Todo Items. Are you sure you want to do this?',
+          message:
+            'This will permanently delete the selected Todo Items. Are you sure you want to do this?',
           handleConfirm: async () => {
             try {
               for (const selected of this.selection.selected) {
@@ -176,9 +194,11 @@ export class TodoListModalComponent implements OnInit, OnChanges {
 
   async deleteTodoItems() {
     try {
-      await Promise.all(this.selection.selected.map(todoItem =>
-        this.todoItemService.remove(todoItem.todoItemID)
-      ));
+      await Promise.all(
+        this.selection.selected.map((todoItem) =>
+          this.todoItemService.remove(todoItem.todoItemID)
+        )
+      );
       await this.getTodoItems();
     } catch (error) {
       console.error('Error deleting todo items:', error);
@@ -215,7 +235,9 @@ export class TodoListModalComponent implements OnInit, OnChanges {
         projectID: this.projectID,
         userID: this.userID,
         onComplete: async (updatedTodo: TodoItem) => {
-          const index = this.personalTodoItems.findIndex(t => t.todoItemID === updatedTodo.todoItemID);
+          const index = this.personalTodoItems.findIndex(
+            (t) => t.todoItemID === updatedTodo.todoItemID
+          );
           if (index !== -1) {
             this.personalTodoItems[index] = updatedTodo;
           }
@@ -228,11 +250,14 @@ export class TodoListModalComponent implements OnInit, OnChanges {
   restoreTodoItem(todo: TodoItem) {
     if (todo.completed) {
       todo.completed = false;
-      this.todoItemService.update(todo.todoItemID, todo).then(() => {
-        this.updateTableDataSource();
-      }).catch((error) => {
-        console.error('Error restoring todo item:', error);
-      });
+      this.todoItemService
+        .update(todo.todoItemID, todo)
+        .then(() => {
+          this.updateTableDataSource();
+        })
+        .catch((error) => {
+          console.error('Error restoring todo item:', error);
+        });
     }
   }
 

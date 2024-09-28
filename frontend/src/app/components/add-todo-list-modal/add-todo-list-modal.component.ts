@@ -1,5 +1,8 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { GroupService } from 'src/app/services/group.service';
 import {
@@ -38,7 +41,9 @@ export class AddTodoListModalComponent implements OnInit {
     Validators.required,
     Validators.maxLength(TODO_TITLE_MAX_LENGTH),
   ]);
-  todoItemTypeFormControl = new UntypedFormControl('valid', [Validators.required]);
+  todoItemTypeFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
   todoItemTypes: TodoItemType[] = [];
   EXPANDED_TODO_TYPE: typeof EXPANDED_TODO_TYPE = EXPANDED_TODO_TYPE;
   todoItemOptions = [

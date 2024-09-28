@@ -84,7 +84,7 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public upvoteService: UpvotesService,
     public canvasService: CanvasService,
-//    public fileUploadService: FileUploadService,
+    //    public fileUploadService: FileUploadService,
     public socketService: SocketService,
     private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -136,7 +136,6 @@ export class ConfigurationModalComponent {
   compressFile() {
     // this.fileUploadService.compressFile().then(async (compressedImage) => {
     //   this.newCompressedImage = compressedImage;
-
     //   const board = await this.canvasService.updateBoardImage(
     //     this.boardID,
     //     this.newCompressedImage

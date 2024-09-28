@@ -28,7 +28,10 @@ export class RegisterComponent {
     Validators.required,
     Validators.maxLength(25),
   ]);
-  emailControl = new UntypedFormControl('', [Validators.required, Validators.email]);
+  emailControl = new UntypedFormControl('', [
+    Validators.required,
+    Validators.email,
+  ]);
   passwordControl = new UntypedFormControl('', [
     Validators.required,
     Validators.minLength(12),

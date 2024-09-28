@@ -8,9 +8,9 @@ describe('DashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [DashboardComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [DashboardComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

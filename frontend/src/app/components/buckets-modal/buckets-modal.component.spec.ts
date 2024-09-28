@@ -8,9 +8,9 @@ describe('BucketsModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [BucketsModalComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [BucketsModalComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

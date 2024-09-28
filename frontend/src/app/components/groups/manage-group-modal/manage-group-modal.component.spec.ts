@@ -8,9 +8,9 @@ describe('ManageGroupModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [ManageGroupModalComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [ManageGroupModalComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

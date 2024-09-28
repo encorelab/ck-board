@@ -8,9 +8,9 @@ describe('TaskModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [TaskModalComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [TaskModalComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

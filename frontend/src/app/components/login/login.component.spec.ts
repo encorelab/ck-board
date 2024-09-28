@@ -8,9 +8,9 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [LoginComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [LoginComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

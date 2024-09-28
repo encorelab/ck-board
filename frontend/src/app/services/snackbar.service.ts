@@ -1,5 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { MatLegacySnackBar as MatSnackBar, MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
+import {
+  MatLegacySnackBar as MatSnackBar,
+  MatLegacySnackBarConfig as MatSnackBarConfig,
+} from '@angular/material/legacy-snack-bar';
 import { BehaviorSubject } from 'rxjs';
 import { SnackBarComponent } from '../components/snackbar/snackbar.component';
 

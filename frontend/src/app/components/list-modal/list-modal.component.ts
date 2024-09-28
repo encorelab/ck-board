@@ -25,7 +25,10 @@ import {
 import User from 'src/app/models/user';
 import Upvote from 'src/app/models/upvote';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { MatLegacyPaginator as MatPaginator, LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import {
+  MatLegacyPaginator as MatPaginator,
+  LegacyPageEvent as PageEvent,
+} from '@angular/material/legacy-paginator';
 
 @Component({
   selector: 'app-list-modal',

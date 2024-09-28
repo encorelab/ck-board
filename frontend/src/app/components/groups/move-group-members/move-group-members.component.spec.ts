@@ -8,9 +8,9 @@ describe('MoveGroupMembersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    declarations: [MoveGroupMembersComponent],
-    teardown: { destroyAfterEach: false }
-}).compileComponents();
+      declarations: [MoveGroupMembersComponent],
+      teardown: { destroyAfterEach: false },
+    }).compileComponents();
   });
 
   beforeEach(() => {

@@ -1,5 +1,8 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { Project } from 'src/app/models/project';
 import User, { Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
@@ -38,8 +41,12 @@ export class ProjectConfigurationModalComponent implements OnInit {
   async ngOnInit() {
     if (this.project.members && this.project.members.length > 0) {
       try {
-        const members = await this.userService.getMultipleByIds(this.project.members);
-        this.members = (members ?? []).sort((a, b) => b.role.charCodeAt(0) - a.role.charCodeAt(0));
+        const members = await this.userService.getMultipleByIds(
+          this.project.members
+        );
+        this.members = (members ?? []).sort(
+          (a, b) => b.role.charCodeAt(0) - a.role.charCodeAt(0)
+        );
       } catch (error) {
         console.error('Error fetching members:', error);
         // Handle error as needed
@@ -52,11 +59,12 @@ export class ProjectConfigurationModalComponent implements OnInit {
 
   async handleDialogSubmit() {
     try {
-      this.project = await this.projectService.update(this.project.projectID, {
-        name: this.nameEditable,
-        membershipDisabled: this.membershipDisabledEditable,
-        members: this.members.map((user) => user.userID),
-      }) ?? this.project; // Default to current project if update fails
+      this.project =
+        (await this.projectService.update(this.project.projectID, {
+          name: this.nameEditable,
+          membershipDisabled: this.membershipDisabledEditable,
+          members: this.members.map((user) => user.userID),
+        })) ?? this.project; // Default to current project if update fails
       this.close();
     } catch (error) {
       console.error('Error updating project:', error);
@@ -65,7 +73,9 @@ export class ProjectConfigurationModalComponent implements OnInit {
   }
 
   async removeUser(_user: User) {
-    this.members = (this.members ?? []).filter((user) => user.userID !== _user.userID);
+    this.members = (this.members ?? []).filter(
+      (user) => user.userID !== _user.userID
+    );
   }
 
   onNoClick(): void {

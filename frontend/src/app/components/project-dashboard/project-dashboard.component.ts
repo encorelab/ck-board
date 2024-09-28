@@ -60,7 +60,8 @@ export class ProjectDashboardComponent implements OnInit {
   async getBoards() {
     this.project = await this.projectService.get(this.projectID);
     const boards = await this.boardService.getByProject(this.projectID);
-    boards.forEach((board) => {
+    // Ensure 'boards' is defined before iterating
+    boards?.forEach((board) => {
       if (board.scope == BoardScope.PROJECT_PERSONAL) {
         const isTeacher = this.project.teacherIDs.includes(board.ownerID);
         if (isTeacher) this.teacherPersonalBoards.push(board);

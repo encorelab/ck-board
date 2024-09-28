@@ -171,7 +171,7 @@ export class PostModalComponent {
     this.bucketService
       .getAllByBoard(this.data.board.boardID)
       .then((buckets) => {
-        this.buckets = buckets;
+        this.buckets = buckets || [];
       });
 
     const isStudent = this.user.role == Role.STUDENT;

@@ -12,48 +12,70 @@ export class GroupService {
   getByProjectUser(projectID: string, userID: string): Promise<Group> {
     return this.http
       .get<Group>('groups/project/' + projectID + '/user/' + userID)
-      .toPromise();
+      .toPromise()
+      .then((group) => group ?? ({} as Group)); // Default to an empty object
   }
 
   getById(groupID: string): Promise<Group> {
-    return this.http.get<Group>('groups/' + groupID).toPromise();
+    return this.http
+      .get<Group>('groups/' + groupID)
+      .toPromise()
+      .then((group) => group ?? ({} as Group)); // Default to an empty object
   }
 
   getByUserId(userID: string): Promise<Group[]> {
-    return this.http.get<Group[]>('groups/user/' + userID).toPromise();
+    return this.http
+      .get<Group[]>('groups/user/' + userID)
+      .toPromise()
+      .then((groups) => groups ?? []); // Default to an empty array
   }
 
   getByUserAndProject(userID: string, projectID: string): Promise<Group[]> {
     return this.http
       .get<Group[]>(`groups/user/${userID}/project/${projectID}`)
-      .toPromise();
+      .toPromise()
+      .then((groups) => groups ?? []); // Default to an empty array
   }
 
   getByProjectId(projectID: string): Promise<Group[]> {
-    return this.http.get<Group[]>('groups/project/' + projectID).toPromise();
+    return this.http
+      .get<Group[]>('groups/project/' + projectID)
+      .toPromise()
+      .then((groups) => groups ?? []); // Default to an empty array
   }
 
   create(group: Group): Promise<Group> {
-    return this.http.post<Group>('groups/', group).toPromise();
+    return this.http
+      .post<Group>('groups/', group)
+      .toPromise()
+      .then((createdGroup) => createdGroup ?? ({} as Group)); // Default to an empty object
   }
 
   delete(groupID: string): Promise<Group> {
-    return this.http.delete<Group>('groups/' + groupID).toPromise();
+    return this.http
+      .delete<Group>('groups/' + groupID)
+      .toPromise()
+      .then((deletedGroup) => deletedGroup ?? ({} as Group)); // Default to an empty object
   }
 
   update(groupID: string, group: Partial<Group>): Promise<Group> {
-    return this.http.post<Group>('groups/' + groupID, group).toPromise();
+    return this.http
+      .post<Group>('groups/' + groupID, group)
+      .toPromise()
+      .then((updatedGroup) => updatedGroup ?? ({} as Group)); // Default to an empty object
   }
 
   addUsers(groupID: string, ...users: string[]): Promise<Group> {
     return this.http
       .post<Group>('groups/' + groupID + '/users/add/', users)
-      .toPromise();
+      .toPromise()
+      .then((updatedGroup) => updatedGroup ?? ({} as Group)); // Default to an empty object
   }
 
   removeUsers(groupID: string, ...users: string[]): Promise<Group> {
     return this.http
       .post<Group>('groups/' + groupID + '/users/remove/', users)
-      .toPromise();
+      .toPromise()
+      .then((updatedGroup) => updatedGroup ?? ({} as Group)); // Default to an empty object
   }
 }

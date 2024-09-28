@@ -58,12 +58,14 @@ export class CkBucketsComponent implements OnInit {
     this.user = this.userService.user!;
     await this.configureBoard();
     await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-      for (const bucket of buckets) {
-        if (bucket.addedToView) {
-          this.bucketsOnView.push(bucket);
-          this.loadBucketPosts(bucket);
-        } else {
-          this.buckets.push(bucket);
+      if (buckets) {
+        for (const bucket of buckets) {
+          if (bucket.addedToView) {
+            this.bucketsOnView.push(bucket);
+            this.loadBucketPosts(bucket);
+          } else {
+            this.buckets.push(bucket);
+          }
         }
       }
     });
@@ -85,7 +87,7 @@ export class CkBucketsComponent implements OnInit {
             }/${board.defaultView?.toLowerCase()}`
           );
         }
-      } else{
+      } else {
         this.board = undefined;
       }
 

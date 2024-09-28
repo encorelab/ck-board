@@ -88,17 +88,25 @@ export class CreateWorkflowModalComponent implements OnInit {
     Validators.required,
     this._forbiddenNameValidator(),
   ]);
-  workflowNameFormControl = new UntypedFormControl('valid', [Validators.required]);
+  workflowNameFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
   sourceFormControl = new UntypedFormControl('valid', [Validators.required]);
-  destinationFormControl = new UntypedFormControl('valid', [Validators.required]);
+  destinationFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
 
   sourceDestinationMatchError = new UntypedFormControl(false);
 
   groupsFormControl = new UntypedFormControl('valid', [Validators.required]);
   promptFormControl = new UntypedFormControl('valid', [Validators.required]);
 
-  workflowTypeFormControl = new UntypedFormControl('valid', [Validators.required]);
-  removeFromSourceFormControl = new UntypedFormControl('valid', [Validators.required]);
+  workflowTypeFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
+  removeFromSourceFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
 
   tagsFormControl = new UntypedFormControl();
 
@@ -152,19 +160,19 @@ export class CreateWorkflowModalComponent implements OnInit {
         }
       );
 
-      // Add project boards FIRST
-      this.destOptions = this.destOptions.concat(projectBoards);
-      this.sourceOptions = this.sourceOptions.concat(projectBoards);
+      // Add project boards FIRST (using fallback empty array if undefined)
+      this.destOptions = this.destOptions.concat(projectBoards || []);
+      this.sourceOptions = this.sourceOptions.concat(projectBoards || []);
 
       // 2. Fetch Buckets
       const buckets = await this.bucketService.getAllByBoard(
         this.data.board.boardID
       );
-      this.boardBuckets = this.boardBuckets.concat(buckets);
+      this.boardBuckets = this.boardBuckets.concat(buckets || []);
 
       // 3. Add buckets SECOND
-      this.sourceOptions = this.sourceOptions.concat(buckets);
-      this.destOptions = this.destOptions.concat(buckets);
+      this.sourceOptions = this.sourceOptions.concat(buckets || []);
+      this.destOptions = this.destOptions.concat(buckets || []);
     } catch (error) {
       console.error('Error loading boards and buckets:', error);
     }

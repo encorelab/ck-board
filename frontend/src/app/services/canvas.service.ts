@@ -46,28 +46,37 @@ export class CanvasService {
 
   async createPost(post: Post) {
     const savedPost = await this.postService.create(post);
-    const fabricPost = new FabricPostComponent(post);
+    if (!savedPost) {
+      throw new Error('Failed to create post');
+    }
 
+    const fabricPost = new FabricPostComponent(post);
     this.fabricUtils._canvas.add(fabricPost);
     this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
   }
 
   async removePost(post: Post) {
     await this.postService.remove(post.postID);
-
     this.socketService.emit(SocketEvent.POST_DELETE, post);
   }
 
   async createBucketPost(bucketID: string, post: Post): Promise<Post> {
     const savedPost = await this.postService.create(post);
-    await this.bucketService.add(bucketID, post.postID);
+    if (!savedPost) {
+      throw new Error('Failed to create post');
+    }
 
+    await this.bucketService.add(bucketID, post.postID);
     this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
     return savedPost;
   }
 
   async createListPost(post: Post) {
     const savedPost = await this.postService.create(post);
+    if (!savedPost) {
+      throw new Error('Failed to create post');
+    }
+
     this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
     for (const tag of post.tags) {
       this.socketService.emit(SocketEvent.POST_TAG_ADD, {
@@ -89,6 +98,9 @@ export class CanvasService {
       comments: comments.length,
     });
     post = await this.postService.update(post.postID, post);
+    if (!post) {
+      throw new Error('Failed to update post');
+    }
 
     this.fabricUtils._canvas.add(fabricPost);
     this.socketService.emit(SocketEvent.POST_CREATE, post);
@@ -103,18 +115,23 @@ export class CanvasService {
         const updatedPost = await this.postService.update(post.postID, {
           type: PostType.BUCKET,
         });
+        if (!updatedPost) {
+          throw new Error('Failed to update post');
+        }
         updatedPosts.push(updatedPost);
       }
     }
 
     this.socketService.emit(SocketEvent.BOARD_CLEAR, updatedPosts);
-
     return updatedPosts;
   }
 
   async upvote(userID: string, post: string | Post) {
     if (typeof post === 'string') {
       post = await this.postService.get(post);
+      if (!post) {
+        throw new Error('Post not found');
+      }
     }
 
     const upvote: Upvote = {
@@ -125,7 +142,6 @@ export class CanvasService {
     };
 
     const result = await this.upvotesService.add(upvote);
-
     this.socketService.emit(SocketEvent.POST_UPVOTE_ADD, upvote);
 
     if (post.userID !== userID) {
@@ -141,10 +157,12 @@ export class CanvasService {
   async unupvote(userID: string, post: string | Post): Promise<Upvote> {
     if (typeof post === 'string') {
       post = await this.postService.get(post);
+      if (!post) {
+        throw new Error('Post not found');
+      }
     }
 
     const result = await this.upvotesService.remove(userID, post.postID);
-
     this.socketService.emit(SocketEvent.POST_UPVOTE_REMOVE, result.upvote);
 
     return result.upvote;
@@ -152,8 +170,11 @@ export class CanvasService {
 
   async comment(comment: Comment) {
     const result = await this.commentService.add(comment);
-
     const post = await this.postService.get(result.comment.postID);
+
+    if (!post) {
+      throw new Error('Post not found');
+    }
 
     this.socketService.emit(SocketEvent.POST_COMMENT_ADD, comment);
 
@@ -167,7 +188,6 @@ export class CanvasService {
 
   async deleteComment(commentID: string, postID: string) {
     const result = await this.commentService.remove(commentID);
-
     this.socketService.emit(SocketEvent.POST_COMMENT_REMOVE, result.comment);
   }
 
@@ -179,7 +199,12 @@ export class CanvasService {
       const updatedAttr = this.fabricUtils.applyTagFeatures(post.postID, tag);
       if (updatedAttr) update.displayAttributes = updatedAttr;
     }
+
     const savedPost = await this.postService.update(post.postID, update);
+    if (!savedPost) {
+      throw new Error('Failed to update post');
+    }
+
     this.socketService.emit(SocketEvent.POST_TAG_ADD, {
       tag,
       post: savedPost,
@@ -211,6 +236,9 @@ export class CanvasService {
     }
 
     const savedPost = await this.postService.update(post.postID, update);
+    if (!savedPost) {
+      throw new Error('Failed to update post');
+    }
 
     this.socketService.emit(SocketEvent.POST_TAG_REMOVE, {
       tag,
@@ -232,16 +260,22 @@ export class CanvasService {
       message === null ? null : { message }
     );
 
-    const board: Board = await this.boardService.update(boardID, { task });
-    this.socketService.emit(SocketEvent.BOARD_TASK_UPDATE, board);
+    const board = await this.boardService.update(boardID, { task });
+    if (!board) {
+      throw new Error('Failed to update board task');
+    }
 
+    this.socketService.emit(SocketEvent.BOARD_TASK_UPDATE, board);
     return board;
   }
 
   async updateBoardName(boardID: string, name: string): Promise<Board> {
-    const board: Board = await this.boardService.update(boardID, { name });
-    this.socketService.emit(SocketEvent.BOARD_NAME_UPDATE, board);
+    const board = await this.boardService.update(boardID, { name });
+    if (!board) {
+      throw new Error('Failed to update board name');
+    }
 
+    this.socketService.emit(SocketEvent.BOARD_NAME_UPDATE, board);
     return board;
   }
 
@@ -251,9 +285,12 @@ export class CanvasService {
     settings?: any
   ): Promise<Board> {
     if (file === null) {
-      const board: Board = await this.boardService.update(boardID, {
+      const board = await this.boardService.update(boardID, {
         bgImage: null,
       });
+      if (!board) {
+        throw new Error('Failed to update board name');
+      }
       this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
       return board;
     } else {
@@ -262,12 +299,10 @@ export class CanvasService {
         //   const url = await this.fileUploadService.upload(file);
         //   const imgSettings =
         //     settings ?? this.fabricUtils.createImageSettings(image);
-
         //   const board: Board = await this.boardService.update(boardID, {
         //     bgImage: { url, imgSettings },
         //   });
         //   this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
-
         //   resolve(board);
         // });
       });
@@ -279,15 +314,23 @@ export class CanvasService {
     imgSettings: ImageSettings
   ): Promise<Board> {
     const oldBoard = await this.boardService.get(boardID);
-    const url = oldBoard.bgImage?.url;
+    if (!oldBoard) {
+      throw new Error('Board not found');
+    }
 
+    const url = oldBoard.bgImage?.url;
     if (url) {
-      const board: Board = await this.boardService.update(boardID, {
+      const board = await this.boardService.update(boardID, {
         bgImage: { url, imgSettings },
       });
+      if (!board) {
+        throw new Error('Failed to update board image settings');
+      }
+
       this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
       return board;
     }
+
     return oldBoard;
   }
 
@@ -296,31 +339,35 @@ export class CanvasService {
     permissions: BoardPermissions
   ): Promise<Board> {
     const oldBoard = await this.boardService.get(boardID);
-    if (oldBoard.permissions.allowTracing !== permissions.allowTracing) {
-      if (permissions.allowTracing) {
-        this.socketService.emit(
-          SocketEvent.TRACING_ENABLED,
-          permissions.allowTracing
-        );
-      } else {
-        this.socketService.emit(
-          SocketEvent.TRACING_DISABLED,
-          permissions.allowTracing
-        );
-      }
+    if (!oldBoard) {
+      throw new Error('Board not found');
     }
-    const board: Board = await this.boardService.update(boardID, {
-      permissions,
-    });
-    this.socketService.emit(SocketEvent.BOARD_PERMISSIONS_UPDATE, board);
 
+    if (oldBoard.permissions.allowTracing !== permissions.allowTracing) {
+      this.socketService.emit(
+        permissions.allowTracing
+          ? SocketEvent.TRACING_ENABLED
+          : SocketEvent.TRACING_DISABLED,
+        permissions.allowTracing
+      );
+    }
+
+    const board = await this.boardService.update(boardID, { permissions });
+    if (!board) {
+      throw new Error('Failed to update board permissions');
+    }
+
+    this.socketService.emit(SocketEvent.BOARD_PERMISSIONS_UPDATE, board);
     return board;
   }
 
   async updateBoardTags(boardID: string, tags: Tag[]): Promise<Board> {
-    const board: Board = await this.boardService.update(boardID, { tags });
-    this.socketService.emit(SocketEvent.BOARD_TAGS_UPDATE, board);
+    const board = await this.boardService.update(boardID, { tags });
+    if (!board) {
+      throw new Error('Failed to update board tags');
+    }
 
+    this.socketService.emit(SocketEvent.BOARD_TAGS_UPDATE, board);
     return board;
   }
 
@@ -328,11 +375,12 @@ export class CanvasService {
     boardID: string,
     upvoteLimit: number
   ): Promise<Board> {
-    const board: Board = await this.boardService.update(boardID, {
-      upvoteLimit,
-    });
-    this.socketService.emit(SocketEvent.BOARD_UPVOTE_UPDATE, board);
+    const board = await this.boardService.update(boardID, { upvoteLimit });
+    if (!board) {
+      throw new Error('Failed to update board upvotes');
+    }
 
+    this.socketService.emit(SocketEvent.BOARD_UPVOTE_UPDATE, board);
     return board;
   }
 

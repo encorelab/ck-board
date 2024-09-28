@@ -30,7 +30,8 @@ export class NotificationService {
       .get<BoardNotification[]>(
         'notifications/user/' + userID + '/board/' + boardID
       )
-      .toPromise();
+      .toPromise()
+      .then((notifications) => notifications ?? []); // Default to an empty array
   }
 
   getByUserAndProject(
@@ -41,7 +42,8 @@ export class NotificationService {
       .get<ProjectNotification[]>(
         'notifications/user/' + userID + '/project/' + projectID
       )
-      .toPromise();
+      .toPromise()
+      .then((notifications) => notifications ?? []); // Default to an empty array
   }
 
   add(
@@ -53,7 +55,10 @@ export class NotificationService {
         type: type,
         notification: notification,
       })
-      .toPromise();
+      .toPromise()
+      .then(
+        (notif) => notif ?? ({} as ProjectNotification | BoardNotification)
+      ); // Default to an empty object
   }
 
   markAsRead(
@@ -65,7 +70,10 @@ export class NotificationService {
         'notifications/' + notificationID,
         { type: type, viewed: true }
       )
-      .toPromise();
+      .toPromise()
+      .then(
+        (notif) => notif ?? ({} as ProjectNotification | BoardNotification)
+      ); // Default to an empty object
   }
 
   remove(
@@ -75,11 +83,13 @@ export class NotificationService {
     if (type === NotificationType.BOARD) {
       return this.http
         .delete<BoardNotification>('notifications/board/' + notificationID)
-        .toPromise();
+        .toPromise()
+        .then((notif) => notif ?? ({} as BoardNotification)); // Default to an empty object
     } else {
       return this.http
         .delete<ProjectNotification>('notifications/project/' + notificationID)
-        .toPromise();
+        .toPromise()
+        .then((notif) => notif ?? ({} as ProjectNotification)); // Default to an empty object
     }
   }
 

@@ -73,9 +73,18 @@ export class BoardGuard implements CanActivate {
     return true;
   }
 
-  async isValidBoard(boardID: string) {
+  async isValidBoard(boardID: string): Promise<boolean> {
     try {
-      this.board = await this.boardService.get(boardID);
+      const board = await this.boardService.get(boardID);
+
+      if (!board) {
+        this.router.navigate(['/error'], {
+          state: { code: 404, message: 'This board does not exist!' },
+        });
+        return false;
+      }
+
+      this.board = board; // Now board is guaranteed to be of type Board
     } catch (e) {
       const message = getErrorMessage(e);
       const status = getErrorStatus(e);
@@ -85,7 +94,7 @@ export class BoardGuard implements CanActivate {
       return false;
     }
 
-    return this.board != undefined;
+    return true;
   }
 
   isVisibleBoard() {

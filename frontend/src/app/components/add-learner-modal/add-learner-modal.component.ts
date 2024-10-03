@@ -1,11 +1,11 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-  MatDialog,
-} from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialog as MatDialog,
+} from '@angular/material/legacy-dialog';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { Board } from 'src/app/models/board';
 import LearnerModel, { DimensionValue } from 'src/app/models/learner';
 import { AuthUser, Role } from 'src/app/models/user';
@@ -13,7 +13,7 @@ import { LearnerService } from 'src/app/services/learner.service';
 import { UserService } from 'src/app/services/user.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import * as saveAs from 'file-saver';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 
 export interface StudentElement {
@@ -71,7 +71,7 @@ export class AddLearnerModalComponent implements OnInit {
 06e209ee-0500-4777-bb6a-9cd44a74dd80, AbbyCruise, Dimension 2, 76, 54`;
 
   idToStudent: Map<string, AuthUser> = new Map<string, AuthUser>();
-  nameControl = new FormControl('', [
+  nameControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(50),
   ]);

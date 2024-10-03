@@ -1,9 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef,
-} from '@angular/material/dialog';
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import {
   Board,
@@ -16,7 +16,7 @@ import { Project } from 'src/app/models/project';
 import { Tag } from 'src/app/models/tag';
 import { BoardService } from 'src/app/services/board.service';
 import { CanvasService } from 'src/app/services/canvas.service';
-import { FileUploadService } from 'src/app/services/fileUpload.service';
+// import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
@@ -58,7 +58,7 @@ export class ConfigurationModalComponent {
 
   permissions: BoardPermissions;
 
-  tags: Tag[];
+  tags: Tag[] = [];
   newTagText = '';
   newTagColor: any = TAG_DEFAULT_COLOR;
   _POST_TAGGED_BORDER_THICKNESS = POST_TAGGED_BORDER_THICKNESS;
@@ -84,7 +84,7 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public upvoteService: UpvotesService,
     public canvasService: CanvasService,
-    public fileUploadService: FileUploadService,
+    //    public fileUploadService: FileUploadService,
     public socketService: SocketService,
     private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -134,24 +134,23 @@ export class ConfigurationModalComponent {
   }
 
   compressFile() {
-    this.fileUploadService.compressFile().then(async (compressedImage) => {
-      this.newCompressedImage = compressedImage;
-
-      const board = await this.canvasService.updateBoardImage(
-        this.boardID,
-        this.newCompressedImage
-      );
-      this.data.update(board);
-      this.currentBgImage = board.bgImage;
-      if (board.bgImage) {
-        this.bgImgSettings = board.bgImage.imgSettings;
-        this.backgroundPosX = board.bgImage.imgSettings.left;
-        this.backgroundPosY = board.bgImage.imgSettings.top;
-        this.backgroundScale = board.bgImage
-          ? Math.round(board.bgImage.imgSettings.scaleX * 100)
-          : 100;
-      }
-    });
+    // this.fileUploadService.compressFile().then(async (compressedImage) => {
+    //   this.newCompressedImage = compressedImage;
+    //   const board = await this.canvasService.updateBoardImage(
+    //     this.boardID,
+    //     this.newCompressedImage
+    //   );
+    //   this.data.update(board);
+    //   this.currentBgImage = board.bgImage;
+    //   if (board.bgImage) {
+    //     this.bgImgSettings = board.bgImage.imgSettings;
+    //     this.backgroundPosX = board.bgImage.imgSettings.left;
+    //     this.backgroundPosY = board.bgImage.imgSettings.top;
+    //     this.backgroundScale = board.bgImage
+    //       ? Math.round(board.bgImage.imgSettings.scaleX * 100)
+    //       : 100;
+    //   }
+    // });
   }
 
   async updateBoardImageSettings(): Promise<Board> {
@@ -174,34 +173,39 @@ export class ConfigurationModalComponent {
   }
 
   async handleDialogSubmit() {
-    let board: Board;
+    let board: Board | undefined;
     board = await this.canvasService.updateBoardName(
       this.boardID,
       this.boardName.trim()
     );
-    board = await this.canvasService.updateBoardTask(
-      this.boardID,
-      this.taskTitle,
-      this.taskMessage
-    );
-    board = await this.canvasService.updateBoardPermissions(
-      this.boardID,
-      this.permissions
-    );
-    board = await this.canvasService.updateBoardUpvotes(
-      this.boardID,
-      this.upvoteLimit
-    );
+    if (board) {
+      board = await this.canvasService.updateBoardTask(
+        this.boardID,
+        this.taskTitle,
+        this.taskMessage
+      );
+      board = await this.canvasService.updateBoardPermissions(
+        this.boardID,
+        this.permissions
+      );
+      board = await this.canvasService.updateBoardUpvotes(
+        this.boardID,
+        this.upvoteLimit
+      );
 
-    if (this.currentBgImage) board = await this.updateBoardImageSettings();
+      if (this.currentBgImage) board = await this.updateBoardImageSettings();
 
-    board = await this.boardService.update(this.boardID, {
-      initialZoom: this.initialZoom,
-      defaultView: this.defaultView,
-      viewSettings: this.viewSettings,
-    });
-    await this.data.update(board);
-    this.dialogRef.close();
+      board = await this.boardService.update(this.boardID, {
+        initialZoom: this.initialZoom,
+        defaultView: this.defaultView,
+        viewSettings: this.viewSettings,
+      });
+
+      if (board) {
+        await this.data.update(board);
+        this.dialogRef.close();
+      }
+    }
   }
 
   async ngOnDestroy(): Promise<void> {
@@ -273,17 +277,20 @@ export class ConfigurationModalComponent {
     let boards = await this.boardService.getMultipleBy(this.project.boards, {
       scope: BoardScope.PROJECT_PERSONAL,
     });
-    boards = boards.filter((b) => {
-      if (this.isTeacherPersonalBoard) {
-        return this.project.teacherIDs.includes(b.ownerID);
-      } else {
-        return !this.project.teacherIDs.includes(b.ownerID);
-      }
-    });
 
-    await this.boardService.copyConfiguration(
-      this.boardID,
-      boards.map((b) => b.boardID)
-    );
+    if (boards) {
+      boards = boards.filter((b) => {
+        if (this.isTeacherPersonalBoard) {
+          return this.project.teacherIDs.includes(b.ownerID);
+        } else {
+          return !this.project.teacherIDs.includes(b.ownerID);
+        }
+      });
+
+      await this.boardService.copyConfiguration(
+        this.boardID,
+        boards.map((b) => b.boardID)
+      );
+    }
   }
 }

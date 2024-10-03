@@ -14,11 +14,17 @@ export class PostService {
   constructor(public http: HttpClient) {}
 
   get(postID: string): Promise<Post> {
-    return this.http.get<Post>('posts/' + postID).toPromise();
+    return this.http
+      .get<Post>('posts/' + postID)
+      .toPromise()
+      .then((post) => post ?? ({} as Post)); // Default to an empty object
   }
 
   getAll(postIDs: string[]): Promise<Post[]> {
-    return this.http.post<Post[]>('posts/many', { postIDs }).toPromise();
+    return this.http
+      .post<Post[]>('posts/many', { postIDs })
+      .toPromise()
+      .then((posts) => posts ?? []); // Default to an empty array
   }
 
   getAllByBoard(
@@ -37,7 +43,8 @@ export class PostService {
 
     return this.http
       .get<Post[]>('posts/boards/' + boardID, { params })
-      .toPromise();
+      .toPromise()
+      .then((posts) => posts ?? []); // Default to an empty array
   }
 
   getAllByBucket(bucketID: string, opts?: Options): Promise<any> {
@@ -52,19 +59,26 @@ export class PostService {
       .toPromise();
   }
 
-  create(post: Post) {
+  create(post: Post): Promise<Post> {
     return this.http
       .post<Post>('posts/', post, {
         headers: new HttpHeaders({ timeout: `${5000}` }),
       })
-      .toPromise();
+      .toPromise()
+      .then((newPost) => newPost ?? ({} as Post)); // Default to an empty object
   }
 
   update(postID: string, value: Partial<Post>): Promise<Post> {
-    return this.http.put<Post>('posts/' + postID, value).toPromise();
+    return this.http
+      .put<Post>('posts/' + postID, value)
+      .toPromise()
+      .then((updatedPost) => updatedPost ?? ({} as Post)); // Default to an empty object
   }
 
   remove(id: string): Promise<Post> {
-    return this.http.delete<Post>('posts/' + id).toPromise();
+    return this.http
+      .delete<Post>('posts/' + id)
+      .toPromise()
+      .then((deletedPost) => deletedPost ?? ({} as Post)); // Default to an empty object
   }
 }

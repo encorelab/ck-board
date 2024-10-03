@@ -13,25 +13,34 @@ export class UserService {
   getOneById(id: string): Promise<User> {
     return this.http
       .get<User>('auth/' + id, { headers: { cache: 'true' } })
-      .toPromise();
+      .toPromise()
+      .then((user) => user!); // Assert that user is defined (or handle accordingly)
   }
 
-  getMultipleByIds(ids: string[]) {
-    return this.http.post<User[]>('auth/multiple', ids).toPromise();
+  getMultipleByIds(ids: string[]): Promise<User[]> {
+    return this.http
+      .post<User[]>('auth/multiple', ids)
+      .toPromise()
+      .then((user) => user!);
   }
 
   getByProject(projectID: string): Promise<AuthUser[]> {
-    return this.http.get<AuthUser[]>('auth/project/' + projectID).toPromise();
+    return this.http
+      .get<AuthUser[]>('auth/project/' + projectID)
+      .toPromise()
+      .then((users) => users ?? []); // Default to an empty array
   }
 
-  async register(user: User) {
+  async register(user: User): Promise<boolean> {
     return this.http
       .post<TokenResponse>('auth/register', user)
       .toPromise()
       .then((result) => {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        localStorage.setItem('access_token', result.token);
-        localStorage.setItem('expires_at', result.expiresAt);
+        if (result) {
+          localStorage.setItem('user', JSON.stringify(result.user));
+          localStorage.setItem('access_token', result.token);
+          localStorage.setItem('expires_at', result.expiresAt);
+        }
         return true;
       });
   }
@@ -44,9 +53,11 @@ export class UserService {
       })
       .toPromise()
       .then((result) => {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        localStorage.setItem('access_token', result.token);
-        localStorage.setItem('expires_at', result.expiresAt);
+        if (result) {
+          localStorage.setItem('user', JSON.stringify(result.user));
+          localStorage.setItem('access_token', result.token);
+          localStorage.setItem('expires_at', result.expiresAt);
+        }
         return true;
       });
   }
@@ -75,10 +86,12 @@ export class UserService {
       .get(`auth/sso/login/${sso}/${sig}`)
       .toPromise()
       .then((result: any) => {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        localStorage.setItem('access_token', result.token);
-        localStorage.setItem('expires_at', result.expiresAt);
-        window.location.href = result.redirectUrl;
+        if (result) {
+          localStorage.setItem('user', JSON.stringify(result.user));
+          localStorage.setItem('access_token', result.token);
+          localStorage.setItem('expires_at', result.expiresAt);
+          window.location.href = result.redirectUrl;
+        }
         return true;
       });
   }
@@ -117,7 +130,6 @@ export class UserService {
     if (storedUser) {
       return JSON.parse(storedUser);
     }
-
     return null;
   }
 }

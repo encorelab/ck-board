@@ -9,6 +9,7 @@ describe('SsoLoginComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [SsoLoginComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

@@ -1,17 +1,17 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import {
   AbstractControl,
-  FormControl,
+  UntypedFormControl,
   ValidationErrors,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-  MatDialog,
-} from '@angular/material/dialog';
-import { MatSnackBarConfig } from '@angular/material/snack-bar';
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialog as MatDialog,
+} from '@angular/material/legacy-dialog';
+import { MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
 import { Board, BoardScope } from 'src/app/models/board';
 import { Tag } from 'src/app/models/tag';
 import Bucket from 'src/app/models/bucket';
@@ -44,7 +44,7 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 })
 export class CreateWorkflowModalComponent implements OnInit {
   // Properties
-  selected = new FormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
+  selected = new UntypedFormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
 
   // Data models
   board: Board; // Current board
@@ -84,30 +84,38 @@ export class CreateWorkflowModalComponent implements OnInit {
   tagsRequired = false;
   postGeneration = 1;
 
-  bucketNameFormControl = new FormControl('valid', [
+  bucketNameFormControl = new UntypedFormControl('valid', [
     Validators.required,
     this._forbiddenNameValidator(),
   ]);
-  workflowNameFormControl = new FormControl('valid', [Validators.required]);
-  sourceFormControl = new FormControl('valid', [Validators.required]);
-  destinationFormControl = new FormControl('valid', [Validators.required]);
+  workflowNameFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
+  sourceFormControl = new UntypedFormControl('valid', [Validators.required]);
+  destinationFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
 
-  sourceDestinationMatchError = new FormControl(false);
+  sourceDestinationMatchError = new UntypedFormControl(false);
 
-  groupsFormControl = new FormControl('valid', [Validators.required]);
-  promptFormControl = new FormControl('valid', [Validators.required]);
+  groupsFormControl = new UntypedFormControl('valid', [Validators.required]);
+  promptFormControl = new UntypedFormControl('valid', [Validators.required]);
 
-  workflowTypeFormControl = new FormControl('valid', [Validators.required]);
-  removeFromSourceFormControl = new FormControl('valid', [Validators.required]);
+  workflowTypeFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
+  removeFromSourceFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
 
-  tagsFormControl = new FormControl();
+  tagsFormControl = new UntypedFormControl();
 
   matcher = new MyErrorStateMatcher();
   snackbarConfig: MatSnackBarConfig;
 
   constructor(
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
-    public dialog: MatDialog,
+    private dialog: MatDialog,
     private snackbarService: SnackbarService,
     public bucketService: BucketService,
     public boardService: BoardService,
@@ -152,19 +160,19 @@ export class CreateWorkflowModalComponent implements OnInit {
         }
       );
 
-      // Add project boards FIRST
-      this.destOptions = this.destOptions.concat(projectBoards);
-      this.sourceOptions = this.sourceOptions.concat(projectBoards);
+      // Add project boards FIRST (using fallback empty array if undefined)
+      this.destOptions = this.destOptions.concat(projectBoards || []);
+      this.sourceOptions = this.sourceOptions.concat(projectBoards || []);
 
       // 2. Fetch Buckets
       const buckets = await this.bucketService.getAllByBoard(
         this.data.board.boardID
       );
-      this.boardBuckets = this.boardBuckets.concat(buckets);
+      this.boardBuckets = this.boardBuckets.concat(buckets || []);
 
       // 3. Add buckets SECOND
-      this.sourceOptions = this.sourceOptions.concat(buckets);
-      this.destOptions = this.destOptions.concat(buckets);
+      this.sourceOptions = this.sourceOptions.concat(buckets || []);
+      this.destOptions = this.destOptions.concat(buckets || []);
     } catch (error) {
       console.error('Error loading boards and buckets:', error);
     }

@@ -9,6 +9,7 @@ describe('ErrorComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ErrorComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

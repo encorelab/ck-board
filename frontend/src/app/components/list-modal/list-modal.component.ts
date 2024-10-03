@@ -1,9 +1,9 @@
 import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { Board } from 'src/app/models/board';
 import Post, { PostType, DisplayAttributes } from 'src/app/models/post';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -25,7 +25,10 @@ import {
 import User from 'src/app/models/user';
 import Upvote from 'src/app/models/upvote';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import {
+  MatLegacyPaginator as MatPaginator,
+  LegacyPageEvent as PageEvent,
+} from '@angular/material/legacy-paginator';
 
 @Component({
   selector: 'app-list-modal',

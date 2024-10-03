@@ -24,7 +24,7 @@ export default class Converters {
     const comments = await this.commentService.getCommentsByPost(post.postID);
 
     return {
-      board: board,
+      board: board!,
       post: post,
       author: author!.username,
       upvotes: upvotes,

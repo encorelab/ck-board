@@ -8,45 +8,72 @@ import { Board } from '../models/board';
 export class BoardService {
   constructor(private http: HttpClient) {}
 
-  get(boardID: string): Promise<Board> {
-    return this.http.get<Board>('boards/' + boardID).toPromise();
+  // Return a Promise that resolves to either a Board or undefined
+  get(boardID: string): Promise<Board | undefined> {
+    return this.http
+      .get<Board>('boards/' + boardID)
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 
-  getByProject(projectID: string): Promise<Board[]> {
-    return this.http.get<Board[]>('boards/projects/' + projectID).toPromise();
+  // Return a Promise that resolves to either an array of Board or undefined
+  getByProject(projectID: string): Promise<Board[] | undefined> {
+    return this.http
+      .get<Board[]>('boards/projects/' + projectID)
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 
-  getPersonal(projectID: string): Promise<Board> {
-    return this.http.get<Board>('boards/personal/' + projectID).toPromise();
+  // Return a Promise that resolves to either a Board or undefined
+  getPersonal(projectID: string): Promise<Board | undefined> {
+    return this.http
+      .get<Board>('boards/personal/' + projectID)
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 
-  getAllPersonal(projectID: string): Promise<Board[]> {
+  getAllPersonal(projectID: string): Promise<Board[] | undefined> {
     return this.http
       .get<Board[]>('boards/personal/all/' + projectID)
-      .toPromise();
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 
-  getMultipleBy(ids: string[], filter?: Partial<Board>): Promise<Board[]> {
+  getMultipleBy(
+    ids: string[],
+    filter?: Partial<Board>
+  ): Promise<Board[] | undefined> {
     return this.http
       .post<Board[]>('boards/multiple/', { ids, filter })
-      .toPromise();
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 
-  update(boardID: string, board: Partial<Board>): Promise<Board> {
-    return this.http.post<Board>('boards/' + boardID, board).toPromise();
+  update(boardID: string, board: Partial<Board>): Promise<Board | undefined> {
+    return this.http
+      .post<Board>('boards/' + boardID, board)
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 
-  create(board: Board) {
-    return this.http.post<Board>('boards/', board).toPromise();
+  create(board: Board): Promise<Board | undefined> {
+    return this.http
+      .post<Board>('boards/', board)
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 
-  remove(id: string) {
-    return this.http.delete<Board>('boards/' + id).toPromise();
+  remove(id: string): Promise<Board | undefined> {
+    return this.http
+      .delete<Board>('boards/' + id)
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 
-  copyConfiguration(boardID: string, boards: string[]) {
+  copyConfiguration(boardID: string, boards: string[]): Promise<any> {
     return this.http
       .post<any>(`boards/${boardID}/copy-configuration/`, { boards })
-      .toPromise();
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 }

@@ -18,23 +18,29 @@ export class UpvotesService {
       .get<Upvote[]>(
         'upvotes/posts/' + postID + '?representation=' + representation
       )
-      .toPromise();
+      .toPromise()
+      .then((upvotes) => upvotes ?? []); // Default to an empty array
   }
 
   getByBoard(boardID: string): Promise<Upvote[]> {
-    return this.http.get<Upvote[]>('upvotes/board/' + boardID).toPromise();
+    return this.http
+      .get<Upvote[]>('upvotes/board/' + boardID)
+      .toPromise()
+      .then((upvotes) => upvotes ?? []); // Default to an empty array
   }
 
   getByBoardAndUser(boardID: string, userID: string): Promise<Upvote[]> {
     return this.http
       .get<Upvote[]>('upvotes/boards/' + boardID + '/users/' + userID)
-      .toPromise();
+      .toPromise()
+      .then((upvotes) => upvotes ?? []); // Default to an empty array
   }
 
   isUpvotedBy(postID: string, voterID: string): Promise<Upvote | null> {
     return this.http
       .get<Upvote | null>('upvotes/posts/' + postID + '/users/' + voterID)
-      .toPromise();
+      .toPromise()
+      .then((upvote) => upvote ?? null); // Default to null
   }
 
   add(upvote: Upvote): Promise<any> {
@@ -49,7 +55,7 @@ export class UpvotesService {
 
   async removeByBoard(boardID: string) {
     const deletedVotes = await this.getByBoard(boardID);
-    this.http.delete('upvotes/board/' + boardID).toPromise();
+    await this.http.delete('upvotes/board/' + boardID).toPromise();
     this.socketService.emit(SocketEvent.VOTES_CLEAR, deletedVotes);
   }
 }

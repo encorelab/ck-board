@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 import Post, { PostType } from '../../models/post';
 
@@ -34,7 +34,7 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
-import { FileUploadService } from 'src/app/services/fileUpload.service';
+// import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
@@ -118,7 +118,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     public snackbarService: SnackbarService,
     public dialog: MatDialog,
-    public fileUploadService: FileUploadService,
+    // public fileUploadService: FileUploadService,
     private socketService: SocketService,
     private canvasService: CanvasService,
     private traceService: TraceService

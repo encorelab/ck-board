@@ -1,7 +1,10 @@
 import { T } from '@angular/cdk/keycodes';
 import { Component, Inject } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { UntypedFormControl, Validators } from '@angular/forms';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { Board, BoardType } from 'src/app/models/board';
 import Bucket from 'src/app/models/bucket';
 import Post, {
@@ -64,12 +67,12 @@ export class AddPostComponent {
   tags: Tag[] = [];
   tagOptions: Tag[] = [];
 
-  titleControl = new FormControl('', [
+  titleControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(50),
   ]);
-  msgControl = new FormControl('', [Validators.maxLength(2000)]);
-  questionPromptControl = new FormControl('', [
+  msgControl = new UntypedFormControl('', [Validators.maxLength(2000)]);
+  questionPromptControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(2000),
   ]);
@@ -288,19 +291,21 @@ export class AddPostComponent {
         this.board.projectID
       );
 
-      for (const board of boards) {
-        if (
-          !project.teacherIDs.includes(board.ownerID) ||
-          board.ownerID === this.user.userID
-        ) {
-          let post;
-          if (this.data.type == PostType.BUCKET && this.data.bucket)
-            post = this.getBucketPost();
-          else if (this.data.type == PostType.LIST) post = this.getListPost();
-          else post = this.getBoardPost();
+      if (boards) {
+        for (const board of boards) {
+          if (
+            !project.teacherIDs.includes(board.ownerID) ||
+            board.ownerID === this.user.userID
+          ) {
+            let post;
+            if (this.data.type == PostType.BUCKET && this.data.bucket)
+              post = this.getBucketPost();
+            else if (this.data.type == PostType.LIST) post = this.getListPost();
+            else post = this.getBoardPost();
 
-          post.boardID = board.boardID;
-          const newPost = await this.postService.create(post);
+            post.boardID = board.boardID;
+            const newPost = await this.postService.create(post);
+          }
         }
       }
       this.snackbarService.queueSnackbar(
@@ -332,7 +337,7 @@ export class AddPostComponent {
 
   async handleDialogSubmit() {
     this.creationInProgress = true;
-    let post: Post;
+    let post: Post | undefined;
     if (this.data?.disableCreation) {
       const _post = this.getPartialPost();
       if (this.data.onComplete) {

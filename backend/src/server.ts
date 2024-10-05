@@ -64,7 +64,6 @@ app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
 
-
 const shutdown = async () => {
   await redis.disconnect();
   process.exit(0);

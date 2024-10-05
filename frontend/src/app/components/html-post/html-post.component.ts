@@ -1,6 +1,6 @@
 import { DELETE } from '@angular/cdk/keycodes';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { PostModalComponent } from 'src/app/components/post-modal/post-modal.component';
 import { Board } from 'src/app/models/board';
 import Post from 'src/app/models/post';

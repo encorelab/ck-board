@@ -1,17 +1,17 @@
 <app-toolbar *ngIf="user" [user]="user">
     <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
     <button mat-icon-button *ngIf="user.role === Role.TEACHER"
-        (click)="board.scope === BoardScope.PROJECT_SHARED ? copyEmbedCode() : copyPersonalEmbedCode()"
+        (click)="board?.scope === BoardScope.PROJECT_SHARED ? copyEmbedCode() : copyPersonalEmbedCode()"
         matTooltip="Copy embeddable URL">
         <mat-icon>file_copy</mat-icon>
     </button>
     <span style="flex: 1 1 auto"></span>
     <app-view-navigation [boardID]="boardID" [currentView]="viewType"></app-view-navigation>
-    <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
+    <app-toolbar-menu *ngIf="board" navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
 </app-toolbar>
 <div class="container d-flex align-items-center justify-content-center">
     <div class="heading">
-      <button
+      <button *ngIf="project"
         mat-icon-button
         routerLink="{{'/project/'+project.projectID}}"
         aria-label="Return to Dashboard"

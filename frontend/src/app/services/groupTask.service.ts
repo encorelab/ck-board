@@ -24,12 +24,14 @@ export class GroupTaskService {
       .get<GroupTask>(
         'workflows/task/' + workflowID + '/groupTask/group/' + groupID
       )
-      .toPromise();
+      .toPromise()
+      .then((groupTask) => groupTask ?? ({} as GroupTask)); // Default to an empty object
   }
 
   getGroupTasksByWorkflow(workflowID: string): Promise<GroupTask[]> {
     return this.http
       .get<GroupTask[]>('workflows/' + workflowID + '/task')
-      .toPromise();
+      .toPromise()
+      .then((groupTasks) => groupTasks ?? []); // Default to an empty array
   }
 }

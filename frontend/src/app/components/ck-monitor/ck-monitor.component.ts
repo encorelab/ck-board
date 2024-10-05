@@ -6,7 +6,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
@@ -40,7 +40,7 @@ import {
 import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import {
   CompletionQuality,
   ExpandedTodoItem,
@@ -50,7 +50,7 @@ import {
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { MatSort } from '@angular/material/sort';
 import sorting from 'src/app/utils/sorting';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
 import { LearnerService } from 'src/app/services/learner.service';
 
@@ -156,9 +156,9 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     'completion-notes',
   ];
 
-  todoDeadlineRange = new FormGroup({
-    start: new FormControl(null),
-    end: new FormControl(null),
+  todoDeadlineRange = new UntypedFormGroup({
+    start: new UntypedFormControl(null),
+    end: new UntypedFormControl(null),
   });
 
   Role: typeof Role = Role;
@@ -225,7 +225,13 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       return this.router.navigate(['error']);
     }
 
-    this.board = await this.boardService.get(boardID);
+    const fetchedBoard = await this.boardService.get(boardID);
+    if (!fetchedBoard) {
+      this.router.navigate(['error']);
+      return false; // or true depending on your flow
+    }
+    this.board = fetchedBoard;
+
     this.project = await this.projectService.get(projectID);
 
     if (!this.board.viewSettings?.allowMonitor) {

@@ -9,6 +9,7 @@ describe('ConfirmModalComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ConfirmModalComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

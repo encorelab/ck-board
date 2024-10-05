@@ -9,6 +9,7 @@ describe('CsvDownloadButtonComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [CsvDownloadButtonComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

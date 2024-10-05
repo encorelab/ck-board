@@ -2,6 +2,7 @@ import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import path from 'path';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Socket from './socket/socket';
@@ -36,6 +37,7 @@ const redisPassword = process.env.REDIS_PASSWORD || '';
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, '../../frontend/dist/ck-board')));
 const server = http.createServer(app);
 
 const redis = new RedisClient({
@@ -45,6 +47,7 @@ const redis = new RedisClient({
 });
 
 const socket = Socket.Instance;
+
 socket.init(redis);
 
 app.use('/api/projects', isAuthenticated, projects);
@@ -60,6 +63,7 @@ app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
+
 
 const shutdown = async () => {
   await redis.disconnect();

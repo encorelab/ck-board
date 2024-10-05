@@ -23,6 +23,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "start": "node ./dist/server.js",
     "dev": "ts-node-dev --respawn ./src/server.ts",
     "style:linter": "eslint . --fix --ext .ts",
     "style:formatter": "prettier --check \"**/*.{js,jsx,ts,tsx}\"",

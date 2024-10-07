@@ -7,7 +7,7 @@ This Common Knowledge (CK) Board is the latest rebuild of the ENCORE Lab's colla
 ### 1. Install Node.js, Angular, and Redis
 
 - Node: https://nodejs.org/
-  - Use the LTS versions. v16 works, v17 has some compatabily issues
+  - Use the v18
 - Angular: `npm install -g @angular/cli `
 - Redis: https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/
 

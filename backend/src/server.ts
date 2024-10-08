@@ -20,6 +20,7 @@ import todoItems from './api/todoItem';
 import learner from './api/learner';
 import { isAuthenticated } from './utils/auth';
 import RedisClient from './utils/redis';
+import aiRouter from './api/ai';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -60,6 +61,7 @@ app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
+app.use('/api/ai', isAuthenticated, aiRouter);
 
 const shutdown = async () => {
   await redis.disconnect();

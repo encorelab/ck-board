@@ -27,6 +27,7 @@ import {
   WorkflowType,
   TaskWorkflowType,
 } from 'src/app/models/workflow';
+import { PostService } from 'src/app/services/post.service';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -36,6 +37,8 @@ import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-create-workflow-modal',
@@ -58,6 +61,10 @@ export class CreateWorkflowModalComponent implements OnInit {
   bucketName = '';
   workflowName = '';
   showDelete = false;
+
+  aiPrompt = '';
+  aiResponse = '';
+  isWaitingForAIResponse = false;
 
   // Common fields between all workflows
   WorkflowType: typeof WorkflowType = WorkflowType;
@@ -119,9 +126,11 @@ export class CreateWorkflowModalComponent implements OnInit {
     private snackbarService: SnackbarService,
     public bucketService: BucketService,
     public boardService: BoardService,
+    private postService: PostService,
     public workflowService: WorkflowService,
     public canvasService: CanvasService,
     public groupService: GroupService,
+    private http: HttpClient,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.snackbarConfig = new MatSnackBarConfig();
@@ -322,6 +331,44 @@ export class CreateWorkflowModalComponent implements OnInit {
         },
       },
     });
+  }
+
+  async askAI() {
+    this.isWaitingForAIResponse = true;
+    this.aiResponse = '';
+  
+    try {
+      // 1. Fetch all posts for the current board
+      const posts = await this.fetchBoardPosts();
+  
+      // 2. Send posts and prompt to the backend API 
+      console.log("Posts: " + posts)
+      console.log("Prompt: " + this.aiPrompt)
+      const response = await lastValueFrom(this.http.post('ai', { 
+        posts: posts, 
+        prompt: this.aiPrompt 
+      })); 
+  
+      let responseText = (response as string)
+      this.aiResponse = responseText; 
+    } catch (error) {
+      console.error(error);
+      // Handle the error, e.g., show an error message to the user
+    } finally {
+      this.isWaitingForAIResponse = false;
+    }
+  }
+
+  async fetchBoardPosts() {
+    try {
+      // Fetch posts for the current board
+      const posts = await this.postService.getAllByBoard(this.board.boardID); 
+      return posts;
+    } catch (error) {
+      console.error('Error fetching board posts:', error);
+      // Handle the error, e.g., show an error message to the user
+      return []; // Return an empty array in case of an error
+    }
   }
 
   // Closes the dialog.

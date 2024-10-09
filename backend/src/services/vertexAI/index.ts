@@ -66,6 +66,20 @@ function parseVertexAIError(errorString: string): { code?: number; message?: str
   }
 }
 
+function postsToKeyValuePairs(posts: any[]): string {
+  let output = "";
+  for (const post of posts) {
+    output += `Post with title "${post.title}":\n`;
+    output += `  - Content: ${post.content}\n`;
+    output += `  - Upvotes: ${post.numUpvotes}\n`;
+    output += `  - HasTags: ${post.hasTags.join(', ') || '(none)'}\n`;
+    output += `  - InBuckets: ${post.inBuckets.join(', ') || '(none)'}\n`;
+    output += `  - OnCanvas: ${post.onCanvas ? 'Yes' : 'No'}\n`;
+    output += "\n"; 
+  }
+  return output;
+}
+
 async function sendMessage(posts: any[], prompt: string): Promise<string> {
   try {
     // Fetch upvote counts for each post
@@ -103,12 +117,10 @@ async function sendMessage(posts: any[], prompt: string): Promise<string> {
       onCanvas: post.type == 'BOARD' as string
     }));
 
+    const postsAsKeyValuePairs = postsToKeyValuePairs(postsToSend)
+
     // Format the posts and prompt for the model (using postsToSend)
-    const message = `Here are the posts from the project:\n\n${JSON.stringify(
-      postsToSend, // Use the simplified posts here
-      null,
-      2
-    )}\n\nUser prompt: ${prompt}`;
+    const message = `Here are the posts from the project:\n\n${postsAsKeyValuePairs}\n\nUser prompt: ${prompt}`;
 
     // Change 1: Send only the prompt as the message
     const streamResult = await chat.sendMessageStream(message);

@@ -4,7 +4,7 @@
 <mat-menu #navbarMenu="matMenu">
     <button mat-menu-item *ngIf="user.role === Role.TEACHER && !!board && board.scope === BoardScope.PROJECT_SHARED" (click)="openWorkflowDialog()">
         <mat-icon>timeline</mat-icon>
-        Manage Buckets & Workflows
+        Edit Buckets, Workflows, & AI
     </button>
     <button mat-menu-item *ngIf="user.role === Role.TEACHER" (click)="showListModal()">
         <mat-icon>list_alt</mat-icon>

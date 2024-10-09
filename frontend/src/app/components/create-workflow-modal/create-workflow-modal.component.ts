@@ -369,9 +369,12 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.changeDetectorRef.detectChanges();
       this.scrollToBottom()
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      // Handle the error, e.g., show an error message to the user
+      let errorMessage = 'An error occurred.'; 
+
+      // Add the error message to the chat history
+      this.chatHistory.push({ role: 'assistant', content: errorMessage });
     } finally {
       this.isWaitingForAIResponse = false;
     }
@@ -390,6 +393,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     const lines = markdown.split('\\n'); 
     let html = '';
     let inList = false;
+    let inSublist = false;
     let inBold = false;
   
     for (let i = 0; i < lines.length; i++) {
@@ -411,17 +415,30 @@ export class CreateWorkflowModalComponent implements OnInit {
         line = line.replace('\\"', '"');
       }
   
-      if (line.startsWith('* ')) {
+      if (line.match(/^(\*|-) /)) {
         if (!inList) {
           html += '<ul>';
           inList = true;
         }
-        html += `<li>${line.substring(2)}</li>`; 
+        if (inSublist) { 
+          html += '</ul>'; 
+          inSublist = false;
+        }
+        html += `<li>${line.substring(2)}</li>`;
+      } else if (line.match(/^ +(\*|-) /)) { // Match sublist items
+        if (!inSublist) {
+          html += '<ul>';
+          inSublist = true;
+        }
+        html += `<li>${line.trim().substring(2)}</li>`;
       } else if (inList) {
+        if (inSublist) {
+          html += '</ul>';
+          inSublist = false;
+        }
         html += '</ul>';
         inList = false;
-  
-        html += line; 
+        html += line;
       } else if (line === '') {
         html += '<br>';
       } else {
@@ -429,8 +446,11 @@ export class CreateWorkflowModalComponent implements OnInit {
       }
     }
   
+    if (inSublist) {
+      html += '</ul>';
+    }
     if (inList) {
-      html += '</ul>'; 
+      html += '</ul>';
     }
   
     return html;

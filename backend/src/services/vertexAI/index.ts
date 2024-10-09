@@ -1,3 +1,6 @@
+import dalVote from '../../repository/dalVote';
+import dalBucket from '../../repository/dalBucket'
+
 require('dotenv').config();
 
 const { VertexAI } = require('@google-cloud/vertexai');
@@ -5,7 +8,7 @@ const { VertexAI } = require('@google-cloud/vertexai');
 // Get project ID from environment variable
 const projectId = process.env.GOOGLE_CLOUD_PROJECT;
 const location = 'northamerica-northeast1'; // Update if needed
-const model = 'gemini-1.5-flash-002';
+const model = 'gemini-1.5-pro-002';
 
 const vertexAI = new VertexAI({ project:projectId, location:location });
 
@@ -39,12 +42,65 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
 
 const chat = generativeModel.startChat({});
 
+function parseVertexAIError(errorString: string): { code?: number; message?: string } {
+  try {
+    // Use a regular expression to extract the JSON part
+    const jsonMatch = errorString.match(/{.*}/);
+
+    if (jsonMatch && jsonMatch[0]) {
+      // Parse the JSON string
+      const errorObject = JSON.parse(jsonMatch[0]);
+
+      // Access code and message
+      const errorCode = errorObject.error.code;
+      const errorMessage = errorObject.error.message;
+
+      return { code: errorCode, message: errorMessage };
+    } else {
+      console.error('JSON part not found in the error string.');
+      return {};
+    }
+  } catch (e) {
+    console.error('Failed to parse the error JSON:', e);
+    return {};
+  }
+}
+
 async function sendMessage(posts: any[], prompt: string): Promise<string> {
   try {
-    // Create a list of posts with only title and description
-    const postsToSend = posts.map(post => ({ 
-      title: post.title, 
-      desc: post.desc 
+    // Fetch upvote counts for each post
+    const upvoteCounts = await Promise.all(
+      posts.map(async (post) => ({
+        postId: post.postID,
+        upvotes: await dalVote.getAmountByPost(post.postID)
+      }))
+    );
+
+    // Create a map of post IDs to upvote counts
+    const upvoteMap = new Map(upvoteCounts.map(count => [count.postId, count.upvotes]));
+
+    // Fetch bucket names for each post
+    const bucketNames = await Promise.all(
+      posts.map(async (post) => {
+        const buckets = await dalBucket.getByPostId(post.postID);
+        return {
+          postId: post.postID,
+          bucketNames: buckets.map(bucket => bucket.name) // Extract bucket names
+        };
+      })
+    );
+
+    // Create a map of post IDs to bucket names
+    const bucketNameMap = new Map(bucketNames.map(entry => [entry.postId, entry.bucketNames]));
+
+    // Add bucket names to the posts
+    const postsToSend = posts.map(post => ({
+      title: post.title,
+      content: post.desc,
+      numUpvotes: upvoteMap.get(post.postID) || 0,
+      hasTags: post.tags.map((tag: { name: string }) => tag.name),
+      inBuckets: bucketNameMap.get(post.postID) || [],
+      onCanvas: post.type == 'BOARD' as string
     }));
 
     // Format the posts and prompt for the model (using postsToSend)
@@ -59,9 +115,33 @@ async function sendMessage(posts: any[], prompt: string): Promise<string> {
 
     const response = removeFirstAndLastQuotes(JSON.stringify((await streamResult.response).candidates[0].content.parts[0].text));
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending message:', error);
-    return 'An error occurred. Please try again later.';
+
+    const parsedError = parseVertexAIError(error.toString());
+  
+    let errorMessage = `An error occurred... (${parsedError}). Please try again later.`;
+  
+    // Check for specific error codes and status messages
+    if (parsedError.code === 400) {
+      errorMessage = 'Error: INVALID_ARGUMENT / FAILED_PRECONDITION. Request fails API validation, or you tried to access a model that requires allowlisting or is disallowed by the organization\'s policy.';
+    } else if (parsedError.code === 403) {
+      errorMessage = 'Error: PERMISSION_DENIED. Client doesn\'t have sufficient permission to call the API.';
+    } else if (parsedError.code === 404) {
+      errorMessage = 'Error: NOT_FOUND. No valid object is found from the designated URL.	';
+    } else if (parsedError.code === 409) {
+      errorMessage = 'Error: RESOURCE_EXHAUSTED. Depending on the error message, the error could be caused by the following: (1) API quota over the limit; (2) Server overload due to shared server capacity.';
+    } else if (parsedError.code === 499) {
+      errorMessage = 'Error: CANCELLED. Request is cancelled by the client.	';
+    } else if (parsedError.code === 500) {
+      errorMessage = 'Error: UNKNOWN / INTERNAL. Server error due to overload or dependency failure.	';
+    } else if (parsedError.code === 503) {
+      errorMessage = 'Error: UNAVAILABLE. Service is temporarily unavailable.	';
+    } else if (parsedError.code === 504) {
+      errorMessage = 'Error: DEADLINE_EXCEEDED. The client sets a deadline shorter than the server\'s default deadline (10 minutes), and the request didn\'t finish within the client-provided deadline.';
+    }
+  
+    return errorMessage;
   }
 }
 

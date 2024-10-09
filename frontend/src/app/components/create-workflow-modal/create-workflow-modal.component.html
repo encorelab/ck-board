@@ -1,5 +1,5 @@
 <h1 mat-dialog-title>CK Workflows</h1>
-<div mat-dialog-content>
+<div mat-dialog-content class="main-content">
   <mat-tab-group
     dynamicHeight
     animationDuration="0ms"
@@ -588,25 +588,38 @@
       </mat-accordion>
     </mat-tab>
     <mat-tab label="AI Assistant"> 
-      <div style="margin-top: 20px;">
-        <mat-form-field appearance="outline" style="width: 100%">
-          <mat-label>Ask the AI Assistant</mat-label>
-          <input matInput [(ngModel)]="aiPrompt" />
-        </mat-form-field>
-        <button mat-raised-button color="primary" (click)="askAI()">Ask</button>
-      </div>
-
-      <div *ngIf="isWaitingForAIResponse" style="text-align: center; margin-top: 20px;">
-        <mat-spinner diameter="30"></mat-spinner> 
-        <p>Waiting for AI response...</p>
-      </div>
-
-      <div *ngIf="aiResponse" style="margin-top: 20px;" [innerHTML]="aiResponse"> 
+      <div class="ai-assistant-container"> 
+        <div class="chat-feed" #scrollableDiv>
+          <div *ngFor="let message of chatHistory"> 
+            <div *ngIf="message.role === 'user'" class="user-message">
+              <mat-card class="message-card user-card"> 
+                <h3 class="message-label">User:</h3>
+                <div [innerHTML]="message.content"></div>
+              </mat-card>
+            </div>
+            <div *ngIf="message.role === 'assistant'" class="ai-message">
+              <mat-card class="message-card ai-card"> 
+                <h3 class="message-label">Assistant:</h3>
+                <div [innerHTML]="message.content"></div>
+              </mat-card>
+            </div>
+          </div>
+          <div *ngIf="isWaitingForAIResponse" class="waiting-message">
+            <mat-spinner diameter="30"></mat-spinner> 
+            <p>Waiting for AI response...</p>
+          </div>
+        </div>
       </div>
     </mat-tab>
   </mat-tab-group>
 </div>
 <div mat-dialog-actions>
+  <mat-form-field appearance="outline" style="width: 100%" *ngIf="selected.value === 3">
+    <mat-label>Ask the AI Assistant</mat-label>
+    <input matInput [(ngModel)]="aiPrompt" (keyup.enter)="askAI()"/>
+  </mat-form-field>
+  <button mat-raised-button color="primary" (click)="askAI()" *ngIf="selected.value === 3">Ask</button>
+
   <button mat-button (click)="onNoClick()">Close</button>
   <button
     mat-button

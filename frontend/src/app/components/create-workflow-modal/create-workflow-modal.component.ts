@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -40,6 +40,11 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 
+interface ChatMessage { 
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 @Component({
   selector: 'app-create-workflow-modal',
   templateUrl: './create-workflow-modal.component.html',
@@ -65,6 +70,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   aiPrompt = '';
   aiResponse = '';
   isWaitingForAIResponse = false;
+
+  chatHistory: ChatMessage[] = [];
 
   // Common fields between all workflows
   WorkflowType: typeof WorkflowType = WorkflowType;
@@ -120,6 +127,8 @@ export class CreateWorkflowModalComponent implements OnInit {
   matcher = new MyErrorStateMatcher();
   snackbarConfig: MatSnackBarConfig;
 
+  @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
+
   constructor(
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
     private dialog: MatDialog,
@@ -131,6 +140,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     public canvasService: CanvasService,
     public groupService: GroupService,
     private http: HttpClient,
+    private changeDetectorRef: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.snackbarConfig = new MatSnackBarConfig();
@@ -349,14 +359,81 @@ export class CreateWorkflowModalComponent implements OnInit {
         prompt: this.aiPrompt 
       })); 
   
-      let responseText = (response as string)
+      let responseText = this.markdownToHtml(response as string);
+      console.log(responseText)
       this.aiResponse = responseText; 
+
+      this.chatHistory.push({ role: 'user', content: this.aiPrompt });
+      this.chatHistory.push({ role: 'assistant', content: responseText }); 
+      this.aiPrompt = ''; // Clear the prompt field 
+      this.changeDetectorRef.detectChanges();
+      this.scrollToBottom()
+
     } catch (error) {
       console.error(error);
       // Handle the error, e.g., show an error message to the user
     } finally {
       this.isWaitingForAIResponse = false;
     }
+  }
+
+  // Method to scroll the div to the bottom
+  scrollToBottom(): void {
+    const scrollableElement = this.scrollableDiv.nativeElement;
+      scrollableElement.scrollTo({
+        top: scrollableElement.scrollHeight,
+        behavior: 'smooth' // Add smooth scrolling behavior
+      });
+  }
+
+  markdownToHtml(markdown: string): string {
+    const lines = markdown.split('\\n'); 
+    let html = '';
+    let inList = false;
+    let inBold = false;
+  
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+
+      // Bolding handling (applied to all lines)
+      while (line.includes('**')) {
+        if (inBold) {
+          line = line.replace('**', '</strong>');
+          inBold = false;
+        } else {
+          line = line.replace('**', '<strong>');
+          inBold = true;
+        }
+      }
+
+      // Double quote handling
+      while (line.includes('\\"')) {
+        line = line.replace('\\"', '"');
+      }
+  
+      if (line.startsWith('* ')) {
+        if (!inList) {
+          html += '<ul>';
+          inList = true;
+        }
+        html += `<li>${line.substring(2)}</li>`; 
+      } else if (inList) {
+        html += '</ul>';
+        inList = false;
+  
+        html += line; 
+      } else if (line === '') {
+        html += '<br>';
+      } else {
+        html += line;
+      }
+    }
+  
+    if (inList) {
+      html += '</ul>'; 
+    }
+  
+    return html;
   }
 
   async fetchBoardPosts() {

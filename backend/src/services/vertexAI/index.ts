@@ -20,19 +20,19 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
   safetySettings: [
     {
       category: 'HARM_CATEGORY_HATE_SPEECH',
-      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      threshold: 'OFF',
     },
     {
       category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      threshold: 'OFF',
     },
     {
       category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      threshold: 'OFF',
     },
     {
       category: 'HARM_CATEGORY_HARASSMENT',
-      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+      threshold: 'OFF',
     },
   ],
 });
@@ -57,12 +57,19 @@ async function sendMessage(posts: any[], prompt: string): Promise<string> {
     // Change 1: Send only the prompt as the message
     const streamResult = await chat.sendMessageStream(message);
 
-    const response = JSON.stringify((await streamResult.response).candidates[0].content.parts[0].text) + '\n';
+    const response = removeFirstAndLastQuotes(JSON.stringify((await streamResult.response).candidates[0].content.parts[0].text));
     return response;
   } catch (error) {
     console.error('Error sending message:', error);
     return 'An error occurred. Please try again later.';
   }
+}
+
+function removeFirstAndLastQuotes(str: string): string {
+  if (str.startsWith('"') && str.endsWith('"')) {
+    return str.slice(1, -1); 
+  }
+  return str; 
 }
 
 export { sendMessage };

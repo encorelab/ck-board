@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild, ElementRef, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -128,6 +128,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   snackbarConfig: MatSnackBarConfig;
 
   @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
+  @ViewChild('aiInput') aiInput: ElementRef;
 
   constructor(
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
@@ -155,6 +156,33 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.upvoteLimit = this.data.board.upvoteLimit; // Load the upvote limit for the board
     this.loadBucketsBoards(); // Load buckets and boards for source/destination options
     this.loadWorkflows(); // Load existing workflows for the board
+    
+    // Set the selected tab index if provided
+    if (this.data.selectedTabIndex !== undefined) { 
+      this.selected.setValue(this.data.selectedTabIndex);
+    }
+
+    if (this.data.focusAIInput) { 
+      setTimeout(() => {
+        this.focusAIInput();
+      }, 0);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    this.selected.valueChanges.subscribe((tabIndex) => {
+      if (tabIndex === 3) { // Check if AI Assistant tab is selected
+        setTimeout(() => { // Use setTimeout to allow the view to render
+          this.focusAIInput();
+        }, 0);
+      }
+    });
+  }
+
+  focusAIInput() {
+    if (this.aiInput) {
+      this.aiInput.nativeElement.focus();
+    }
   }
 
   // Fetches groups for the project
@@ -371,7 +399,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
     } catch (error: any) {
       console.error(error);
-      let errorMessage = 'An error occurred.'; 
+      let errorMessage = 'An error occurred. Please refresh your browser and try again.'; 
 
       // Add the error message to the chat history
       this.chatHistory.push({ role: 'assistant', content: errorMessage });

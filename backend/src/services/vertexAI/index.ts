@@ -38,6 +38,9 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
       threshold: 'OFF',
     },
   ],
+  systemInstruction: {
+    parts: [{"text": `You are an AI assistant who answers questions about student-generated posts on a learning community platform`}]
+  },
 });
 
 const chat = generativeModel.startChat({});
@@ -132,7 +135,7 @@ async function sendMessage(posts: any[], prompt: string): Promise<string> {
 
     const parsedError = parseVertexAIError(error.toString());
   
-    let errorMessage = `An error occurred... (${parsedError}). Please try again later.`;
+    let errorMessage = `An error occurred. Please try again later.`;
   
     // Check for specific error codes and status messages
     if (parsedError.code === 400) {

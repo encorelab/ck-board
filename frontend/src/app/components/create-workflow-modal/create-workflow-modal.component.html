@@ -616,7 +616,7 @@
 <div mat-dialog-actions>
   <mat-form-field appearance="outline" style="width: 100%" *ngIf="selected.value === 3">
     <mat-label>Ask the AI Assistant</mat-label>
-    <input matInput [(ngModel)]="aiPrompt" (keyup.enter)="askAI()"/>
+    <input matInput [(ngModel)]="aiPrompt" (keyup.enter)="askAI()" #aiInput /> 
   </mat-form-field>
   <button mat-raised-button color="primary" (click)="askAI()" *ngIf="selected.value === 3">Ask</button>
 

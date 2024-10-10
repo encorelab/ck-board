@@ -46,6 +46,16 @@ export class ToolbarMenuComponent implements OnInit {
     });
   }
 
+  // New method to open the AI Assistant tab
+  openAIAssistantDialog() { 
+    this._openDialog(CreateWorkflowModalComponent, {
+      board: this.board,
+      project: this.project,
+      selectedTabIndex: 3,  // Pass the desired tab index
+      focusAIInput: true
+    });
+  }
+
   showListModal() {
     this._openDialog(
       ListModalComponent,

@@ -378,6 +378,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     try {
       // 1. Fetch all posts for the current board
       const posts = await this.fetchBoardPosts();
+      this.scrollToBottom()
   
       // 2. Send posts and prompt to the backend API 
       console.log("Posts: " + posts)

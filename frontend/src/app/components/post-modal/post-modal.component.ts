@@ -1,10 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import Comment from 'src/app/models/comment';
 import { CommentService } from 'src/app/services/comment.service';
@@ -20,7 +20,6 @@ import Post, {
 } from 'src/app/models/post';
 import { DELETE } from '@angular/cdk/keycodes';
 import { SocketEvent } from 'src/app/utils/constants';
-import { POST_COLOR } from 'src/app/utils/constants';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { SocketService } from 'src/app/services/socket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -54,6 +53,8 @@ export class PostModalData {
   commentPress?: boolean;
   onCommentEvent?: Function;
   onTagEvent?: Function;
+  numSavedPosts: number = 0;
+  updateNumSavedPosts?: Function;
 }
 
 @Component({
@@ -77,6 +78,8 @@ export class PostModalComponent {
   isMultipleChoiceSelected = false;
   submitMultipleChoiceAnswer = false;
 
+  numSavedPosts: number;
+
   PostType: typeof PostType = PostType;
 
   title: string;
@@ -93,11 +96,11 @@ export class PostModalComponent {
   showAuthorName: boolean;
 
   error = '';
-  titleControl = new FormControl('', [
+  titleControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(50),
   ]);
-  descControl = new FormControl('', [Validators.maxLength(2000)]);
+  descControl = new UntypedFormControl('', [Validators.maxLength(2000)]);
   matcher = new MyErrorStateMatcher();
 
   newComment: string;
@@ -126,10 +129,12 @@ export class PostModalComponent {
   ) {
     dialogRef.backdropClick().subscribe(() => this.close());
     this.user = data.user;
+    this.numSavedPosts = data.numSavedPosts;
     this.contentType = data.post.contentType;
     this.showComments = data?.commentPress ? true : false;
     this.postService.get(data.post.postID).then(async (p: Post) => {
       this.post = p;
+      this.postColor = p.displayAttributes.fillColor;
       this.title = p.title;
       this.editingTitle = linkifyStr(p.title, {
         defaultProtocol: 'https',
@@ -166,7 +171,7 @@ export class PostModalComponent {
     this.bucketService
       .getAllByBoard(this.data.board.boardID)
       .then((buckets) => {
-        this.buckets = buckets;
+        this.buckets = buckets || [];
       });
 
     const isStudent = this.user.role == Role.STUDENT;
@@ -181,7 +186,6 @@ export class PostModalComponent {
     this.showAuthorName =
       (isStudent && data.board.permissions.showAuthorNameStudent) ||
       (isTeacher && data.board.permissions.showAuthorNameTeacher);
-    this.postColor = POST_COLOR;
   }
 
   ngOnInit(): void {
@@ -334,37 +338,47 @@ export class PostModalComponent {
   }
 
   async savePostToPersonalBoard() {
-    const personalBoard = await this.boardService.getPersonal(
-      this.project.projectID
-    );
+    try {
+      const personalBoard = await this.boardService.getPersonal(
+        this.project.projectID
+      );
 
-    if (!personalBoard) return;
+      if (!personalBoard) return;
 
-    const post: Post = {
-      postID: generateUniqueID(),
-      userID: this.user.userID,
-      boardID: personalBoard.boardID,
-      type: PostType.BOARD,
-      contentType: this.contentType,
-      multipleChoice: this.multipleChoiceOptions,
-      title: this.title,
-      author: this.user.username,
-      desc: this.desc,
-      tags: this.tags,
-      displayAttributes: this.post.displayAttributes,
-    };
+      if (this.post.displayAttributes) {
+        const postOffset = 50 * this.numSavedPosts;
+        this.numSavedPosts += 1;
+        if (this.data.updateNumSavedPosts)
+          this.data.updateNumSavedPosts(this.numSavedPosts);
+        const position = {
+          top: this.canvasService.centerPos.top + postOffset,
+          left: this.canvasService.centerPos.left + postOffset,
+        };
+        this.post.displayAttributes.position = position;
+      }
 
-    const newPost = await this.postService.create(post);
+      const post: Post = {
+        postID: generateUniqueID(),
+        userID: this.user.userID,
+        boardID: personalBoard.boardID,
+        type: PostType.BOARD,
+        contentType: this.contentType,
+        multipleChoice: this.multipleChoiceOptions,
+        title: this.title,
+        author: this.user.username,
+        desc: this.desc,
+        tags: this.tags,
+        displayAttributes: this.post.displayAttributes,
+      };
 
-    const postInput = {
-      originalPostID: this.post.postID,
-      newPostID: newPost.postID,
-      personalBoardID: personalBoard.boardID,
-      post: post,
-    };
-    if (newPost) {
-      this.socketService.emit(SocketEvent.PERSONAL_BOARD_ADD_POST, postInput);
-      this.openSnackBar('Successfully copied to your Personal Board');
+      const newPost = await this.postService.create(post);
+
+      if (newPost)
+        this.openSnackBar('Successfully copied to your Personal Board');
+    } catch (error) {
+      this.openSnackBar(
+        'Unable to copy post to your Personal Board. Please refresh and try again!'
+      );
     }
   }
 

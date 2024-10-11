@@ -10,26 +10,26 @@ import { SocketService } from './socket.service';
 export class BucketService {
   constructor(private http: HttpClient, private socketService: SocketService) {}
 
-  get(bucketID: string): Promise<any> {
+  get(bucketID: string): Promise<any | undefined> {
     return this.http.get<any>('buckets/' + bucketID).toPromise();
   }
 
-  getAllByBoard(boardID: string): Promise<any[]> {
+  getAllByBoard(boardID: string): Promise<any[] | undefined> {
     return this.http.get<any[]>('buckets/board/' + boardID).toPromise();
   }
 
-  create(bucket: Bucket): Promise<Bucket> {
+  create(bucket: Bucket): Promise<Bucket | undefined> {
     return this.http.post<Bucket>('buckets/', bucket).toPromise();
   }
 
-  add(bucketID: string, ...posts: string[]): Promise<Bucket> {
+  add(bucketID: string, ...posts: string[]): Promise<Bucket | undefined> {
     this.socketService.emit(SocketEvent.BUCKET_ADD_POST, { bucketID, posts });
     return this.http
       .post<Bucket>('buckets/' + bucketID + '/add', { posts })
       .toPromise();
   }
 
-  remove(bucketID: string, ...posts: string[]): Promise<Bucket> {
+  remove(bucketID: string, ...posts: string[]): Promise<Bucket | undefined> {
     this.socketService.emit(SocketEvent.BUCKET_REMOVE_POST, {
       bucketID,
       posts,
@@ -39,11 +39,14 @@ export class BucketService {
       .toPromise();
   }
 
-  update(bucketID: string, bucket: Partial<Bucket>) {
+  update(
+    bucketID: string,
+    bucket: Partial<Bucket>
+  ): Promise<Bucket | undefined> {
     return this.http.post<Bucket>('buckets/' + bucketID, bucket).toPromise();
   }
 
-  delete(bucketID: string): Promise<Bucket> {
+  delete(bucketID: string): Promise<Bucket | undefined> {
     return this.http.delete<Bucket>('buckets/' + bucketID).toPromise();
   }
 }

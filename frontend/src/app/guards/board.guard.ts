@@ -1,22 +1,23 @@
 import { Injectable } from '@angular/core';
 import {
-  CanActivate,
   ActivatedRouteSnapshot,
-  RouterStateSnapshot,
+  CanActivate,
   Router,
+  RouterStateSnapshot,
 } from '@angular/router';
-import { AuthGuard } from './auth.guard';
-import { BoardService } from '../services/board.service';
-import { UserService } from '../services/user.service';
 import { Board, BoardScope } from '../models/board';
 import { Role } from '../models/user';
+import { BoardService } from '../services/board.service';
+import { UserService } from '../services/user.service';
 import { getErrorMessage, getErrorStatus } from '../utils/Utils';
+import { AuthGuard } from './auth.guard';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BoardGuard implements CanActivate {
   board: Board;
+  expectedParamLen: number = 5;
 
   constructor(
     public boardService: BoardService,
@@ -72,9 +73,18 @@ export class BoardGuard implements CanActivate {
     return true;
   }
 
-  async isValidBoard(boardID: string) {
+  async isValidBoard(boardID: string): Promise<boolean> {
     try {
-      this.board = await this.boardService.get(boardID);
+      const board = await this.boardService.get(boardID);
+
+      if (!board) {
+        this.router.navigate(['/error'], {
+          state: { code: 404, message: 'This board does not exist!' },
+        });
+        return false;
+      }
+
+      this.board = board; // Now board is guaranteed to be of type Board
     } catch (e) {
       const message = getErrorMessage(e);
       const status = getErrorStatus(e);
@@ -84,7 +94,7 @@ export class BoardGuard implements CanActivate {
       return false;
     }
 
-    return this.board != undefined;
+    return true;
   }
 
   isVisibleBoard() {

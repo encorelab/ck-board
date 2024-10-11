@@ -42,7 +42,7 @@
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "4kb",
-                  "maximumError": "100kb"
+                  "maximumError": "200kb"
                 }
               ],
               "fileReplacements": [
@@ -104,9 +104,16 @@
       }
     }
   },
-  "defaultProject": "ck-board",
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics",
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": ["@angular-eslint/schematics"]
+  },
+  "schematics": {
+    "@angular-eslint/schematics:application": {
+      "setParserOptionsProject": true
+    },
+    "@angular-eslint/schematics:library": {
+      "setParserOptionsProject": true
+    }
   }
 }

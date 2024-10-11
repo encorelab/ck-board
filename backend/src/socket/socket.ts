@@ -3,14 +3,14 @@ import * as socketIO from 'socket.io';
 import { SocketEvent } from '../constants';
 import events from './events';
 import SocketManager from './socketManager';
+import RedisClient from '../utils/redis';
+import { createAdapter } from '@socket.io/redis-adapter';
 
 class Socket {
   private static _instance: Socket;
 
   private _socketManager: SocketManager;
   private _io: socketIO.Server | null = null;
-  private _socket: socketIO.Socket | null = null;
-  private _currentRoom: string | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {
@@ -28,42 +28,46 @@ class Socket {
    * @param server the http server
    * @returns void
    */
-  init(server: Server) {
-    const io = new socketIO.Server(server, {
+
+  init(redis: RedisClient) {
+    const io = new socketIO.Server(8000, {
       cors: {
         origin: '*',
       },
+      adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
     });
+
     this._io = io;
 
     console.log('Socket server running...');
 
     io.on('connection', (socket) => {
-      this._socket = socket;
+      // this._socket = socket;
 
       socket.on('join', (user: string, room: string) => {
         socket.data.room = room;
         this._safeJoin(socket, user, room);
         this._listenForEvents(io, socket);
+        this._logUserSocketsAndRooms(user);
       });
 
       socket.on('leave', (user: string, room: string) => {
-        if (this._currentRoom && this._currentRoom == room) {
-          socket.leave(this._currentRoom);
-          console.log(`Socket ${socket.id} left room ${room}`);
+        socket.leave(room);
+        console.log(`Socket ${socket.id} left room ${room}`);
+        events.map((e) => socket.removeAllListeners(e.type.toString()));
 
-          events.map((e) => socket.removeAllListeners(e.type.toString()));
-          socket.data.room = null;
-          this._currentRoom = null;
-          this._socketManager.removeByUserId(user);
-        }
+        // Remove the specific socketId for the user from the SocketManager
+        this._socketManager.removeBySocketId(socket.id);
+        this._logUserSocketsAndRooms(user);
       });
 
       socket.on('disconnect', () => {
-        if (this._socket) {
-          this._currentRoom = null;
-          this._socketManager.removeBySocketId(this._socket.id);
-        }
+        const rooms = socket.rooms;
+        rooms.forEach((room) => {
+          socket.leave(room);
+          // Potentially update or notify the room of the disconnect
+        });
+        this._socketManager.removeBySocketId(socket.id);
       });
 
       socket.on('disconnectAll', async (room: string) => {
@@ -74,27 +78,19 @@ class Socket {
   }
 
   /**
-   * Sends an event to all users connected to socket (except sender).
+   * Emits an event to a specific room.
    *
-   * @param event the type of event being emitted
-   * @param eventData data associated with event
-   * @param toSender send event to room and sender
-   * @returns void
+   * @param event The type of event being emitted.
+   * @param eventData Data associated with the event.
+   * @param roomId The ID of the room to which the event should be emitted.
+   * @param toSender Indicates whether the event should also be sent to the sender.
    */
-  emit(event: SocketEvent, eventData: unknown, toSender = false): void {
-    if (this._socket == null) {
-      throw new Error('Socket not initialized. Please invoke init() first.');
-    } else if (this._currentRoom == null) {
-      throw new Error('Socket not connected to any rooms.');
-    } else if (this._io == null) {
+  emit(event: SocketEvent, eventData: unknown, roomId: string): void {
+    if (!this._io) {
       throw new Error('IO not initialized. Please invoke init() first.');
     }
 
-    if (toSender) {
-      this._io.to(this._currentRoom).emit(event, eventData);
-    } else {
-      this._socket.to(this._currentRoom).emit(event, eventData);
-    }
+    this._io.to(roomId).emit(event, eventData);
   }
 
   /**
@@ -123,13 +119,34 @@ class Socket {
    * @returns void
    */
   private _safeJoin(socket: socketIO.Socket, user: string, nextRoom: string) {
-    if (this._currentRoom) socket.leave(this._currentRoom);
-
     socket.join(nextRoom);
-
     this._socketManager.add(user, socket.id);
-    this._currentRoom = nextRoom;
-    console.log(`Socket ${socket.id} joined room ${nextRoom}`);
+    console.log(`Socket ${socket.id} (userID ${user}) joined room ${nextRoom}`);
+  }
+
+  /**
+   * Logs the sockets and their corresponding rooms for a given user.
+   *
+   * @param userId The ID of the user whose sockets and rooms to log.
+   */
+  private _logUserSocketsAndRooms(userId: string): void {
+    const socketIds = this._socketManager.get(userId);
+    if (!socketIds) {
+      return;
+    }
+
+    console.log(`User ${userId} =>`);
+    socketIds.forEach((socketId) => {
+      const socket = this._io?.sockets.sockets.get(socketId);
+      if (socket && socket.data.room) {
+        console.log(`\tSocket ID: ${socketId}, Room: ${socket.data.room}`);
+      } else {
+        console.log(
+          `\tSocket ID: ${socketId} is not currently connected or has no room.`
+        );
+      }
+    });
+    console.log('');
   }
 }
 

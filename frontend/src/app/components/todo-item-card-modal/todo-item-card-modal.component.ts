@@ -2,16 +2,16 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { UserService } from 'src/app/services/user.service';
 import { GroupService } from 'src/app/services/group.service';
 import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import {
   TodoItem,
   TodoItemType,
   CompletionQuality,
 } from 'src/app/models/todoItem';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import {
   EXPANDED_TODO_TYPE,
@@ -51,7 +51,7 @@ export class TodoItemCardModalComponent implements OnInit {
   completionQuality: CompletionQuality = CompletionQuality.N_A;
   defaultQuality = CompletionQuality.N_A;
 
-  completionQualityFormControl = new FormControl('valid', [
+  completionQualityFormControl = new UntypedFormControl('valid', [
     Validators.required,
   ]);
   matcher = new MyErrorStateMatcher();

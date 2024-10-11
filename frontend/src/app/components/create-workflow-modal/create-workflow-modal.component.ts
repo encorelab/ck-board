@@ -1,17 +1,17 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import {
   AbstractControl,
-  FormControl,
+  UntypedFormControl,
   ValidationErrors,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-  MatDialog,
-} from '@angular/material/dialog';
-import { MatSnackBarConfig } from '@angular/material/snack-bar';
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialog as MatDialog,
+} from '@angular/material/legacy-dialog';
+import { MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
 import { Board, BoardScope } from 'src/app/models/board';
 import { Tag } from 'src/app/models/tag';
 import Bucket from 'src/app/models/bucket';
@@ -43,15 +43,17 @@ import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component'
   styleUrls: ['./create-workflow-modal.component.scss'],
 })
 export class CreateWorkflowModalComponent implements OnInit {
-  selected = new FormControl(0);
+  // Properties
+  selected = new UntypedFormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
 
-  board: Board;
-  buckets: Bucket[];
-  boardBuckets: Bucket[];
-  workflows: any[] = [];
-  tags: Tag[];
-  upvoteLimit: number;
-  selectedTag: string;
+  // Data models
+  board: Board; // Current board
+  buckets: Bucket[]; // All buckets
+  boardBuckets: Bucket[]; // Buckets associated with the current board
+  workflows: any[] = []; // List of workflows
+  tags: Tag[]; // Available tags for the board
+  upvoteLimit: number; // Upvote limit for the board
+  selectedTag: string; // Selected tag for filtering (if applicable)
 
   bucketName = '';
   workflowName = '';
@@ -66,9 +68,10 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   // Fields for distribution workflow creation
   distributionSource: Board | Bucket;
-  distributionDestinations: (Bucket | Board)[];
+  distributionDestinations: (Bucket | Board)[] = [];
   postsPerBucket: number;
-  distributionWorkflowType: DistributionWorkflowType;
+  distributionWorkflowType: DistributionWorkflowType =
+    DistributionWorkflowType.RANDOM;
   removeFromSource = false;
 
   // Fields for peer review workflow and generation task workflow creation
@@ -81,28 +84,38 @@ export class CreateWorkflowModalComponent implements OnInit {
   tagsRequired = false;
   postGeneration = 1;
 
-  bucketNameFormControl = new FormControl('valid', [
+  bucketNameFormControl = new UntypedFormControl('valid', [
     Validators.required,
     this._forbiddenNameValidator(),
   ]);
-  workflowNameFormControl = new FormControl('valid', [Validators.required]);
-  sourceFormControl = new FormControl('valid', [Validators.required]);
-  destinationFormControl = new FormControl('valid', [Validators.required]);
+  workflowNameFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
+  sourceFormControl = new UntypedFormControl('valid', [Validators.required]);
+  destinationFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
 
-  groupsFormControl = new FormControl('valid', [Validators.required]);
-  promptFormControl = new FormControl('valid', [Validators.required]);
+  sourceDestinationMatchError = new UntypedFormControl(false);
 
-  workflowTypeFormControl = new FormControl('valid', [Validators.required]);
-  removeFromSourceFormControl = new FormControl('valid', [Validators.required]);
+  groupsFormControl = new UntypedFormControl('valid', [Validators.required]);
+  promptFormControl = new UntypedFormControl('valid', [Validators.required]);
 
-  tagsFormControl = new FormControl();
+  workflowTypeFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
+  removeFromSourceFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
+
+  tagsFormControl = new UntypedFormControl();
 
   matcher = new MyErrorStateMatcher();
   snackbarConfig: MatSnackBarConfig;
 
   constructor(
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
-    public dialog: MatDialog,
+    private dialog: MatDialog,
     private snackbarService: SnackbarService,
     public bucketService: BucketService,
     public boardService: BoardService,
@@ -116,44 +129,56 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.board = this.data.board;
-    this.tags = this.data.board.tags;
-    this.loadGroups();
-    this.upvoteLimit = this.data.board.upvoteLimit;
-    this.loadBucketsBoards();
-    this.loadWorkflows();
+    // Initialization
+    this.board = this.data.board; // Load the current board from the passed data
+    this.tags = this.data.board.tags; // Load tags associated with the board
+    this.loadGroups(); // Load groups associated with the project
+    this.upvoteLimit = this.data.board.upvoteLimit; // Load the upvote limit for the board
+    this.loadBucketsBoards(); // Load buckets and boards for source/destination options
+    this.loadWorkflows(); // Load existing workflows for the board
   }
 
+  // Fetches groups for the project
   async loadGroups() {
     this.groupOptions = await this.groupService.getByProjectId(
       this.data.project.projectID
     );
   }
 
+  // Loads buckets and boards, updates source/destination options.
   async loadBucketsBoards(): Promise<void> {
     this.sourceOptions = [];
     this.destOptions = [];
     this.boardBuckets = [];
 
-    this.bucketService
-      .getAllByBoard(this.data.board.boardID)
-      .then((buckets) => {
-        this.sourceOptions = this.sourceOptions.concat(buckets);
-        this.destOptions = this.destOptions.concat(buckets);
-        this.boardBuckets = this.boardBuckets.concat(buckets);
-        this.sourceOptions.push(this.board);
-      });
-    this.boardService
-      .getMultipleBy(this.data.project.boards, {
-        scope: BoardScope.PROJECT_SHARED,
-      })
-      .then((data) => {
-        data.forEach((board: Board) => {
-          if (board.boardID != this.board.boardID) this.destOptions.push(board);
-        });
-      });
+    try {
+      // 1. Fetch Project Boards
+      const projectBoards = await this.boardService.getMultipleBy(
+        this.data.project.boards,
+        {
+          scope: BoardScope.PROJECT_SHARED,
+        }
+      );
+
+      // Add project boards FIRST (using fallback empty array if undefined)
+      this.destOptions = this.destOptions.concat(projectBoards || []);
+      this.sourceOptions = this.sourceOptions.concat(projectBoards || []);
+
+      // 2. Fetch Buckets
+      const buckets = await this.bucketService.getAllByBoard(
+        this.data.board.boardID
+      );
+      this.boardBuckets = this.boardBuckets.concat(buckets || []);
+
+      // 3. Add buckets SECOND
+      this.sourceOptions = this.sourceOptions.concat(buckets || []);
+      this.destOptions = this.destOptions.concat(buckets || []);
+    } catch (error) {
+      console.error('Error loading boards and buckets:', error);
+    }
   }
 
+  // Fetches workflows for the board from the workflowService.
   async loadWorkflows(): Promise<void> {
     return this.workflowService.getAll(this.board.boardID).then((workflows) => {
       this.workflows = [];
@@ -163,25 +188,32 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a new bucket and updates UI.
   createBucket(): void {
     const bucket: Bucket = {
       bucketID: generateUniqueID(),
       boardID: this.data.board.boardID,
       name: this.bucketName,
       posts: [],
+      addedToView: false,
     };
 
     this.bucketService.create(bucket).then(() => {
       this.loadBucketsBoards();
       this.openSnackBar('Bucket: ' + bucket.name + ' created succesfully!');
       this.bucketNameFormControl.reset();
+      if (this.data?.onBucketCreation) {
+        this.data?.onBucketCreation(bucket);
+      }
     });
   }
 
+  // Toggles visibility of bucket deletion controls.
   toggleDeleteBoard() {
     this.showDelete = !this.showDelete;
   }
 
+  // Opens a confirmation dialog and deletes the bucket.
   deleteBucket(bucket: Bucket) {
     this.dialog.open(ConfirmModalComponent, {
       width: '500px',
@@ -200,6 +232,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a distribution workflow.
   createDistributionWorkflow(): void {
     if (!this._distributionWorkflowTypeSelected()) return;
 
@@ -211,6 +244,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a peer review workflow.
   createPeerReviewWorkflow(): void {
     if (!this._actionSelected()) return;
 
@@ -222,6 +256,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Creates a generation task workflow.
   createGenerationTaskWorkflow(): void {
     if (!this._validGenerationTaskWorkflow()) return;
     const workflow: TaskWorkflow = this._assembleGenerationTaskWorkflow();
@@ -232,6 +267,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Runs the specified workflow (task or distribution).
   runWorkflow(e, workflow: TaskWorkflow | DistributionWorkflow): void {
     e.stopPropagation();
 
@@ -261,6 +297,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     }
   }
 
+  // Opens a confirmation dialog and deletes the workflow.
   async deleteWorkflow(
     e,
     workflow: TaskWorkflow | DistributionWorkflow
@@ -287,14 +324,17 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
+  // Closes the dialog.
   onNoClick(): void {
     this.dialogRef.close();
   }
 
+  // Displays a snackbar message.
   openSnackBar(message: string): void {
     this.snackbarService.queueSnackbar(message);
   }
 
+  // Resets the workflow creation form.
   _clearWorkflowForm() {
     this.workflowNameFormControl.reset();
     this.sourceFormControl.reset();
@@ -306,18 +346,29 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.postGeneration = 1;
   }
 
+  // Type guard to check if an object is a Board.
   _isBoard(object: Board | Bucket): object is Board {
     return (object as Board).tags !== undefined;
   }
 
+  // Type guard to check if an object is a TaskWorkflow.
   _isTaskWorkflow(
     object: DistributionWorkflow | TaskWorkflow
   ): object is TaskWorkflow {
     return (object as TaskWorkflow).requiredActions !== undefined;
   }
 
+  // Checks if a distribution workflow form is valid.
   _validDistributionWorkflow(): boolean {
+    const allowMatch = this.distributionDestinations.length > 1;
+    const isMatch =
+      this.distributionSource &&
+      this.distributionDestinations.some(
+        (dest) => dest.name === this.distributionSource.name
+      );
+    this.sourceDestinationMatchError.setValue(!allowMatch && isMatch);
     return (
+      (allowMatch || !isMatch) &&
       this.workflowNameFormControl.valid &&
       this.sourceFormControl.valid &&
       this.destinationFormControl.valid

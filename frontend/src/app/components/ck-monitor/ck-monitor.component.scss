@@ -1,5 +1,4 @@
-@import "~swiper/css";
-@import "~swiper/css/effect-cards";
+@import './../../../../node_modules/swiper/swiper.min.css';
 
 .toolbar {
   width: 100%; 
@@ -88,7 +87,6 @@
 
 .drawer-container {
   position: absolute;
-  padding-top: 56px;
   left: 0;
   right: 0;
   bottom: 0;

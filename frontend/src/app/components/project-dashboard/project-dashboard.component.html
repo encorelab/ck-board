@@ -101,15 +101,27 @@
             <div *ngFor="let board of sharedBoards">
               <mat-card
                 class="card"
-                (click)="handleBoardClick(board.boardID)"
-                (keyup.enter)="handleBoardClick(board.boardID)"
+                (click)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
               >
                 <mat-card-title class="title accent">
-                  <mat-icon color="accent">picture_in_picture</mat-icon>
+                  <mat-icon style="min-width: fit-content;" color="accent">picture_in_picture</mat-icon>
                   <span>{{ board.name }}</span>
+                    <button 
+                      *ngIf="user && user.role === Role.TEACHER"
+                      mat-icon-button
+                      [matMenuTriggerFor]="boardOptions"
+                      style="margin:0; padding:0;line-height: inherit;height: inherit;right: 0;position: absolute;"
+                      matTooltip="Board Options"
+                      (click)="$event.stopPropagation();"
+                    >
+                      <mat-icon >
+                        more_vert
+                      </mat-icon>
+                    </button>
                 </mat-card-title>
                 <button
                   mat-icon-button
@@ -121,18 +133,7 @@
                   <mat-icon *ngIf="board.visible">visibility</mat-icon>
                   <mat-icon *ngIf="!board.visible">visibility_off</mat-icon>
                 </button>
-                <button 
-                *ngIf="user && user.role === Role.TEACHER"
-                mat-icon-button
-                [matMenuTriggerFor]="boardOptions"
-                style="margin:0; padding:0;line-height: inherit;height: inherit;right: 0;position: absolute;"
-                matTooltip="Board Options"
-                (click)="$event.stopPropagation();"
-                >
-                  <mat-icon >
-                    more_vert
-                  </mat-icon>
-                </button>
+                
                 <mat-menu #boardOptions="matMenu">
                   <button mat-menu-item (click)="handleEditBoard(board)">
                     Edit
@@ -164,8 +165,8 @@
             <ng-container *ngFor="let board of studentPersonalBoards">
               <mat-card
                 class="card"
-                (click)="handleBoardClick(board.boardID)"
-                (keyup.enter)="handleBoardClick(board.boardID)"
+                (click)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
@@ -207,8 +208,8 @@
             <ng-container *ngFor="let board of teacherPersonalBoards">
               <mat-card
                 class="card"
-                (click)="handleBoardClick(board.boardID)"
-                (keyup.enter)="handleBoardClick(board.boardID)"
+                (click)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
@@ -267,8 +268,8 @@
         <ng-container *ngFor="let board of studentPersonalBoards.concat(sharedBoards)">
           <mat-card
             class="card"
-            (click)="handleBoardClick(board.boardID)"
-            (keyup.enter)="handleBoardClick(board.boardID)"
+            (click)="handleBoardClick(board.boardID, board.defaultView)"
+            (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
             role="button"
             tabindex="0"
             [attr.aria-label]="'View ' + board.name"

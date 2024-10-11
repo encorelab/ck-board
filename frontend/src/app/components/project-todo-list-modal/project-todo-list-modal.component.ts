@@ -1,11 +1,11 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
 import {
-  MatDialogModule,
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialog,
-} from '@angular/material/dialog';
+  MatLegacyDialogModule as MatDialogModule,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialogRef as MatDialogRef,
+  MatLegacyDialog as MatDialog,
+} from '@angular/material/legacy-dialog';
 import { UserService } from 'src/app/services/user.service';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { Project } from 'src/app/models/project';

@@ -1,14 +1,23 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { UserService } from 'src/app/services/user.service';
-import { Project } from 'src/app/models/project';
-import { FileUploadService } from 'src/app/services/fileUpload.service';
-import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
-import { Tag } from 'src/app/models/tag';
-import Utils, { generateUniqueID } from 'src/app/utils/Utils';
-import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
+import {
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { fabric } from 'fabric';
-import { BoardPermissions, BoardScope, BoardType } from 'src/app/models/board';
+import {
+  BoardPermissions,
+  BoardScope,
+  BoardType,
+  ViewSettings,
+  ViewType,
+} from 'src/app/models/board';
+import { Project } from 'src/app/models/project';
+import { Tag } from 'src/app/models/tag';
+// import { FileUploadService } from 'src/app/services/fileUpload.service';
+import { UserService } from 'src/app/services/user.service';
+import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
+import { generateUniqueID } from 'src/app/utils/Utils';
+import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -22,6 +31,9 @@ export class AddBoardModalComponent implements OnInit {
 
   permissions: BoardPermissions;
   boardType: BoardType = BoardType.BRAINSTORMING;
+
+  defaultView: ViewType = ViewType.BUCKETS;
+  viewSettings: ViewSettings;
 
   boardName = '';
   boardScope = BoardScope.PROJECT_SHARED;
@@ -51,7 +63,7 @@ export class AddBoardModalComponent implements OnInit {
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
     public UserService: UserService,
     public userService: UserService,
-    public fileUploadService: FileUploadService,
+    // public fileUploadService: FileUploadService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -66,6 +78,12 @@ export class AddBoardModalComponent implements OnInit {
       showBucketStudent: true,
       showSnackBarStudent: false,
       allowTracing: false,
+    };
+    this.viewSettings = {
+      allowCanvas: true,
+      allowWorkspace: true,
+      allowBuckets: true,
+      allowMonitor: true,
     };
     this.projects = data.projects;
     this.selectedProject = data.defaultProject || '';
@@ -91,8 +109,8 @@ export class AddBoardModalComponent implements OnInit {
   }
 
   async compressFile() {
-    const image = await this.fileUploadService.compressFile();
-    this.bgImgURL = await this.fileUploadService.upload(image);
+    // const image = await this.fileUploadService.compressFile();
+    // this.bgImgURL = await this.fileUploadService.upload(image);
     fabric.Image.fromURL(this.bgImgURL, async (image) => {
       this.bgImgSettings = this.fabricUtils.createImageSettings(image);
     });
@@ -119,6 +137,8 @@ export class AddBoardModalComponent implements OnInit {
         initialZoom: this.initialZoom,
         upvoteLimit: this.upvoteLimit,
         visible: true,
+        defaultView: this.defaultView,
+        viewSettings: this.viewSettings,
       },
       this.selectedProject
     );

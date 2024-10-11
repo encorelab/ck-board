@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { Board } from 'src/app/models/board';
 import User, { AuthUser, Role } from 'src/app/models/user';
@@ -118,8 +118,9 @@ export class DashboardComponent implements OnInit {
 
   createBoard = (board: Board, selectedProjectID: string) => {
     this.boardService.create(board).then((_) => {
+      const view = board.defaultView ? board.defaultView.toLowerCase() : '';
       this.router.navigate([
-        'project/' + selectedProjectID + '/board/' + board.boardID,
+        `project/${board.projectID}/board/${board.boardID}/${view}`,
       ]);
     });
     const projectBoards = this.yourProjects.find(

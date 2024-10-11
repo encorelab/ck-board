@@ -1,15 +1,8 @@
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  TemplateRef,
-  HostListener,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 import Post, { PostType } from '../../models/post';
 
@@ -17,7 +10,6 @@ import { BoardService } from '../../services/board.service';
 import { PostService } from '../../services/post.service';
 
 import { PostModalComponent } from '../post-modal/post-modal.component';
-import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import { FabricUtils } from 'src/app/utils/FabricUtils';
 import {
@@ -26,9 +18,15 @@ import {
   POST_MOVING_FILL,
   POST_MOVING_OPACITY,
   SocketEvent,
+  STUDENT_POST_COLOR,
 } from 'src/app/utils/constants';
 import { UserService } from 'src/app/services/user.service';
-import { Board, BoardPermissions, BoardScope } from 'src/app/models/board';
+import {
+  Board,
+  BoardPermissions,
+  BoardScope,
+  ViewType,
+} from 'src/app/models/board';
 import { AuthUser, Role } from 'src/app/models/user';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentService } from 'src/app/services/comment.service';
@@ -36,8 +34,7 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
-import { POST_COLOR } from 'src/app/utils/constants';
-import { FileUploadService } from 'src/app/services/fileUpload.service';
+// import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { TaskModalComponent } from '../task-modal/task-modal.component';
 import { Project } from 'src/app/models/project';
@@ -49,7 +46,6 @@ import { getErrorMessage } from 'src/app/utils/Utils';
 import { Subscription } from 'rxjs';
 import { FabricPostComponent } from '../fabric-post/fabric-post.component';
 import { TraceService } from 'src/app/services/trace.service';
-import { DistributionWorkflow } from 'src/app/models/workflow';
 import Upvote from 'src/app/models/upvote';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { TodoListModalComponent } from '../todo-list-modal/todo-list-modal.component';
@@ -79,9 +75,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   embedded = false;
 
+  numSavedPosts: number = 0;
+
   zoom = 1;
 
+  ctrlPressed = false;
+  rightClickDown = false;
+
   mode: Mode = Mode.EDIT;
+  prevMode: Mode = Mode.EDIT;
   modeType = Mode;
   Role: typeof Role = Role;
   BoardScope: typeof BoardScope = BoardScope;
@@ -95,6 +97,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
   upvoteCounter = 0;
 
   unsubListeners: Subscription[] = [];
+
+  viewType = ViewType.CANVAS;
 
   @HostListener('wheel', ['$event'])
   onMouseWheel(e: WheelEvent) {
@@ -112,10 +116,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     protected fabricUtils: FabricUtils,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private confirmationRef: MatDialogRef<TemplateRef<any>>,
     public snackbarService: SnackbarService,
     public dialog: MatDialog,
-    public fileUploadService: FileUploadService,
+    // public fileUploadService: FileUploadService,
     private socketService: SocketService,
     private canvasService: CanvasService,
     private traceService: TraceService
@@ -143,7 +146,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.WORKFLOW_RUN_DISTRIBUTION, this.handleWorkflowRun],
       [SocketEvent.WORKFLOW_POST_SUBMIT, this.handleWorkflowPost],
       [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
-      [SocketEvent.PERSONAL_BOARD_ADD_POST, this.handlePersonalBoardAddPost],
     ]);
   }
 
@@ -173,6 +175,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   initCanvasEventsListener() {
+    const unsubCtrl = this.initCtrlKeyListener();
     const unsubMoving = this.initMovingPostListener();
     const unsubExpand = this.initPostClickListener();
     const unsubUpvote = this.initUpvoteClickListener();
@@ -185,6 +188,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const unsubArrowKeyUnlock = this.unlockArrowKeysWhenModalClose();
 
     return [
+      unsubCtrl,
       unsubUpvote,
       unsubExpand,
       unsubModal,
@@ -259,8 +263,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     const { left, top } = post.displayAttributes.position;
 
-    this.fabricUtils.animateToPosition(existing, left, top, () => {
-      existing = this.fabricUtils.setFillColor(existing, POST_COLOR);
+    this.fabricUtils.animateToPosition(existing, left, top, async () => {
+      const fill = await this.fabricUtils.defaultPostColor(post.userID);
+      existing = this.fabricUtils.setFillColor(
+        existing,
+        fill ?? STUDENT_POST_COLOR
+      );
       existing = this.fabricUtils.setOpacity(existing, POST_DEFAULT_OPACITY);
       existing = this.fabricUtils.setPostMovement(
         existing,
@@ -396,7 +404,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       this.canvas.add(fabricPost);
     }
   };
-
   showBucketsModal() {
     this._openDialog(
       BucketsModalComponent,
@@ -468,6 +475,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
         });
         this.boardService.get(this.boardID).then((board) => {
           if (board) this.intermediateBoardConfig(board);
+          if (this.board && !this.board.viewSettings?.allowCanvas) {
+            this.router.navigateByUrl(
+              `project/${this.projectID}/board/${
+                this.boardID
+              }/${this.board.defaultView?.toLowerCase()}`
+            );
+          }
         });
       });
     } else if (map.has('projectID')) {
@@ -506,6 +520,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       .then((project) => (this.project = project));
   }
 
+  // TODO: handle board update from toolbar-menu
   configureZoom() {
     if (this.board.initialZoom) {
       const zoom = this.board.initialZoom / 100;
@@ -514,13 +529,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     } else {
       this.zoom = 1;
     }
-  }
-
-  openWorkflowDialog() {
-    this._openDialog(CreateWorkflowModalComponent, {
-      board: this.board,
-      project: this.project,
-    });
   }
 
   // open dialog to get message for a new post
@@ -556,29 +564,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.snackbarService.dequeueSnackbar();
     this.canvas.off('mouse:down', this.handleChoosePostLocation);
     this.enableEditMode();
-  }
-
-  openSettingsDialog() {
-    this._openDialog(ConfigurationModalComponent, {
-      project: this.project,
-      board: this.board,
-      update: (board: Board, removed = false) => {
-        const previousBoard = this.board;
-        this.board = board;
-
-        if (previousBoard.initialZoom !== board.initialZoom) {
-          this.configureZoom();
-        }
-      },
-    });
-  }
-
-  openGroupDialog() {
-    this.dialog.open(ManageGroupModalComponent, {
-      data: {
-        project: this.project,
-      },
-    });
   }
 
   lockPostsMovement(value) {
@@ -639,6 +624,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
       this.updateAuthorNames(post.postID, 'Anonymous');
     } else {
+      console.log('can');
       this.userService.getOneById(post.userID).then((user: any) => {
         this.updateAuthorNames(post.postID, user.username);
       });
@@ -659,18 +645,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const isTeacher = this.user.role == Role.TEACHER;
     this.showAddPost =
       (isStudent && permissions.allowStudentEditAddDeletePost) || isTeacher;
-  }
-
-  openWorkspace() {
-    this.router.navigate([
-      `/project/${this.projectID}/board/${this.boardID}/workspace`,
-    ]);
-  }
-
-  openCkMonitor() {
-    this.router.navigate([
-      `/project/${this.projectID}/board/${this.boardID}/monitor`,
-    ]);
   }
 
   openTaskDialog() {
@@ -736,6 +710,33 @@ export class CanvasComponent implements OnInit, OnDestroy {
     }
   };
 
+  initCtrlKeyListener() {
+    document.addEventListener('keydown', (event) => {
+      /* Switch to pan mode on Ctrl press, only if not already holding right-click down */
+      if (!this.rightClickDown && event.key === 'Control') {
+        this.ctrlPressed = true;
+        this.prevMode = this.mode;
+        this.enablePanMode();
+      }
+    });
+
+    document.addEventListener('keyup', (event) => {
+      if (event.key === 'Control') {
+        this.ctrlPressed = false;
+        if (this.prevMode === Mode.EDIT) {
+          this.enableEditMode();
+        }
+      }
+    });
+
+    return () => {
+      if (document.removeAllListeners) {
+        document.removeAllListeners('keydown');
+        document.removeAllListeners('keyup');
+      }
+    };
+  }
+
   initPostClickListener() {
     let isDragging = false;
     let isMouseDown = false;
@@ -767,6 +768,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
           post: obj,
           board: this.board,
           commentPress: commentPress,
+          numSavedPosts: this.numSavedPosts,
+          updateNumSavedPosts: (num) => {
+            this.numSavedPosts = num;
+          },
         });
         this.canvasService.readPost(obj.postID);
       }
@@ -801,13 +806,14 @@ export class CanvasComponent implements OnInit, OnDestroy {
       }
     };
 
-    const handleDroppedPost = (e) => {
+    const handleDroppedPost = async (e) => {
       if (!isMovingPost) return;
 
       let obj = e.target;
       isMovingPost = false;
 
-      obj = this.fabricUtils.setFillColor(obj, POST_COLOR);
+      const fill = await this.fabricUtils.defaultPostColor(obj.userID);
+      obj = this.fabricUtils.setFillColor(obj, fill ?? STUDENT_POST_COLOR);
       obj = this.fabricUtils.setOpacity(obj, POST_DEFAULT_OPACITY);
       this.canvas.renderAll();
 
@@ -878,6 +884,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
     let isPanning = false;
 
     const mouseDown = (opt) => {
+      const { e: options } = opt;
+
+      /* Switch to pan mode on right-click, only if ctrl is not already pressed */
+      if (!this.ctrlPressed && (options.button === 2 || options.which === 3)) {
+        this.prevMode = this.mode;
+        this.enablePanMode();
+        this.rightClickDown = true;
+      }
+
       if (this.mode == Mode.PAN) {
         isPanning = true;
         this.canvas.selection = false;
@@ -888,6 +903,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
     };
 
     const mouseUp = (opt) => {
+      if (this.rightClickDown) {
+        this.rightClickDown = false;
+        if (this.prevMode === Mode.EDIT) {
+          this.enableEditMode();
+        }
+      }
       isPanning = false;
       this.canvas.selection = true;
       const options = opt.e as unknown as WheelEvent;
@@ -1053,10 +1074,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.router.navigate([`/project/${this.projectID}/todo`]);
   }
 
-  openProjectTodoList() {
-    this.router.navigate([`/project/${this.projectID}/todo`]);
-  }
-
   copyEmbedCode() {
     const url = window.location.href + '?embedded=true';
     navigator.clipboard.writeText(url);
@@ -1067,11 +1084,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
       window.location.origin +
       `/project/${this.projectID}/my-personal-board?embedded=true`;
     navigator.clipboard.writeText(url);
-  }
-
-  signOut(): void {
-    this.userService.logout();
-    this.router.navigate(['login']);
   }
 
   private _openDialog(

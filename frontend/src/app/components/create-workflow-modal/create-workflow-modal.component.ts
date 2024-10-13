@@ -378,23 +378,24 @@ export class CreateWorkflowModalComponent implements OnInit {
     try {
       // 1. Fetch all posts for the current board
       const posts = await this.fetchBoardPosts();
+      const prompt = this.aiPrompt;
+      this.aiPrompt = ''; // Clear the prompt field 
       this.scrollToBottom()
   
       // 2. Send posts and prompt to the backend API 
       console.log("Posts: " + posts)
-      console.log("Prompt: " + this.aiPrompt)
+      console.log("Prompt: " + prompt)
       const response = await lastValueFrom(this.http.post('ai', { 
         posts: posts, 
-        prompt: this.aiPrompt 
+        prompt: prompt 
       })); 
   
       let responseText = this.markdownToHtml(response as string);
       console.log(responseText)
       this.aiResponse = responseText; 
 
-      this.chatHistory.push({ role: 'user', content: this.aiPrompt });
+      this.chatHistory.push({ role: 'user', content: prompt });
       this.chatHistory.push({ role: 'assistant', content: responseText }); 
-      this.aiPrompt = ''; // Clear the prompt field 
       this.changeDetectorRef.detectChanges();
       this.scrollToBottom()
 
@@ -419,7 +420,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   markdownToHtml(markdown: string): string {
-    const lines = markdown.split('\\n'); 
+    const lines = markdown.split('\n'); 
     let html = '';
     let inList = false;
     let inSublist = false;

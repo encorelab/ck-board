@@ -1,5 +1,10 @@
 import dalVote from '../../repository/dalVote';
 import dalBucket from '../../repository/dalBucket'
+import { BucketModel } from '../../models/Bucket';
+import { generateUniqueID } from '../../utils/Utils';
+import dalPost from '../../repository/dalPost';
+import { PostType } from '../../models/Post'
+
 
 require('dotenv').config();
 
@@ -39,7 +44,7 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
     },
   ],
   systemInstruction: {
-    parts: [{"text": `You are an AI assistant who answers questions about student-generated posts on a learning community platform`}]
+    parts: [{"text": `You are an AI assistant who answers questions about student-generated posts on a learning community platform. In responses to the user, refer to posts, buckets, and tags using their human-readable names/titles.`}]
   },
 });
 
@@ -69,18 +74,78 @@ function parseVertexAIError(errorString: string): { code?: number; message?: str
   }
 }
 
+function isValidJSON(str: string): boolean {
+  try {
+    const json = JSON.parse(str);
+
+    if (!json.response) {
+      return false;
+    }
+
+    const allowedKeys = ['response', 'add_bucket', 'add_post_to_bucket', 'remove_post_from_bucket', 'add_to_canvas', 'remove_from_canvas'];
+    for (const key in json) {
+      if (!allowedKeys.includes(key)) {
+        return false;
+      }
+
+      // Validate that the optional keys are arrays
+      if (key !== 'response' && !Array.isArray(json[key])) { 
+        return false;
+      }
+
+      // Additional validation for specific keys (with type annotations)
+      if (key === 'add_bucket') {
+        if (!json[key].every((item: { name: string }) => typeof item.name === 'string')) { 
+          return false;
+        }
+      } else if (key === 'add_post_to_bucket' || key === 'remove_post_from_bucket') {
+        if (!json[key].every((item: { postID: string; bucketID: string }) => 
+              typeof item === 'object' && item.postID && item.bucketID)
+        ) {
+          return false;
+        }
+      } else if (key === 'add_to_canvas' || key === 'remove_from_canvas') { 
+        if (!json[key].every((item: { postID: string }) => typeof item.postID === 'string')) { // Corrected validation
+          return false;
+        }
+      }
+    }
+
+    return true;
+
+  } catch (e) {
+    return false;
+  }
+}
+
 function postsToKeyValuePairs(posts: any[]): string {
   let output = "";
   for (const post of posts) {
-    output += `Post with title "${post.title}":\n`;
+    output += `Post with title "${post.title}" (postID: ${post.postID}):\n`;
     output += `  - Content: ${post.content}\n`;
     output += `  - Upvotes: ${post.numUpvotes}\n`;
-    output += `  - HasTags: ${post.hasTags.join(', ') || '(none)'}\n`;
-    output += `  - InBuckets: ${post.inBuckets.join(', ') || '(none)'}\n`;
+    
+    // Check if post.hasTags is defined before calling join()
+    output += `  - HasTags: ${post.hasTags ? post.hasTags.join(', ') : '(none)'}\n`; 
+
+    // Include bucket names and IDs (check if post.inBuckets is defined)
+    if (post.inBuckets && post.inBuckets.length > 0) { 
+      for (const bucket of post.inBuckets) {
+        output += `  - InBucket: ${bucket.name} (bucketID: ${bucket.bucketID})\n`;
+      }
+    } else {
+      output += `  - InBuckets: (none)\n`;
+    }
+
     output += `  - OnCanvas: ${post.onCanvas ? 'Yes' : 'No'}\n`;
-    output += "\n"; 
+    output += "\n";
   }
   return output;
+}
+
+function removeJsonMarkdown(text: string): string {
+  const pattern = /```json\s*([\s\S]*?)\s*```/g;
+  return text.replace(pattern, '$1');
 }
 
 async function sendMessage(posts: any[], prompt: string): Promise<string> {
@@ -102,7 +167,7 @@ async function sendMessage(posts: any[], prompt: string): Promise<string> {
         const buckets = await dalBucket.getByPostId(post.postID);
         return {
           postId: post.postID,
-          bucketNames: buckets.map(bucket => bucket.name) // Extract bucket names
+          bucketNames: buckets.map(bucket => bucket.name)
         };
       })
     );
@@ -110,52 +175,204 @@ async function sendMessage(posts: any[], prompt: string): Promise<string> {
     // Create a map of post IDs to bucket names
     const bucketNameMap = new Map(bucketNames.map(entry => [entry.postId, entry.bucketNames]));
 
-    // Add bucket names to the posts
-    const postsToSend = posts.map(post => ({
-      title: post.title,
-      content: post.desc,
-      numUpvotes: upvoteMap.get(post.postID) || 0,
-      hasTags: post.tags.map((tag: { name: string }) => tag.name),
-      inBuckets: bucketNameMap.get(post.postID) || [],
-      onCanvas: post.type == 'BOARD' as string
+    // Add bucket IDs to the inBuckets array
+    const postsWithBucketIds = await Promise.all(
+      posts.map(async (post) => {
+        const inBuckets = await Promise.all(
+          (bucketNameMap.get(post.postID) || []).map(async (bucketName: string) => {
+            const buckets = await dalBucket.getByPostId(post.postID);
+            const bucket = buckets.find(b => b.name === bucketName);
+
+            return {
+              name: bucketName,
+              bucketID: bucket ? bucket.bucketID : null,
+            };
+          })
+        );
+
+        // Include upvotes and tags in the post object
+        return {
+          ...post, 
+          numUpvotes: upvoteMap.get(post.postID) || 0,
+          hasTags: post.tags.map((tag: { name: string }) => tag.name),
+          inBuckets: inBuckets,
+          onCanvas: post.type === 'BOARD'
+        };
+      })
+    );
+
+    // Fetch ALL buckets for the board
+    const buckets = await dalBucket.getByBoardId(posts[0].boardID); 
+
+    // Create a list of buckets with their bucketIDs
+    const bucketsToSend = buckets.map(bucket => ({
+      name: bucket.name,
+      bucketID: bucket.bucketID
     }));
 
-    const postsAsKeyValuePairs = postsToKeyValuePairs(postsToSend)
+    const postsAsKeyValuePairs = postsToKeyValuePairs(postsWithBucketIds);
 
-    // Format the posts and prompt for the model (using postsToSend)
-    const message = `Here are the posts from the project:\n\n${postsAsKeyValuePairs}\n\nUser prompt: ${prompt}`;
+    // Refined prompt with explicit instructions and example JSON format
+    const message = `
+Please provide your response in the following JSON format, including the "response" key and optionally any of the following keys: "add_bucket", "add_post_to_bucket", "remove_post_from_bucket", "remove_from_canvas", "add_to_canvas".
 
-    // Change 1: Send only the prompt as the message
+Each of the optional keys should be a list of objects, where each object represents an action to be performed.
+
+{
+  "response": "Your response here",
+  "add_bucket": [{"name": "bucket_name"}], 
+  "add_post_to_bucket": [
+    {
+      "postID": "post_id_1",
+      "bucketID": "bucket_id_1"
+    },
+    {
+      "postID": "post_id_2",
+      "bucketID": "bucket_id_2"
+    }
+  ],
+  "remove_post_from_bucket": [
+    {
+      "postID": "post_id_3",
+      "bucketID": "bucket_id_3"
+    }
+  ],
+  "add_to_canvas": [{"postID": "post_id_4"}, {"postID": "post_id_5"}],
+  "remove_from_canvas": [{"postID": "post_id_6"}] 
+}
+
+Here are the posts from the project:
+
+${postsAsKeyValuePairs}
+
+Here are the buckets:
+
+${JSON.stringify(bucketsToSend, null, 2)}
+
+User prompt: ${prompt}    
+      `;
+
     const streamResult = await chat.sendMessageStream(message);
 
-    const response = removeFirstAndLastQuotes(JSON.stringify((await streamResult.response).candidates[0].content.parts[0].text));
-    return response;
+    // Get the raw response as a string
+    const rawResponse = (await streamResult.response).candidates[0].content.parts[0].text;
+
+    console.log("Raw AI response: " +rawResponse)
+
+   // Remove the ```json ... ``` markdown
+   const cleanedResponse = removeJsonMarkdown(rawResponse); 
+
+   // Attempt to parse and validate the JSON response
+   let response = null;
+   try {
+     response = JSON.parse(cleanedResponse); // Parse the cleaned response
+
+     if (!isValidJSON(cleanedResponse)) {
+       throw new Error('Invalid JSON response format.');
+     } else {
+      if (response.add_bucket) {
+        for (const bucket of response.add_bucket) {
+          const bucketName = bucket.name;
+      
+          // Create a BucketModel object with the required properties
+          const newBucket: BucketModel = {
+            bucketID: generateUniqueID(),
+            boardID: posts[0].boardID, // Assuming all posts belong to the same board
+            name: bucketName,
+            posts: []
+          };
+      
+          // Call dalBucket.create() to add the bucket (it will handle ID generation)
+          const savedBucket = await dalBucket.create(newBucket); 
+          console.log('Added bucket:', savedBucket);
+        }
+      }
+      
+      if (response.add_post_to_bucket) {
+        // Group actions by bucketID
+        const actionsByBucket = response.add_post_to_bucket.reduce((acc: Record<string, string[]>, action: { postID: string; bucketID: string }) => {
+          const { bucketID, postID } = action;
+          acc[bucketID] = (acc[bucketID] || []).concat(postID);
+          return acc;
+        }, {} as Record<string, string[]>);
+      
+        // Perform addPost for each bucket
+        for (const bucketID in actionsByBucket) {
+          const postIDs = actionsByBucket[bucketID];
+          const updatedBucket = await dalBucket.addPost(bucketID, postIDs);
+          console.log(`Added posts ${postIDs.join(', ')} to bucket ${bucketID}:`, updatedBucket);
+        }
+      }
+      
+      if (response.remove_post_from_bucket) {
+        // Group actions by bucketID
+        const actionsByBucket = response.remove_post_from_bucket.reduce((acc: Record<string, string[]>, action: { postID: string; bucketID: string }) => {
+          const { bucketID, postID } = action;
+          acc[bucketID] = (acc[bucketID] || []).concat(postID);
+          return acc;
+        }, {} as Record<string, string[]>);
+      
+        // Perform removePost for each bucket
+        for (const bucketID in actionsByBucket) {
+          const postIDs = actionsByBucket[bucketID];
+          const updatedBucket = await dalBucket.removePost(bucketID, postIDs);
+          console.log(`Removed posts ${postIDs.join(', ')} from bucket ${bucketID}:`, updatedBucket);
+        }
+      }
+
+      if (response.add_to_canvas) {
+        for (const post of response.add_to_canvas) {
+          const postID = post.postID; 
+  
+          // Assuming you have dalPost with an update function
+          const updatedPost = await dalPost.update(postID, { type: PostType.BOARD }); 
+          console.log('Added post to canvas:', updatedPost);
+        }
+      }
+  
+      if (response.remove_from_canvas) {
+        for (const post of response.remove_from_canvas) {
+          const postID = post.postID;
+  
+          // Assuming you have dalPost with an update function
+          const updatedPost = await dalPost.update(postID, { type: PostType.BUCKET });
+          console.log('Removed post from canvas:', updatedPost);
+        }
+      }
+     }
+   } catch (error) {
+     console.error('Failed to parse or validate JSON response:', error);
+     return 'Failed to parse or validate JSON response.';
+   }
+
+    // If valid, return only the value of the "response" key
+    return response.response;
+
   } catch (error: any) {
     console.error('Error sending message:', error);
 
     const parsedError = parseVertexAIError(error.toString());
-  
+
     let errorMessage = `An error occurred. Please try again later.`;
-  
-    // Check for specific error codes and status messages
+
     if (parsedError.code === 400) {
       errorMessage = 'Error: INVALID_ARGUMENT / FAILED_PRECONDITION. Request fails API validation, or you tried to access a model that requires allowlisting or is disallowed by the organization\'s policy.';
     } else if (parsedError.code === 403) {
       errorMessage = 'Error: PERMISSION_DENIED. Client doesn\'t have sufficient permission to call the API.';
     } else if (parsedError.code === 404) {
-      errorMessage = 'Error: NOT_FOUND. No valid object is found from the designated URL.	';
+      errorMessage = 'Error: NOT_FOUND. No valid object is found from the designated URL. ';
     } else if (parsedError.code === 409) {
       errorMessage = 'Error: RESOURCE_EXHAUSTED. Depending on the error message, the error could be caused by the following: (1) API quota over the limit; (2) Server overload due to shared server capacity.';
     } else if (parsedError.code === 499) {
-      errorMessage = 'Error: CANCELLED. Request is cancelled by the client.	';
+      errorMessage = 'Error: CANCELLED. Request is cancelled by the client. ';
     } else if (parsedError.code === 500) {
-      errorMessage = 'Error: UNKNOWN / INTERNAL. Server error due to overload or dependency failure.	';
+      errorMessage = 'Error: UNKNOWN / INTERNAL. Server error due to overload or dependency failure.  ';
     } else if (parsedError.code === 503) {
-      errorMessage = 'Error: UNAVAILABLE. Service is temporarily unavailable.	';
+      errorMessage = 'Error: UNAVAILABLE. Service is temporarily unavailable. ';
     } else if (parsedError.code === 504) {
       errorMessage = 'Error: DEADLINE_EXCEEDED. The client sets a deadline shorter than the server\'s default deadline (10 minutes), and the request didn\'t finish within the client-provided deadline.';
     }
-  
+
     return errorMessage;
   }
 }

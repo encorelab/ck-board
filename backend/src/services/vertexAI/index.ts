@@ -150,70 +150,125 @@ function removeJsonMarkdown(text: string): string {
 
 async function sendMessage(posts: any[], prompt: string): Promise<string> {
   try {
-    // Fetch upvote counts for each post
-    const upvoteCounts = await Promise.all(
-      posts.map(async (post) => ({
-        postId: post.postID,
-        upvotes: await dalVote.getAmountByPost(post.postID)
-      }))
-    );
+    // 1. Fetch Upvote Counts and Create Map
+    const upvoteMap = await fetchUpvoteCounts(posts);
 
-    // Create a map of post IDs to upvote counts
-    const upvoteMap = new Map(upvoteCounts.map(count => [count.postId, count.upvotes]));
+    // 2. Fetch Bucket Names and Create Map
+    const bucketNameMap = await fetchBucketNames(posts);
 
-    // Fetch bucket names for each post
-    const bucketNames = await Promise.all(
-      posts.map(async (post) => {
-        const buckets = await dalBucket.getByPostId(post.postID);
-        return {
-          postId: post.postID,
-          bucketNames: buckets.map(bucket => bucket.name)
-        };
-      })
-    );
+    // 3. Add Bucket IDs to Posts
+    const postsWithBucketIds = await addBucketIdsToPosts(posts, bucketNameMap, upvoteMap);
 
-    // Create a map of post IDs to bucket names
-    const bucketNameMap = new Map(bucketNames.map(entry => [entry.postId, entry.bucketNames]));
+    // 4. Fetch and Format Buckets
+    const bucketsToSend = await fetchAndFormatBuckets(posts);
 
-    // Add bucket IDs to the inBuckets array
-    const postsWithBucketIds = await Promise.all(
-      posts.map(async (post) => {
-        const inBuckets = await Promise.all(
-          (bucketNameMap.get(post.postID) || []).map(async (bucketName: string) => {
-            const buckets = await dalBucket.getByPostId(post.postID);
-            const bucket = buckets.find(b => b.name === bucketName);
+    // 5. Construct and Send Message to LLM
+    const response = await constructAndSendMessage(postsWithBucketIds, bucketsToSend, prompt);
 
-            return {
-              name: bucketName,
-              bucketID: bucket ? bucket.bucketID : null,
-            };
-          })
-        );
+    // 6. Perform Database Operations
+    await performDatabaseOperations(response, posts);
 
-        // Include upvotes and tags in the post object
-        return {
-          ...post, 
-          numUpvotes: upvoteMap.get(post.postID) || 0,
-          hasTags: post.tags.map((tag: { name: string }) => tag.name),
-          inBuckets: inBuckets,
-          onCanvas: post.type === 'BOARD'
-        };
-      })
-    );
+    return response.response; // Return the response message
 
-    // Fetch ALL buckets for the board
-    const buckets = await dalBucket.getByBoardId(posts[0].boardID); 
+  } catch (error: any) {
+    console.error('Error sending message:', error);
 
-    // Create a list of buckets with their bucketIDs
-    const bucketsToSend = buckets.map(bucket => ({
-      name: bucket.name,
-      bucketID: bucket.bucketID
-    }));
+    const parsedError = parseVertexAIError(error.toString());
 
-    const postsAsKeyValuePairs = postsToKeyValuePairs(postsWithBucketIds);
+    let errorMessage = `An error occurred. Please try again later.`;
 
-    // Refined prompt with explicit instructions and example JSON format
-    const message = `
+    if (parsedError.code === 400) {
+      errorMessage = 'Error: INVALID_ARGUMENT / FAILED_PRECONDITION. Request fails API validation, or you tried to access a model that requires allowlisting or is disallowed by the organization\'s policy.';
+    } else if (parsedError.code === 403) {
+      errorMessage = 'Error: PERMISSION_DENIED. Client doesn\'t have sufficient permission to call the API.';
+    } else if (parsedError.code === 404) {
+      errorMessage = 'Error: NOT_FOUND. No valid object is found from the designated URL. ';
+    } else if (parsedError.code === 409) {
+      errorMessage = 'Error: RESOURCE_EXHAUSTED. Depending on the error message, the error could be caused by the following: (1) API quota over the limit; (2) Server overload due to shared server capacity.';
+    } else if (parsedError.code === 499) {
+      errorMessage = 'Error: CANCELLED. Request is cancelled by the client. ';
+    } else if (parsedError.code === 500) {
+      errorMessage = 'Error: UNKNOWN / INTERNAL. Server error due to overload or dependency failure.  ';
+    } else if (parsedError.code === 503) {
+      errorMessage = 'Error: UNAVAILABLE. Service is temporarily unavailable. ';
+    } else if (parsedError.code === 504) {
+      errorMessage = 'Error: DEADLINE_EXCEEDED. The client sets a deadline shorter than the server\'s default deadline (10 minutes), and the request didn\'t finish within the client-provided deadline.';
+    }
+
+    return errorMessage;
+  }
+}
+
+async function performDatabaseOperations(response: any, posts: any[]) {
+  if (response.add_bucket) {
+    for (const bucket of response.add_bucket) {
+      const bucketName = bucket.name;
+
+      const newBucket: BucketModel = {
+        bucketID: generateUniqueID(),
+        boardID: posts[0].boardID, // Assuming all posts belong to the same board
+        name: bucketName,
+        posts: []
+      };
+
+      const savedBucket = await dalBucket.create(newBucket);
+      console.log('Added bucket:', savedBucket);
+    }
+  }
+
+  if (response.add_post_to_bucket) {
+    // Group actions by bucketID
+    const actionsByBucket = response.add_post_to_bucket.reduce((acc: Record<string, string[]>, action: { postID: string; bucketID: string }) => {
+      const { bucketID, postID } = action;
+      acc[bucketID] = (acc[bucketID] || []).concat(postID);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    for (const bucketID in actionsByBucket) {
+      const postIDs = actionsByBucket[bucketID];
+      const updatedBucket = await dalBucket.addPost(bucketID, postIDs);
+      console.log(`Added posts ${postIDs.join(', ')} to bucket ${bucketID}:`, updatedBucket);
+    }
+  }
+
+  if (response.remove_post_from_bucket) {
+    // Group actions by bucketID
+    const actionsByBucket = response.remove_post_from_bucket.reduce((acc: Record<string, string[]>, action: { postID: string; bucketID: string }) => {
+      const { bucketID, postID } = action;
+      acc[bucketID] = (acc[bucketID] || []).concat(postID);
+      return acc;
+    }, {} as Record<string, string[]>);
+
+    for (const bucketID in actionsByBucket) {
+      const postIDs = actionsByBucket[bucketID];
+      const updatedBucket = await dalBucket.removePost(bucketID, postIDs);
+      console.log(`Removed posts ${postIDs.join(', ')} from bucket ${bucketID}:`, updatedBucket);
+    }
+  }
+
+  if (response.add_to_canvas) {
+    for (const post of response.add_to_canvas) {
+      const postID = post.postID;
+
+      const updatedPost = await dalPost.update(postID, { type: PostType.BOARD });
+      console.log('Added post to canvas:', updatedPost);
+    }
+  }
+
+  if (response.remove_from_canvas) {
+    for (const post of response.remove_from_canvas) {
+      const postID = post.postID;
+
+      const updatedPost = await dalPost.update(postID, { type: PostType.BUCKET });
+      console.log('Removed post from canvas:', updatedPost);
+    }
+  }
+}
+
+async function constructAndSendMessage(postsWithBucketIds: any[], bucketsToSend: any[], prompt: string): Promise<any> {
+  const postsAsKeyValuePairs = postsToKeyValuePairs(postsWithBucketIds);
+
+  const message = `
 Please provide your response in the following JSON format, including the "response" key and optionally any of the following keys: "add_bucket", "add_post_to_bucket", "remove_post_from_bucket", "remove_from_canvas", "add_to_canvas".
 
 Each of the optional keys should be a list of objects, where each object represents an action to be performed.
@@ -250,131 +305,104 @@ Here are the buckets:
 ${JSON.stringify(bucketsToSend, null, 2)}
 
 User prompt: ${prompt}    
-      `;
+  `;
 
-    const streamResult = await chat.sendMessageStream(message);
+  console.log("History: " + await chat.getHistory())
+  console.log("User prompt: " + message);
 
-    // Get the raw response as a string
-    const rawResponse = (await streamResult.response).candidates[0].content.parts[0].text;
+  const streamResult = await chat.sendMessageStream(message);
 
-    console.log("Raw AI response: " +rawResponse)
+  console.log("Usre prompt: " + message)
 
-   // Remove the ```json ... ``` markdown
-   const cleanedResponse = removeJsonMarkdown(rawResponse); 
+  // Get the raw response as a string
+  const rawResponse = (await streamResult.response).candidates[0].content.parts[0].text;
+  console.log("Raw AI response: " + rawResponse)
 
-   // Attempt to parse and validate the JSON response
-   let response = null;
-   try {
-     response = JSON.parse(cleanedResponse); // Parse the cleaned response
+  // Remove the ```json ... ``` markdown
+  const cleanedResponse = removeJsonMarkdown(rawResponse);
 
-     if (!isValidJSON(cleanedResponse)) {
-       throw new Error('Invalid JSON response format.');
-     } else {
-      if (response.add_bucket) {
-        for (const bucket of response.add_bucket) {
-          const bucketName = bucket.name;
-      
-          // Create a BucketModel object with the required properties
-          const newBucket: BucketModel = {
-            bucketID: generateUniqueID(),
-            boardID: posts[0].boardID, // Assuming all posts belong to the same board
-            name: bucketName,
-            posts: []
-          };
-      
-          // Call dalBucket.create() to add the bucket (it will handle ID generation)
-          const savedBucket = await dalBucket.create(newBucket); 
-          console.log('Added bucket:', savedBucket);
-        }
-      }
-      
-      if (response.add_post_to_bucket) {
-        // Group actions by bucketID
-        const actionsByBucket = response.add_post_to_bucket.reduce((acc: Record<string, string[]>, action: { postID: string; bucketID: string }) => {
-          const { bucketID, postID } = action;
-          acc[bucketID] = (acc[bucketID] || []).concat(postID);
-          return acc;
-        }, {} as Record<string, string[]>);
-      
-        // Perform addPost for each bucket
-        for (const bucketID in actionsByBucket) {
-          const postIDs = actionsByBucket[bucketID];
-          const updatedBucket = await dalBucket.addPost(bucketID, postIDs);
-          console.log(`Added posts ${postIDs.join(', ')} to bucket ${bucketID}:`, updatedBucket);
-        }
-      }
-      
-      if (response.remove_post_from_bucket) {
-        // Group actions by bucketID
-        const actionsByBucket = response.remove_post_from_bucket.reduce((acc: Record<string, string[]>, action: { postID: string; bucketID: string }) => {
-          const { bucketID, postID } = action;
-          acc[bucketID] = (acc[bucketID] || []).concat(postID);
-          return acc;
-        }, {} as Record<string, string[]>);
-      
-        // Perform removePost for each bucket
-        for (const bucketID in actionsByBucket) {
-          const postIDs = actionsByBucket[bucketID];
-          const updatedBucket = await dalBucket.removePost(bucketID, postIDs);
-          console.log(`Removed posts ${postIDs.join(', ')} from bucket ${bucketID}:`, updatedBucket);
-        }
-      }
+  // Attempt to parse and validate the JSON response
+  let response = null;
+  try {
+    response = JSON.parse(cleanedResponse); // Parse the cleaned response
 
-      if (response.add_to_canvas) {
-        for (const post of response.add_to_canvas) {
-          const postID = post.postID; 
-  
-          // Assuming you have dalPost with an update function
-          const updatedPost = await dalPost.update(postID, { type: PostType.BOARD }); 
-          console.log('Added post to canvas:', updatedPost);
-        }
-      }
-  
-      if (response.remove_from_canvas) {
-        for (const post of response.remove_from_canvas) {
-          const postID = post.postID;
-  
-          // Assuming you have dalPost with an update function
-          const updatedPost = await dalPost.update(postID, { type: PostType.BUCKET });
-          console.log('Removed post from canvas:', updatedPost);
-        }
-      }
-     }
-   } catch (error) {
-     console.error('Failed to parse or validate JSON response:', error);
-     return 'Failed to parse or validate JSON response.';
-   }
-
-    // If valid, return only the value of the "response" key
-    return response.response;
-
-  } catch (error: any) {
-    console.error('Error sending message:', error);
-
-    const parsedError = parseVertexAIError(error.toString());
-
-    let errorMessage = `An error occurred. Please try again later.`;
-
-    if (parsedError.code === 400) {
-      errorMessage = 'Error: INVALID_ARGUMENT / FAILED_PRECONDITION. Request fails API validation, or you tried to access a model that requires allowlisting or is disallowed by the organization\'s policy.';
-    } else if (parsedError.code === 403) {
-      errorMessage = 'Error: PERMISSION_DENIED. Client doesn\'t have sufficient permission to call the API.';
-    } else if (parsedError.code === 404) {
-      errorMessage = 'Error: NOT_FOUND. No valid object is found from the designated URL. ';
-    } else if (parsedError.code === 409) {
-      errorMessage = 'Error: RESOURCE_EXHAUSTED. Depending on the error message, the error could be caused by the following: (1) API quota over the limit; (2) Server overload due to shared server capacity.';
-    } else if (parsedError.code === 499) {
-      errorMessage = 'Error: CANCELLED. Request is cancelled by the client. ';
-    } else if (parsedError.code === 500) {
-      errorMessage = 'Error: UNKNOWN / INTERNAL. Server error due to overload or dependency failure.  ';
-    } else if (parsedError.code === 503) {
-      errorMessage = 'Error: UNAVAILABLE. Service is temporarily unavailable. ';
-    } else if (parsedError.code === 504) {
-      errorMessage = 'Error: DEADLINE_EXCEEDED. The client sets a deadline shorter than the server\'s default deadline (10 minutes), and the request didn\'t finish within the client-provided deadline.';
+    if (!isValidJSON(cleanedResponse)) {
+      throw new Error('Invalid JSON response format.');
     }
-
-    return errorMessage;
+  } catch (error) {
+    console.error('Failed to parse or validate JSON response:', error);
+    throw new Error('Failed to parse or validate JSON response.'); // Re-throw the error to be caught by the outer try...catch
   }
+
+  return response;
+}
+
+async function fetchAndFormatBuckets(posts: any[]): Promise<any[]> {
+  // Fetch ALL buckets for the board
+  const buckets = await dalBucket.getByBoardId(posts[0].boardID); // Assuming all posts belong to the same board
+
+  // Create a list of buckets with their bucketIDs
+  return buckets.map(bucket => ({
+    name: bucket.name,
+    bucketID: bucket.bucketID
+  }));
+}
+
+async function addBucketIdsToPosts(posts: any[], bucketNameMap: Map<string, string[]>, upvoteMap: Map<string, number>): Promise<any[]> {
+  return await Promise.all(
+    posts.map(async (post) => {
+      const inBuckets = await Promise.all(
+        (bucketNameMap.get(post.postID) || []).map(async (bucketName: string) => {
+          // Find the bucket using getByPostId
+          const buckets = await dalBucket.getByPostId(post.postID); 
+          const bucket = buckets.find(b => b.name === bucketName);
+      
+          return {
+            name: bucketName,
+            bucketID: bucket ? bucket.bucketID : null,
+          };
+        })
+      );
+
+      // Include upvotes, tags, and onCanvas in the post object
+      return {
+        ...post,
+        numUpvotes: upvoteMap.get(post.postID) || 0,
+        hasTags: post.tags.map((tag: { name: string }) => tag.name),
+        inBuckets: inBuckets,
+        onCanvas: post.type === 'BOARD'
+      };
+    })
+  );
+}
+
+async function fetchBucketNames(posts: any[]): Promise<Map<string, string[]>> {
+  // Fetch bucket names for each post
+  const bucketNames = await Promise.all(
+    posts.map(async (post) => {
+      const buckets = await dalBucket.getByPostId(post.postID);
+      return {
+        postId: post.postID,
+        bucketNames: buckets.map(bucket => bucket.name)
+      };
+    })
+  );
+
+  // Create a map of post IDs to bucket names
+  return new Map(bucketNames.map(entry => [entry.postId, entry.bucketNames]));
+}
+
+async function fetchUpvoteCounts(posts: any[]): Promise<Map<string, number>> {
+  // Fetch upvote counts for each post
+  const upvoteCounts = await Promise.all(
+    posts.map(async (post) => ({
+      postId: post.postID,
+      upvotes: await dalVote.getAmountByPost(post.postID)
+    }))
+  );
+
+  // Create a map of post IDs to upvote counts
+  return new Map(upvoteCounts.map(count => [count.postId, count.upvotes]));
 }
 
 function removeFirstAndLastQuotes(str: string): string {

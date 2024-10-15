@@ -27,7 +27,7 @@ jobs:
           npm run build --if-present
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: zip -r release.zip . -x "*.git*" "node_modules/*" "*.DS_Store"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -58,4 +58,4 @@ jobs:
           app-name: "ck-board"
           slot-name: "Production"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_5DD9914BCC3140B5A91463BC2C6DF973 }}
-          package: .
+          package: ./release.zip

@@ -27,7 +27,7 @@ jobs:
           npm run build --if-present
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip . -x "*.git*" "node_modules/*" "*.DS_Store"
+        run: zip -r release.zip . -x "*.git*" "frontend/node_modules/*" "backend/node_modules/*" "node_modules/*" "*.DS_Store"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3

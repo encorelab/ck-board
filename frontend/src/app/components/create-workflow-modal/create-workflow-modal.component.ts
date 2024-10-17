@@ -37,7 +37,7 @@ import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 
 interface ChatMessage { 
@@ -70,6 +70,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   aiPrompt = '';
   aiResponse = '';
   isWaitingForAIResponse = false;
+  waitingMessage = 'Waiting for AI Response...';
 
   chatHistory: ChatMessage[] = [];
 
@@ -371,43 +372,108 @@ export class CreateWorkflowModalComponent implements OnInit {
     });
   }
 
-  async askAI() {
+  startWaitingForAIResponse() {
     this.isWaitingForAIResponse = true;
+    this.waitingMessage = 'Waiting for AI response...';
+  }
+
+  updateWaitingForAIResponse( message : string) {
+    this.isWaitingForAIResponse = true;
+    this.waitingMessage = message;
+  }
+
+  // Call this function when the response is received
+  stopWaitingForAIResponse() {
+    this.isWaitingForAIResponse = false;
+    this.waitingMessage = ''; 
+  }
+
+  askAI() {
+    this.startWaitingForAIResponse();
     this.aiResponse = '';
-  
-    try {
-      // 1. Fetch all posts for the current board
-      const posts = await this.fetchBoardPosts();
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+    };
+
+    // 1. Fetch all posts for the current board
+    this.fetchBoardPosts().then(posts => {
       const prompt = this.aiPrompt;
       this.aiPrompt = ''; // Clear the prompt field 
-      this.scrollToBottom()
-  
-      // 2. Send posts and prompt to the backend API 
-      console.log("Posts: " + posts)
-      console.log("Prompt: " + prompt)
-      const response = await lastValueFrom(this.http.post('ai', { 
-        posts: posts, 
-        prompt: prompt 
-      })); 
-  
-      let responseText = this.markdownToHtml(response as string);
-      console.log(responseText)
-      this.aiResponse = responseText; 
 
       this.chatHistory.push({ role: 'user', content: prompt });
-      this.chatHistory.push({ role: 'assistant', content: responseText }); 
-      this.changeDetectorRef.detectChanges();
-      this.scrollToBottom()
 
-    } catch (error: any) {
-      console.error(error);
-      let errorMessage = 'An error occurred. Please refresh your browser and try again.\n\n' + error.toString(); 
+      // Wait for the change detection to run and render the new message
+      this.changeDetectorRef.detectChanges(); 
+      this.scrollToBottom();
 
-      // Add the error message to the chat history
-      this.chatHistory.push({ role: 'assistant', content: errorMessage });
-    } finally {
-      this.isWaitingForAIResponse = false;
-    }
+      // 2. Send posts and prompt to the backend API and handle the SSE stream
+      this.http.post('ai', { posts: posts, prompt: prompt }, { ...httpOptions, responseType: 'text' }).subscribe({
+        next: (response: string | undefined) => {
+          console.log('Raw SSE response:', response);
+      
+          if (!response) {
+            console.error('Received an empty or undefined response.');
+            this.chatHistory.push({ role: 'assistant', content: 'No response received. Please try again.' });
+            return;
+          }
+      
+          // Split the response by <END> marker
+          const events = response.trim().split(/<END>(?:\n\n)?/);
+      
+          events.forEach((event) => {
+            if (event.trim() === '<END_STREAM>') {
+              console.log('Stream ended.');
+              this.stopWaitingForAIResponse();
+              return;
+            }
+      
+            try {
+              const parsedEvent = JSON.parse(event);
+      
+              switch (parsedEvent.status) {
+                case 'Received':
+                  this.updateWaitingForAIResponse('Received message...');
+                  break;
+                case 'Processing':
+                  this.updateWaitingForAIResponse('Generating response...');
+                  break;
+                case 'Completed':
+                  this.aiResponse = this.markdownToHtml(parsedEvent.response || '');
+                  this.chatHistory.push({ role: 'assistant', content: this.aiResponse });
+                  break;
+                case 'Error':
+                  console.error('AI request error:', parsedEvent.errorMessage);
+                  this.chatHistory.push({ role: 'assistant', content: parsedEvent.errorMessage });
+                  break;
+                default:
+                  console.warn('Unknown status:', parsedEvent.status);
+              }
+      
+              this.changeDetectorRef.detectChanges();
+              this.scrollToBottom();
+            } catch (error) {
+              console.error('Failed to parse SSE event:', event, error);
+              this.chatHistory.push({
+                role: 'assistant',
+                content: 'An error occurred while processing the response. ' + error,
+              });
+              this.stopWaitingForAIResponse();
+            }
+          });
+        },
+        error: (error: any) => {
+          console.error('Error during AI request:', error);
+          // Handle the error, e.g., display an error message in the chat
+          this.chatHistory.push({ 
+            role: 'assistant', 
+            content: 'An error occurred. Please refresh your browser and try again.\n\n' + error.message 
+          });
+        },
+        complete: () => {
+          this.stopWaitingForAIResponse();
+        }
+      });
+    });
   }
 
   // Method to scroll the div to the bottom

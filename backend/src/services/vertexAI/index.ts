@@ -4,10 +4,15 @@ import { BucketModel } from '../../models/Bucket';
 import { generateUniqueID } from '../../utils/Utils';
 import dalPost from '../../repository/dalPost';
 import { PostType } from '../../models/Post'
+import { getErrorMessage } from '../../utils/errors';
 
 global.Headers = Headers;
 
 require('dotenv').config();
+
+interface AIResponse {
+  response: string; 
+}
 
 const { VertexAI } = require('@google-cloud/vertexai');
 
@@ -109,36 +114,36 @@ function parseVertexAIError(errorString: string): { code?: number; message?: str
 
 function isValidJSON(str: string): boolean {
   try {
-    const json = JSON.parse(str);
+    const jsonObject = JSON.parse(str);
 
-    if (!json.response) {
+    if (!jsonObject.response) {
       return false;
     }
 
     const allowedKeys = ['response', 'add_bucket', 'add_post_to_bucket', 'remove_post_from_bucket', 'add_to_canvas', 'remove_from_canvas'];
-    for (const key in json) {
+    for (const key in jsonObject) {
       if (!allowedKeys.includes(key)) {
         return false;
       }
 
       // Validate that the optional keys are arrays
-      if (key !== 'response' && !Array.isArray(json[key])) { 
+      if (key !== 'response' && !Array.isArray(jsonObject[key])) { 
         return false;
       }
 
       // Additional validation for specific keys (with type annotations)
       if (key === 'add_bucket') {
-        if (!json[key].every((item: { name: string }) => typeof item.name === 'string')) { 
+        if (!jsonObject[key].every((item: { name: string }) => typeof item.name === 'string')) { 
           return false;
         }
       } else if (key === 'add_post_to_bucket' || key === 'remove_post_from_bucket') {
-        if (!json[key].every((item: { postID: string; bucketID: string }) => 
+        if (!jsonObject[key].every((item: { postID: string; bucketID: string }) => 
               typeof item === 'object' && item.postID && item.bucketID)
         ) {
           return false;
         }
       } else if (key === 'add_to_canvas' || key === 'remove_from_canvas') { 
-        if (!json[key].every((item: { postID: string }) => typeof item.postID === 'string')) { // Corrected validation
+        if (!jsonObject[key].every((item: { postID: string }) => typeof item.postID === 'string')) { // Corrected validation
           return false;
         }
       }
@@ -181,28 +186,94 @@ function removeJsonMarkdown(text: string): string {
   return text.replace(pattern, '$1');
 }
 
-async function sendMessage(posts: any[], prompt: string): Promise<string> {
+async function sendMessage(posts: any[], prompt: string, res: any): Promise<void> { 
   try {
+    // Send an initial acknowledgment
+    res.write('{"status": "Received"}<END>\n\n');
+
     // 1. Fetch Upvote Counts and Create Map
+    console.time('fetchUpvoteCounts');
     const upvoteMap = await fetchUpvoteCounts(posts);
+    console.timeEnd('fetchUpvoteCounts'); 
 
     // 2. Fetch Bucket Names and Create Map
+    console.time('fetchBucketNames');
     const bucketNameMap = await fetchBucketNames(posts);
+    console.timeEnd('fetchBucketNames');
 
     // 3. Add Bucket IDs to Posts
+    console.time('addBucketIdsToPosts');
     const postsWithBucketIds = await addBucketIdsToPosts(posts, bucketNameMap, upvoteMap);
+    console.timeEnd('addBucketIdsToPosts');
 
     // 4. Fetch and Format Buckets
+    console.time('fetchAndFormatBuckets');
     const bucketsToSend = await fetchAndFormatBuckets(posts);
+    console.timeEnd('fetchAndFormatBuckets');
 
-    // 5. Construct and Send Message to LLM
-    const response = await constructAndSendMessage(postsWithBucketIds, bucketsToSend, prompt);
+    // 5. Construct and Send Message to LLM (streaming)
+    console.time('constructAndSendMessage');
+    constructAndSendMessage(postsWithBucketIds, bucketsToSend, prompt) 
+      .then(result => { // Use .then() to handle the Promise
+        const stream = result.stream; 
 
-    // 6. Perform Database Operations
-    await performDatabaseOperations(response, posts);
+        if (stream === undefined) {
+          // Handle the case where the stream is undefined
+          console.error('Stream is undefined');
+          res.write(`{"status": "Error", "errorMessage": "No response stream received from the language model"}<END>\n\n`);
+          return; // Or throw an error
+        }
 
-    return response.response; // Return the response message
+        // Process the response stream (using for await...of)
+        let partialResponse = '';
+        let finalResponse: AIResponse = { response: '' }; 
 
+        (async () => { // Async IIFE
+          for await (const item of stream) {
+            partialResponse += item.candidates[0].content.parts[0].text; 
+            console.log("Partial response:", partialResponse);
+      
+            res.write(JSON.stringify({ status: "Processing", response: partialResponse }) + "<END>\n\n");
+          }
+      
+          let isValid;
+          try {
+            const cleanedResponse = removeJsonMarkdown(partialResponse);
+            const parsedResponse = JSON.parse(cleanedResponse);
+      
+            if (isValidJSON(cleanedResponse)) {
+              finalResponse = parsedResponse; 
+              isValid = true;
+            } else {
+              isValid = false;
+            }
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
+            isValid = false;
+          }
+      
+          console.timeEnd('constructAndSendMessage'); 
+      
+          if (isValid) {
+            res.write(JSON.stringify({ status: "Completed", response: finalResponse.response}) + "<END>\n\n");
+          } else {
+            let errorMessage = "Invalid response formatting. Please try again."
+            res.write(`{"status": "Error", "errorMessage": "${errorMessage}"}<END>\n\n`);
+          }
+      
+          console.time('performDatabaseOperations');
+          try {
+            performDatabaseOperations(finalResponse, posts); 
+          } catch (dbError) {
+            console.error("Error performing database operations:", dbError);
+          }
+          console.timeEnd('performDatabaseOperations');
+      
+          // Close the SSE connection after processing the stream
+          res.write('<END_STREAM>\n\n');
+          res.end(); 
+        })();
+      })
   } catch (error: any) {
     console.error('Error sending message:', error);
 
@@ -228,8 +299,11 @@ async function sendMessage(posts: any[], prompt: string): Promise<string> {
       errorMessage = 'Error: DEADLINE_EXCEEDED. The client sets a deadline shorter than the server\'s default deadline (10 minutes), and the request didn\'t finish within the client-provided deadline.';
     }
 
-    return errorMessage;
-  }
+    res.write(`{"status": "Error", "errorMessage": "${errorMessage}"}<END>\n\n`);
+
+    res.write('<END_STREAM>\n\n');
+    res.end(); // Close the SSE connection
+  } 
 }
 
 async function performDatabaseOperations(response: any, posts: any[]) {
@@ -340,34 +414,16 @@ ${JSON.stringify(bucketsToSend, null, 2)}
 User prompt: ${prompt}    
   `;
 
-  console.log("History: " + await chat.getHistory())
   console.log("User prompt: " + message);
 
-  const streamResult = await chat.sendMessageStream(message);
-
-  console.log("Usre prompt: " + message)
-
-  // Get the raw response as a string
-  const rawResponse = (await streamResult.response).candidates[0].content.parts[0].text;
-  console.log("Raw AI response: " + rawResponse)
-
-  // Remove the ```json ... ``` markdown
-  const cleanedResponse = removeJsonMarkdown(rawResponse);
-
-  // Attempt to parse and validate the JSON response
-  let response = null;
   try {
-    response = JSON.parse(cleanedResponse); // Parse the cleaned response
+    const result = await chat.sendMessageStream(message); // Get the StreamGenerateContentResult
 
-    if (!isValidJSON(cleanedResponse)) {
-      throw new Error('Invalid JSON response format.');
-    }
+    return result;
   } catch (error) {
-    console.error('Failed to parse or validate JSON response:', error);
-    throw new Error('Failed to parse or validate JSON response.'); // Re-throw the error to be caught by the outer try...catch
+    console.error('Error in sendMessageStream:', error);
+    throw error;
   }
-
-  return response;
 }
 
 async function fetchAndFormatBuckets(posts: any[]): Promise<any[]> {

@@ -606,7 +606,7 @@
           </div>
           <div *ngIf="isWaitingForAIResponse" class="waiting-message">
             <mat-spinner diameter="30"></mat-spinner> 
-            <p>Waiting for AI response...</p>
+            <p>{{ waitingMessage }}</p>
           </div>
         </div>
       </div>

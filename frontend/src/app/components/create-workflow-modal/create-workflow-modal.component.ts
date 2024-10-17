@@ -401,7 +401,7 @@ export class CreateWorkflowModalComponent implements OnInit {
 
     } catch (error: any) {
       console.error(error);
-      let errorMessage = 'An error occurred. Please refresh your browser and try again.'; 
+      let errorMessage = 'An error occurred. Please refresh your browser and try again.\n\n' + error.toString(); 
 
       // Add the error message to the chat history
       this.chatHistory.push({ role: 'assistant', content: errorMessage });

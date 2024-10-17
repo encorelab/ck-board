@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@google-cloud/aiplatform": "^3.31.0",
     "@google-cloud/vertexai": "^1.8.1",
     "@socket.io/redis-adapter": "^8.1.0",
     "@typegoose/typegoose": "^9.8.1",

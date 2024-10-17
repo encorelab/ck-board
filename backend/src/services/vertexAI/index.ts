@@ -5,15 +5,48 @@ import { generateUniqueID } from '../../utils/Utils';
 import dalPost from '../../repository/dalPost';
 import { PostType } from '../../models/Post'
 
+global.Headers = Headers;
 
 require('dotenv').config();
 
 const { VertexAI } = require('@google-cloud/vertexai');
 
+const {EndpointServiceClient} = require('@google-cloud/aiplatform');
+
+// Specifies the location of the API endpoint
+const clientOptions = {
+  apiEndpoint: 'northamerica-northeast1-aiplatform.googleapis.com', 
+};
+const client = new EndpointServiceClient(clientOptions);
+
+async function listEndpoints() {
+  const projectId = process.env.GOOGLE_CLOUD_PROJECT; 
+  const location = 'northamerica-northeast1'; 
+
+  // Configure the parent resource
+  const parent = `projects/${projectId}/locations/${location}`;
+  const request = { parent };
+
+  try {
+    const [result] = await client.listEndpoints(request);
+    for (const endpoint of result) {
+      console.log(`\nEndpoint name: ${endpoint.name}`);
+      console.log(`Display name: ${endpoint.displayName}`);
+      if (endpoint.deployedModels[0]) {
+        console.log(`First deployed model: ${endpoint.deployedModels[0].model}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error listing endpoints:', error);
+  }
+}
+
+listEndpoints();
+
 // Get project ID from environment variable
 const projectId = process.env.GOOGLE_CLOUD_PROJECT;
 const location = 'northamerica-northeast1'; // Update if needed
-const model = 'gemini-1.5-pro-002';
+const model = 'gemini-1.5-pro-001';
 
 const vertexAI = new VertexAI({ project:projectId, location:location });
 

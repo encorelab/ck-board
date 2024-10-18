@@ -3,6 +3,7 @@
 
 # secrets
 .env
+/secrets/*
 
 # compiled js files
 *.js

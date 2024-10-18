@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Socket } from 'ngx-socket-io';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, take } from 'rxjs';
 import { SocketPayload } from '../models/socketPayload';
 import { SocketEvent } from '../utils/constants';
 import { TraceService } from './trace.service';
@@ -31,6 +31,18 @@ export class SocketService {
   listen(event: SocketEvent, handler: Function): Subscription {
     const observable = this.socket.fromEvent<any>(event);
     return observable.subscribe((value) => handler(value));
+  }
+  
+  /**
+   * Listen for a specific incoming event once.
+   *
+   * @param event event to listen for
+   * @param handler handler function once event is received
+   * @returns subscription object to unsubscribe from in the future
+   */
+  once(event: SocketEvent, handler: Function): Subscription {
+    const observable = this.socket.fromEvent<any>(event);
+    return observable.pipe(take(1)).subscribe((value) => handler(value)); // Use take(1) to complete after the first emission
   }
 
   /**

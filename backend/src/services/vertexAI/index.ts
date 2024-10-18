@@ -85,7 +85,7 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
     },
   ],
   systemInstruction: {
-    parts: [{"text": `You are an AI assistant who answers questions about student-generated posts on a learning community platform. In responses to the user, refer to posts, buckets, and tags using their human-readable names/titles.`}]
+    parts: [{"text": `You are an AI assistant who answers questions about and provides requested feedback on student-generated posts on a learning community platform. In responses to the user, refer to posts, buckets, and tags using their human-readable names/titles. If asked for a quantity, double check your count because you're sometimes incorrect.`}]
   },
 });
 
@@ -163,7 +163,7 @@ function postsToKeyValuePairs(posts: any[]): string {
   let output = "";
   for (const post of posts) {
     output += `Post with title "${post.title}" (postID: ${post.postID}):\n`;
-    output += `  - Content: ${post.content}\n`;
+    output += `  - Content: ${post.desc}\n`;
     output += `  - Upvotes: ${post.numUpvotes}\n`;
     
     // Check if post.hasTags is defined before calling join()
@@ -262,7 +262,7 @@ async function sendMessage(posts: any[], prompt: string, socket: socketIO.Socket
             console.log("Emit completed")
             socket.emit(SocketEvent.AI_RESPONSE, { status: "Completed", response: finalResponse.response });
           } else {
-            let errorMessage = "Invalid response formatting. Please try again."
+            let errorMessage = "Invalid response formatting. Please try again.\n\n" + finalResponse.response;
             socket.emit(SocketEvent.AI_RESPONSE, { status: "Error", errorMessage: errorMessage });
           }
       
@@ -376,10 +376,10 @@ async function constructAndSendMessage(postsWithBucketIds: any[], bucketsToSend:
   const message = `
 Please provide your response in the following JSON format, including the "response" key and optionally any of the following keys: "add_bucket", "add_post_to_bucket", "remove_post_from_bucket", "remove_from_canvas", "add_to_canvas".
 
-Each of the optional keys should be a list of objects, where each object represents an action to be performed.
+The response value should end with <END>. Each of the optional keys should be a list of objects, where each object represents an action to be performed.
 
 {
-  "response": "Your response here",
+  "response": "Your response here<END>",
   "add_bucket": [{"name": "bucket_name"}], 
   "add_post_to_bucket": [
     {

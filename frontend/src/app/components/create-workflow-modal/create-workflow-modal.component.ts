@@ -430,11 +430,12 @@ export class CreateWorkflowModalComponent implements OnInit {
               this.updateWaitingForAIResponse('Received message...');
               break;
             case 'Processing':
-              this.updateWaitingForAIResponse('Generating response...');
+              this.updateWaitingForAIResponse(data.response);
               break;
             case 'Completed':
               console.log("Complete Received. " + new Date());
-              this.aiResponse = this.markdownToHtml(data.response || '');
+              const escapedResponse = this.escapeJsonResponse(data.response);
+              this.aiResponse = this.markdownToHtml(escapedResponse || '');
               this.chatHistory.push({ role: 'assistant', content: this.aiResponse });
               this.stopWaitingForAIResponse();
               break;
@@ -467,6 +468,25 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.isProcessingAIRequest = false;
   }
 
+  private escapeJsonResponse(response: string): string {
+    if (!response) {
+      return '';
+    }
+  
+    const responseStartIndex = response.indexOf('"response": "') + '"response": "'.length;
+    const responseEndIndex = response.indexOf('<END>');
+  
+    if (responseStartIndex === -1 || responseEndIndex === -1) {
+      console.warn('Invalid response format:', response);
+      return response; // Or handle the error differently
+    }
+  
+    const responseValue = response.substring(responseStartIndex, responseEndIndex);
+    const escapedValue = JSON.stringify(responseValue).slice(1, -1); // Escape special characters
+  
+    return response.substring(0, responseStartIndex) + escapedValue + response.substring(responseEndIndex);
+  }
+
   // Method to scroll the div to the bottom
   scrollToBottom(): void {
     const scrollableElement = this.scrollableDiv.nativeElement;
@@ -477,11 +497,12 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   markdownToHtml(markdown: string): string {
-    const lines = markdown.split('\n'); 
+    const lines = markdown.split('\\n'); 
     let html = '';
     let inList = false;
     let inSublist = false;
     let inBold = false;
+    let inOrderedList = false;
   
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
@@ -518,6 +539,16 @@ export class CreateWorkflowModalComponent implements OnInit {
           inSublist = true;
         }
         html += `<li>${line.trim().substring(2)}</li>`;
+      } else if (line.match(/^\d+\. /)) { // Match ordered list items
+        if (!inOrderedList) {
+          html += '<ol>';
+          inOrderedList = true;
+        }
+        html += `<li>${line.substring(line.indexOf('. ') + 2)}</li>`;
+      } else if (inOrderedList) { // Close the ordered list if no more items
+        html += '</ol>';
+        inOrderedList = false;
+        html += line; // Add the current line after closing the list
       } else if (inList) {
         if (inSublist) {
           html += '</ul>';
@@ -538,6 +569,9 @@ export class CreateWorkflowModalComponent implements OnInit {
     }
     if (inList) {
       html += '</ul>';
+    }
+    if (inOrderedList) { // Close the ordered list if it's still open
+      html += '</ol>';
     }
   
     return html;

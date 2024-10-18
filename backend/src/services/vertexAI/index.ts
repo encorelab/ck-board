@@ -5,6 +5,9 @@ import { generateUniqueID } from '../../utils/Utils';
 import dalPost from '../../repository/dalPost';
 import { PostType } from '../../models/Post'
 import { getErrorMessage } from '../../utils/errors';
+import * as socketIO from 'socket.io';
+import { SocketEvent } from '../../constants';
+import { error } from 'console';
 
 global.Headers = Headers;
 
@@ -186,10 +189,10 @@ function removeJsonMarkdown(text: string): string {
   return text.replace(pattern, '$1');
 }
 
-async function sendMessage(posts: any[], prompt: string, res: any): Promise<void> { 
+async function sendMessage(posts: any[], prompt: string, socket: socketIO.Socket): Promise<void> { 
   try {
     // Send an initial acknowledgment
-    res.write('{"status": "Received"}<END>\n\n');
+    socket.emit(SocketEvent.AI_RESPONSE, { status: "Received" }); 
 
     // 1. Fetch Upvote Counts and Create Map
     console.time('fetchUpvoteCounts');
@@ -213,6 +216,7 @@ async function sendMessage(posts: any[], prompt: string, res: any): Promise<void
 
     // 5. Construct and Send Message to LLM (streaming)
     console.time('constructAndSendMessage');
+    console.log("constructMessage")
     constructAndSendMessage(postsWithBucketIds, bucketsToSend, prompt) 
       .then(result => { // Use .then() to handle the Promise
         const stream = result.stream; 
@@ -220,8 +224,8 @@ async function sendMessage(posts: any[], prompt: string, res: any): Promise<void
         if (stream === undefined) {
           // Handle the case where the stream is undefined
           console.error('Stream is undefined');
-          res.write(`{"status": "Error", "errorMessage": "No response stream received from the language model"}<END>\n\n`);
-          return; // Or throw an error
+          socket.emit(SocketEvent.AI_RESPONSE, { status: "Error", errorMessage: "No response stream received from the language model" });
+          return; 
         }
 
         // Process the response stream (using for await...of)
@@ -231,9 +235,9 @@ async function sendMessage(posts: any[], prompt: string, res: any): Promise<void
         (async () => { // Async IIFE
           for await (const item of stream) {
             partialResponse += item.candidates[0].content.parts[0].text; 
-            console.log("Partial response:", partialResponse);
+            // console.log("Partial response:", partialResponse);
       
-            res.write(JSON.stringify({ status: "Processing", response: partialResponse }) + "<END>\n\n");
+            socket.emit(SocketEvent.AI_RESPONSE, { status: "Processing", response: partialResponse });
           }
       
           let isValid;
@@ -255,10 +259,11 @@ async function sendMessage(posts: any[], prompt: string, res: any): Promise<void
           console.timeEnd('constructAndSendMessage'); 
       
           if (isValid) {
-            res.write(JSON.stringify({ status: "Completed", response: finalResponse.response}) + "<END>\n\n");
+            console.log("Emit completed")
+            socket.emit(SocketEvent.AI_RESPONSE, { status: "Completed", response: finalResponse.response });
           } else {
             let errorMessage = "Invalid response formatting. Please try again."
-            res.write(`{"status": "Error", "errorMessage": "${errorMessage}"}<END>\n\n`);
+            socket.emit(SocketEvent.AI_RESPONSE, { status: "Error", errorMessage: errorMessage });
           }
       
           console.time('performDatabaseOperations');
@@ -268,10 +273,6 @@ async function sendMessage(posts: any[], prompt: string, res: any): Promise<void
             console.error("Error performing database operations:", dbError);
           }
           console.timeEnd('performDatabaseOperations');
-      
-          // Close the SSE connection after processing the stream
-          res.write('<END_STREAM>\n\n');
-          res.end(); 
         })();
       })
   } catch (error: any) {
@@ -299,10 +300,7 @@ async function sendMessage(posts: any[], prompt: string, res: any): Promise<void
       errorMessage = 'Error: DEADLINE_EXCEEDED. The client sets a deadline shorter than the server\'s default deadline (10 minutes), and the request didn\'t finish within the client-provided deadline.';
     }
 
-    res.write(`{"status": "Error", "errorMessage": "${errorMessage}"}<END>\n\n`);
-
-    res.write('<END_STREAM>\n\n');
-    res.end(); // Close the SSE connection
+    socket.emit(SocketEvent.AI_RESPONSE, { status: "Error", errorMessage: errorMessage });
   } 
 }
 
@@ -414,7 +412,7 @@ ${JSON.stringify(bucketsToSend, null, 2)}
 User prompt: ${prompt}    
   `;
 
-  console.log("User prompt: " + message);
+  // console.log("User prompt: " + message);
 
   try {
     const result = await chat.sendMessageStream(message); // Get the StreamGenerateContentResult

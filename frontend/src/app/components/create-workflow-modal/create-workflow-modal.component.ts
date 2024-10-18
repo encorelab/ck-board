@@ -27,6 +27,7 @@ import {
   WorkflowType,
   TaskWorkflowType,
 } from 'src/app/models/workflow';
+import { SocketService } from 'src/app/services/socket.service';
 import { PostService } from 'src/app/services/post.service';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
@@ -39,6 +40,9 @@ import { generateUniqueID } from 'src/app/utils/Utils';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+import { UserService } from 'src/app/services/user.service';
+import User, { AuthUser, Role } from 'src/app/models/user';
+import { SocketEvent } from 'src/app/utils/constants';
 
 interface ChatMessage { 
   role: 'user' | 'assistant';
@@ -53,6 +57,7 @@ interface ChatMessage {
 export class CreateWorkflowModalComponent implements OnInit {
   // Properties
   selected = new UntypedFormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
+  user: AuthUser;
 
   // Data models
   board: Board; // Current board
@@ -70,6 +75,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   aiPrompt = '';
   aiResponse = '';
   isWaitingForAIResponse = false;
+  isProcessingAIRequest = false;
   waitingMessage = 'Waiting for AI Response...';
 
   chatHistory: ChatMessage[] = [];
@@ -132,6 +138,7 @@ export class CreateWorkflowModalComponent implements OnInit {
   @ViewChild('aiInput') aiInput: ElementRef;
 
   constructor(
+    public userService: UserService,
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
     private dialog: MatDialog,
     private snackbarService: SnackbarService,
@@ -142,6 +149,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     public canvasService: CanvasService,
     public groupService: GroupService,
     private http: HttpClient,
+    private socketService: SocketService,
     private changeDetectorRef: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -157,6 +165,8 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.upvoteLimit = this.data.board.upvoteLimit; // Load the upvote limit for the board
     this.loadBucketsBoards(); // Load buckets and boards for source/destination options
     this.loadWorkflows(); // Load existing workflows for the board
+    this.user = this.userService.user!;
+    //this.socketService.connect(this.user.userID, this.board.boardID);
     
     // Set the selected tab index if provided
     if (this.data.selectedTabIndex !== undefined) { 
@@ -389,11 +399,13 @@ export class CreateWorkflowModalComponent implements OnInit {
   }
 
   askAI() {
+    if (this.isProcessingAIRequest) { // Check the flag
+      return;
+    }
+    this.isProcessingAIRequest = true;
+
     this.startWaitingForAIResponse();
     this.aiResponse = '';
-    const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-    };
 
     // 1. Fetch all posts for the current board
     this.fetchBoardPosts().then(posts => {
@@ -406,74 +418,53 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.changeDetectorRef.detectChanges(); 
       this.scrollToBottom();
 
-      // 2. Send posts and prompt to the backend API and handle the SSE stream
-      this.http.post('ai', { posts: posts, prompt: prompt }, { ...httpOptions, responseType: 'text' }).subscribe({
-        next: (response: string | undefined) => {
-          console.log('Raw SSE response:', response);
-      
-          if (!response) {
-            console.error('Received an empty or undefined response.');
-            this.chatHistory.push({ role: 'assistant', content: 'No response received. Please try again.' });
-            return;
+      // 2. Send data and prompt to the backend via WebSocket
+      this.socketService.emit(SocketEvent.AI_MESSAGE, { boardID: this.board.boardID, posts, prompt }); 
+      console.log("Sent message.")
+
+      // 3. Listen for WebSocket events
+      const aiResponseListener = this.socketService.listen(SocketEvent.AI_RESPONSE, (data: any) => { 
+        try {
+          switch (data.status) {
+            case 'Received':
+              this.updateWaitingForAIResponse('Received message...');
+              break;
+            case 'Processing':
+              this.updateWaitingForAIResponse('Generating response...');
+              break;
+            case 'Completed':
+              console.log("Complete Received. " + new Date());
+              this.aiResponse = this.markdownToHtml(data.response || '');
+              this.chatHistory.push({ role: 'assistant', content: this.aiResponse });
+              this.stopWaitingForAIResponse();
+              break;
+            case 'Error':
+              console.error('AI request error:', data.errorMessage);
+              this.chatHistory.push({ role: 'assistant', content: data.errorMessage });
+              this.stopWaitingForAIResponse();
+              break;
+            default:
+              console.warn('Unknown status:', data.status);
           }
-      
-          // Split the response by <END> marker
-          const events = response.trim().split(/<END>(?:\n\n)?/);
-      
-          events.forEach((event) => {
-            if (event.trim() === '<END_STREAM>') {
-              console.log('Stream ended.');
-              this.stopWaitingForAIResponse();
-              return;
-            }
-      
-            try {
-              const parsedEvent = JSON.parse(event);
-      
-              switch (parsedEvent.status) {
-                case 'Received':
-                  this.updateWaitingForAIResponse('Received message...');
-                  break;
-                case 'Processing':
-                  this.updateWaitingForAIResponse('Generating response...');
-                  break;
-                case 'Completed':
-                  this.aiResponse = this.markdownToHtml(parsedEvent.response || '');
-                  this.chatHistory.push({ role: 'assistant', content: this.aiResponse });
-                  break;
-                case 'Error':
-                  console.error('AI request error:', parsedEvent.errorMessage);
-                  this.chatHistory.push({ role: 'assistant', content: parsedEvent.errorMessage });
-                  break;
-                default:
-                  console.warn('Unknown status:', parsedEvent.status);
-              }
-      
-              this.changeDetectorRef.detectChanges();
-              this.scrollToBottom();
-            } catch (error) {
-              console.error('Failed to parse SSE event:', event, error);
-              this.chatHistory.push({
-                role: 'assistant',
-                content: 'An error occurred while processing the response. ' + error,
-              });
-              this.stopWaitingForAIResponse();
-            }
-          });
-        },
-        error: (error: any) => {
-          console.error('Error during AI request:', error);
-          // Handle the error, e.g., display an error message in the chat
+          
+          if (data.status === 'Completed' || data.status === 'Error') {
+            aiResponseListener.unsubscribe(); 
+          }
+
+          this.changeDetectorRef.detectChanges();
+          this.scrollToBottom();
+          
+        } catch (error) {
           this.chatHistory.push({ 
             role: 'assistant', 
-            content: 'An error occurred. Please refresh your browser and try again.\n\n' + error.message 
+            content: 'An error occurred. Please refresh your browser and try again.\n\n' + error
           });
-        },
-        complete: () => {
           this.stopWaitingForAIResponse();
+          aiResponseListener.unsubscribe();
         }
       });
     });
+    this.isProcessingAIRequest = false;
   }
 
   // Method to scroll the div to the bottom

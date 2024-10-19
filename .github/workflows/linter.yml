@@ -32,6 +32,6 @@ jobs:
 
       - name: Run Code Formatter
         working-directory: ${{ matrix.directory }}
-        run: npm run style:formatter
+        run: npm run style
         env: 
           CI: false

@@ -419,33 +419,36 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.scrollToBottom();
 
       // 2. Send data and prompt to the backend via WebSocket
-      this.socketService.emit(SocketEvent.AI_MESSAGE, { boardID: this.board.boardID, posts, prompt }); 
-      console.log("Sent message.")
+      this.socketService.emit(SocketEvent.AI_MESSAGE, { posts, prompt }); 
 
       // 3. Listen for WebSocket events
       const aiResponseListener = this.socketService.listen(SocketEvent.AI_RESPONSE, (data: any) => { 
         try {
           switch (data.status) {
-            case 'Received':
+            case 'Received': {
               this.updateWaitingForAIResponse('Received message...');
               break;
-            case 'Processing':
+            } 
+            case 'Processing': {
               this.updateWaitingForAIResponse(data.response);
               break;
-            case 'Completed':
-              console.log("Complete Received. " + new Date());
+            }
+            case 'Completed': {
               const escapedResponse = this.escapeJsonResponse(data.response);
               this.aiResponse = this.markdownToHtml(escapedResponse || '');
               this.chatHistory.push({ role: 'assistant', content: this.aiResponse });
               this.stopWaitingForAIResponse();
               break;
-            case 'Error':
+            }
+            case 'Error': {
               console.error('AI request error:', data.errorMessage);
               this.chatHistory.push({ role: 'assistant', content: data.errorMessage });
               this.stopWaitingForAIResponse();
               break;
-            default:
+            }
+            default: {
               console.warn('Unknown status:', data.status);
+            }
           }
           
           if (data.status === 'Completed' || data.status === 'Error') {

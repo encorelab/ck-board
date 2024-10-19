@@ -4,22 +4,20 @@ import { BucketModel } from '../../models/Bucket';
 import { generateUniqueID } from '../../utils/Utils';
 import dalPost from '../../repository/dalPost';
 import { PostType } from '../../models/Post'
-import { getErrorMessage } from '../../utils/errors';
 import * as socketIO from 'socket.io';
 import { SocketEvent } from '../../constants';
-import { error } from 'console';
+import * as dotenv from 'dotenv'; 
+import { VertexAI, HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
+import { EndpointServiceClient } from '@google-cloud/aiplatform';
+
 
 global.Headers = Headers;
 
-require('dotenv').config();
+dotenv.config();
 
 interface AIResponse {
   response: string; 
 }
-
-const { VertexAI } = require('@google-cloud/vertexai');
-
-const {EndpointServiceClient} = require('@google-cloud/aiplatform');
 
 // Specifies the location of the API endpoint
 const clientOptions = {
@@ -40,7 +38,7 @@ async function listEndpoints() {
     for (const endpoint of result) {
       console.log(`\nEndpoint name: ${endpoint.name}`);
       console.log(`Display name: ${endpoint.displayName}`);
-      if (endpoint.deployedModels[0]) {
+      if (endpoint.deployedModels?.[0]) {
         console.log(`First deployed model: ${endpoint.deployedModels[0].model}`);
       }
     }
@@ -62,31 +60,29 @@ const vertexAI = new VertexAI({ project:projectId, location:location });
 const generativeModel = vertexAI.preview.getGenerativeModel({
   model: model,
   generationConfig: {
-    maxOutputTokens: 8192,
-    temperature: 1,
-    topP: 0.95,
+    'maxOutputTokens': 8192,
+    'temperature': 1,
+    'topP': 0.95,
   },
   safetySettings: [
     {
-      category: 'HARM_CATEGORY_HATE_SPEECH',
-      threshold: 'OFF',
+      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+      threshold: HarmBlockThreshold.BLOCK_NONE,
     },
     {
-      category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-      threshold: 'OFF',
+      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+      threshold: HarmBlockThreshold.BLOCK_NONE,
     },
     {
-      category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-      threshold: 'OFF',
+      category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+      threshold: HarmBlockThreshold.BLOCK_NONE,
     },
     {
-      category: 'HARM_CATEGORY_HARASSMENT',
-      threshold: 'OFF',
-    },
+      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+      threshold: HarmBlockThreshold.BLOCK_NONE,
+    }
   ],
-  systemInstruction: {
-    parts: [{"text": `You are an AI assistant who answers questions about and provides requested feedback on student-generated posts on a learning community platform. In responses to the user, refer to posts, buckets, and tags using their human-readable names/titles. If asked for a quantity, double check your count because you're sometimes incorrect.`}]
-  },
+  systemInstruction: `You are an AI assistant who answers questions about and provides requested feedback on student-generated posts on a learning community platform. In responses to the user, refer to posts, buckets, and tags using their human-readable names/titles. If asked for a quantity, double check your count because you're sometimes incorrect.`,
 });
 
 const chat = generativeModel.startChat({});
@@ -195,28 +191,18 @@ async function sendMessage(posts: any[], prompt: string, socket: socketIO.Socket
     socket.emit(SocketEvent.AI_RESPONSE, { status: "Received" }); 
 
     // 1. Fetch Upvote Counts and Create Map
-    console.time('fetchUpvoteCounts');
     const upvoteMap = await fetchUpvoteCounts(posts);
-    console.timeEnd('fetchUpvoteCounts'); 
 
     // 2. Fetch Bucket Names and Create Map
-    console.time('fetchBucketNames');
     const bucketNameMap = await fetchBucketNames(posts);
-    console.timeEnd('fetchBucketNames');
 
     // 3. Add Bucket IDs to Posts
-    console.time('addBucketIdsToPosts');
     const postsWithBucketIds = await addBucketIdsToPosts(posts, bucketNameMap, upvoteMap);
-    console.timeEnd('addBucketIdsToPosts');
 
     // 4. Fetch and Format Buckets
-    console.time('fetchAndFormatBuckets');
     const bucketsToSend = await fetchAndFormatBuckets(posts);
-    console.timeEnd('fetchAndFormatBuckets');
 
     // 5. Construct and Send Message to LLM (streaming)
-    console.time('constructAndSendMessage');
-    console.log("constructMessage")
     constructAndSendMessage(postsWithBucketIds, bucketsToSend, prompt) 
       .then(result => { // Use .then() to handle the Promise
         const stream = result.stream; 
@@ -256,23 +242,19 @@ async function sendMessage(posts: any[], prompt: string, socket: socketIO.Socket
             isValid = false;
           }
       
-          console.timeEnd('constructAndSendMessage'); 
       
           if (isValid) {
-            console.log("Emit completed")
             socket.emit(SocketEvent.AI_RESPONSE, { status: "Completed", response: finalResponse.response });
           } else {
             let errorMessage = "Invalid response formatting. Please try again.\n\n" + finalResponse.response;
             socket.emit(SocketEvent.AI_RESPONSE, { status: "Error", errorMessage: errorMessage });
           }
       
-          console.time('performDatabaseOperations');
           try {
             performDatabaseOperations(finalResponse, posts); 
           } catch (dbError) {
             console.error("Error performing database operations:", dbError);
           }
-          console.timeEnd('performDatabaseOperations');
         })();
       })
   } catch (error: any) {

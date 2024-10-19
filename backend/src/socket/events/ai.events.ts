@@ -14,14 +14,14 @@ interface AiMessageData {
 class AiMessage {
     static type: SocketEvent = SocketEvent.AI_MESSAGE;
   
-    static async handleEvent(data: SocketPayload<AiMessageData>): Promise<{ posts: any[], prompt: string, boardID: string }> {
-      const { boardID, posts, prompt } = data.eventData;
+    static async handleEvent(data: SocketPayload<AiMessageData>): Promise<{ posts: any[], prompt: string }> {
+      const { posts, prompt } = data.eventData;
       // ... any necessary data processing or validation ...
-      return { posts, prompt, boardID }; 
+      return { posts, prompt }; 
     }
   
     static async handleResult(io: Server, socket: Socket, result: { posts: any[], prompt: string, boardID: string }): Promise<void> {
-      const { posts, prompt, boardID } = result; 
+      const { posts, prompt } = result; 
       console.log("socket sendMessage")
       sendMessage(posts, prompt, socket);
     }

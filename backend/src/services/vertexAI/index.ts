@@ -87,7 +87,13 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
       threshold: HarmBlockThreshold.BLOCK_NONE,
     },
   ],
-  systemInstruction: `You are an AI assistant who answers questions about and provides requested feedback on student-generated posts on a learning community platform. In responses to the user, refer to posts, buckets, and tags using their human-readable names/titles. If asked for a quantity, double check your count because you're sometimes incorrect.`,
+  systemInstruction: `You are an AI assistant who answers questions about and 
+                    provides requested feedback on student-generated posts 
+                    on a learning community platform. In responses to the 
+                    user, refer to posts, buckets, and tags using their 
+                    human-readable names/titles. If asked for a quantity of
+                    posts, double check your count to make sure you're 
+                    correct`,
 });
 
 const chat = generativeModel.startChat({});
@@ -445,44 +451,43 @@ async function constructAndSendMessage(
 ): Promise<any> {
   const postsAsKeyValuePairs = postsToKeyValuePairs(postsWithBucketIds);
 
-  const message = `
-Please provide your response in the following JSON format, including the "response" key and optionally any of the following keys: "add_bucket", "add_post_to_bucket", "remove_post_from_bucket", "remove_from_canvas", "add_to_canvas".
+  const message =
+    `
+  Please provide your response in the following JSON format, including the 
+  "response" key and optionally any of the following keys: "add_bucket", 
+  "add_post_to_bucket", "remove_post_from_bucket", "remove_from_canvas", "add_to_canvas".
 
-The response value should end with <END>. Each of the optional keys should be a list of objects, where each object represents an action to be performed.
+  The response value should end with <END>. Each of the optional keys should be a 
+  list of objects, where each object represents an action to be performed.
 
-{
-  "response": "Your response here<END>",
-  "add_bucket": [{"name": "bucket_name"}], 
-  "add_post_to_bucket": [
-    {
-      "postID": "post_id_1",
-      "bucketID": "bucket_id_1"
-    },
-    {
-      "postID": "post_id_2",
-      "bucketID": "bucket_id_2"
-    }
-  ],
-  "remove_post_from_bucket": [
-    {
-      "postID": "post_id_3",
-      "bucketID": "bucket_id_3"
-    }
-  ],
-  "add_to_canvas": [{"postID": "post_id_4"}, {"postID": "post_id_5"}],
-  "remove_from_canvas": [{"postID": "post_id_6"}] 
-}
+  {
+    "response": "Your response here<END>",
+    "add_bucket": [{"name": "bucket_name"}], 
+    "add_post_to_bucket": [
+      {
+        "postID": "post_id_1",
+        "bucketID": "bucket_id_1"
+      },
+      {
+        "postID": "post_id_2",
+        "bucketID": "bucket_id_2"
+      }
+    ],
+    "remove_post_from_bucket": [
+      {
+        "postID": "post_id_3",
+        "bucketID": "bucket_id_3"
+      }
+    ],
+    "add_to_canvas": [{"postID": "post_id_4"}, {"postID": "post_id_5"}],
+    "remove_from_canvas": [{"postID": "post_id_6"}] 
+  }
 
-Here are the posts from the project:
-
-${postsAsKeyValuePairs}
-
-Here are the buckets:
-
-${JSON.stringify(bucketsToSend, null, 2)}
-
-User prompt: ${prompt}    
-  `;
+  Here are the posts from the project:` +
+    postsAsKeyValuePairs + // Concatenate variables here
+    `\nHere are the buckets:\n` +
+    JSON.stringify(bucketsToSend, null, 2) +
+    `\nUser prompt: ${prompt}`;
 
   // console.log("User prompt: " + message);
 

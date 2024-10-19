@@ -1,4 +1,12 @@
-import { Component, Inject, OnInit, ViewChild, ElementRef, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+  AfterViewInit,
+} from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -44,7 +52,7 @@ import { UserService } from 'src/app/services/user.service';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { SocketEvent } from 'src/app/utils/constants';
 
-interface ChatMessage { 
+interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
@@ -167,13 +175,13 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.loadWorkflows(); // Load existing workflows for the board
     this.user = this.userService.user!;
     //this.socketService.connect(this.user.userID, this.board.boardID);
-    
+
     // Set the selected tab index if provided
-    if (this.data.selectedTabIndex !== undefined) { 
+    if (this.data.selectedTabIndex !== undefined) {
       this.selected.setValue(this.data.selectedTabIndex);
     }
 
-    if (this.data.focusAIInput) { 
+    if (this.data.focusAIInput) {
       setTimeout(() => {
         this.focusAIInput();
       }, 0);
@@ -182,8 +190,10 @@ export class CreateWorkflowModalComponent implements OnInit {
 
   ngAfterViewInit(): void {
     this.selected.valueChanges.subscribe((tabIndex) => {
-      if (tabIndex === 3) { // Check if AI Assistant tab is selected
-        setTimeout(() => { // Use setTimeout to allow the view to render
+      if (tabIndex === 3) {
+        // Check if AI Assistant tab is selected
+        setTimeout(() => {
+          // Use setTimeout to allow the view to render
           this.focusAIInput();
         }, 0);
       }
@@ -387,7 +397,7 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.waitingMessage = 'Waiting for AI response...';
   }
 
-  updateWaitingForAIResponse( message : string) {
+  updateWaitingForAIResponse(message: string) {
     this.isWaitingForAIResponse = true;
     this.waitingMessage = message;
   }
@@ -395,11 +405,12 @@ export class CreateWorkflowModalComponent implements OnInit {
   // Call this function when the response is received
   stopWaitingForAIResponse() {
     this.isWaitingForAIResponse = false;
-    this.waitingMessage = ''; 
+    this.waitingMessage = '';
   }
 
   askAI() {
-    if (this.isProcessingAIRequest) { // Check the flag
+    if (this.isProcessingAIRequest) {
+      // Check the flag
       return;
     }
     this.isProcessingAIRequest = true;
@@ -408,65 +419,75 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.aiResponse = '';
 
     // 1. Fetch all posts for the current board
-    this.fetchBoardPosts().then(posts => {
+    this.fetchBoardPosts().then((posts) => {
       const prompt = this.aiPrompt;
-      this.aiPrompt = ''; // Clear the prompt field 
+      this.aiPrompt = ''; // Clear the prompt field
 
       this.chatHistory.push({ role: 'user', content: prompt });
 
       // Wait for the change detection to run and render the new message
-      this.changeDetectorRef.detectChanges(); 
+      this.changeDetectorRef.detectChanges();
       this.scrollToBottom();
 
       // 2. Send data and prompt to the backend via WebSocket
-      this.socketService.emit(SocketEvent.AI_MESSAGE, { posts, prompt }); 
+      this.socketService.emit(SocketEvent.AI_MESSAGE, { posts, prompt });
 
       // 3. Listen for WebSocket events
-      const aiResponseListener = this.socketService.listen(SocketEvent.AI_RESPONSE, (data: any) => { 
-        try {
-          switch (data.status) {
-            case 'Received': {
-              this.updateWaitingForAIResponse('Received message...');
-              break;
-            } 
-            case 'Processing': {
-              this.updateWaitingForAIResponse(data.response);
-              break;
+      const aiResponseListener = this.socketService.listen(
+        SocketEvent.AI_RESPONSE,
+        (data: any) => {
+          try {
+            switch (data.status) {
+              case 'Received': {
+                this.updateWaitingForAIResponse('Received message...');
+                break;
+              }
+              case 'Processing': {
+                this.updateWaitingForAIResponse(data.response);
+                break;
+              }
+              case 'Completed': {
+                const escapedResponse = this.escapeJsonResponse(data.response);
+                this.aiResponse = this.markdownToHtml(escapedResponse || '');
+                this.chatHistory.push({
+                  role: 'assistant',
+                  content: this.aiResponse,
+                });
+                this.stopWaitingForAIResponse();
+                break;
+              }
+              case 'Error': {
+                console.error('AI request error:', data.errorMessage);
+                this.chatHistory.push({
+                  role: 'assistant',
+                  content: data.errorMessage,
+                });
+                this.stopWaitingForAIResponse();
+                break;
+              }
+              default: {
+                console.warn('Unknown status:', data.status);
+              }
             }
-            case 'Completed': {
-              const escapedResponse = this.escapeJsonResponse(data.response);
-              this.aiResponse = this.markdownToHtml(escapedResponse || '');
-              this.chatHistory.push({ role: 'assistant', content: this.aiResponse });
-              this.stopWaitingForAIResponse();
-              break;
-            }
-            case 'Error': {
-              console.error('AI request error:', data.errorMessage);
-              this.chatHistory.push({ role: 'assistant', content: data.errorMessage });
-              this.stopWaitingForAIResponse();
-              break;
-            }
-            default: {
-              console.warn('Unknown status:', data.status);
-            }
-          }
-          
-          if (data.status === 'Completed' || data.status === 'Error') {
-            aiResponseListener.unsubscribe(); 
-          }
 
-          this.changeDetectorRef.detectChanges();
-          this.scrollToBottom();
-          
-        } catch (error) {
-          this.chatHistory.push({ 
-            role: 'assistant', 
-            content: 'An error occurred. Please refresh your browser and try again.\n\n' + error
-          });
-          this.stopWaitingForAIResponse();
-          aiResponseListener.unsubscribe();
+            if (data.status === 'Completed' || data.status === 'Error') {
+              aiResponseListener.unsubscribe();
+            }
+
+            this.changeDetectorRef.detectChanges();
+            this.scrollToBottom();
+          } catch (error) {
+            this.chatHistory.push({
+              role: 'assistant',
+              content:
+                'An error occurred. Please refresh your browser and try again.\n\n' +
+                error,
+            });
+            this.stopWaitingForAIResponse();
+            aiResponseListener.unsubscribe();
+          }
         }
-      });
+      );
     });
     this.isProcessingAIRequest = false;
   }
@@ -475,38 +496,46 @@ export class CreateWorkflowModalComponent implements OnInit {
     if (!response) {
       return '';
     }
-  
-    const responseStartIndex = response.indexOf('"response": "') + '"response": "'.length;
+
+    const responseStartIndex =
+      response.indexOf('"response": "') + '"response": "'.length;
     const responseEndIndex = response.indexOf('<END>');
-  
+
     if (responseStartIndex === -1 || responseEndIndex === -1) {
       console.warn('Invalid response format:', response);
       return response; // Or handle the error differently
     }
-  
-    const responseValue = response.substring(responseStartIndex, responseEndIndex);
+
+    const responseValue = response.substring(
+      responseStartIndex,
+      responseEndIndex
+    );
     const escapedValue = JSON.stringify(responseValue).slice(1, -1); // Escape special characters
-  
-    return response.substring(0, responseStartIndex) + escapedValue + response.substring(responseEndIndex);
+
+    return (
+      response.substring(0, responseStartIndex) +
+      escapedValue +
+      response.substring(responseEndIndex)
+    );
   }
 
   // Method to scroll the div to the bottom
   scrollToBottom(): void {
     const scrollableElement = this.scrollableDiv.nativeElement;
-      scrollableElement.scrollTo({
-        top: scrollableElement.scrollHeight,
-        behavior: 'smooth' // Add smooth scrolling behavior
-      });
+    scrollableElement.scrollTo({
+      top: scrollableElement.scrollHeight,
+      behavior: 'smooth', // Add smooth scrolling behavior
+    });
   }
 
   markdownToHtml(markdown: string): string {
-    const lines = markdown.split('\\n'); 
+    const lines = markdown.split('\\n');
     let html = '';
     let inList = false;
     let inSublist = false;
     let inBold = false;
     let inOrderedList = false;
-  
+
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
 
@@ -525,30 +554,33 @@ export class CreateWorkflowModalComponent implements OnInit {
       while (line.includes('\\"')) {
         line = line.replace('\\"', '"');
       }
-  
+
       if (line.match(/^(\*|-) /)) {
         if (!inList) {
           html += '<ul>';
           inList = true;
         }
-        if (inSublist) { 
-          html += '</ul>'; 
+        if (inSublist) {
+          html += '</ul>';
           inSublist = false;
         }
         html += `<li>${line.substring(2)}</li>`;
-      } else if (line.match(/^ +(\*|-) /)) { // Match sublist items
+      } else if (line.match(/^ +(\*|-) /)) {
+        // Match sublist items
         if (!inSublist) {
           html += '<ul>';
           inSublist = true;
         }
         html += `<li>${line.trim().substring(2)}</li>`;
-      } else if (line.match(/^\d+\. /)) { // Match ordered list items
+      } else if (line.match(/^\d+\. /)) {
+        // Match ordered list items
         if (!inOrderedList) {
           html += '<ol>';
           inOrderedList = true;
         }
         html += `<li>${line.substring(line.indexOf('. ') + 2)}</li>`;
-      } else if (inOrderedList) { // Close the ordered list if no more items
+      } else if (inOrderedList) {
+        // Close the ordered list if no more items
         html += '</ol>';
         inOrderedList = false;
         html += line; // Add the current line after closing the list
@@ -566,24 +598,25 @@ export class CreateWorkflowModalComponent implements OnInit {
         html += line;
       }
     }
-  
+
     if (inSublist) {
       html += '</ul>';
     }
     if (inList) {
       html += '</ul>';
     }
-    if (inOrderedList) { // Close the ordered list if it's still open
+    if (inOrderedList) {
+      // Close the ordered list if it's still open
       html += '</ol>';
     }
-  
+
     return html;
   }
 
   async fetchBoardPosts() {
     try {
       // Fetch posts for the current board
-      const posts = await this.postService.getAllByBoard(this.board.boardID); 
+      const posts = await this.postService.getAllByBoard(this.board.boardID);
       return posts;
     } catch (error) {
       console.error('Error fetching board posts:', error);

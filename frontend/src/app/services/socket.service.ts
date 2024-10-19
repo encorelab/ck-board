@@ -32,7 +32,7 @@ export class SocketService {
     const observable = this.socket.fromEvent<any>(event);
     return observable.subscribe((value) => handler(value));
   }
-  
+
   /**
    * Listen for a specific incoming event once.
    *

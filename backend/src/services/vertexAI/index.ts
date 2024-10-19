@@ -22,6 +22,11 @@ interface AIResponse {
   response: string;
 }
 
+type ErrorInfo = {
+  code?: number;
+  message?: string;
+};
+
 // Specifies the location of the API endpoint
 const clientOptions = {
   apiEndpoint: 'northamerica-northeast1-aiplatform.googleapis.com',
@@ -98,19 +103,12 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
 
 const chat = generativeModel.startChat({});
 
-function parseVertexAIError(errorString: string): {
-  code?: number;
-  message?: string;
-} {
+function parseVertexAIError(errorString: string): ErrorInfo {
   try {
-    // Use a regular expression to extract the JSON part
     const jsonMatch = errorString.match(/{.*}/);
 
     if (jsonMatch && jsonMatch[0]) {
-      // Parse the JSON string
       const errorObject = JSON.parse(jsonMatch[0]);
-
-      // Access code and message
       const errorCode = errorObject.error.code;
       const errorMessage = errorObject.error.message;
 

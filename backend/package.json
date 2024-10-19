@@ -19,7 +19,7 @@
     "mongoose": "^6.3.2",
     "mongoose-autopopulate": "^0.17.1",
     "nodemon": "^2.0.16",
-    "prettier": "^2.6.2",
+    "prettier": "^2.8.8",
     "socket.io": "^4.7.5",
     "uuid": "^8.3.2"
   },

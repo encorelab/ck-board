@@ -571,11 +571,4 @@ async function fetchUpvoteCounts(posts: any[]): Promise<Map<string, number>> {
   return new Map(upvoteCounts.map((count) => [count.postId, count.upvotes]));
 }
 
-function removeFirstAndLastQuotes(str: string): string {
-  if (str.startsWith('"') && str.endsWith('"')) {
-    return str.slice(1, -1);
-  }
-  return str;
-}
-
 export { sendMessage };

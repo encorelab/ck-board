@@ -12,23 +12,27 @@ interface AiMessageData {
 }
 
 class AiMessage {
-    static type: SocketEvent = SocketEvent.AI_MESSAGE;
-  
-    static async handleEvent(data: SocketPayload<AiMessageData>): Promise<{ posts: any[], prompt: string }> {
-      const { posts, prompt } = data.eventData;
-      // ... any necessary data processing or validation ...
-      return { posts, prompt }; 
-    }
-  
-    static async handleResult(io: Server, socket: Socket, result: { posts: any[], prompt: string, boardID: string }): Promise<void> {
-      const { posts, prompt } = result; 
-      console.log("socket sendMessage")
-      sendMessage(posts, prompt, socket);
-    }
+  static type: SocketEvent = SocketEvent.AI_MESSAGE;
+
+  static async handleEvent(
+    data: SocketPayload<AiMessageData>
+  ): Promise<{ posts: any[]; prompt: string }> {
+    const { posts, prompt } = data.eventData;
+    // ... any necessary data processing or validation ...
+    return { posts, prompt };
   }
 
-const aiEvents = [
-  AiMessage,
-];
+  static async handleResult(
+    io: Server,
+    socket: Socket,
+    result: { posts: any[]; prompt: string; boardID: string }
+  ): Promise<void> {
+    const { posts, prompt } = result;
+    console.log('socket sendMessage');
+    sendMessage(posts, prompt, socket);
+  }
+}
+
+const aiEvents = [AiMessage];
 
 export default aiEvents;

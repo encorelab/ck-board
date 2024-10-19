@@ -299,7 +299,7 @@ async function sendMessage(
               response: finalResponse.response,
             });
           } else {
-            let errorMessage =
+            const errorMessage =
               'Invalid response formatting. Please try again.\n\n' +
               finalResponse.response;
             socket.emit(SocketEvent.AI_RESPONSE, {

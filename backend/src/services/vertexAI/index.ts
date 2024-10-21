@@ -96,9 +96,10 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
                       provides requested feedback on student-generated posts 
                       on a learning community platform. In responses to the 
                       user, refer to posts, buckets, and tags using their 
-                      human-readable names/titles. If asked for a quantity of
-                      posts, double check your count to make sure you're 
-                      correct`,
+                      human-readable names/titles. **Remember**: If asked to
+                      simultaneously create a bucket and add posts to it, use 
+                      create_bucket_and_add_posts, otherwise you cannot add
+                      posts without creating the bucket first.`,
 });
 
 const chat = generativeModel.startChat({});
@@ -133,11 +134,12 @@ function isValidJSON(str: string): boolean {
 
     const allowedKeys = [
       'response',
-      'add_bucket',
+      'create_bucket',
       'add_post_to_bucket',
       'remove_post_from_bucket',
       'add_to_canvas',
       'remove_from_canvas',
+      'create_bucket_and_add_posts',
     ];
     for (const key in jsonObject) {
       if (!allowedKeys.includes(key)) {
@@ -149,8 +151,17 @@ function isValidJSON(str: string): boolean {
         return false;
       }
 
-      // Additional validation for specific keys (with type annotations)
-      if (key === 'add_bucket') {
+      // Additional validation for specific keys
+      if (key === 'create_bucket_and_add_posts') {
+        if (
+          !jsonObject[key].every(
+            (item: { name: string, postIDs: string[] }) => 
+              typeof item.name === 'string' && Array.isArray(item.postIDs)
+          )
+        ) {
+          return false;
+        }
+      } else if (key === 'create_bucket') {
         if (
           !jsonObject[key].every(
             (item: { name: string }) => typeof item.name === 'string'
@@ -309,7 +320,7 @@ async function sendMessage(
           }
 
           try {
-            performDatabaseOperations(finalResponse, posts);
+            performDatabaseOperations(finalResponse, posts, socket);
           } catch (dbError) {
             console.error('Error performing database operations:', dbError);
           }
@@ -354,36 +365,83 @@ async function sendMessage(
   }
 }
 
-async function performDatabaseOperations(response: any, posts: any[]) {
-  if (response.add_bucket) {
-    for (const bucket of response.add_bucket) {
+async function performDatabaseOperations(response: any, posts: any[], socket: socketIO.Socket) { 
+  const validPostIds = new Set(posts.map(post => post.postID));
+
+  if (response.create_bucket) {
+    for (const bucket of response.create_bucket) {
       const bucketName = bucket.name;
 
       const newBucket: BucketModel = {
         bucketID: generateUniqueID(),
-        boardID: posts[0].boardID, // Assuming all posts belong to the same board
+        boardID: posts[0].boardID, 
         name: bucketName,
         posts: [],
       };
 
       const savedBucket = await dalBucket.create(newBucket);
       console.log('Added bucket:', savedBucket);
+
+      // Emit bucket create event
+      socket.emit(SocketEvent.BUCKET_CREATE, savedBucket);
+    }
+  }
+
+  if (response.create_bucket_and_add_posts) {
+    for (const action of response.create_bucket_and_add_posts) {
+      const { name, postIDs } = action;
+
+      const newBucket: BucketModel = {
+        bucketID: generateUniqueID(),
+        boardID: posts[0].boardID,
+        name: name,
+        posts: [],
+      };
+      const savedBucket = await dalBucket.create(newBucket);
+
+      const validPostIDsToAdd = postIDs.filter((id: string) => validPostIds.has(id));
+      if (validPostIDsToAdd.length > 0) {
+        await dalBucket.addPost(savedBucket.bucketID, validPostIDsToAdd);
+
+        // Emit bucket create event
+        socket.emit(SocketEvent.BUCKET_CREATE, savedBucket);
+
+        // Emit post update events for each post added to the bucket
+        for (const postID of validPostIDsToAdd) {
+          const updatedPost = await dalPost.getById(postID); 
+          if (updatedPost) {
+            socket.emit(SocketEvent.POST_UPDATE, updatedPost);
+          }
+        }
+      } else {
+        console.log(`Created bucket ${name} (no valid posts to add)`);
+      }
     }
   }
 
   if (response.add_post_to_bucket) {
-    // Group actions by bucketID
-    const actionsByBucket = response.add_post_to_bucket.reduce(
-      (
-        acc: Record<string, string[]>,
-        action: { postID: string; bucketID: string }
-      ) => {
-        const { bucketID, postID } = action;
-        acc[bucketID] = (acc[bucketID] || []).concat(postID);
-        return acc;
-      },
-      {} as Record<string, string[]>
-    );
+    const actionsByBucket: Record<string, string[]> = {};
+
+    for (const action of response.add_post_to_bucket) {
+      const { bucketID, postID, name } = action; 
+
+      if (validPostIds.has(postID)) {
+        if (bucketID) {
+          actionsByBucket[bucketID] = (actionsByBucket[bucketID] || []).concat(postID);
+        } else if (name) { 
+          const bucket = await dalBucket.getByName(name, posts[0].boardID); 
+          if (bucket) {
+            actionsByBucket[bucket.bucketID] = (actionsByBucket[bucket.bucketID] || []).concat(postID);
+          } else {
+            console.log(`Bucket with name "${name}" not found`);
+          }
+        } else {
+          console.log(`No bucketID or name provided for postID ${postID}`);
+        }
+      } else {
+        console.log(`Skipping invalid postID ${postID}`);
+      }
+    }
 
     for (const bucketID in actionsByBucket) {
       const postIDs = actionsByBucket[bucketID];
@@ -392,22 +450,40 @@ async function performDatabaseOperations(response: any, posts: any[]) {
         `Added posts ${postIDs.join(', ')} to bucket ${bucketID}:`,
         updatedBucket
       );
+
+      // Emit post update events for each post added to the bucket
+      for (const postID of postIDs) {
+        const updatedPost = await dalPost.getById(postID);
+        if (updatedPost) {
+          socket.emit(SocketEvent.POST_UPDATE, updatedPost);
+        }
+      }
     }
   }
 
   if (response.remove_post_from_bucket) {
-    // Group actions by bucketID
-    const actionsByBucket = response.remove_post_from_bucket.reduce(
-      (
-        acc: Record<string, string[]>,
-        action: { postID: string; bucketID: string }
-      ) => {
-        const { bucketID, postID } = action;
-        acc[bucketID] = (acc[bucketID] || []).concat(postID);
-        return acc;
-      },
-      {} as Record<string, string[]>
-    );
+    const actionsByBucket: Record<string, string[]> = {};
+
+    for (const action of response.remove_post_from_bucket) {
+      const { bucketID, postID, name } = action;
+
+      if (validPostIds.has(postID)) {
+        if (bucketID) {
+          actionsByBucket[bucketID] = (actionsByBucket[bucketID] || []).concat(postID);
+        } else if (name) {
+          const bucket = await dalBucket.getByName(name, posts[0].boardID);
+          if (bucket) {
+            actionsByBucket[bucket.bucketID] = (actionsByBucket[bucket.bucketID] || []).concat(postID);
+          } else {
+            console.log(`Bucket with name "${name}" not found`);
+          }
+        } else {
+          console.log(`No bucketID or name provided for postID ${postID}`);
+        }
+      } else {
+        console.log(`Skipping invalid postID ${postID}`);
+      }
+    }
 
     for (const bucketID in actionsByBucket) {
       const postIDs = actionsByBucket[bucketID];
@@ -416,28 +492,48 @@ async function performDatabaseOperations(response: any, posts: any[]) {
         `Removed posts ${postIDs.join(', ')} from bucket ${bucketID}:`,
         updatedBucket
       );
+
+      // Emit post update events for each post removed from the bucket
+      for (const postID of postIDs) {
+        const updatedPost = await dalPost.getById(postID);
+        if (updatedPost) {
+          socket.emit(SocketEvent.POST_UPDATE, updatedPost);
+        }
+      }
     }
   }
 
   if (response.add_to_canvas) {
     for (const post of response.add_to_canvas) {
       const postID = post.postID;
+      if (validPostIds.has(postID)) {
+        const updatedPost = await dalPost.update(postID, {
+          type: PostType.BOARD, 
+        });
+        console.log('Added post to canvas:', updatedPost);
 
-      const updatedPost = await dalPost.update(postID, {
-        type: PostType.BOARD,
-      });
-      console.log('Added post to canvas:', updatedPost);
+        // Emit post update event
+        socket.emit(SocketEvent.POST_CREATE, updatedPost);
+      } else {
+        console.log(`Skipping invalid postID ${postID} for adding to canvas`);
+      }
     }
   }
 
   if (response.remove_from_canvas) {
     for (const post of response.remove_from_canvas) {
       const postID = post.postID;
+      if (validPostIds.has(postID)) {
+        const updatedPost = await dalPost.update(postID, {
+          type: PostType.BUCKET, 
+        });
+        console.log('Removed post from canvas:', updatedPost);
 
-      const updatedPost = await dalPost.update(postID, {
-        type: PostType.BUCKET,
-      });
-      console.log('Removed post from canvas:', updatedPost);
+        // Emit post update event
+        socket.emit(SocketEvent.POST_DELETE, postID);
+      } else {
+        console.log(`Skipping invalid postID ${postID} for removing from canvas`);
+      }
     }
   }
 }
@@ -452,15 +548,16 @@ async function constructAndSendMessage(
   const message =
     `
     Please provide your response in the following JSON format, including the 
-    "response" key and optionally any of the following keys: "add_bucket", 
-    "add_post_to_bucket", "remove_post_from_bucket", "remove_from_canvas", "add_to_canvas".
+    "response" key and optionally any of the following keys: "create_bucket", 
+    "create_bucket_and_add_posts", "add_post_to_bucket", "remove_post_from_bucket", 
+    "remove_from_canvas", "add_to_canvas".
 
     The response value should end with <END>. Each of the optional keys should be a 
     list of objects, where each object represents an action to be performed.
 
     {
       "response": "Your response here<END>",
-      "add_bucket": [{"name": "bucket_name"}], 
+      "create_bucket": [{"name": "bucket_name"}], 
       "add_post_to_bucket": [
         {
           "postID": "post_id_1",
@@ -478,7 +575,13 @@ async function constructAndSendMessage(
         }
       ],
       "add_to_canvas": [{"postID": "post_id_4"}, {"postID": "post_id_5"}],
-      "remove_from_canvas": [{"postID": "post_id_6"}] 
+      "remove_from_canvas": [{"postID": "post_id_6"}],
+      "create_bucket_and_add_posts": [
+        {
+          "name": "new_bucket_name",
+          "postIDs": ["post_id_7", "post_id_8"] 
+        }
+      ]
     }
 
     Here are the posts from the project:` +

@@ -498,6 +498,11 @@ async function constructAndSendMessage(
 }
 
 async function fetchAndFormatBuckets(posts: any[]): Promise<any[]> {
+  // Return empty list if no posts
+  if (!posts || posts.length === 0) {
+    return []; 
+  }
+
   // Fetch ALL buckets for the board
   const buckets = await dalBucket.getByBoardId(posts[0].boardID); // Assuming all posts belong to the same board
 

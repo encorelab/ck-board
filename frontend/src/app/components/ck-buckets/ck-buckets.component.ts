@@ -1,6 +1,9 @@
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ComponentType } from '@angular/cdk/portal';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { SocketService } from 'src/app/services/socket.service';
+import { Subscription } from 'rxjs';
+import { SocketEvent } from 'src/app/utils/constants';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,7 +25,7 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
   templateUrl: './ck-buckets.component.html',
   styleUrls: ['./ck-buckets.component.scss'],
 })
-export class CkBucketsComponent implements OnInit {
+export class CkBucketsComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   boardID: string;
@@ -40,6 +43,9 @@ export class CkBucketsComponent implements OnInit {
   bucketsOnView: any[] = [];
   viewType = ViewType.BUCKETS;
 
+  groupEventToHandler: Map<SocketEvent, Function>;
+  unsubListeners: Subscription[] = [];
+
   constructor(
     public postService: PostService,
     public boardService: BoardService,
@@ -51,8 +57,11 @@ export class CkBucketsComponent implements OnInit {
     public upvotesService: UpvotesService,
     private converters: Converters,
     private router: Router,
+    private socketService: SocketService,
     private activatedRoute: ActivatedRoute
-  ) {}
+  ) {
+    this.groupEventToHandler = new Map<SocketEvent, Function>([]);
+  }
 
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
@@ -69,6 +78,14 @@ export class CkBucketsComponent implements OnInit {
         }
       }
     });
+    this.socketService.connect(this.user.userID, this.boardID);
+  }
+
+  initGroupEventsListener() {
+    for (const [k, v] of this.groupEventToHandler) {
+      const unsub = this.socketService.listen(k, v);
+      this.unsubListeners.push(unsub);
+    }
   }
 
   async configureBoard(): Promise<void> {
@@ -181,6 +198,11 @@ export class CkBucketsComponent implements OnInit {
   signOut(): void {
     this.userService.logout();
     this.router.navigate(['login']);
+  }
+
+  async ngOnDestroy() {
+    this.unsubListeners.forEach((s) => s.unsubscribe());
+    this.socketService.disconnect(this.user.userID, this.boardID);
   }
 
   private _openDialog(

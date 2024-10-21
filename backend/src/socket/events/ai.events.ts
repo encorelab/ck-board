@@ -28,7 +28,6 @@ class AiMessage {
     result: { posts: any[]; prompt: string; boardID: string }
   ): Promise<void> {
     const { posts, prompt } = result;
-    console.log('socket sendMessage');
     sendMessage(posts, prompt, socket);
   }
 }

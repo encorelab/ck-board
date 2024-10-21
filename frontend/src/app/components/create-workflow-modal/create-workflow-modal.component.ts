@@ -2,6 +2,7 @@ import {
   Component,
   Inject,
   OnInit,
+  OnDestroy,
   ViewChild,
   ElementRef,
   ChangeDetectorRef,
@@ -47,7 +48,7 @@ import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { lastValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { UserService } from 'src/app/services/user.service';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { SocketEvent } from 'src/app/utils/constants';
@@ -62,7 +63,7 @@ interface ChatMessage {
   templateUrl: './create-workflow-modal.component.html',
   styleUrls: ['./create-workflow-modal.component.scss'],
 })
-export class CreateWorkflowModalComponent implements OnInit {
+export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   // Properties
   selected = new UntypedFormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
   user: AuthUser;
@@ -142,6 +143,9 @@ export class CreateWorkflowModalComponent implements OnInit {
   matcher = new MyErrorStateMatcher();
   snackbarConfig: MatSnackBarConfig;
 
+  // Store the socket listener
+  aiResponseListener: Subscription | undefined;
+
   @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
   @ViewChild('aiInput') aiInput: ElementRef;
 
@@ -174,7 +178,6 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.loadBucketsBoards(); // Load buckets and boards for source/destination options
     this.loadWorkflows(); // Load existing workflows for the board
     this.user = this.userService.user!;
-    //this.socketService.connect(this.user.userID, this.board.boardID);
 
     // Set the selected tab index if provided
     if (this.data.selectedTabIndex !== undefined) {
@@ -433,7 +436,7 @@ export class CreateWorkflowModalComponent implements OnInit {
       this.socketService.emit(SocketEvent.AI_MESSAGE, { posts, prompt });
 
       // 3. Listen for WebSocket events
-      const aiResponseListener = this.socketService.listen(
+      this.aiResponseListener = this.socketService.listen(
         SocketEvent.AI_RESPONSE,
         (data: any) => {
           try {
@@ -471,7 +474,9 @@ export class CreateWorkflowModalComponent implements OnInit {
             }
 
             if (data.status === 'Completed' || data.status === 'Error') {
-              aiResponseListener.unsubscribe();
+              if (this.aiResponseListener) { 
+                this.aiResponseListener.unsubscribe(); 
+              }
             }
 
             this.changeDetectorRef.detectChanges();
@@ -484,7 +489,9 @@ export class CreateWorkflowModalComponent implements OnInit {
                 error,
             });
             this.stopWaitingForAIResponse();
-            aiResponseListener.unsubscribe();
+            if (this.aiResponseListener) { 
+              this.aiResponseListener.unsubscribe(); 
+            }
           }
         }
       );
@@ -848,5 +855,11 @@ export class CreateWorkflowModalComponent implements OnInit {
       id: this.board.boardID,
       name: 'CK Workspace',
     };
+  }
+
+  ngOnDestroy() {
+    if (this.aiResponseListener) {  
+      this.aiResponseListener.unsubscribe(); 
+    }
   }
 }

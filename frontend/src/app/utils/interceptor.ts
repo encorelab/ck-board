@@ -27,7 +27,7 @@ export class APIInterceptor implements HttpInterceptor {
     const timeoutValue = Number(req.headers.get('timeout') || DEFAULT_TIMEOUT);
 
     const apiReq = req.clone({
-      url: `http://localhost:8001/api/${req.url}`,
+      url: `https://ck-board.oise.utoronto.ca/api/${req.url}`,
       setHeaders: {
         Authorization: `Bearer ${this.auth.token}`,
       },

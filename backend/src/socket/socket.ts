@@ -1,3 +1,4 @@
+import { Server } from 'http';
 import * as socketIO from 'socket.io';
 import { SocketEvent } from '../constants';
 import events from './events';
@@ -24,8 +25,10 @@ class Socket {
    * Initializes websocket server which will listen for users
    * joining boards and handle all board events.
    *
+   * @param server the http server
    * @returns void
    */
+
   init(redis: RedisClient) {
     const io = new socketIO.Server(8000, {
       cors: {
@@ -36,7 +39,7 @@ class Socket {
 
     this._io = io;
 
-    console.log('Socket server running at ' + 8000);
+    console.log('Socket server running...');
 
     io.on('connection', (socket) => {
       // this._socket = socket;

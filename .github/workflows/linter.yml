@@ -26,12 +26,12 @@ jobs:
 
       - name: Run Linter
         working-directory: ${{ matrix.directory }}
-        run: npm run style:linter
+        run: npm run style:linter --verbose
         env: 
           CI: false
 
       - name: Run Code Formatter
         working-directory: ${{ matrix.directory }}
-        run: npm run style:formatter
+        run: npm run style
         env: 
           CI: false

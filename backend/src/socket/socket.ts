@@ -32,7 +32,11 @@ class Socket {
   init(redis: RedisClient) {
     const io = new socketIO.Server(8000, {
       cors: {
-        origin: ['http://localhost:4200', 'http://localhost:4201', 'http://localhost:8001'],
+        origin: [
+          'http://localhost:4200',
+          'http://localhost:4201',
+          'http://localhost:8001',
+        ],
       },
       adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
     });

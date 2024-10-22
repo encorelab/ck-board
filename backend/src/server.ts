@@ -39,7 +39,7 @@ app.use(
   cors({
     origin: process.env.CKBOARD_SERVER_ADDRESS,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'cache', 'timeout'],
   })
 );
 app.use(bodyParser.json());

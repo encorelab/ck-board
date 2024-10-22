@@ -9,6 +9,7 @@ import {
 import { Observable, of } from 'rxjs';
 import { tap, timeout } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
+import { environment } from 'src/environments/environment';
 
 export const DEFAULT_TIMEOUT = 30000;
 
@@ -27,7 +28,7 @@ export class APIInterceptor implements HttpInterceptor {
     const timeoutValue = Number(req.headers.get('timeout') || DEFAULT_TIMEOUT);
 
     const apiReq = req.clone({
-      url: `https://ck-board.oise.utoronto.ca/api/${req.url}`,
+      url: `${environment.ckboardDomain}/api/${req.url}`,
       setHeaders: {
         Authorization: `Bearer ${this.auth.token}`,
       },

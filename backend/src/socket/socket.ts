@@ -5,6 +5,9 @@ import events from './events';
 import SocketManager from './socketManager';
 import RedisClient from '../utils/redis';
 import { createAdapter } from '@socket.io/redis-adapter';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 class Socket {
   private static _instance: Socket;
@@ -30,13 +33,26 @@ class Socket {
    */
 
   init(redis: RedisClient) {
+    const origins = [];
+
+    if (process.env.CKBOARD_SERVER_ADDRESS) {
+      try {
+        const url = new URL(process.env.CKBOARD_SERVER_ADDRESS);
+        if (url.protocol === 'https:' || url.protocol === 'http:') {
+          origins.push(process.env.CKBOARD_SERVER_ADDRESS);
+        } else {
+          console.error('Invalid protocol in CKBOARD_SERVER_ADDRESS.');
+        }
+      } catch (error) {
+        console.error('Invalid URL in CKBOARD_SERVER_ADDRESS.', error);
+      }
+    } else {
+      console.error('CKBOARD_SERVER_ADDRESS environment variable not set.');
+    }
+
     const io = new socketIO.Server(8000, {
       cors: {
-        origin: [
-          'http://localhost:4200',
-          'http://localhost:4201',
-          'http://localhost:8001',
-        ],
+        origin: origins
       },
       adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
     });

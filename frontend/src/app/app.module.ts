@@ -65,7 +65,7 @@ import { ToolbarMenuComponent } from './components/toolbar-menu/toolbar-menu.com
 import { ViewNavigationComponent } from './components/view-navigation/view-navigation.component';
 
 const config: SocketIoConfig = {
-  url: 'https://ck-board.oise.utoronto.ca/',
+  url: environment.socketUrl,
   options: {},
 };
 
@@ -125,8 +125,8 @@ export function tokenGetter() {
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
-        allowedDomains: ['https://ck-board.oise.utoronto.ca/'],
-        disallowedRoutes: ['https://ck-board.oise.utoronto.ca/api/auth'],
+        allowedDomains: [environment.ckboardDomain],
+        disallowedRoutes: [`${environment.ckboardDomain}/api/auth`],
       },
     }),
     SocketIoModule.forRoot(config),

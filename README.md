@@ -46,15 +46,9 @@ DB_URL=[MongoDB URL]
 DB_NAME=[MongoDB Name]
 JWT_SECRET=[JWT Secret Token]
 PORT=8001
-```
-
-**Google Vertex AI**
-
-This application utilizes Google Vertex AI for its AI Assistant feature. To enable this functionality, you'll need to set up the following environment variables:
-
-```
+CKBOARD_SERVER_ADDRESS=[For dev, use "http://localhost:4201"; for production, use server URL, e.g., "https://ck-board.oise.utoronto.ca"]
 GOOGLE_APPLICATION_CREDENTIALS="./secrets/keyfile.json"
-GOOGLE_CLOUD_PROJECT=ck-ai-assistant
+GOOGLE_CLOUD_PROJECT=[Google Cloud Project ID]
 ```
 
 **1. `GOOGLE_APPLICATION_CREDENTIALS`**

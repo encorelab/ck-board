@@ -43,7 +43,9 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-const staticFilesPath = process.env.STATIC_FILES_PATH || path.join('/site/wwwroot/frontend/dist/ck-board');
+const staticFilesPath =
+  process.env.STATIC_FILES_PATH ||
+  path.join('/site/wwwroot/frontend/dist/ck-board');
 app.use(express.static(staticFilesPath));
 const server = http.createServer(app);
 

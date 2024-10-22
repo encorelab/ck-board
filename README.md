@@ -46,6 +46,7 @@ DB_URL=[MongoDB URL]
 DB_NAME=[MongoDB Name]
 JWT_SECRET=[JWT Secret Token]
 PORT=8001
+STATIC_FILES_PATH=[for dev, use "./../../frontend/dist/ck-board"; for production, use "/site/wwwroot/frontend/dist/ck-board"]
 CKBOARD_SERVER_ADDRESS=[For dev, use "http://localhost:4201"; for production, use server URL, e.g., "https://ck-board.oise.utoronto.ca"]
 GOOGLE_APPLICATION_CREDENTIALS="./secrets/keyfile.json"
 GOOGLE_CLOUD_PROJECT=[Google Cloud Project ID]

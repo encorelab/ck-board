@@ -43,10 +43,7 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-const staticFilesPath =
-  process.env.STATIC_FILES_PATH ||
-  path.join('/site/wwwroot/frontend/dist/ck-board');
-app.use(express.static(staticFilesPath));
+app.use(express.static(path.join(__dirname, '../../frontend/dist/ck-board')));
 const server = http.createServer(app);
 
 const redis = new RedisClient({

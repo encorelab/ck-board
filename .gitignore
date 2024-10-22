@@ -3,3 +3,4 @@ node_modules
 /.vscode/launch.json
 .DS_Store
 dump.rdb
+backend/secrets

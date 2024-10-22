@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "cd frontend && npm install --legacy-peer-deps && npm install --save-dev @angular/cli && npm run build && cd ../backend && npm install --production=false && npm run build",
+    "build": "cd frontend && npm install --legacy-peer-deps --production=false && npm install --save-dev @angular/cli && npm run build && cd ../backend && npm install --production=false && npm run build",
     "start": "cd backend && npm start"
   },
   "engines": {

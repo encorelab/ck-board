@@ -63,14 +63,18 @@ class Socket {
    */
   private _handleConnection(io: socketIO.Server, socket: socketIO.Socket) {
     console.log(`New connection: Socket ID ${socket.id}`);
-
+  
+    socket.on('error', (err) => {
+      console.error(`Socket error: ${err.message}`);
+    });
+  
     socket.on('join', (user: string, room: string) => {
       socket.data.room = room;
       this._safeJoin(socket, user, room);
       this._listenForEvents(io, socket);
       this._logUserSocketsAndRooms(user);
     });
-
+  
     socket.on('leave', (user: string, room: string) => {
       socket.leave(room);
       console.log(`Socket ${socket.id} left room ${room}`);
@@ -78,16 +82,29 @@ class Socket {
       this._socketManager.removeBySocketId(socket.id);
       this._logUserSocketsAndRooms(user);
     });
-
-    socket.on('disconnect', () => {
-      console.log(`Socket ${socket.id} disconnected`);
-      this._cleanupSocket(socket);
-    });
-
+  
     socket.on('disconnectAll', (room: string) => {
       console.log(`Disconnecting all sockets from room: ${room}`);
       io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
       io.in(room).disconnectSockets(true);
+    });
+  
+    // *** Single 'connection' handler on io ***
+    io.on('connection', (socket) => {
+      console.log(`Client connected: ${socket.id}`);
+  
+      // *** Single 'disconnect' handler, calling _cleanupSocket ***
+      socket.on('disconnect', (reason) => {
+        console.log(`Client disconnected: ${reason}`);
+        this._cleanupSocket(socket); 
+      });
+    });
+  
+    io.engine.on('connection_error', (err) => {
+      console.error('Connection error:', err.req);
+      console.error('Code:', err.code); 
+      console.error('Message:', err.message); 
+      console.error('Context:', err.context); 
     });
   }
 

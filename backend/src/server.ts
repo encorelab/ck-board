@@ -35,20 +35,7 @@ const redisPort = (process.env.REDIS_PORT || 6379) as number;
 const redisPassword = process.env.REDIS_PASSWORD || '';
 
 const app = express();
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'cache',
-      'timeout',
-      'Upgrade',
-      'Connection',
-    ],
-  })
-);
+app.use(cors());
 app.use(bodyParser.json());
 
 const staticFilesPath = path.join(__dirname, '../../frontend/dist/ck-board');

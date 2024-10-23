@@ -63,6 +63,7 @@ import { AddLearnerModalComponent } from './components/add-learner-modal/add-lea
 import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component';
 import { ToolbarMenuComponent } from './components/toolbar-menu/toolbar-menu.component';
 import { ViewNavigationComponent } from './components/view-navigation/view-navigation.component';
+import { MarkdownModule } from 'ngx-markdown';
 
 const config: SocketIoConfig = {
   url: environment.socketUrl,
@@ -122,6 +123,7 @@ export function tokenGetter() {
     HttpClientModule,
     AppRoutingModule,
     FormsModule,
+    MarkdownModule.forRoot(),
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,

@@ -9,6 +9,15 @@ export const getById = async (id: string) => {
   }
 };
 
+export const getByName = async (name: string, boardID: string): Promise<BucketModel | null> => {
+  try {
+    const bucket = await Bucket.findOne({ name: name, boardID: boardID });
+    return bucket;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const getByBoardId = async (id: string) => {
   try {
     const buckets = await Bucket.find({ boardID: id });
@@ -95,6 +104,7 @@ export const removePost = async (id: string, posts: string[]) => {
 
 const dalBucket = {
   getById,
+  getByName,
   getByBoardId,
   getByPostId,
   create,

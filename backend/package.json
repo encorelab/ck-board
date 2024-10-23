@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@google-cloud/aiplatform": "^3.31.0",
+    "@google-cloud/vertexai": "^1.8.1",
     "@socket.io/redis-adapter": "^8.1.0",
     "@typegoose/typegoose": "^9.8.1",
     "@types/bcrypt": "^5.0.0",
@@ -17,7 +19,7 @@
     "mongoose": "^6.3.2",
     "mongoose-autopopulate": "^0.17.1",
     "nodemon": "^2.0.16",
-    "prettier": "^2.6.2",
+    "prettier": "^2.8.8",
     "socket.io": "^4.7.5",
     "uuid": "^8.3.2"
   },
@@ -46,6 +48,7 @@
     "@typescript-eslint/parser": "^5.22.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.17.0",
+    "eslint-config-prettier": "^9.1.0",
     "migrate-mongo": "^9.0.0",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",

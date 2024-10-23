@@ -55,6 +55,14 @@
               ],
               "outputHashing": "all"
             },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.stage.ts"
+                }
+              ]
+            },
             "development": {
               "buildOptimizer": false,
               "optimization": false,
@@ -71,6 +79,9 @@
           "configurations": {
             "production": {
               "browserTarget": "ck-board:build:production"
+            },
+            "staging": {
+              "browserTarget": "ck-board:build:staging"
             },
             "development": {
               "browserTarget": "ck-board:build:development"

@@ -35,7 +35,7 @@ class Socket {
   async init(redis: RedisClient) {
     try {
       const io = new socketIO.Server(8000, {
-        transports: ['websocket', 'polling'], 
+        transports: ['websocket'],
         cors: {
           origin: process.env.CKBOARD_SERVER_ADDRESS || 'http://localhost:4200', // Specific origin or localhost
           methods: ['GET', 'POST'],
@@ -48,7 +48,9 @@ class Socket {
       console.log('Socket server running on port 8000...');
 
       io.on('connection', (socket) => {
-        console.log(`New connection: Socket ID ${socket.id}, IP: ${socket.handshake.address}`);
+        console.log(
+          `New connection: Socket ID ${socket.id}, IP: ${socket.handshake.address}`
+        );
 
         // Log connection details (optional, but useful for debugging)
         console.log('Connection details:', {
@@ -59,7 +61,7 @@ class Socket {
             auth: socket.handshake.auth, // If using authentication
           },
         });
-        
+
         socket.on('join', (user: string, room: string) => {
           socket.data.room = room;
           this._safeJoin(socket, user, room);

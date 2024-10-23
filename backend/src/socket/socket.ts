@@ -52,6 +52,7 @@ class Socket {
 
     const io = new socketIO.Server(8000, {
       adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
+      transports: ['websocket'],
     });
 
     this._io = io;

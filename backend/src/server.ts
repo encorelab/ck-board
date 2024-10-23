@@ -51,7 +51,7 @@ const redis = new RedisClient({
 
 const socket = Socket.Instance;
 
-socket.init(redis);
+socket.init(server, redis);
 
 app.use('/api/projects', isAuthenticated, projects);
 app.use('/api/boards', isAuthenticated, boards);

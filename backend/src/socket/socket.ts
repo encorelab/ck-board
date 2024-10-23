@@ -32,69 +32,90 @@ class Socket {
    * @returns void
    */
 
-  init(redis: RedisClient) {
-    const origins = [];
-
-    if (process.env.CKBOARD_SERVER_ADDRESS) {
-      try {
-        const url = new URL(process.env.CKBOARD_SERVER_ADDRESS);
-        if (url.protocol === 'https:' || url.protocol === 'http:') {
-          origins.push(process.env.CKBOARD_SERVER_ADDRESS);
-        } else {
-          console.error('Invalid protocol in CKBOARD_SERVER_ADDRESS.');
-        }
-      } catch (error) {
-        console.error('Invalid URL in CKBOARD_SERVER_ADDRESS.', error);
-      }
-    } else {
-      console.error('CKBOARD_SERVER_ADDRESS environment variable not set.');
-    }
-
-    const io = new socketIO.Server(8000, {
-      cors: {
-        origin: origins,
-      },
-      adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
-    });
-
-    this._io = io;
-
-    console.log('Socket server running...');
-
-    io.on('connection', (socket) => {
-      // this._socket = socket;
-
-      socket.on('join', (user: string, room: string) => {
-        socket.data.room = room;
-        this._safeJoin(socket, user, room);
-        this._listenForEvents(io, socket);
-        this._logUserSocketsAndRooms(user);
+  async init(server: Server, redis: RedisClient) {
+    try {
+      const io = new socketIO.Server(server, {
+        transports: ['websocket', 'polling'],
+        cors: {
+          origin: process.env.CKBOARD_SERVER_ADDRESS || 'http://localhost:4200', // Specific origin or localhost
+          methods: ['GET', 'POST'],
+        },
+        adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
       });
 
-      socket.on('leave', (user: string, room: string) => {
-        socket.leave(room);
-        console.log(`Socket ${socket.id} left room ${room}`);
-        events.map((e) => socket.removeAllListeners(e.type.toString()));
+      this._io = io;
 
-        // Remove the specific socketId for the user from the SocketManager
-        this._socketManager.removeBySocketId(socket.id);
-        this._logUserSocketsAndRooms(user);
-      });
+      console.log('Socket server running on port 8000...');
 
-      socket.on('disconnect', () => {
-        const rooms = socket.rooms;
-        rooms.forEach((room) => {
-          socket.leave(room);
-          // Potentially update or notify the room of the disconnect
+      io.on('connection', (socket) => {
+        console.log(
+          `New connection: Socket ID ${socket.id}, IP: ${socket.handshake.address}`
+        );
+
+        // Log connection details (optional, but useful for debugging)
+        console.log('Connection details:', {
+          id: socket.id,
+          handshake: {
+            headers: socket.handshake.headers,
+            query: socket.handshake.query,
+            auth: socket.handshake.auth, // If using authentication
+          },
         });
-        this._socketManager.removeBySocketId(socket.id);
+
+        socket.on('join', (user: string, room: string) => {
+          socket.data.room = room;
+          this._safeJoin(socket, user, room);
+          this._listenForEvents(io, socket);
+          this._logUserSocketsAndRooms(user);
+        });
+
+        socket.on('leave', (user: string, room: string) => {
+          socket.leave(room);
+          console.log(`Socket ${socket.id} left room ${room}`);
+          events.map((e) => socket.removeAllListeners(e.type.toString()));
+
+          // Remove the specific socketId for the user from the SocketManager
+          this._socketManager.removeBySocketId(socket.id);
+          this._logUserSocketsAndRooms(user);
+        });
+
+        socket.on('disconnect', () => {
+          const rooms = socket.rooms;
+          rooms.forEach((room) => {
+            socket.leave(room);
+            // Potentially update or notify the room of the disconnect
+          });
+          this._socketManager.removeBySocketId(socket.id);
+        });
+
+        socket.on('disconnectAll', async (room: string) => {
+          io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
+          io.in(room).disconnectSockets(true);
+        });
+
+        // Error handling within the connection handler
+        socket.on('error', (error) => {
+          console.error(`Socket ${socket.id} error:`, error);
+        });
       });
 
-      socket.on('disconnectAll', async (room: string) => {
-        io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
-        io.in(room).disconnectSockets(true);
+      // Connection error handling for the server
+      io.engine.on('connection_error', (err) => {
+        console.error('Socket.IO connection error:', {
+          code: err.code,
+          message: err.message,
+          context: err.context,
+          request: {
+            ip: err.req.ip,
+            url: err.req.url,
+            headers: err.req.headers,
+          },
+          stack: err.stack,
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error initializing WebSocket server:', error);
+    }
   }
 
   /**

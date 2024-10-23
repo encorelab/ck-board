@@ -39,6 +39,9 @@ async function getEndpointServiceClient(): Promise<EndpointServiceClient> {
     return client;
   }
 
+  // Wait for 3 seconds before the first attempt
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
   const keyfilePath = './secrets/keyfile.json';
   if (!fs.existsSync(keyfilePath)) {
     console.log('Waiting for keyfile...');

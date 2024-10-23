@@ -37,9 +37,16 @@ const redisPassword = process.env.REDIS_PASSWORD || '';
 const app = express();
 app.use(
   cors({
-    origin: process.env.CKBOARD_SERVER_ADDRESS,
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'cache', 'timeout'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'cache',
+      'timeout',
+      'Upgrade',
+      'Connection',
+    ],
   })
 );
 app.use(bodyParser.json());

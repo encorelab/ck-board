@@ -32,126 +32,141 @@ class Socket {
    * @returns void
    */
 
-  async init(redis: RedisClient) {
-    try {
-      // Connect Redis clients for the adapter
-      await Promise.all([redis.getPublisher.connect(), redis.getSubscriber.connect()]);
+  init(redis: RedisClient) {
+    const origins = [];
 
-      const io = new socketIO.Server(8000, {
-        transports: ['websocket', 'polling'], // Ensure WebSocket upgrades are allowed
-        cors: {
-          origin: process.env.CKBOARD_SERVER_ADDRESS || '*',
-          methods: ['GET', 'POST'],
-        },
-        adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
+    if (process.env.CKBOARD_SERVER_ADDRESS) {
+      try {
+        const url = new URL(process.env.CKBOARD_SERVER_ADDRESS);
+        if (url.protocol === 'https:' || url.protocol === 'http:') {
+          origins.push(process.env.CKBOARD_SERVER_ADDRESS);
+        } else {
+          console.error('Invalid protocol in CKBOARD_SERVER_ADDRESS.');
+        }
+      } catch (error) {
+        console.error('Invalid URL in CKBOARD_SERVER_ADDRESS.', error);
+      }
+    } else {
+      console.error('CKBOARD_SERVER_ADDRESS environment variable not set.');
+    }
+
+    const io = new socketIO.Server(8000, {
+      cors: {
+        origin: origins,
+      },
+      adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
+    });
+
+    this._io = io;
+
+    console.log('Socket server running...');
+
+    io.on('connection', (socket) => {
+      // this._socket = socket;
+
+      socket.on('join', (user: string, room: string) => {
+        socket.data.room = room;
+        this._safeJoin(socket, user, room);
+        this._listenForEvents(io, socket);
+        this._logUserSocketsAndRooms(user);
       });
 
-      this._io = io;
-      console.log('Socket server running on port 8000...');
+      socket.on('leave', (user: string, room: string) => {
+        socket.leave(room);
+        console.log(`Socket ${socket.id} left room ${room}`);
+        events.map((e) => socket.removeAllListeners(e.type.toString()));
 
-      // Handle socket connections
-      io.on('connection', (socket) => this._handleConnection(io, socket));
-    } catch (error) {
-      console.error('Error initializing WebSocket server:', error);
-    }
-  }
+        // Remove the specific socketId for the user from the SocketManager
+        this._socketManager.removeBySocketId(socket.id);
+        this._logUserSocketsAndRooms(user);
+      });
 
-  /**
-   * Handles new socket connections.
-   * @param io The WebSocket server instance.
-   * @param socket The connected socket.
-   */
-  private _handleConnection(io: socketIO.Server, socket: socketIO.Socket) {
-    console.log(`New connection: Socket ID ${socket.id}`);
+      socket.on('disconnect', () => {
+        const rooms = socket.rooms;
+        rooms.forEach((room) => {
+          socket.leave(room);
+          // Potentially update or notify the room of the disconnect
+        });
+        this._socketManager.removeBySocketId(socket.id);
+      });
 
-    socket.on('join', (user: string, room: string) => {
-      socket.data.room = room;
-      this._safeJoin(socket, user, room);
-      this._listenForEvents(io, socket);
-      this._logUserSocketsAndRooms(user);
-    });
-
-    socket.on('leave', (user: string, room: string) => {
-      socket.leave(room);
-      console.log(`Socket ${socket.id} left room ${room}`);
-      events.forEach((e) => socket.removeAllListeners(e.type.toString()));
-      this._socketManager.removeBySocketId(socket.id);
-      this._logUserSocketsAndRooms(user);
-    });
-
-    socket.on('disconnect', () => {
-      console.log(`Socket ${socket.id} disconnected`);
-      this._cleanupSocket(socket);
-    });
-
-    socket.on('disconnectAll', (room: string) => {
-      console.log(`Disconnecting all sockets from room: ${room}`);
-      io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
-      io.in(room).disconnectSockets(true);
+      socket.on('disconnectAll', async (room: string) => {
+        io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
+        io.in(room).disconnectSockets(true);
+      });
     });
   }
 
   /**
    * Emits an event to a specific room.
+   *
+   * @param event The type of event being emitted.
+   * @param eventData Data associated with the event.
+   * @param roomId The ID of the room to which the event should be emitted.
+   * @param toSender Indicates whether the event should also be sent to the sender.
    */
   emit(event: SocketEvent, eventData: unknown, roomId: string): void {
-    if (!this._io) throw new Error('IO not initialized. Please invoke init() first.');
+    if (!this._io) {
+      throw new Error('IO not initialized. Please invoke init() first.');
+    }
+
     this._io.to(roomId).emit(event, eventData);
   }
 
   /**
-   * Listens for events on a specific socket.
+   * Setup socket to listen for all events from connected user,
+   * handle them accordingly, then emit resulting event back to all users.
+   *
+   * @param io socket server
+   * @param socket socket which will act on events
+   * @returns void
    */
   private _listenForEvents(io: socketIO.Server, socket: socketIO.Socket) {
-    events.forEach((event) =>
+    events.map((event) =>
       socket.on(event.type, async (data) => {
-        try {
-          const result = await event.handleEvent(data);
-          await event.handleResult(io, socket, result as never);
-        } catch (error) {
-          console.error(`Error handling event ${event.type}:`, error);
-        }
+        const result = await event.handleEvent(data);
+        return await event.handleResult(io, socket, result as never);
       })
     );
   }
 
   /**
-   * Allows a socket to join a room, ensuring safe management of rooms.
+   * Allow user to join new room, while always leaving the previous
+   * room they were in (if applicable).
+   *
+   * @param socket socket which will join/leave room
+   * @param nextRoom new room to join
+   * @returns void
    */
   private _safeJoin(socket: socketIO.Socket, user: string, nextRoom: string) {
     socket.join(nextRoom);
     this._socketManager.add(user, socket.id);
-    console.log(`Socket ${socket.id} (User ${user}) joined room ${nextRoom}`);
+    console.log(`Socket ${socket.id} (userID ${user}) joined room ${nextRoom}`);
   }
 
   /**
-   * Logs the current sockets and rooms for a given user.
+   * Logs the sockets and their corresponding rooms for a given user.
+   *
+   * @param userId The ID of the user whose sockets and rooms to log.
    */
   private _logUserSocketsAndRooms(userId: string): void {
     const socketIds = this._socketManager.get(userId);
-    if (!socketIds) return;
+    if (!socketIds) {
+      return;
+    }
 
-    console.log(`User ${userId} has the following sockets and rooms:`);
+    console.log(`User ${userId} =>`);
     socketIds.forEach((socketId) => {
       const socket = this._io?.sockets.sockets.get(socketId);
       if (socket && socket.data.room) {
         console.log(`\tSocket ID: ${socketId}, Room: ${socket.data.room}`);
       } else {
-        console.log(`\tSocket ID: ${socketId} is not connected or has no room.`);
+        console.log(
+          `\tSocket ID: ${socketId} is not currently connected or has no room.`
+        );
       }
     });
     console.log('');
-  }
-
-  /**
-   * Cleans up a socket's rooms and listeners on disconnect.
-   */
-  private _cleanupSocket(socket: socketIO.Socket) {
-    socket.rooms.forEach((room) => {
-      socket.leave(room);
-      console.log(`Socket ${socket.id} left room ${room}`);
-    });
-    this._socketManager.removeBySocketId(socket.id);
   }
 }
 

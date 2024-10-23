@@ -13,6 +13,7 @@ import {
   HarmBlockThreshold,
 } from '@google-cloud/vertexai';
 import { EndpointServiceClient } from '@google-cloud/aiplatform';
+import * as fs from 'fs';
 
 global.Headers = Headers;
 
@@ -27,28 +28,48 @@ type ErrorInfo = {
   message?: string;
 };
 
-// Specifies the location of the API endpoint
 const clientOptions = {
   apiEndpoint: 'northamerica-northeast1-aiplatform.googleapis.com',
 };
-const client = new EndpointServiceClient(clientOptions);
+
+// Function to initialize the EndpointServiceClient with delayed checking
+let client: EndpointServiceClient | null = null;
+async function getEndpointServiceClient(): Promise<EndpointServiceClient> {
+  if (client) {
+    return client;
+  }
+
+  const keyfilePath = './secrets/keyfile.json';
+  if (!fs.existsSync(keyfilePath)) {
+    console.log('Waiting for keyfile...');
+    await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds
+    return getEndpointServiceClient(); // Retry
+  }
+
+  client = new EndpointServiceClient(clientOptions);
+  return client;
+}
 
 async function listEndpoints() {
-  const projectId = process.env.GOOGLE_CLOUD_PROJECT;
-  const location = 'northamerica-northeast1';
-
-  // Configure the parent resource
-  const parent = `projects/${projectId}/locations/${location}`;
-  const request = { parent };
-
   try {
+    const client = await getEndpointServiceClient(); // Get the client
+
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT;
+    const location = 'northamerica-northeast1';
+
+    // Configure the parent resource
+    const parent = `projects/${projectId}/locations/${location}`;
+    const request = { parent };
+
     const [result] = await client.listEndpoints(request);
     for (const endpoint of result) {
-      console.log(`\nEndpoint name: ${endpoint.name}`);
+      console.log(`\nEndpoint name: ${endpoint.name}`);   
+
       console.log(`Display name: ${endpoint.displayName}`);
       if (endpoint.deployedModels?.[0]) {
         console.log(
-          `First deployed model: ${endpoint.deployedModels[0].model}`
+          `First deployed model: ${endpoint.deployedModels[0].model}`   
+
         );
       }
     }

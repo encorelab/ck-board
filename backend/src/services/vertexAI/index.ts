@@ -44,7 +44,7 @@ function checkKeyFile(keyfilePath: string): boolean {
     const parsedContent = JSON.parse(keyfileContent);
 
     if (parsedContent) {
-      console.log('Found keyfile contents:\n' + parsedContent);
+      console.log('Found GOOGLE_APPLICATION_CREDENTIALS keyfile contents.');
     }
 
     if (!parsedContent.client_email || !parsedContent.private_key) {

@@ -32,6 +32,42 @@ const clientOptions = {
   apiEndpoint: 'northamerica-northeast1-aiplatform.googleapis.com',
 };
 
+// Function to check for keyfile and its content
+function checkKeyFile(keyfilePath: string): boolean {
+  if (!fs.existsSync(keyfilePath)) {
+    console.error(`Error: The file at "${keyfilePath}" does not exist.`);
+    return false;
+  }
+
+  try {
+    const keyfileContent = fs.readFileSync(keyfilePath, 'utf-8');
+    const parsedContent = JSON.parse(keyfileContent);
+
+    if (parsedContent) {
+      console.log('Found keyfile contents:\n' + parsedContent);
+    }
+
+    if (!parsedContent.client_email || !parsedContent.private_key) {
+      console.error(
+        `Error: The file at "${keyfilePath}" does not contain valid credentials.`
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(
+      `Error: Could not read or parse the file at "${keyfilePath}".`,
+      error
+    );
+    return false;
+  }
+}
+
+// Check the keyfile before initializing the client
+const keyfilePath = process.env.GOOGLE_CREDENTIALS || './secrets/keyfile.json';
+checkKeyFile(keyfilePath);
+
 // Function to initialize the EndpointServiceClient with delayed checking
 let client: EndpointServiceClient | null = null;
 async function getEndpointServiceClient(): Promise<EndpointServiceClient> {
@@ -66,13 +102,11 @@ async function listEndpoints() {
 
     const [result] = await client.listEndpoints(request);
     for (const endpoint of result) {
-      console.log(`\nEndpoint name: ${endpoint.name}`);   
-
+      console.log(`\nEndpoint name: ${endpoint.name}`);
       console.log(`Display name: ${endpoint.displayName}`);
       if (endpoint.deployedModels?.[0]) {
         console.log(
-          `First deployed model: ${endpoint.deployedModels[0].model}`   
-
+          `First deployed model: ${endpoint.deployedModels[0].model}`
         );
       }
     }
@@ -179,7 +213,7 @@ function isValidJSON(str: string): boolean {
       if (key === 'create_bucket_and_add_posts') {
         if (
           !jsonObject[key].every(
-            (item: { name: string, postIDs: string[] }) => 
+            (item: { name: string; postIDs: string[] }) =>
               typeof item.name === 'string' && Array.isArray(item.postIDs)
           )
         ) {
@@ -389,8 +423,12 @@ async function sendMessage(
   }
 }
 
-async function performDatabaseOperations(response: any, posts: any[], socket: socketIO.Socket) { 
-  const validPostIds = new Set(posts.map(post => post.postID));
+async function performDatabaseOperations(
+  response: any,
+  posts: any[],
+  socket: socketIO.Socket
+) {
+  const validPostIds = new Set(posts.map((post) => post.postID));
 
   if (response.create_bucket) {
     for (const bucket of response.create_bucket) {
@@ -398,7 +436,7 @@ async function performDatabaseOperations(response: any, posts: any[], socket: so
 
       const newBucket: BucketModel = {
         bucketID: generateUniqueID(),
-        boardID: posts[0].boardID, 
+        boardID: posts[0].boardID,
         name: bucketName,
         posts: [],
       };
@@ -423,7 +461,9 @@ async function performDatabaseOperations(response: any, posts: any[], socket: so
       };
       const savedBucket = await dalBucket.create(newBucket);
 
-      const validPostIDsToAdd = postIDs.filter((id: string) => validPostIds.has(id));
+      const validPostIDsToAdd = postIDs.filter((id: string) =>
+        validPostIds.has(id)
+      );
       if (validPostIDsToAdd.length > 0) {
         await dalBucket.addPost(savedBucket.bucketID, validPostIDsToAdd);
 
@@ -432,7 +472,7 @@ async function performDatabaseOperations(response: any, posts: any[], socket: so
 
         // Emit post update events for each post added to the bucket
         for (const postID of validPostIDsToAdd) {
-          const updatedPost = await dalPost.getById(postID); 
+          const updatedPost = await dalPost.getById(postID);
           if (updatedPost) {
             socket.emit(SocketEvent.POST_UPDATE, updatedPost);
           }
@@ -447,15 +487,19 @@ async function performDatabaseOperations(response: any, posts: any[], socket: so
     const actionsByBucket: Record<string, string[]> = {};
 
     for (const action of response.add_post_to_bucket) {
-      const { bucketID, postID, name } = action; 
+      const { bucketID, postID, name } = action;
 
       if (validPostIds.has(postID)) {
         if (bucketID) {
-          actionsByBucket[bucketID] = (actionsByBucket[bucketID] || []).concat(postID);
-        } else if (name) { 
-          const bucket = await dalBucket.getByName(name, posts[0].boardID); 
+          actionsByBucket[bucketID] = (actionsByBucket[bucketID] || []).concat(
+            postID
+          );
+        } else if (name) {
+          const bucket = await dalBucket.getByName(name, posts[0].boardID);
           if (bucket) {
-            actionsByBucket[bucket.bucketID] = (actionsByBucket[bucket.bucketID] || []).concat(postID);
+            actionsByBucket[bucket.bucketID] = (
+              actionsByBucket[bucket.bucketID] || []
+            ).concat(postID);
           } else {
             console.log(`Bucket with name "${name}" not found`);
           }
@@ -493,11 +537,15 @@ async function performDatabaseOperations(response: any, posts: any[], socket: so
 
       if (validPostIds.has(postID)) {
         if (bucketID) {
-          actionsByBucket[bucketID] = (actionsByBucket[bucketID] || []).concat(postID);
+          actionsByBucket[bucketID] = (actionsByBucket[bucketID] || []).concat(
+            postID
+          );
         } else if (name) {
           const bucket = await dalBucket.getByName(name, posts[0].boardID);
           if (bucket) {
-            actionsByBucket[bucket.bucketID] = (actionsByBucket[bucket.bucketID] || []).concat(postID);
+            actionsByBucket[bucket.bucketID] = (
+              actionsByBucket[bucket.bucketID] || []
+            ).concat(postID);
           } else {
             console.log(`Bucket with name "${name}" not found`);
           }
@@ -532,7 +580,7 @@ async function performDatabaseOperations(response: any, posts: any[], socket: so
       const postID = post.postID;
       if (validPostIds.has(postID)) {
         const updatedPost = await dalPost.update(postID, {
-          type: PostType.BOARD, 
+          type: PostType.BOARD,
         });
         console.log('Added post to canvas:', updatedPost);
 
@@ -549,14 +597,16 @@ async function performDatabaseOperations(response: any, posts: any[], socket: so
       const postID = post.postID;
       if (validPostIds.has(postID)) {
         const updatedPost = await dalPost.update(postID, {
-          type: PostType.BUCKET, 
+          type: PostType.BUCKET,
         });
         console.log('Removed post from canvas:', updatedPost);
 
         // Emit post update event
         socket.emit(SocketEvent.POST_DELETE, postID);
       } else {
-        console.log(`Skipping invalid postID ${postID} for removing from canvas`);
+        console.log(
+          `Skipping invalid postID ${postID} for removing from canvas`
+        );
       }
     }
   }
@@ -627,7 +677,7 @@ async function constructAndSendMessage(
 async function fetchAndFormatBuckets(posts: any[]): Promise<any[]> {
   // Return empty list if no posts
   if (!posts || posts.length === 0) {
-    return []; 
+    return [];
   }
 
   // Fetch ALL buckets for the board

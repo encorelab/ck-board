@@ -65,7 +65,7 @@ function checkKeyFile(keyfilePath: string): boolean {
 }
 
 // Check the keyfile before initializing the client
-const keyfilePath = process.env.GOOGLE_CREDENTIALS || './secrets/keyfile.json';
+const keyfilePath = process.env.GOOGLE_APPLICATION_CREDENTIALS || './secrets/keyfile.json';
 checkKeyFile(keyfilePath);
 
 // Function to initialize the EndpointServiceClient with delayed checking

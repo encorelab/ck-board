@@ -55,6 +55,7 @@ class Socket {
         origin: origins,
       },
       adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
+      transports: ['websocket'],
     });
 
     this._io = io;

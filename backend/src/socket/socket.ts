@@ -34,42 +34,6 @@ class Socket {
 
   async init(redis: RedisClient) {
     try {
-      // ... (Redis connection logic remains the same)
-
-<<<<<<< Updated upstream
-    if (process.env.CKBOARD_SERVER_ADDRESS) {
-      try {
-        const url = new URL(process.env.CKBOARD_SERVER_ADDRESS);
-        if (url.protocol === 'https:' || url.protocol === 'http:') {
-          origins.push(process.env.CKBOARD_SERVER_ADDRESS);
-        } else {
-          console.error('Invalid protocol in CKBOARD_SERVER_ADDRESS.');
-        }
-      } catch (error) {
-        console.error('Invalid URL in CKBOARD_SERVER_ADDRESS.', error);
-      }
-    } else {
-      console.error('CKBOARD_SERVER_ADDRESS environment variable not set.');
-    }
-
-    const io = new socketIO.Server(8000, {
-      adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
-      transports: ['websocket'],
-    });
-
-    this._io = io;
-
-    console.log('Socket server running...');
-
-    io.on('connection', (socket) => {
-      // this._socket = socket;
-
-      socket.on('join', (user: string, room: string) => {
-        socket.data.room = room;
-        this._safeJoin(socket, user, room);
-        this._listenForEvents(io, socket);
-        this._logUserSocketsAndRooms(user);
-=======
       const io = new socketIO.Server(8000, {
         transports: ['websocket', 'polling'], 
         cors: {
@@ -77,7 +41,6 @@ class Socket {
           methods: ['GET', 'POST'],
         },
         adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
->>>>>>> Stashed changes
       });
 
       this._io = io;
@@ -132,24 +95,25 @@ class Socket {
         socket.on('error', (error) => {
           console.error(`Socket ${socket.id} error:`, error);
         });
-    });
-
-    // Connection error handling for the server
-    io.engine.on('connection_error', (err) => {
-      console.error('Socket.IO connection error:', {
-        code: err.code,
-        message: err.message,
-        context: err.context,
-        request: {
-          ip: err.req.ip,
-          url: err.req.url,
-          headers: err.req.headers,
-        },
-        stack: err.stack,
       });
-    });
-  } catch (error) {
-    console.error('Error initializing WebSocket server:', error);
+
+      // Connection error handling for the server
+      io.engine.on('connection_error', (err) => {
+        console.error('Socket.IO connection error:', {
+          code: err.code,
+          message: err.message,
+          context: err.context,
+          request: {
+            ip: err.req.ip,
+            url: err.req.url,
+            headers: err.req.headers,
+          },
+          stack: err.stack,
+        });
+      });
+    } catch (error) {
+      console.error('Error initializing WebSocket server:', error);
+    }
   }
 
   /**

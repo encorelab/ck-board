@@ -51,9 +51,6 @@ class Socket {
     }
 
     const io = new socketIO.Server(8000, {
-      cors: {
-        origin: origins,
-      },
       adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
     });
 

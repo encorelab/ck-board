@@ -43,10 +43,10 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-const staticFilesPath =
-  process.env.STATIC_FILES_PATH ||
-  path.join('/site/wwwroot/frontend/dist/ck-board');
+
+const staticFilesPath = path.join(__dirname, '../../frontend/dist/ck-board');
 app.use(express.static(staticFilesPath));
+
 const server = http.createServer(app);
 
 const redis = new RedisClient({
@@ -72,6 +72,10 @@ app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(staticFilesPath, 'index.html'));
+});
 
 const shutdown = async () => {
   await redis.disconnect();

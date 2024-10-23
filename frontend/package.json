@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "node server.js",
-    "build": "ng build --configuration production",
+    "build": "ng build --configuration=staging",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "style:linter": "eslint . --fix --ext .js,.jsx,.ts,.tsx",
@@ -14,8 +14,11 @@
   },
   "private": true,
   "dependencies": {
+    "@angular-devkit/build-angular": "^15.2.11",
     "@angular/animations": "^15.2.10",
     "@angular/cdk": "^15.2.9",
+    "@angular/cli": "^15.2.11",
+    "@angular/compiler-cli": "^15.2.10",
     "@angular/common": "^15.2.10",
     "@angular/compiler": "^15.2.10",
     "@angular/core": "^15.2.10",
@@ -25,6 +28,7 @@
     "@angular/platform-browser-dynamic": "^15.2.10",
     "@angular/router": "^15.2.10",
     "@auth0/angular-jwt": "^5.0.2",
+    "@types/fabric": "^4.5.1",
     "canvas-confetti": "^1.5.1",
     "dayjs": "^1.11.8",
     "export-to-csv": "^0.2.1",
@@ -44,18 +48,15 @@
     "swiper": "^8.4.7",
     "tslib": "^2.7.0",
     "uuid": "^8.3.2",
-    "zone.js": "~0.11.4"
+    "zone.js": "~0.11.4",
+    "typescript": "~4.9.5"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^15.2.11",
     "@angular-eslint/builder": "15.2.1",
     "@angular-eslint/eslint-plugin": "15.2.1",
     "@angular-eslint/eslint-plugin-template": "15.2.1",
     "@angular-eslint/schematics": "15.2.1",
     "@angular-eslint/template-parser": "15.2.1",
-    "@angular/cli": "^15.2.11",
-    "@angular/compiler-cli": "^15.2.10",
-    "@types/fabric": "^4.5.1",
     "@types/file-saver": "^2.0.5",
     "@types/jasmine": "~3.6.0",
     "@types/node": "^18.19.50",
@@ -68,7 +69,6 @@
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.0.3",
     "karma-jasmine": "~4.0.0",
-    "karma-jasmine-html-reporter": "^1.5.0",
-    "typescript": "~4.9.5"
+    "karma-jasmine-html-reporter": "^1.5.0"
   }
 }

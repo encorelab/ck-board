@@ -35,7 +35,7 @@ class Socket {
   async init(server: Server, redis: RedisClient) {
     try {
       const io = new socketIO.Server(server, {
-        transports: ['websocket'],
+        transports: ['websocket', 'polling'],
         cors: {
           origin: process.env.CKBOARD_SERVER_ADDRESS || 'http://localhost:4200', // Specific origin or localhost
           methods: ['GET', 'POST'],

@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost/api',
-  socketUrl: 'http://localhost:8000',
+  socketUrl: 'http://localhost:8001',
   ckboardDomain: 'http://localhost:8001',
 };
 

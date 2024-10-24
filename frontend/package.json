@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "node server.js",
-    "build": "ng build --configuration=staging",
+    "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "style:linter": "eslint . --fix --ext .js,.jsx,.ts,.tsx",

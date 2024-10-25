@@ -26,19 +26,6 @@ export class SocketService {
 
     this.socket.on('connect_error', (error: Error) => {
       console.error('Socket connection error:', error);
-
-      if (this.retryCount < this.maxRetries) {
-        this.retryCount++;
-        this.retryInterval *= 2; 
-        const jitter = Math.random() * this.retryInterval;
-        const nextRetryInterval = this.retryInterval + jitter;
-
-        setTimeout(() => {
-          this.connect(userID, boardID); 
-        }, nextRetryInterval);
-      } else {
-        console.error('Max retry attempts reached. Giving up.');
-      }
     });
   }
 

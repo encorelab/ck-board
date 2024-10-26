@@ -450,8 +450,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
                 break;
               }
               case 'Completed': {
-                const escapedResponse = this.escapeJsonResponse(data.response);
-                this.aiResponse = this.markdownToHtml(escapedResponse || '');
+                const dataResponse = data.response;
+                this.aiResponse = this.markdownToHtml(dataResponse || '');
                 this.chatHistory.push({
                   role: 'assistant',
                   content: this.aiResponse,
@@ -497,33 +497,6 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       );
     });
     this.isProcessingAIRequest = false;
-  }
-
-  private escapeJsonResponse(response: string): string {
-    if (!response) {
-      return '';
-    }
-
-    const responseStartIndex =
-      response.indexOf('"response": "') + '"response": "'.length;
-    const responseEndIndex = response.indexOf('<END>');
-
-    if (responseStartIndex === -1 || responseEndIndex === -1) {
-      console.warn('Invalid response format:', response);
-      return response; // Or handle the error differently
-    }
-
-    const responseValue = response.substring(
-      responseStartIndex,
-      responseEndIndex
-    );
-    const escapedValue = JSON.stringify(responseValue).slice(1, -1); // Escape special characters
-
-    return (
-      response.substring(0, responseStartIndex) +
-      escapedValue +
-      response.substring(responseEndIndex)
-    );
   }
 
   // Method to scroll the div to the bottom

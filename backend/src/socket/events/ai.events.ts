@@ -1,4 +1,3 @@
-// ai.events.ts
 import { Server, Socket } from 'socket.io';
 import { SocketEvent } from '../../constants';
 import { sendMessage } from '../../services/vertexAI';
@@ -6,9 +5,10 @@ import { SocketPayload } from '../types/event.types'; // Import the type for Soc
 
 // Define a type for the AI message data
 interface AiMessageData {
-  boardID: string;
   posts: any[]; // Or a more specific type for your posts
   prompt: string;
+  boardId: string;
+  userId: string;
 }
 
 class AiMessage {
@@ -16,18 +16,20 @@ class AiMessage {
 
   static async handleEvent(
     data: SocketPayload<AiMessageData>
-  ): Promise<{ posts: any[]; prompt: string }> {
-    const { posts, prompt } = data.eventData;
+  ): Promise<{ posts: any[]; prompt: string; boardId: string; userId: string }> {
+    const { posts, prompt, boardId, userId } = data.eventData;
     // ... any necessary data processing or validation ...
-    return { posts, prompt };
+    return { posts, prompt, boardId, userId };
   }
 
   static async handleResult(
     io: Server,
     socket: Socket,
-    result: { posts: any[]; prompt: string; boardID: string }
+    result: { posts: any[]; prompt: string; boardId: string; userId: string }
   ): Promise<void> {
-    const { posts, prompt } = result;
+    const { posts, prompt, boardId, userId } = result;
+    socket.data.boardId = boardId;
+    socket.data.userId = userId;
     sendMessage(posts, prompt, socket);
   }
 }

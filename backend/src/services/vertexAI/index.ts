@@ -1,5 +1,6 @@
 import dalVote from '../../repository/dalVote';
 import dalBucket from '../../repository/dalBucket';
+import dalChatMessage from '../../repository/dalChatMessage';
 import { BucketModel } from '../../models/Bucket';
 import { generateUniqueID } from '../../utils/Utils';
 import dalPost from '../../repository/dalPost';
@@ -288,6 +289,14 @@ function removeJsonMarkdown(text: string): string {
   return text.replace(pattern, '$1');
 }
 
+function removeEnd(str: string): string {
+  const endIndex = str.indexOf('<END>');
+  if (endIndex !== -1) {
+    return str.substring(0, endIndex);
+  }
+  return str; // Return original string if <END> is not found
+}
+
 async function sendMessage(
   posts: any[],
   prompt: string,
@@ -296,6 +305,17 @@ async function sendMessage(
   try {
     // Send an initial acknowledgment
     socket.emit(SocketEvent.AI_RESPONSE, { status: 'Received' });
+
+    const userId = socket.data.userId;
+    const boardId = socket.data.boardId;
+
+    // Save user prompt
+    await dalChatMessage.save({
+      userId: userId, 
+      boardId: boardId,
+      role: 'user',
+      content: prompt 
+    });
 
     // 1. Fetch Upvote Counts and Create Map
     const upvoteMap = await fetchUpvoteCounts(posts);
@@ -311,7 +331,7 @@ async function sendMessage(
     );
 
     // 4. Fetch and Format Buckets
-    const bucketsToSend = await fetchAndFormatBuckets(posts);
+    const bucketsToSend = await fetchAndFormatBuckets(boardId);
 
     // 5. Construct and Send Message to LLM (streaming)
     constructAndSendMessage(postsWithBucketIds, bucketsToSend, prompt).then(
@@ -337,7 +357,6 @@ async function sendMessage(
           // Async IIFE
           for await (const item of stream) {
             partialResponse += item.candidates[0].content.parts[0].text;
-            // console.log("Partial response:", partialResponse);
 
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Processing',
@@ -366,6 +385,15 @@ async function sendMessage(
               status: 'Completed',
               response: finalResponse.response,
             });
+
+            // Save AI response
+            await dalChatMessage.save({
+              userId: userId,
+              boardId: boardId,
+              role: 'assistant',
+              content: removeEnd(finalResponse.response)
+            }); 
+
           } else {
             const errorMessage =
               'Invalid response formatting. Please try again.\n\n' +
@@ -425,7 +453,7 @@ async function sendMessage(
 async function performDatabaseOperations(
   response: any,
   posts: any[],
-  socket: socketIO.Socket
+  socket: socketIO.Socket,
 ) {
   const validPostIds = new Set(posts.map((post) => post.postID));
 
@@ -435,7 +463,7 @@ async function performDatabaseOperations(
 
       const newBucket: BucketModel = {
         bucketID: generateUniqueID(),
-        boardID: posts[0].boardID,
+        boardID: socket.data.boardId,
         name: bucketName,
         posts: [],
       };
@@ -454,7 +482,7 @@ async function performDatabaseOperations(
 
       const newBucket: BucketModel = {
         bucketID: generateUniqueID(),
-        boardID: posts[0].boardID,
+        boardID: socket.data.boardId,
         name: name,
         posts: [],
       };
@@ -494,7 +522,7 @@ async function performDatabaseOperations(
             postID
           );
         } else if (name) {
-          const bucket = await dalBucket.getByName(name, posts[0].boardID);
+          const bucket = await dalBucket.getByName(name, socket.data.boardId);
           if (bucket) {
             actionsByBucket[bucket.bucketID] = (
               actionsByBucket[bucket.bucketID] || []
@@ -540,7 +568,7 @@ async function performDatabaseOperations(
             postID
           );
         } else if (name) {
-          const bucket = await dalBucket.getByName(name, posts[0].boardID);
+          const bucket = await dalBucket.getByName(name, socket.data.boardId);
           if (bucket) {
             actionsByBucket[bucket.bucketID] = (
               actionsByBucket[bucket.bucketID] || []
@@ -673,14 +701,9 @@ async function constructAndSendMessage(
   }
 }
 
-async function fetchAndFormatBuckets(posts: any[]): Promise<any[]> {
-  // Return empty list if no posts
-  if (!posts || posts.length === 0) {
-    return [];
-  }
-
+async function fetchAndFormatBuckets(boardId: string): Promise<any[]> {
   // Fetch ALL buckets for the board
-  const buckets = await dalBucket.getByBoardId(posts[0].boardID); // Assuming all posts belong to the same board
+  const buckets = await dalBucket.getByBoardId(boardId); // Assuming all posts belong to the same board
 
   // Create a list of buckets with their bucketIDs
   return buckets.map((bucket) => ({

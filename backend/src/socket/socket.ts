@@ -41,6 +41,8 @@ class Socket {
           methods: ['GET', 'POST'],
         },
         adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
+        pingTimeout: 60000, // 60 seconds (adjust as needed)
+        pingInterval: 25000, // 25 seconds (adjust as needed) 
       });
 
       this._io = io;
@@ -80,11 +82,15 @@ class Socket {
         });
 
         socket.on('disconnect', () => {
+          console.warn(`Socket ${socket.id} disconnected:`);
+
+          // 1. Leave all rooms
           const rooms = socket.rooms;
           rooms.forEach((room) => {
             socket.leave(room);
-            // Potentially update or notify the room of the disconnect
           });
+
+          // 2. Remove from SocketManager
           this._socketManager.removeBySocketId(socket.id);
         });
 

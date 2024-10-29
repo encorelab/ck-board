@@ -260,7 +260,7 @@ function isValidJSON(jsonObject: any): boolean {
 function postsToKeyValuePairs(posts: any[]): string {
   let output = '';
   for (const post of posts) {
-    output += `Post with title "${post.title}" (postID: ${post.postID}):\n`;
+    output += `Post with title "${post.title}" (postID: ${post.postID}) by ${post.author}:\n`;
     output += `  - Content: ${post.desc}\n`;
     output += `  - Upvotes: ${post.numUpvotes}\n`;
 

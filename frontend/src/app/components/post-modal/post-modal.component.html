@@ -20,7 +20,7 @@
       >
         <mat-icon>star_border</mat-icon>
       </button>
-      <button mat-icon-button [matMenuTriggerFor]="bucketMenu">
+      <button mat-icon-button [matMenuTriggerFor]="bucketMenu" *ngIf="user.role === Role.TEACHER">
         <mat-icon>library_add</mat-icon>
       </button>
       <mat-menu #bucketMenu="matMenu">

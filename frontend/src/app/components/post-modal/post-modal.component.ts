@@ -67,6 +67,7 @@ export class PostModalComponent {
   tagOptions: Tag[] = [];
 
   user: User;
+  Role: typeof Role = Role;
   board: Board;
   project: Project;
   post: Post;

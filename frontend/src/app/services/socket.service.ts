@@ -13,7 +13,13 @@ export class SocketService {
   private maxRetries = 10;
   private retryInterval = 5000;
 
-  constructor(private socket: Socket, private traceService: TraceService) {}
+  constructor(private socket: Socket, private traceService: TraceService) {
+    this.socket.on('connect_error', (error) => {
+      console.error('WebSocket connection error:', error);
+      // Do NOT attempt to reconnect here.
+      // Instead, display an error message to the user or handle it appropriately.
+    });
+  }
 
   /**
    * Connect to specific board's websocket connection.
@@ -37,13 +43,14 @@ export class SocketService {
    * @returns subscription object to unsubscribe from in the future
    */
   listen(event: SocketEvent, handler: Function): Subscription {
-    const observable = this.socket.fromEvent<any>(event).pipe(
-      catchError((error: Error) => {
-        console.error(`Error handling event ${event}:`, error);
-        return of(null); // Return a default value
-      })
-    );
-    return observable.subscribe((value) => handler(value));
+    try {
+      const observable = this.socket.fromEvent<any>(event);
+      return observable.subscribe((value) => handler(value));
+    } catch (error) {
+      console.error('Error listening for event:', error);
+      // Handle the error appropriately, e.g., by returning an empty observable
+      return new Subscription(); // Do nothing
+    }
   }
 
   /**
@@ -61,7 +68,7 @@ export class SocketService {
         return of(null); // Return a default value
       })
     );
-    return observable.subscribe((value) => handler(value)); 
+    return observable.subscribe((value) => handler(value));
   }
 
   /**
@@ -72,12 +79,16 @@ export class SocketService {
    * @returns void
    */
   emit(event: SocketEvent, value: any): void {
-    const trace = this.traceService.getTraceContext();
-    const socketPayload: SocketPayload = {
-      trace,
-      eventData: value,
-    };
-    this.socket.emit(event, socketPayload);
+    try {
+      const trace = this.traceService.getTraceContext();
+      const socketPayload: SocketPayload = {
+        trace,
+        eventData: value,
+      };
+      this.socket.emit(event, socketPayload);
+    } catch (error: any) {
+      console.error('Error emitting event:', error);
+    }
   }
 
   /**

@@ -100,8 +100,12 @@ class Socket {
         });
 
         // Error handling within the connection handler
-        socket.on('error', (error) => {
-          console.error(`Socket ${socket.id} error:`, error);
+        socket.on('error', (error: any) => {
+          if (error.code === 'ECONNRESET') {
+            console.error(`Socket ${socket.id} connection reset. Attempting to reconnect...`);
+          } else {
+            console.error(`Socket ${socket.id} error:`, error);
+          }
         });
       });
 

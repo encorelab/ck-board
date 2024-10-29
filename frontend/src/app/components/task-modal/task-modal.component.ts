@@ -26,7 +26,9 @@ export class TaskModalComponent {
     this.message = linkifyStr(data.message, {
       defaultProtocol: 'https',
       target: '_blank',
-    });
+    }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+      .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
+      .replace(/(?:\r\n|\r|\n)/g, '<br>');
   }
 
   ngOnInit(): void {}

@@ -66,7 +66,8 @@ function checkKeyFile(keyfilePath: string): boolean {
 }
 
 // Check the keyfile before initializing the client
-const keyfilePath = process.env.GOOGLE_APPLICATION_CREDENTIALS || './secrets/keyfile.json';
+const keyfilePath =
+  process.env.GOOGLE_APPLICATION_CREDENTIALS || './secrets/keyfile.json';
 checkKeyFile(keyfilePath);
 
 // Function to initialize the EndpointServiceClient with delayed checking
@@ -182,9 +183,8 @@ function parseVertexAIError(errorString: string): ErrorInfo {
   }
 }
 
-function isValidJSON(str: string): boolean {
+function isValidJSON(jsonObject: any): boolean {
   try {
-    const jsonObject = JSON.parse(str);
 
     if (!jsonObject.response) {
       return false;
@@ -285,8 +285,61 @@ function postsToKeyValuePairs(posts: any[]): string {
 }
 
 function removeJsonMarkdown(text: string): string {
-  const pattern = /```json\s*([\s\S]*?)\s*```/g;
-  return text.replace(pattern, '$1');
+  text = text.trim();
+  const startIndex = text.indexOf('```json');
+  const endIndex = text.lastIndexOf('```');
+
+  if (startIndex === -1 || endIndex === -1) {
+    console.warn('Invalid JSON markdown format:', text);
+    return text; // Or handle the error differently
+  }
+
+  return text.slice(startIndex + '```json'.length, endIndex);
+}
+
+function parseJsonResponse(response: string): any {
+  if (!response) {
+    return {};
+  }
+
+  // Remove the "response" key and its value, including "<END>", "<END>"", or "<END>","
+  const responseStartIndex = response.indexOf('"response": "');
+  let endLength = '<END>"'.length;
+  let responseEndIndex = response.indexOf('<END>",'); 
+
+  if (responseEndIndex === -1) {
+    responseEndIndex = response.indexOf('<END>"');
+    if (responseEndIndex !== -1) {
+      endLength = '<END>"'.length
+      responseEndIndex += endLength; 
+    }
+  } else {
+    endLength = '<END>",'.length
+    responseEndIndex += endLength;
+  }
+
+  if (responseStartIndex === -1 || responseEndIndex === -1) {
+    console.warn('Invalid response format:', response);
+    return {}; 
+  }
+
+  const responseValue = response.substring(
+    responseStartIndex + '"response": "'.length,
+    responseEndIndex + ('<END>'.length - endLength)
+  );
+
+  const textWithoutResponse =
+    response.substring(0, responseStartIndex) +
+    response.substring(responseEndIndex);
+
+  try {
+    const jsonObject = JSON.parse(textWithoutResponse);
+    jsonObject.response = responseValue; // Add back with <END> included
+    return jsonObject;
+  } catch (error) {
+    console.error('Error parsing JSON:', error);
+    return {}; 
+  }
 }
 
 function removeEnd(str: string): string {
@@ -365,11 +418,12 @@ async function sendMessage(
           }
 
           let isValid;
+          const noJsonResponse = removeJsonMarkdown(partialResponse);
+          
           try {
-            const cleanedResponse = removeJsonMarkdown(partialResponse);
-            const parsedResponse = JSON.parse(cleanedResponse);
+            const parsedResponse = parseJsonResponse(noJsonResponse)
 
-            if (isValidJSON(cleanedResponse)) {
+            if (isValidJSON(parsedResponse)) {
               finalResponse = parsedResponse;
               isValid = true;
             } else {
@@ -395,9 +449,7 @@ async function sendMessage(
             }); 
 
           } else {
-            const errorMessage =
-              'Invalid response formatting. Please try again.\n\n' +
-              finalResponse.response;
+            const errorMessage = `Completed with invalid formatting: ${partialResponse}`;
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Error',
               errorMessage: errorMessage,

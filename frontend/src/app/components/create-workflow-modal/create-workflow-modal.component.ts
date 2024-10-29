@@ -456,8 +456,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
                 break;
               }
               case 'Completed': {
-                const escapedResponse = this.escapeJsonResponse(data.response);
-                this.aiResponse = this.markdownToHtml(escapedResponse || '');
+                const dataResponse = data.response;
+                this.aiResponse = this.markdownToHtml(dataResponse || '');
                 this.chatHistory.push({
                   role: 'assistant',
                   content: this.aiResponse,

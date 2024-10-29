@@ -18,6 +18,7 @@ import { UserService } from 'src/app/services/user.service';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -121,7 +122,7 @@ export class AddBoardModalComponent implements OnInit {
           next: (response: any) => {
             console.log('Image uploaded successfully', response);
             this.bgImgURL =
-              'http://localhost:8001/api/image/' + response.imageUrl;
+              environment.ckboardDomain + '/api/image/' + response.imageUrl;
             fabric.Image.fromURL(this.bgImgURL, async (image) => {
               this.bgImgSettings = this.fabricUtils.createImageSettings(image);
             });

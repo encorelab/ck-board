@@ -29,6 +29,7 @@ import {
 } from 'src/app/utils/constants';
 import { PostService } from '../../services/post.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -145,7 +146,7 @@ export class ConfigurationModalComponent {
           next: (response: any) => {
             console.log('Image uploaded successfully', response);
             const bgImgURL =
-              'http://localhost:8001/api/image/' + response.imageUrl;
+              environment.ckboardDomain + '/api/image/' + response.imageUrl;
             this.canvasService
               .updateBoardImage(this.boardID, bgImgURL)
               .then((board) => {

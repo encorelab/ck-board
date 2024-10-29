@@ -1,4 +1,13 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+  ChangeDetectorRef,
+  AfterViewInit,
+} from '@angular/core';
 import {
   AbstractControl,
   UntypedFormControl,
@@ -27,6 +36,8 @@ import {
   WorkflowType,
   TaskWorkflowType,
 } from 'src/app/models/workflow';
+import { SocketService } from 'src/app/services/socket.service';
+import { PostService } from 'src/app/services/post.service';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { CanvasService } from 'src/app/services/canvas.service';
@@ -36,15 +47,27 @@ import { WorkflowService } from 'src/app/services/workflow.service';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Subscription } from 'rxjs';
+import { UserService } from 'src/app/services/user.service';
+import User, { AuthUser, Role } from 'src/app/models/user';
+import { SocketEvent } from 'src/app/utils/constants';
+import { saveAs } from 'file-saver';
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 @Component({
   selector: 'app-create-workflow-modal',
   templateUrl: './create-workflow-modal.component.html',
   styleUrls: ['./create-workflow-modal.component.scss'],
 })
-export class CreateWorkflowModalComponent implements OnInit {
+export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   // Properties
   selected = new UntypedFormControl(0); // Controls which tab is currently selected (0: Buckets, 1: Create, 2: Manage)
+  user: AuthUser;
 
   // Data models
   board: Board; // Current board
@@ -58,6 +81,14 @@ export class CreateWorkflowModalComponent implements OnInit {
   bucketName = '';
   workflowName = '';
   showDelete = false;
+
+  aiPrompt = '';
+  aiResponse = '';
+  isWaitingForAIResponse = false;
+  isProcessingAIRequest = false;
+  waitingMessage = 'Waiting for AI Response...';
+
+  chatHistory: ChatMessage[] = [];
 
   // Common fields between all workflows
   WorkflowType: typeof WorkflowType = WorkflowType;
@@ -113,15 +144,26 @@ export class CreateWorkflowModalComponent implements OnInit {
   matcher = new MyErrorStateMatcher();
   snackbarConfig: MatSnackBarConfig;
 
+  // Store the socket listener
+  aiResponseListener: Subscription | undefined;
+
+  @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
+  @ViewChild('aiInput') aiInput: ElementRef;
+
   constructor(
+    public userService: UserService,
     public dialogRef: MatDialogRef<CreateWorkflowModalComponent>,
     private dialog: MatDialog,
     private snackbarService: SnackbarService,
     public bucketService: BucketService,
     public boardService: BoardService,
+    private postService: PostService,
     public workflowService: WorkflowService,
     public canvasService: CanvasService,
     public groupService: GroupService,
+    private http: HttpClient,
+    private socketService: SocketService,
+    private changeDetectorRef: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.snackbarConfig = new MatSnackBarConfig();
@@ -136,6 +178,36 @@ export class CreateWorkflowModalComponent implements OnInit {
     this.upvoteLimit = this.data.board.upvoteLimit; // Load the upvote limit for the board
     this.loadBucketsBoards(); // Load buckets and boards for source/destination options
     this.loadWorkflows(); // Load existing workflows for the board
+    this.user = this.userService.user!;
+
+    // Set the selected tab index if provided
+    if (this.data.selectedTabIndex !== undefined) {
+      this.selected.setValue(this.data.selectedTabIndex);
+    }
+
+    if (this.data.focusAIInput) {
+      setTimeout(() => {
+        this.focusAIInput();
+      }, 0);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    this.selected.valueChanges.subscribe((tabIndex) => {
+      if (tabIndex === 3) {
+        // Check if AI Assistant tab is selected
+        setTimeout(() => {
+          // Use setTimeout to allow the view to render
+          this.focusAIInput();
+        }, 0);
+      }
+    });
+  }
+
+  focusAIInput() {
+    if (this.aiInput) {
+      this.aiInput.nativeElement.focus();
+    }
   }
 
   // Fetches groups for the project
@@ -322,6 +394,269 @@ export class CreateWorkflowModalComponent implements OnInit {
         },
       },
     });
+  }
+
+  startWaitingForAIResponse() {
+    this.isWaitingForAIResponse = true;
+    this.waitingMessage = 'Waiting for AI response...';
+  }
+
+  updateWaitingForAIResponse(message: string) {
+    this.isWaitingForAIResponse = true;
+    this.waitingMessage = message;
+  }
+
+  // Call this function when the response is received
+  stopWaitingForAIResponse() {
+    this.isWaitingForAIResponse = false;
+    this.waitingMessage = '';
+  }
+
+  askAI() {
+    if (this.isProcessingAIRequest) {
+      // Check the flag
+      return;
+    }
+    this.isProcessingAIRequest = true;
+
+    this.startWaitingForAIResponse();
+    this.aiResponse = '';
+
+    // 1. Fetch all posts for the current board
+    this.fetchBoardPosts().then((posts) => {
+      const prompt = this.aiPrompt;
+      this.aiPrompt = ''; // Clear the prompt field
+
+      this.chatHistory.push({ role: 'user', content: prompt });
+
+      // Wait for the change detection to run and render the new message
+      this.changeDetectorRef.detectChanges();
+      this.scrollToBottom();
+
+      // 2. Send data and prompt to the backend via WebSocket
+      this.socketService.emit(SocketEvent.AI_MESSAGE, {
+        posts,
+        prompt,
+        boardId: this.board.boardID,
+        userId: this.user.userID,
+      });
+
+      // 3. Listen for WebSocket events
+      this.aiResponseListener = this.socketService.listen(
+        SocketEvent.AI_RESPONSE,
+        (data: any) => {
+          try {
+            switch (data.status) {
+              case 'Received': {
+                this.updateWaitingForAIResponse('Received message...');
+                break;
+              }
+              case 'Processing': {
+                this.updateWaitingForAIResponse(data.response);
+                break;
+              }
+              case 'Completed': {
+                const dataResponse = data.response;
+                this.aiResponse = this.markdownToHtml(dataResponse || '');
+                this.chatHistory.push({
+                  role: 'assistant',
+                  content: this.aiResponse,
+                });
+                this.stopWaitingForAIResponse();
+                break;
+              }
+              case 'Error': {
+                console.error('AI request error:', data.errorMessage);
+                this.chatHistory.push({
+                  role: 'assistant',
+                  content: data.errorMessage,
+                });
+                this.stopWaitingForAIResponse();
+                break;
+              }
+              default: {
+                console.warn('Unknown status:', data.status);
+              }
+            }
+
+            if (data.status === 'Completed' || data.status === 'Error') {
+              if (this.aiResponseListener) {
+                this.aiResponseListener.unsubscribe();
+              }
+            }
+
+            this.changeDetectorRef.detectChanges();
+            this.scrollToBottom();
+          } catch (error) {
+            this.chatHistory.push({
+              role: 'assistant',
+              content:
+                'An error occurred. Please refresh your browser and try again.\n\n' +
+                error,
+            });
+            this.stopWaitingForAIResponse();
+            if (this.aiResponseListener) {
+              this.aiResponseListener.unsubscribe();
+            }
+          }
+        }
+      );
+    });
+    this.isProcessingAIRequest = false;
+  }
+
+  downloadChatHistory() {
+    const data = {
+      boardId: this.board.boardID,
+      userId: this.user.userID
+    };
+
+    this.http.post('chat-history', data, { 
+      responseType: 'blob' 
+    }).subscribe(
+      (response) => {
+        const blob = new Blob([response], { type: 'text/csv' });
+        saveAs(blob, 'chat_history.csv'); 
+        this.openSnackBar('Chat history downloaded successfully!');
+      },
+      (error) => {
+        console.error('Error downloading chat history:', error);
+        this.openSnackBar(`Error downloading chat history: ${error.message}`); 
+      }
+    );
+  }
+
+  private escapeJsonResponse(response: string): string {
+    if (!response) {
+      return '';
+    }
+
+    const responseStartIndex =
+      response.indexOf('"response": "') + '"response": "'.length;
+    const responseEndIndex = response.indexOf('<END>');
+
+    if (responseStartIndex === -1 || responseEndIndex === -1) {
+      console.warn('Invalid response format:', response);
+      return response; // Or handle the error differently
+    }
+
+    const responseValue = response.substring(
+      responseStartIndex,
+      responseEndIndex
+    );
+    const escapedValue = JSON.stringify(responseValue).slice(1, -1); // Escape special characters
+
+    return (
+      response.substring(0, responseStartIndex) +
+      escapedValue +
+      response.substring(responseEndIndex)
+    );
+  }
+
+  // Method to scroll the div to the bottom
+  scrollToBottom(): void {
+    const scrollableElement = this.scrollableDiv.nativeElement;
+    scrollableElement.scrollTo({
+      top: scrollableElement.scrollHeight,
+      behavior: 'smooth', // Add smooth scrolling behavior
+    });
+  }
+
+  markdownToHtml(markdown: string): string {
+    const lines = markdown.split('\\n');
+    let html = '';
+    let inList = false;
+    let inSublist = false;
+    let inBold = false;
+    let inOrderedList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+
+      // Bolding handling (applied to all lines)
+      while (line.includes('**')) {
+        if (inBold) {
+          line = line.replace('**', '</strong>');
+          inBold = false;
+        } else {
+          line = line.replace('**', '<strong>');
+          inBold = true;
+        }
+      }
+
+      // Double quote handling
+      while (line.includes('\\"')) {
+        line = line.replace('\\"', '"');
+      }
+
+      if (line.match(/^(\*|-) /)) {
+        if (!inList) {
+          html += '<ul>';
+          inList = true;
+        }
+        if (inSublist) {
+          html += '</ul>';
+          inSublist = false;
+        }
+        html += `<li>${line.substring(2)}</li>`;
+      } else if (line.match(/^ +(\*|-) /)) {
+        // Match sublist items
+        if (!inSublist) {
+          html += '<ul>';
+          inSublist = true;
+        }
+        html += `<li>${line.trim().substring(2)}</li>`;
+      } else if (line.match(/^\d+\. /)) {
+        // Match ordered list items
+        if (!inOrderedList) {
+          html += '<ol>';
+          inOrderedList = true;
+        }
+        html += `<li>${line.substring(line.indexOf('. ') + 2)}</li>`;
+      } else if (inOrderedList) {
+        // Close the ordered list if no more items
+        html += '</ol>';
+        inOrderedList = false;
+        html += line; // Add the current line after closing the list
+      } else if (inList) {
+        if (inSublist) {
+          html += '</ul>';
+          inSublist = false;
+        }
+        html += '</ul>';
+        inList = false;
+        html += line;
+      } else if (line === '') {
+        html += '<br>';
+      } else {
+        html += line;
+      }
+    }
+
+    if (inSublist) {
+      html += '</ul>';
+    }
+    if (inList) {
+      html += '</ul>';
+    }
+    if (inOrderedList) {
+      // Close the ordered list if it's still open
+      html += '</ol>';
+    }
+
+    return html;
+  }
+
+  async fetchBoardPosts() {
+    try {
+      // Fetch posts for the current board
+      const posts = await this.postService.getAllByBoard(this.board.boardID);
+      return posts;
+    } catch (error) {
+      console.error('Error fetching board posts:', error);
+      // Handle the error, e.g., show an error message to the user
+      return []; // Return an empty array in case of an error
+    }
   }
 
   // Closes the dialog.
@@ -547,5 +882,11 @@ export class CreateWorkflowModalComponent implements OnInit {
       id: this.board.boardID,
       name: 'CK Workspace',
     };
+  }
+
+  ngOnDestroy() {
+    if (this.aiResponseListener) {
+      this.aiResponseListener.unsubscribe();
+    }
   }
 }

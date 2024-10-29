@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Socket } from 'ngx-socket-io';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, take, catchError, of } from 'rxjs';
 import { SocketPayload } from '../models/socketPayload';
 import { SocketEvent } from '../utils/constants';
 import { TraceService } from './trace.service';
@@ -9,6 +9,10 @@ import { TraceService } from './trace.service';
   providedIn: 'root',
 })
 export class SocketService {
+  private retryCount = 0;
+  private maxRetries = 10;
+  private retryInterval = 5000;
+
   constructor(private socket: Socket, private traceService: TraceService) {}
 
   /**
@@ -19,6 +23,10 @@ export class SocketService {
    */
   connect(userID: string, boardID: string): void {
     this.socket.emit('join', userID, boardID);
+
+    this.socket.on('connect_error', (error: Error) => {
+      console.error('Socket connection error:', error);
+    });
   }
 
   /**
@@ -29,8 +37,31 @@ export class SocketService {
    * @returns subscription object to unsubscribe from in the future
    */
   listen(event: SocketEvent, handler: Function): Subscription {
-    const observable = this.socket.fromEvent<any>(event);
+    const observable = this.socket.fromEvent<any>(event).pipe(
+      catchError((error: Error) => {
+        console.error(`Error handling event ${event}:`, error);
+        return of(null); // Return a default value
+      })
+    );
     return observable.subscribe((value) => handler(value));
+  }
+
+  /**
+   * Listen for a specific incoming event once.
+   *
+   * @param event event to listen for
+   * @param handler handler function once event is received
+   * @returns subscription object to unsubscribe from in the future
+   */
+  once(event: SocketEvent, handler: Function): Subscription {
+    const observable = this.socket.fromEvent<any>(event).pipe(
+      take(1),
+      catchError((error: Error) => {
+        console.error(`Error handling event ${event}:`, error);
+        return of(null); // Return a default value
+      })
+    );
+    return observable.subscribe((value) => handler(value)); 
   }
 
   /**

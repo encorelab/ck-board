@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '18'
 
       - name: Download dependencies
         working-directory: ${{ matrix.directory }}
@@ -26,12 +26,12 @@ jobs:
 
       - name: Run Linter
         working-directory: ${{ matrix.directory }}
-        run: npm run style:linter
+        run: npm run style:linter --verbose
         env: 
           CI: false
 
       - name: Run Code Formatter
         working-directory: ${{ matrix.directory }}
-        run: npm run style:formatter
+        run: npm run style
         env: 
           CI: false

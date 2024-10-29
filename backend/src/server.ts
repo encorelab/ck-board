@@ -2,6 +2,7 @@ import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import path from 'path';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Socket from './socket/socket';
@@ -20,10 +21,13 @@ import todoItems from './api/todoItem';
 import learner from './api/learner';
 import { isAuthenticated } from './utils/auth';
 import RedisClient from './utils/redis';
+
 import Grid from 'gridfs-stream';
 import multer from 'multer';
 import { GridFSBucket } from 'mongodb';
 
+import aiRouter from './api/ai';
+import chatHistoryRouter from './api/chatHistory'; 
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -40,6 +44,10 @@ const redisPassword = process.env.REDIS_PASSWORD || '';
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+const staticFilesPath = path.join(__dirname, '../../frontend/dist/ck-board');
+app.use(express.static(staticFilesPath));
+
 const server = http.createServer(app);
 
 const redis = new RedisClient({
@@ -49,7 +57,8 @@ const redis = new RedisClient({
 });
 
 const socket = Socket.Instance;
-socket.init(redis);
+
+socket.init(server, redis);
 
 app.use('/api/projects', isAuthenticated, projects);
 app.use('/api/boards', isAuthenticated, boards);
@@ -64,6 +73,12 @@ app.use('/api/auth', auth);
 app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
+app.use('/api/ai', isAuthenticated, aiRouter);
+app.use('/api/chat-history', chatHistoryRouter);
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(staticFilesPath, 'index.html'));
+});
 
 const shutdown = async () => {
   await redis.disconnect();

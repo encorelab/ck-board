@@ -26,30 +26,25 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": ["src/styles.scss"],
             "scripts": [],
-            "allowedCommonJsDependencies": [
-              "fabric"
-            ]
+            "allowedCommonJsDependencies": ["fabric"],
           },
           "configurations": {
             "production": {
+              "sourceMap": false,
+              "optimization": true,
               "budgets": [
                 {
                   "type": "initial",
                   "maximumWarning": "1mb",
-                  "maximumError": "2mb"
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "4kb",
-                  "maximumError": "5kb"
+                  "maximumError": "200kb"
                 }
               ],
               "fileReplacements": [
@@ -59,6 +54,14 @@
                 }
               ],
               "outputHashing": "all"
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.stage.ts"
+                }
+              ]
             },
             "development": {
               "buildOptimizer": false,
@@ -76,6 +79,9 @@
           "configurations": {
             "production": {
               "browserTarget": "ck-board:build:production"
+            },
+            "staging": {
+              "browserTarget": "ck-board:build:staging"
             },
             "development": {
               "browserTarget": "ck-board:build:development"
@@ -97,23 +103,15 @@
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
             "inlineStyleLanguage": "scss",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": ["src/styles.scss"],
             "scripts": []
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
@@ -121,9 +119,7 @@
   },
   "cli": {
     "analytics": false,
-    "schematicCollections": [
-      "@angular-eslint/schematics"
-    ]
+    "schematicCollections": ["@angular-eslint/schematics"]
   },
   "schematics": {
     "@angular-eslint/schematics:application": {

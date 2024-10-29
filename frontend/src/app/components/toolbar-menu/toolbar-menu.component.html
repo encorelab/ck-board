@@ -2,6 +2,10 @@
     <mat-icon>dehaze</mat-icon>
 </button>
 <mat-menu #navbarMenu="matMenu">
+    <button mat-menu-item *ngIf="user.role === Role.TEACHER && !!board && board.scope === BoardScope.PROJECT_SHARED" (click)="openAIAssistantDialog()"> 
+        <mat-icon>smart_toy</mat-icon> 
+        AI Assistant 
+      </button>
     <button mat-menu-item *ngIf="user.role === Role.TEACHER && !!board && board.scope === BoardScope.PROJECT_SHARED" (click)="openWorkflowDialog()">
         <mat-icon>timeline</mat-icon>
         Manage Buckets & Workflows

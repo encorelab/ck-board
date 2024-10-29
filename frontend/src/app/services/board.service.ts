@@ -1,12 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Board } from '../models/board';
+import { FileUploadService } from './fileUpload.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BoardService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private fileUploadService: FileUploadService
+  ) {}
 
   // Return a Promise that resolves to either a Board or undefined
   get(boardID: string): Promise<Board | undefined> {
@@ -65,8 +69,24 @@ export class BoardService {
 
   remove(id: string): Promise<Board | undefined> {
     return this.http
-      .delete<Board>('boards/' + id)
+      .get<Board>('boards/' + id) // First, get the board details to check for background image
       .toPromise()
+      .then((board) => {
+        if (board?.bgImage?.url) {
+          // Check if the board has a background image
+          const url = board.bgImage.url;
+          const imageId: string = url.split('/').pop() || '';
+
+          return this.fileUploadService
+            .deleteImage(imageId)
+            .toPromise() // Delete the background image
+            .then(() => {
+              return this.http.delete<Board>('boards/' + id).toPromise(); // Delete the board
+            });
+        } else {
+          return this.http.delete<Board>('boards/' + id).toPromise(); // No background image, just delete the board
+        }
+      })
       .catch(() => undefined); // Handle undefined case
   }
 

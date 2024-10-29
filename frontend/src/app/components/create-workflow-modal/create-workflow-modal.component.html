@@ -618,8 +618,11 @@
     <mat-label>Ask the AI Assistant</mat-label>
     <input matInput [(ngModel)]="aiPrompt" (keyup.enter)="askAI()" #aiInput /> 
   </mat-form-field>
-  <button mat-raised-button color="primary" (click)="askAI()" *ngIf="selected.value === 3">Send</button>
-
+  <div style="display: flex; gap: 10px;"> 
+    <button mat-raised-button color="primary" (click)="askAI()" *ngIf="selected.value === 3">Send</button>
+    <button mat-raised-button color="primary" (click)="downloadChatHistory()" *ngIf="selected.value === 3">Download Chat History</button>
+  </div>
+  
   <button mat-button (click)="onNoClick()">Close</button>
   <button
     mat-button

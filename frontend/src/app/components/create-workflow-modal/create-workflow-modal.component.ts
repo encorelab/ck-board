@@ -52,6 +52,7 @@ import { Subscription } from 'rxjs';
 import { UserService } from 'src/app/services/user.service';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { SocketEvent } from 'src/app/utils/constants';
+import { saveAs } from 'file-saver';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -433,7 +434,12 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       this.scrollToBottom();
 
       // 2. Send data and prompt to the backend via WebSocket
-      this.socketService.emit(SocketEvent.AI_MESSAGE, { posts, prompt });
+      this.socketService.emit(SocketEvent.AI_MESSAGE, {
+        posts,
+        prompt,
+        boardId: this.board.boardID,
+        userId: this.user.userID,
+      });
 
       // 3. Listen for WebSocket events
       this.aiResponseListener = this.socketService.listen(
@@ -474,8 +480,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
             }
 
             if (data.status === 'Completed' || data.status === 'Error') {
-              if (this.aiResponseListener) { 
-                this.aiResponseListener.unsubscribe(); 
+              if (this.aiResponseListener) {
+                this.aiResponseListener.unsubscribe();
               }
             }
 
@@ -489,14 +495,62 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
                 error,
             });
             this.stopWaitingForAIResponse();
-            if (this.aiResponseListener) { 
-              this.aiResponseListener.unsubscribe(); 
+            if (this.aiResponseListener) {
+              this.aiResponseListener.unsubscribe();
             }
           }
         }
       );
     });
     this.isProcessingAIRequest = false;
+  }
+
+  downloadChatHistory() {
+    const data = {
+      boardId: this.board.boardID,
+      userId: this.user.userID
+    };
+
+    this.http.post('chat-history', data, { 
+      responseType: 'blob' 
+    }).subscribe(
+      (response) => {
+        const blob = new Blob([response], { type: 'text/csv' });
+        saveAs(blob, 'chat_history.csv'); 
+        this.openSnackBar('Chat history downloaded successfully!');
+      },
+      (error) => {
+        console.error('Error downloading chat history:', error);
+        this.openSnackBar(`Error downloading chat history: ${error.message}`); 
+      }
+    );
+  }
+
+  private escapeJsonResponse(response: string): string {
+    if (!response) {
+      return '';
+    }
+
+    const responseStartIndex =
+      response.indexOf('"response": "') + '"response": "'.length;
+    const responseEndIndex = response.indexOf('<END>');
+
+    if (responseStartIndex === -1 || responseEndIndex === -1) {
+      console.warn('Invalid response format:', response);
+      return response; // Or handle the error differently
+    }
+
+    const responseValue = response.substring(
+      responseStartIndex,
+      responseEndIndex
+    );
+    const escapedValue = JSON.stringify(responseValue).slice(1, -1); // Escape special characters
+
+    return (
+      response.substring(0, responseStartIndex) +
+      escapedValue +
+      response.substring(responseEndIndex)
+    );
   }
 
   // Method to scroll the div to the bottom
@@ -831,8 +885,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.aiResponseListener) {  
-      this.aiResponseListener.unsubscribe(); 
+    if (this.aiResponseListener) {
+      this.aiResponseListener.unsubscribe();
     }
   }
 }

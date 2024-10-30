@@ -67,6 +67,7 @@ export class PostModalComponent {
   tagOptions: Tag[] = [];
 
   user: User;
+  Role: typeof Role = Role;
   board: Board;
   project: Project;
   post: Post;
@@ -144,7 +145,9 @@ export class PostModalComponent {
       this.editingDesc = linkifyStr(p.desc, {
         defaultProtocol: 'https',
         target: '_blank',
-      }).replace(/(?:\r\n|\r|\n)/g, '<br>');
+      }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+        .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
+        .replace(/(?:\r\n|\r|\n)/g, '<br>');
       this.tags = p.tags;
       this.tagOptions = data.board.tags.filter(
         (n) => !this.tags.map((b) => b.name).includes(n.name)
@@ -244,7 +247,9 @@ export class PostModalComponent {
     this.editingDesc = linkifyStr(this.desc, {
       defaultProtocol: 'https',
       target: '_blank',
-    }).replace(/(?:\r\n|\r|\n)/g, '<br>');
+    }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+      .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
+      .replace(/(?:\r\n|\r|\n)/g, '<br>');
 
     const update: Partial<Post> = {
       postID: this.post.postID,

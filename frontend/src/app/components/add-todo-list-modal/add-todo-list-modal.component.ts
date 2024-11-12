@@ -1,5 +1,8 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { TodoItemService } from 'src/app/services/todoItem.service';
 import { GroupService } from 'src/app/services/group.service';
 import {
@@ -8,7 +11,7 @@ import {
   CompletionQuality,
 } from 'src/app/models/todoItem';
 import { Group } from 'src/app/models/group';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import {
@@ -34,11 +37,13 @@ export class AddTodoListModalComponent implements OnInit {
   minuteRange = Array(4)
     .fill(0)
     .map((_, i) => i * 15);
-  taskTitleControl = new FormControl('', [
+  taskTitleControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(TODO_TITLE_MAX_LENGTH),
   ]);
-  todoItemTypeFormControl = new FormControl('valid', [Validators.required]);
+  todoItemTypeFormControl = new UntypedFormControl('valid', [
+    Validators.required,
+  ]);
   todoItemTypes: TodoItemType[] = [];
   EXPANDED_TODO_TYPE: typeof EXPANDED_TODO_TYPE = EXPANDED_TODO_TYPE;
   todoItemOptions = [

@@ -7,7 +7,7 @@ This Common Knowledge (CK) Board is the latest rebuild of the ENCORE Lab's colla
 ### 1. Install Node.js, Angular, and Redis
 
 - Node: https://nodejs.org/
-  - Use the LTS versions. v16 works, v17 has some compatabily issues
+  - Use the v18
 - Angular: `npm install -g @angular/cli `
 - Redis: https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/
 
@@ -40,15 +40,35 @@ Create a `.env` file inside the `/backend` directory (`touch .env` in your termi
 Add the following content into the `.env` file and replace with your own credentials:
 
 ```
-DB_USER=[Mongoose DB Username]
-DB_PASSWORD=[Mongoose DB Password]
-DB_URL=[Mongoose DB URL]
-DB_NAME=[Mongoose DB Name]
+DB_USER=[MongoDB Username]
+DB_PASSWORD=[MongoDB Password]
+DB_URL=[MongoDB URL]
+DB_NAME=[MongoDB Name]
 JWT_SECRET=[JWT Secret Token]
 PORT=8001
+STATIC_FILES_PATH=[for dev, use "./../../frontend/dist/ck-board"; for production, use "/site/wwwroot/frontend/dist/ck-board"]
+CKBOARD_SERVER_ADDRESS=[For dev, use "http://localhost:4201"; for production, use server URL, e.g., "https://ck-board.oise.utoronto.ca"]
+GOOGLE_APPLICATION_CREDENTIALS="./secrets/keyfile.json"
+GOOGLE_CLOUD_PROJECT=[Google Cloud Project ID]
 ```
 
-**SCORE SSO**
+**1. `GOOGLE_APPLICATION_CREDENTIALS`**
+
+- **Purpose:** This variable specifies the path to your Google Cloud service account key file. This key file allows the application to authenticate with Google Cloud and access Vertex AI services.
+- **How to obtain:**
+    1. **Create a Google Cloud Project:** If you don't have one already, create a new project in the Google Cloud Console.  Remember the **Project ID** (e.g., `ai-data-extractor`).
+    2. **Create a Service Account:** In your Google Cloud project, go to the **IAM & Admin** > **Service Accounts** page and create a new service account.
+    3. **Create a Key:**  For the service account, create a new key of type **JSON**. This will download a JSON file containing your key file.
+    4. **Store securely:** Store this JSON file in a secure location within your project's **backend** directory (e.g., `./secrets/keyfile.json`).
+- **Example:** `GOOGLE_APPLICATION_CREDENTIALS="./secrets/keyfile.json"`
+
+**2. `GOOGLE_CLOUD_PROJECT`**
+
+- **Purpose:** This variable indicates the ID of your Google Cloud project. 
+- **How to obtain:** Use the **Project ID** you noted when creating your Google Cloud project.
+- **Example:** `GOOGLE_CLOUD_PROJECT=ck-ai-assistant`
+
+**SCORE SSO (Optional)**
 
 If also running [SCORE](https://github.com/WISE-Community/WISE-Docker-Dev) for Single Sign-On (SSO), add the following additional content into the `.env` file and replace with your own credentials:
 

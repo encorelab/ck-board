@@ -49,6 +49,9 @@ export enum SocketEvent {
   PROJECT_NOTIFICATION_CREATE = 'PROJECT_NOTIFICATION_CREATE',
   TRACING_ENABLED = 'TRACING_ENABLED',
   TRACING_DISABLED = 'TRACING_DISABLED',
+
+  AI_MESSAGE = 'AI_MESSAGE', // Event for sending AI message
+  AI_RESPONSE = 'AI_RESPONSE', // Event for receiving AI response
 }
 
 export const STUDENT_POST_COLOR = '#FFF7C0';

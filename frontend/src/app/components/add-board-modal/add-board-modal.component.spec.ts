@@ -9,6 +9,7 @@ describe('AddBoardModalComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [AddBoardModalComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

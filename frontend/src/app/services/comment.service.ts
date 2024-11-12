@@ -9,7 +9,10 @@ export class CommentService {
   constructor(private http: HttpClient) {}
 
   getCommentsByPost(postID: string): Promise<Comment[]> {
-    return this.http.get<Comment[]>('comments/posts/' + postID).toPromise();
+    return this.http
+      .get<Comment[]>('comments/posts/' + postID)
+      .toPromise()
+      .then((comments) => comments ?? []);
   }
 
   add(comment: Comment): any {

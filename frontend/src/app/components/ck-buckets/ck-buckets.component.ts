@@ -1,8 +1,11 @@
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ComponentType } from '@angular/cdk/portal';
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
+import { SocketService } from 'src/app/services/socket.service';
+import { Subscription } from 'rxjs';
+import { SocketEvent } from 'src/app/utils/constants';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
@@ -22,17 +25,15 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
   templateUrl: './ck-buckets.component.html',
   styleUrls: ['./ck-buckets.component.scss'],
 })
-export class CkBucketsComponent implements OnInit {
+export class CkBucketsComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   boardID: string;
   projectID: string;
 
   buckets: any[] = [];
-  // posts: any[] = [];
-
   user: AuthUser;
-  board: Board;
+  board: Board | undefined;
   project: Project;
   Role: typeof Role = Role;
   ViewType: typeof ViewType = ViewType;
@@ -40,8 +41,10 @@ export class CkBucketsComponent implements OnInit {
 
   maxBucketsOnView = 4;
   bucketsOnView: any[] = [];
-
   viewType = ViewType.BUCKETS;
+
+  groupEventToHandler: Map<SocketEvent, Function>;
+  unsubListeners: Subscription[] = [];
 
   constructor(
     public postService: PostService,
@@ -54,22 +57,35 @@ export class CkBucketsComponent implements OnInit {
     public upvotesService: UpvotesService,
     private converters: Converters,
     private router: Router,
+    private socketService: SocketService,
     private activatedRoute: ActivatedRoute
-  ) {}
+  ) {
+    this.groupEventToHandler = new Map<SocketEvent, Function>([]);
+  }
 
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     await this.configureBoard();
     await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-      for (const bucket of buckets) {
-        if (bucket.addedToView) {
-          this.bucketsOnView.push(bucket);
-          this.loadBucketPosts(bucket);
-        } else {
-          this.buckets.push(bucket);
+      if (buckets) {
+        for (const bucket of buckets) {
+          if (bucket.addedToView) {
+            this.bucketsOnView.push(bucket);
+            this.loadBucketPosts(bucket);
+          } else {
+            this.buckets.push(bucket);
+          }
         }
       }
     });
+    this.socketService.connect(this.user.userID, this.boardID);
+  }
+
+  initGroupEventsListener() {
+    for (const [k, v] of this.groupEventToHandler) {
+      const unsub = this.socketService.listen(k, v);
+      this.unsubListeners.push(unsub);
+    }
   }
 
   async configureBoard(): Promise<void> {
@@ -78,8 +94,9 @@ export class CkBucketsComponent implements OnInit {
       this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-      this.boardService.get(this.boardID).then((board) => {
-        if (board) this.board = board;
+      const board = await this.boardService.get(this.boardID);
+      if (board) {
+        this.board = board;
         if (board.viewSettings && !board.viewSettings.allowBuckets) {
           this.router.navigateByUrl(
             `project/${this.projectID}/board/${
@@ -87,10 +104,10 @@ export class CkBucketsComponent implements OnInit {
             }/${board.defaultView?.toLowerCase()}`
           );
         }
-      });
-      // this.postService.getAllByBoard(this.boardID).then(data => {
-      //   this.posts = data;
-      // });
+      } else {
+        this.board = undefined;
+      }
+
       this.projectService.get(this.projectID).then((project) => {
         this.project = project;
       });
@@ -181,6 +198,11 @@ export class CkBucketsComponent implements OnInit {
   signOut(): void {
     this.userService.logout();
     this.router.navigate(['login']);
+  }
+
+  async ngOnDestroy() {
+    this.unsubListeners.forEach((s) => s.unsubscribe());
+    this.socketService.disconnect(this.user.userID, this.boardID);
   }
 
   private _openDialog(

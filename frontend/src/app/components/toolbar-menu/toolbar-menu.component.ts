@@ -1,6 +1,6 @@
 import { ComponentType } from '@angular/cdk/portal';
 import { Component, Input, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { Board, BoardScope } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
@@ -43,6 +43,16 @@ export class ToolbarMenuComponent implements OnInit {
     this._openDialog(CreateWorkflowModalComponent, {
       board: this.board,
       project: this.project,
+    });
+  }
+
+  // New method to open the AI Assistant tab
+  openAIAssistantDialog() {
+    this._openDialog(CreateWorkflowModalComponent, {
+      board: this.board,
+      project: this.project,
+      selectedTabIndex: 3, // Pass the desired tab index
+      focusAIInput: true,
     });
   }
 

@@ -3,9 +3,12 @@
 
 # secrets
 .env
+/secrets/*
 
 # compiled js files
 *.js
 
 # misc
 .DS_Store
+
+dump.rdp

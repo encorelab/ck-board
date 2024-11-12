@@ -67,12 +67,6 @@
         <mat-icon>settings</mat-icon>
         Adjust Settings
       </button>
-      <a href="https://score.oise.utoronto.ca/" style="text-decoration:none;color:black" target="_blank" >
-      <button mat-menu-item style="text-decoration:none;color:black">
-          <mat-icon>launch</mat-icon>
-          Go to SCORE
-        </button>
-      </a>
       <button mat-menu-item (click)="signOut()">
         <mat-icon class="material-icons-outlined">logout</mat-icon>
         Log Out
@@ -108,7 +102,7 @@
                 [attr.aria-label]="'View ' + board.name"
               >
                 <mat-card-title class="title accent">
-                  <mat-icon color="accent">picture_in_picture</mat-icon>
+                  <mat-icon style="min-width: fit-content;" color="accent">picture_in_picture</mat-icon>
                   <span>{{ board.name }}</span>
                     <button 
                       *ngIf="user && user.role === Role.TEACHER"

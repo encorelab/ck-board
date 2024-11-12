@@ -24,7 +24,16 @@ export class ViewNavigationComponent implements OnInit {
   constructor(public boardService: BoardService) {}
 
   async ngOnInit(): Promise<void> {
-    this.board = await this.boardService.get(this.boardID);
+    const board = await this.boardService.get(this.boardID);
+
+    if (!board) {
+      // Handle the case where board is undefined, e.g., throw an error or redirect
+      console.error(`Board with ID ${this.boardID} not found`);
+      return; // or handle it accordingly
+    }
+
+    this.board = board;
+
     this.AppViews = [
       {
         viewType: ViewType.CANVAS,

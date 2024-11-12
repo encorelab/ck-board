@@ -9,6 +9,7 @@ describe('CkWorkspaceComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [CkWorkspaceComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

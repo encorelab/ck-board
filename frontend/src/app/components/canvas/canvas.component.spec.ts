@@ -9,6 +9,7 @@ describe('CanvasComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [CanvasComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

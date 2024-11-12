@@ -11,13 +11,15 @@ export class LearnerService {
   getByProjects(projectIDs: string[]): Promise<LearnerModel[]> {
     return this.http
       .post<LearnerModel[]>('learner/project/many', { projectIDs })
-      .toPromise();
+      .toPromise()
+      .then((learners) => learners ?? []); // Default to an empty array
   }
 
   getByBoards(boardIDs: string[]): Promise<LearnerModel[]> {
     return this.http
       .post<LearnerModel[]>('learner/board/many', { boardIDs })
-      .toPromise();
+      .toPromise()
+      .then((learners) => learners ?? []); // Default to an empty array
   }
 
   createModel(
@@ -35,19 +37,22 @@ export class LearnerService {
         dimensions,
         data,
       })
-      .toPromise();
+      .toPromise()
+      .then((learner) => learner ?? ({} as LearnerModel)); // Default to an empty object
   }
 
   addDimension(modelID: string, dimension: string): Promise<LearnerModel> {
     return this.http
       .post<LearnerModel>(`learner/${modelID}/addDimension`, { dimension })
-      .toPromise();
+      .toPromise()
+      .then((learner) => learner ?? ({} as LearnerModel)); // Default to an empty object
   }
 
   removeDimension(modelID: string, dimension: string): Promise<LearnerModel> {
     return this.http
       .post<LearnerModel>(`learner/${modelID}/removeDimension`, { dimension })
-      .toPromise();
+      .toPromise()
+      .then((learner) => learner ?? ({} as LearnerModel)); // Default to an empty object
   }
 
   updateData(
@@ -62,7 +67,8 @@ export class LearnerService {
         assessment,
         dimensionValues,
       })
-      .toPromise();
+      .toPromise()
+      .then((learner) => learner ?? ({} as LearnerModel)); // Default to an empty object
   }
 
   updateModel(
@@ -77,10 +83,14 @@ export class LearnerService {
         dimensions,
         modelData: data,
       })
-      .toPromise();
+      .toPromise()
+      .then((learner) => learner ?? ({} as LearnerModel)); // Default to an empty object
   }
 
   deleteModel(id: string): Promise<LearnerModel> {
-    return this.http.delete<LearnerModel>(`learner/${id}`).toPromise();
+    return this.http
+      .delete<LearnerModel>(`learner/${id}`)
+      .toPromise()
+      .then((learner) => learner ?? ({} as LearnerModel)); // Default to an empty object
   }
 }

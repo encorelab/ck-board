@@ -1,10 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 import { MyErrorStateMatcher } from 'src/app/utils/ErrorStateMatcher';
 import Comment from 'src/app/models/comment';
 import { CommentService } from 'src/app/services/comment.service';
@@ -67,6 +67,7 @@ export class PostModalComponent {
   tagOptions: Tag[] = [];
 
   user: User;
+  Role: typeof Role = Role;
   board: Board;
   project: Project;
   post: Post;
@@ -96,11 +97,11 @@ export class PostModalComponent {
   showAuthorName: boolean;
 
   error = '';
-  titleControl = new FormControl('', [
+  titleControl = new UntypedFormControl('', [
     Validators.required,
     Validators.maxLength(50),
   ]);
-  descControl = new FormControl('', [Validators.maxLength(2000)]);
+  descControl = new UntypedFormControl('', [Validators.maxLength(2000)]);
   matcher = new MyErrorStateMatcher();
 
   newComment: string;
@@ -144,7 +145,9 @@ export class PostModalComponent {
       this.editingDesc = linkifyStr(p.desc, {
         defaultProtocol: 'https',
         target: '_blank',
-      }).replace(/(?:\r\n|\r|\n)/g, '<br>');
+      }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+        .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
+        .replace(/(?:\r\n|\r|\n)/g, '<br>');
       this.tags = p.tags;
       this.tagOptions = data.board.tags.filter(
         (n) => !this.tags.map((b) => b.name).includes(n.name)
@@ -171,7 +174,7 @@ export class PostModalComponent {
     this.bucketService
       .getAllByBoard(this.data.board.boardID)
       .then((buckets) => {
-        this.buckets = buckets;
+        this.buckets = buckets || [];
       });
 
     const isStudent = this.user.role == Role.STUDENT;
@@ -244,7 +247,9 @@ export class PostModalComponent {
     this.editingDesc = linkifyStr(this.desc, {
       defaultProtocol: 'https',
       target: '_blank',
-    }).replace(/(?:\r\n|\r|\n)/g, '<br>');
+    }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+      .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
+      .replace(/(?:\r\n|\r|\n)/g, '<br>');
 
     const update: Partial<Post> = {
       postID: this.post.postID,

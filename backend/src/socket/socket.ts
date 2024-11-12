@@ -1,9 +1,13 @@
+import { Server } from 'http';
 import * as socketIO from 'socket.io';
 import { SocketEvent } from '../constants';
 import events from './events';
 import SocketManager from './socketManager';
 import RedisClient from '../utils/redis';
 import { createAdapter } from '@socket.io/redis-adapter';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 class Socket {
   private static _instance: Socket;
@@ -24,54 +28,104 @@ class Socket {
    * Initializes websocket server which will listen for users
    * joining boards and handle all board events.
    *
+   * @param server the http server
    * @returns void
    */
-  init(redis: RedisClient) {
-    const io = new socketIO.Server(8000, {
-      cors: {
-        origin: ['http://localhost:4200', 'http://localhost:4201'],
-      },
-      adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
-    });
 
-    this._io = io;
-
-    console.log('Socket server running at ' + 8000);
-
-    io.on('connection', (socket) => {
-      // this._socket = socket;
-
-      socket.on('join', (user: string, room: string) => {
-        socket.data.room = room;
-        this._safeJoin(socket, user, room);
-        this._listenForEvents(io, socket);
-        this._logUserSocketsAndRooms(user);
+  async init(server: Server, redis: RedisClient) {
+    try {
+      const io = new socketIO.Server(server, {
+        transports: ['websocket', 'polling'],
+        cors: {
+          origin: process.env.CKBOARD_SERVER_ADDRESS || 'http://localhost:4200', // Specific origin or localhost
+          methods: ['GET', 'POST'],
+        },
+        adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
+        pingTimeout: 60000, // 60 seconds (adjust as needed)
+        pingInterval: 25000, // 25 seconds (adjust as needed) 
       });
 
-      socket.on('leave', (user: string, room: string) => {
-        socket.leave(room);
-        console.log(`Socket ${socket.id} left room ${room}`);
-        events.map((e) => socket.removeAllListeners(e.type.toString()));
+      this._io = io;
 
-        // Remove the specific socketId for the user from the SocketManager
-        this._socketManager.removeBySocketId(socket.id);
-        this._logUserSocketsAndRooms(user);
-      });
+      console.log('Socket server running on port 8000...');
 
-      socket.on('disconnect', () => {
-        const rooms = socket.rooms;
-        rooms.forEach((room) => {
-          socket.leave(room);
-          // Potentially update or notify the room of the disconnect
+      io.on('connection', (socket) => {
+        console.log(
+          `New connection: Socket ID ${socket.id}, IP: ${socket.handshake.address}`
+        );
+
+        // Log connection details (optional, but useful for debugging)
+        console.log('Connection details:', {
+          id: socket.id,
+          handshake: {
+            headers: socket.handshake.headers,
+            query: socket.handshake.query,
+            auth: socket.handshake.auth, // If using authentication
+          },
         });
-        this._socketManager.removeBySocketId(socket.id);
+
+        socket.on('join', (user: string, room: string) => {
+          socket.data.room = room;
+          this._safeJoin(socket, user, room);
+          this._listenForEvents(io, socket);
+          this._logUserSocketsAndRooms(user);
+        });
+
+        socket.on('leave', (user: string, room: string) => {
+          socket.leave(room);
+          console.log(`Socket ${socket.id} left room ${room}`);
+          events.map((e) => socket.removeAllListeners(e.type.toString()));
+
+          // Remove the specific socketId for the user from the SocketManager
+          this._socketManager.removeBySocketId(socket.id);
+          this._logUserSocketsAndRooms(user);
+        });
+
+        socket.on('disconnect', () => {
+          console.warn(`Socket ${socket.id} disconnected:`);
+
+          // 1. Leave all rooms
+          const rooms = socket.rooms;
+          rooms.forEach((room) => {
+            socket.leave(room);
+          });
+
+          // 2. Remove from SocketManager
+          this._socketManager.removeBySocketId(socket.id);
+        });
+
+        socket.on('disconnectAll', async (room: string) => {
+          io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
+          io.in(room).disconnectSockets(true);
+        });
+
+        // Error handling within the connection handler
+        socket.on('error', (error: any) => {
+          if (error.code === 'ECONNRESET') {
+            console.error(`Socket ${socket.id} connection reset. Attempting to reconnect...`);
+          } else {
+            console.error(`Socket ${socket.id} error:`, error);
+          }
+        });
       });
 
-      socket.on('disconnectAll', async (room: string) => {
-        io.in(room).emit(SocketEvent.BOARD_CONN_UPDATE);
-        io.in(room).disconnectSockets(true);
+      // Connection error handling for the server
+      io.engine.on('connection_error', (err) => {
+        console.error('Socket.IO connection error:', {
+          code: err.code,
+          message: err.message,
+          context: err.context,
+          request: {
+            ip: err.req.ip,
+            url: err.req.url,
+            headers: err.req.headers,
+          },
+          stack: err.stack,
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error initializing WebSocket server:', error);
+    }
   }
 
   /**
@@ -100,7 +154,7 @@ class Socket {
    */
   private _listenForEvents(io: socketIO.Server, socket: socketIO.Socket) {
     events.map((event) =>
-      socket.on(event.type, async (data) => {
+      socket.on(event.type, async (data: any) => {
         const result = await event.handleEvent(data);
         return await event.handleResult(io, socket, result as never);
       })

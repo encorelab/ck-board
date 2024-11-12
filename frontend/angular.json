@@ -29,20 +29,22 @@
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["src/styles.scss"],
             "scripts": [],
-            "allowedCommonJsDependencies": ["fabric"]
+            "allowedCommonJsDependencies": ["fabric"],
           },
           "configurations": {
             "production": {
+              "sourceMap": false,
+              "optimization": true,
               "budgets": [
                 {
                   "type": "initial",
                   "maximumWarning": "1mb",
-                  "maximumError": "2mb"
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "4kb",
-                  "maximumError": "5kb"
+                  "maximumError": "200kb"
                 }
               ],
               "fileReplacements": [
@@ -52,6 +54,14 @@
                 }
               ],
               "outputHashing": "all"
+            },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.stage.ts"
+                }
+              ]
             },
             "development": {
               "buildOptimizer": false,
@@ -69,6 +79,9 @@
           "configurations": {
             "production": {
               "browserTarget": "ck-board:build:production"
+            },
+            "staging": {
+              "browserTarget": "ck-board:build:staging"
             },
             "development": {
               "browserTarget": "ck-board:build:development"
@@ -104,9 +117,16 @@
       }
     }
   },
-  "defaultProject": "ck-board",
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics",
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": ["@angular-eslint/schematics"]
+  },
+  "schematics": {
+    "@angular-eslint/schematics:application": {
+      "setParserOptionsProject": true
+    },
+    "@angular-eslint/schematics:library": {
+      "setParserOptionsProject": true
+    }
   }
 }

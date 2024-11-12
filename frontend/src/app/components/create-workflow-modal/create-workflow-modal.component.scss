@@ -16,6 +16,13 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  div {
+    display: block;
+  }
+  mat-error {
+    width: 100%;
+    font-size: 75%;
+  }
 }
 
 .arrow-icon-md {
@@ -48,8 +55,8 @@
 }
 
 #bucket-action-delete {
-  position: absolute; 
-  right:0;
+  position: absolute;
+  right: 0;
 }
 
 .delete-toggler {
@@ -67,4 +74,53 @@
 mat-chip {
   height: auto; // overrides default height 1px
   line-height: 1.1em; // keeps chip from "squaring out" at one line
+}
+
+.main-content {
+  max-height: 500px; 
+}
+
+.ai-assistant-container {
+  display: flex;
+  flex-direction: column;
+  height: 400px; 
+}
+
+.chat-feed {
+  flex-grow: 1;
+  overflow-y: auto; 
+  padding: 10px;
+}
+
+.scrollableDiv {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.user-message { 
+  text-align: right; 
+  margin-bottom: 10px;
+}
+
+.message-label {
+  font-weight: bold;
+  margin-bottom: 5px; /* Add space between the label and the message */
+}
+
+.message-card {
+  padding: 10px; 
+  margin-bottom: 10px; 
+  border-radius: 5px; 
+}
+
+.user-card {
+  background-color: #d1c4e9; /* Light purple for user messages */
+  text-align: right; 
+}
+
+.ai-card {
+  background-color: #e0e0e0; /* Light grey for AI messages */
+  text-align: left; 
 }

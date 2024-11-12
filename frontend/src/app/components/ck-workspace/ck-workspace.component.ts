@@ -6,7 +6,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
@@ -82,7 +82,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   listeners: Subscription[] = [];
   posts: HTMLPost[] = [];
   submittedPosts: HTMLPost[] = [];
-  members: User[] = [];
+  members: User[] | undefined = [];
 
   showSubmittedPosts: boolean = false;
 
@@ -132,7 +132,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       return this.router.navigate(['error']);
     }
 
-    this.board = await this.boardService.get(boardID);
+    const fetchedBoard = await this.boardService.get(boardID);
+    if (!fetchedBoard) {
+      this.router.navigate(['error']);
+      return false; // or true depending on your flow
+    }
+    this.board = fetchedBoard;
     this.project = await this.projectService.get(projectID);
     this.group = await this.groupService.getByProjectUser(
       projectID,

@@ -11,7 +11,7 @@ import { UserService } from './user.service';
 })
 export class TraceService {
   traceContext: TraceContext;
-  board: Board;
+  board: Board | undefined;
   constructor(
     private userService: UserService,
     private boardService: BoardService,
@@ -30,8 +30,10 @@ export class TraceService {
     this.traceContext.projectID = projectID;
     this.traceContext.userID = this.userService.user?.userID || '';
     this.board = await this.boardService.get(boardID);
-    this.traceContext.allowTracing =
-      this.board.permissions.allowTracing || false;
+    if (this.board) {
+      this.traceContext.allowTracing =
+        this.board.permissions.allowTracing || false;
+    }
   }
   getTraceContext(): TraceContext {
     this.traceContext.clientTimestamp = Date.now();

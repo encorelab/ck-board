@@ -8,10 +8,8 @@ import { JwtModule } from '@auth0/angular-jwt';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { MatLegacySliderModule } from '@angular/material/legacy-slider';
 
-import { AngularFirestoreModule } from '@angular/fire/firestore';
-import { AngularFireModule } from '@angular/fire';
-import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material-module';
@@ -49,7 +47,7 @@ import { CkWorkspaceComponent } from './components/ck-workspace/ck-workspace.com
 import { ManageGroupModalComponent } from './components/groups/manage-group-modal/manage-group-modal.component';
 import { MoveGroupMembersComponent } from './components/groups/move-group-members/move-group-members.component';
 
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { AutofocusDirective } from './autofocus.directive';
 import { TodoListModalComponent } from './components/todo-list-modal/todo-list-modal.component';
 import { AddTodoListModalComponent } from './components/add-todo-list-modal/add-todo-list-modal.component';
@@ -65,8 +63,12 @@ import { AddLearnerModalComponent } from './components/add-learner-modal/add-lea
 import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component';
 import { ToolbarMenuComponent } from './components/toolbar-menu/toolbar-menu.component';
 import { ViewNavigationComponent } from './components/view-navigation/view-navigation.component';
+import { MarkdownModule } from 'ngx-markdown';
 
-const config: SocketIoConfig = { url: 'http://localhost:8000', options: {} };
+const config: SocketIoConfig = {
+  url: environment.socketUrl,
+  options: {},
+};
 
 export function tokenGetter() {
   return localStorage.getItem('access_token');
@@ -120,15 +122,13 @@ export function tokenGetter() {
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig, 'ck-board'),
-    AngularFirestoreModule,
-    AngularFireAuthModule,
     FormsModule,
+    MarkdownModule.forRoot(),
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
-        allowedDomains: ['localhost:8001'],
-        disallowedRoutes: ['localhost:8001/api/auth'],
+        allowedDomains: [environment.ckboardDomain],
+        disallowedRoutes: [`${environment.ckboardDomain}/api/auth`],
       },
     }),
     SocketIoModule.forRoot(config),
@@ -138,6 +138,7 @@ export function tokenGetter() {
     SwiperModule,
     MaterialModule,
     DragDropModule,
+    MatLegacySliderModule,
     MatSortModule,
     HighchartsChartModule,
   ],

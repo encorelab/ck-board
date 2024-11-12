@@ -1,5 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatLegacyDialogRef as MatDialogRef,
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+} from '@angular/material/legacy-dialog';
 
 const linkifyStr = require('linkifyjs/lib/linkify-string');
 
@@ -23,7 +26,9 @@ export class TaskModalComponent {
     this.message = linkifyStr(data.message, {
       defaultProtocol: 'https',
       target: '_blank',
-    });
+    }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+      .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
+      .replace(/(?:\r\n|\r|\n)/g, '<br>');
   }
 
   ngOnInit(): void {}

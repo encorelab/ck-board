@@ -173,6 +173,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
   studentView = false;
   viewType = ViewType.MONITOR;
+  isTeacher: boolean = false;
 
   constructor(
     public userService: UserService,
@@ -206,6 +207,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
+    this.isTeacher = this.user.role === Role.TEACHER;
     if (this.user.role === Role.STUDENT) {
       this.studentView = true;
       this.loading = false;
@@ -234,7 +236,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     this.project = await this.projectService.get(projectID);
 
-    if (!this.board.viewSettings?.allowMonitor) {
+    if (!this.isTeacher && !this.board.viewSettings?.allowMonitor) {
       this.router.navigateByUrl(
         `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
       );

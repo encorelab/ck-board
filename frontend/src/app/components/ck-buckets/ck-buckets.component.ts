@@ -38,6 +38,7 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
   Role: typeof Role = Role;
   ViewType: typeof ViewType = ViewType;
   BoardScope: typeof BoardScope = BoardScope;
+  isTeacher: boolean = false;
 
   maxBucketsOnView = 4;
   bucketsOnView: any[] = [];
@@ -65,6 +66,7 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
+    this.isTeacher = this.user.role === Role.TEACHER;
     await this.configureBoard();
     await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
       if (buckets) {
@@ -97,7 +99,11 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
       const board = await this.boardService.get(this.boardID);
       if (board) {
         this.board = board;
-        if (board.viewSettings && !board.viewSettings.allowBuckets) {
+        if (
+          !this.isTeacher &&
+          board.viewSettings &&
+          !board.viewSettings.allowBuckets
+        ) {
           this.router.navigateByUrl(
             `project/${this.projectID}/board/${
               this.boardID

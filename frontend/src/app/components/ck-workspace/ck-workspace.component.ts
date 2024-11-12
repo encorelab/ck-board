@@ -92,6 +92,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
   embedded: boolean = false; // If standalone board embed
   viewType = ViewType.WORKSPACE;
+  isTeacher: boolean = false;
 
   constructor(
     public userService: UserService,
@@ -118,6 +119,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.user = this.userService.user!;
+    this.isTeacher = this.user.role === Role.TEACHER;
     this.loadWorkspaceData();
   }
 
@@ -144,7 +146,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       this.user.userID
     );
 
-    if (!this.board.viewSettings?.allowWorkspace) {
+    if (!this.isTeacher && !this.board.viewSettings?.allowWorkspace) {
       this.router.navigateByUrl(
         `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
       );

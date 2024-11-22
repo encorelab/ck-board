@@ -16,6 +16,7 @@ import {
   TaskActionType,
   TaskWorkflow,
   GroupTaskStatus,
+  TaskWorkflowType,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -616,22 +617,34 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     // sum all amountRequired for each action per post
     // i.e. Post A (1 tag req, 1 comment req) + Post B (1 tag req, 0 comments required)
-    const remaining = values.reduce(
+    let remaining = values.reduce(
       (partialSum, a) =>
         partialSum + a.reduce((partial, b) => partial + b.amountRequired, 0),
       0
     );
-
     // nothing left to do
-    if (remaining == 0) return 100;
+    if (remaining == 0 && task.workflow.type !== TaskWorkflowType.GENERATION)
+      return 100;
 
     // sum both required tags (1) and required comments (1) = 2
     // multiple by number of posts since those requirements are per-post
-    const total =
-      task.workflow.requiredActions.reduce(
-        (partialSum, a) => partialSum + a.amountRequired,
-        0
-      ) * values.length;
+    let total = task.workflow.requiredActions
+      .filter((a) => a.type !== TaskActionType.CREATE_POST)
+      .reduce((partialSum, a) => partialSum + a.amountRequired, 0);
+    if (task.workflow.type === TaskWorkflowType.GENERATION) {
+      const createPosts = task.workflow.requiredActions.filter(
+        (a) => a.type === TaskActionType.CREATE_POST
+      )[0].amountRequired;
+      const postsCreated = Object.keys(task.groupTask.progress).length;
+
+      const actionPerPost = total;
+      if (total) total = total * createPosts + createPosts;
+      else total = createPosts;
+      remaining += createPosts - postsCreated;
+      remaining += (createPosts - postsCreated) * actionPerPost;
+    } else {
+      total *= values.length;
+    }
 
     return ((total - remaining) / total) * 100;
   }

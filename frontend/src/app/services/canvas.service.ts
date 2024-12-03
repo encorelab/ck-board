@@ -12,7 +12,7 @@ import { generateUniqueID } from '../utils/Utils';
 import { BoardService } from './board.service';
 import { BucketService } from './bucket.service';
 import { CommentService } from './comment.service';
-// import { FileUploadService } from './fileUpload.service';
+import { FileUploadService } from './fileUpload.service';
 import { UpvotesService } from './upvotes.service';
 import { NotificationService } from './notification.service';
 import { PostService } from './post.service';
@@ -32,7 +32,7 @@ interface Position {
 export class CanvasService {
   constructor(
     private socketService: SocketService,
-    // private fileUploadService: FileUploadService,
+    private fileUploadService: FileUploadService,
     private userService: UserService,
     private postService: PostService,
     private upvotesService: UpvotesService,
@@ -281,10 +281,10 @@ export class CanvasService {
 
   async updateBoardImage(
     boardID: string,
-    file: string | null,
+    fileUrl: string | null,
     settings?: any
-  ): Promise<Board> {
-    if (file === null) {
+  ): Promise<Board | undefined> {
+    if (fileUrl === null) {
       const board = await this.boardService.update(boardID, {
         bgImage: null,
       });
@@ -294,17 +294,17 @@ export class CanvasService {
       this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
       return board;
     } else {
-      return new Promise<Board>((resolve) => {
-        // fabric.Image.fromURL(file, async (image) => {
-        //   const url = await this.fileUploadService.upload(file);
-        //   const imgSettings =
-        //     settings ?? this.fabricUtils.createImageSettings(image);
-        //   const board: Board = await this.boardService.update(boardID, {
-        //     bgImage: { url, imgSettings },
-        //   });
-        //   this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
-        //   resolve(board);
-        // });
+      return new Promise<Board | undefined>((resolve) => {
+        fabric.Image.fromURL(fileUrl, async (image) => {
+          const url = fileUrl;
+          const imgSettings =
+            settings ?? this.fabricUtils.createImageSettings(image);
+          const board = await this.boardService.update(boardID, {
+            bgImage: { url, imgSettings },
+          });
+          this.socketService.emit(SocketEvent.BOARD_IMAGE_UPDATE, board);
+          resolve(board);
+        });
       });
     }
   }

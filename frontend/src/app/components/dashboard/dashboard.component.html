@@ -1,5 +1,12 @@
 <div class="app">
   <app-toolbar [user]="user" [showSignOut]="true">
+    <a routerLink="/dashboard">
+      <img
+        class="logo"
+        src="/assets/encore-logo-white-sm.png"
+        alt="Encore logo"
+      />
+    </a>
     <span>Common Knowledge Board</span>
     <span style="flex: 1 1 auto"></span>
     <button
@@ -42,21 +49,28 @@
           tabindex="0"
           [attr.aria-label]="'Open ' + project.name"
         >
-          <div style="display:flex; flex-direction: row; align-items: center" >
+          <div style="display: flex; flex-direction: row; align-items: center">
             <mat-card-title class="title accent">
-              <mat-icon style="min-width: fit-content;" color="accent">grid_view</mat-icon>
-              <span>{{ project.name }}</span>
-              <button 
-              *ngIf="user && user.role === Role.TEACHER"
-              mat-icon-button
-              [matMenuTriggerFor]="projectOptions"
-              style="margin:0; padding:0;line-height: inherit;height: inherit;right: 0;position: absolute;"
-              matTooltip="Project Options"
-              (click)="$event.stopPropagation();"
+              <mat-icon style="min-width: fit-content" color="accent"
+                >grid_view</mat-icon
               >
-                <mat-icon >
-                  more_vert
-                </mat-icon>
+              <span>{{ project.name }}</span>
+              <button
+                *ngIf="user && user.role === Role.TEACHER"
+                mat-icon-button
+                [matMenuTriggerFor]="projectOptions"
+                style="
+                  margin: 0;
+                  padding: 0;
+                  line-height: inherit;
+                  height: inherit;
+                  right: 0;
+                  position: absolute;
+                "
+                matTooltip="Project Options"
+                (click)="$event.stopPropagation()"
+              >
+                <mat-icon> more_vert </mat-icon>
               </button>
             </mat-card-title>
             <mat-menu #projectOptions="matMenu">

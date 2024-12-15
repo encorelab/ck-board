@@ -1,7 +1,7 @@
 @use '../../../style/layout/dashboard';
 
 .heading {
-  margin-top: -0.5em;
+  color: gray;
 }
 
 .tag-icon {
@@ -11,15 +11,15 @@
   font-size: medium;
 }
 
-.mat-chip {    
+.mat-chip {
   padding: 0 8px;
   min-height: 24px;
   font-size: 12px;
-  background-color: #F56F66;
+  background-color: #f56f66;
 }
 
 #shared-chip {
-  background-color: #8EC8E1;
+  background-color: #8ec8e1;
 }
 
 .board-card-header {

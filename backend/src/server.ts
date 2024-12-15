@@ -27,7 +27,7 @@ import multer from 'multer';
 import { GridFSBucket } from 'mongodb';
 
 import aiRouter from './api/ai';
-import chatHistoryRouter from './api/chatHistory'; 
+import chatHistoryRouter from './api/chatHistory';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -76,7 +76,10 @@ app.use('/api/learner', isAuthenticated, learner);
 app.use('/api/ai', isAuthenticated, aiRouter);
 app.use('/api/chat-history', chatHistoryRouter);
 
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return next(); // Skip this middleware for API routes
+  }
   res.sendFile(path.join(staticFilesPath, 'index.html'));
 });
 

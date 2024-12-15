@@ -13,11 +13,12 @@ import {
 } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import { Tag } from 'src/app/models/tag';
-// import { FileUploadService } from 'src/app/services/fileUpload.service';
+import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { UserService } from 'src/app/services/user.service';
 import { FabricUtils, ImageSettings } from 'src/app/utils/FabricUtils';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-add-board-modal',
@@ -27,7 +28,7 @@ import { TAG_DEFAULT_COLOR } from 'src/app/utils/constants';
 export class AddBoardModalComponent implements OnInit {
   readonly tagDefaultColor = TAG_DEFAULT_COLOR;
 
-  boardID: string;
+  boardID: string = '';
 
   permissions: BoardPermissions;
   boardType: BoardType = BoardType.BRAINSTORMING;
@@ -58,12 +59,12 @@ export class AddBoardModalComponent implements OnInit {
 
   projects: Project[];
   selectedProject = '';
+  selectedFile: File | null = null; // File to upload
 
   constructor(
     public dialogRef: MatDialogRef<AddBoardModalComponent>,
-    public UserService: UserService,
     public userService: UserService,
-    // public fileUploadService: FileUploadService,
+    public fileUploadService: FileUploadService,
     public fabricUtils: FabricUtils,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -108,12 +109,37 @@ export class AddBoardModalComponent implements OnInit {
     this.tags = this.tags.filter((tag) => tag != tagRemove);
   }
 
-  async compressFile() {
-    // const image = await this.fileUploadService.compressFile();
-    // this.bgImgURL = await this.fileUploadService.upload(image);
-    fabric.Image.fromURL(this.bgImgURL, async (image) => {
-      this.bgImgSettings = this.fabricUtils.createImageSettings(image);
-    });
+  uploadImage(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) {
+        this.fileUploadService.uploadImage(file).subscribe({
+          next: (response: any) => {
+            console.log('Image uploaded successfully', response);
+            this.bgImgURL =
+              environment.ckboardDomain + '/api/image/' + response.imageUrl;
+            fabric.Image.fromURL(this.bgImgURL, async (image) => {
+              this.bgImgSettings = this.fabricUtils.createImageSettings(image);
+            });
+          },
+          error: (error) => {
+            console.error('Image upload failed', error);
+          },
+        });
+      }
+    };
+  }
+
+  onFileSelected(event: Event) {
+    const fileInput = event.target as HTMLInputElement;
+    if (fileInput.files) {
+      this.selectedFile = fileInput.files[0]; // Get the selected file
+    }
   }
 
   handleDialogSubmit() {

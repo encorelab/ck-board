@@ -476,6 +476,47 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     }
   };
 
+  onDeleteEvent = async (postID: string): Promise<void> => {
+    console.log('postID ', postID);
+    if (!this.runningGroupTask) return;
+    if (
+      this.runningGroupTask.groupTask.status == GroupTaskStatus.COMPLETE ||
+      this.runningGroupTask.groupTask.status == GroupTaskStatus.INACTIVE
+    )
+      return;
+    if (this.runningGroupTask?.groupTask?.progress) {
+      // Check if the key exists in progress
+      if (postID in this.runningGroupTask.groupTask.progress) {
+        delete this.runningGroupTask.groupTask.progress[postID];
+        console.log(
+          `Key ${postID} removed from runningGroupTask.groupTask.progress.`
+        );
+      } else {
+        console.error(
+          `Key ${postID} does not exist in runningGroupTask.groupTask.progress.`
+        );
+      }
+    } else {
+      console.error(
+        'runningGroupTask.groupTask.progress is not defined or accessible.'
+      );
+    }
+    const t = await this.workflowService.updateGroupTask(
+      this.runningGroupTask.groupTask.groupTaskID,
+      {
+        posts: this.posts.map((p) => p.post.postID),
+        progress: this.runningGroupTask.groupTask.progress,
+      }
+    );
+    this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
+    this.averageGroupProgress = await this._calcAverageProgress(
+      this.runningGroupTask
+    );
+    this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
+      this.runningGroupTask.groupTask,
+    ]);
+  };
+
   toggleSubmittedPosts(): void {
     this.showSubmittedPosts = !this.showSubmittedPosts;
   }
@@ -576,52 +617,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           const submittedPost = this.posts.find((p) => p.post.postID == postID);
           this.posts = this.posts.filter((p) => p.post.postID != postID);
           if (submittedPost) this.submittedPosts.push(submittedPost);
-        }
-      )
-    );
-    this.listeners.push(
-      this.socketService.listen(
-        SocketEvent.POST_DELETE,
-        async (postID: string) => {
-          console.log('postID ', postID);
-          if (!this.runningGroupTask) return;
-          if (
-            this.runningGroupTask.groupTask.status == GroupTaskStatus.COMPLETE
-          )
-            return;
-          if (this.runningGroupTask?.groupTask?.progress) {
-            // Check if the key exists in progress
-            if (postID in this.runningGroupTask.groupTask.progress) {
-              delete this.runningGroupTask.groupTask.progress[postID];
-              console.log(
-                `Key ${postID} removed from runningGroupTask.groupTask.progress.`
-              );
-            } else {
-              console.error(
-                `Key ${postID} does not exist in runningGroupTask.groupTask.progress.`
-              );
-            }
-          } else {
-            console.error(
-              'runningGroupTask.groupTask.progress is not defined or accessible.'
-            );
-          }
-          const t = await this.workflowService.updateGroupTask(
-            this.runningGroupTask.groupTask.groupTaskID,
-            {
-              posts: this.posts.map((p) => p.post.postID),
-              progress: this.runningGroupTask.groupTask.progress,
-            }
-          );
-          this.currentGroupProgress = this._calcGroupProgress(
-            this.runningGroupTask
-          );
-          this.averageGroupProgress = await this._calcAverageProgress(
-            this.runningGroupTask
-          );
-          this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
-            this.runningGroupTask.groupTask,
-          ]);
         }
       )
     );

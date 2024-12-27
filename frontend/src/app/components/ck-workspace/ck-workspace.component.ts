@@ -585,6 +585,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         async (postID: string) => {
           console.log('postID ', postID);
           if (!this.runningGroupTask) return;
+          if (
+            this.runningGroupTask.groupTask.status == GroupTaskStatus.COMPLETE
+          )
+            return;
           if (this.runningGroupTask?.groupTask?.progress) {
             // Check if the key exists in progress
             if (postID in this.runningGroupTask.groupTask.progress) {

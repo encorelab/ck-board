@@ -409,6 +409,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           this.averageGroupProgress = await this._calcAverageProgress(
             this.runningGroupTask
           );
+          this.socketService.emit(SocketEvent.WORKFLOW_POST_SUBMIT, post);
           this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
             this.runningGroupTask.groupTask,
           ]);

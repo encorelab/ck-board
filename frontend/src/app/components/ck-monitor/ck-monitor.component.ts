@@ -212,6 +212,12 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     }
     await this.loadWorkspaceData();
     if (this.studentView) this.showModels = true;
+    // Assign the viewType to the board's currentView property on initialization
+    if (this.board) {
+      this.board.currentView = this.viewType;
+      // Send the updated viewType to the backend
+      this.boardService.updateCurrentView(this.board.boardID, this.viewType);
+    }
   }
 
   async loadWorkspaceData(): Promise<boolean> {

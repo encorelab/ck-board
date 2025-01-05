@@ -107,7 +107,13 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
       } else {
         this.board = undefined;
       }
-
+      if (this.board) {
+        this.board.currentView = this.viewType;
+        this.boardService.updateCurrentView(
+          this.board.boardID,
+          this.board.currentView
+        );
+      }
       this.projectService.get(this.projectID).then((project) => {
         this.project = project;
       });

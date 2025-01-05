@@ -30,6 +30,7 @@ export const createTrace = async (
       boardName: board.name,
       boardType: board.type,
       boardContext: boardScopeAsString(board.scope),
+      viewType: board.currentView,
       agentUserID: user.userID,
       agentUserName: user.username,
       clientTimestamp: new Date(traceContext.clientTimestamp),

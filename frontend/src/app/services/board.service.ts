@@ -76,4 +76,11 @@ export class BoardService {
       .toPromise()
       .catch(() => undefined); // Handle undefined case
   }
+
+  updateCurrentView(boardID: string, viewType: string): Promise<any> {
+    return this.http
+      .patch<any>(`boards/${boardID}/currentView`, { viewType })
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
+  }
 }

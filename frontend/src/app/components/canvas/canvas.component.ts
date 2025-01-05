@@ -171,7 +171,27 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.initCanvasEventsListener();
     this.initGroupEventsListener();
 
+    this.setTraceViewType();
+
     window.onbeforeunload = () => this.ngOnDestroy();
+  }
+
+  async setTraceViewType() {
+    const fetchedBoard = await this.boardService.get(this.boardID);
+    if (!fetchedBoard) {
+      this.router.navigate(['error']);
+      return false; // or true depending on your flow
+    }
+    this.board = fetchedBoard;
+    if (this.board) {
+      this.board.currentView = this.viewType;
+      this.boardService.updateCurrentView(
+        this.board.boardID,
+        this.board.currentView
+      );
+      return true;
+    }
+    return false;
   }
 
   initCanvasEventsListener() {

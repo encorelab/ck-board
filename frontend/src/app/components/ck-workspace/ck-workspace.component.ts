@@ -47,6 +47,7 @@ import { AddPostComponent } from '../add-post-modal/add-post.component';
 import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { GroupTaskService } from 'src/app/services/groupTask.service';
+import { TraceService } from 'src/app/services/trace.service';
 
 // install Swiper modules
 SwiperCore.use([EffectCards]);
@@ -107,6 +108,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private traceService: TraceService,
     public dialog: MatDialog
   ) {
     this.activatedRoute.queryParams.subscribe((params) => {
@@ -169,6 +171,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.board.currentView
       );
     }
+
+    this.traceService.setTraceContext(projectID, boardID);
     return true;
   }
 

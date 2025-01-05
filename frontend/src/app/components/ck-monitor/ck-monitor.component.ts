@@ -53,6 +53,7 @@ import sorting from 'src/app/utils/sorting';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
 import { LearnerService } from 'src/app/services/learner.service';
+import { TraceService } from 'src/app/services/trace.service';
 
 SwiperCore.use([EffectCards]);
 
@@ -188,6 +189,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private traceService: TraceService,
     public dialog: MatDialog
   ) {
     this.todoDataSource.sortingDataAccessor = (data, sortHeaderId) => {
@@ -248,6 +250,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     if (!this.studentView) await this.updateWorkflowData(boardID, projectID);
     this.socketService.connect(this.user.userID, this.board.boardID);
+    this.traceService.setTraceContext(projectID, boardID);
     return true;
   }
 

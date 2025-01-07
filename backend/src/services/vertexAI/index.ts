@@ -161,8 +161,6 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
                       posts without creating the bucket first.`,
 });
 
-const chat = generativeModel.startChat({});
-
 function parseVertexAIError(errorString: string): ErrorInfo {
   try {
     const jsonMatch = errorString.match(/{.*}/);
@@ -737,6 +735,8 @@ async function constructAndSendMessage(
       ]
     }
 
+    Remember to use json markdown to wrap this entire response.
+
     Here are the posts from the project:` +
     postsAsKeyValuePairs + // Concatenate variables here
     `\nHere are the buckets:\n` +
@@ -744,11 +744,10 @@ async function constructAndSendMessage(
     `\nUser prompt: ${prompt}`;
 
   try {
-    const result = await chat.sendMessageStream(message); // Get the StreamGenerateContentResult
-
+    const result = await generativeModel.generateContentStream(message);
     return result;
   } catch (error) {
-    console.error('Error in sendMessageStream:', error);
+    console.error('Error in generateContentStream:', error);
     throw error;
   }
 }

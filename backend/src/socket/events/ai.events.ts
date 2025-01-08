@@ -17,16 +17,40 @@ class AiMessage {
 
   static async handleEvent(
     data: SocketPayload<AiMessageData>
-  ): Promise<{ posts: any[]; currentPrompt: string; fullPromptHistory: string; boardId: string; userId: string }> {
-    const { posts, currentPrompt, fullPromptHistory: fullPromptHistory, boardId, userId } = data.eventData;
+  ): Promise<{
+    posts: any[];
+    currentPrompt: string;
+    fullPromptHistory: string;
+    boardId: string;
+    userId: string;
+  }> {
+    const {
+      posts,
+      currentPrompt,
+      fullPromptHistory: fullPromptHistory,
+      boardId,
+      userId,
+    } = data.eventData;
     // ... any necessary data processing or validation ...
-    return { posts, currentPrompt, fullPromptHistory: fullPromptHistory, boardId, userId };
+    return {
+      posts,
+      currentPrompt,
+      fullPromptHistory: fullPromptHistory,
+      boardId,
+      userId,
+    };
   }
 
   static async handleResult(
     io: Server,
     socket: Socket,
-    result: { posts: any[]; currentPrompt: string; fullPromptHistory: string; boardId: string; userId: string }
+    result: {
+      posts: any[];
+      currentPrompt: string;
+      fullPromptHistory: string;
+      boardId: string;
+      userId: string;
+    }
   ): Promise<void> {
     const { posts, currentPrompt, fullPromptHistory, boardId, userId } = result;
     socket.data.boardId = boardId;

@@ -17,10 +17,7 @@ router.post('/', async (req, res) => {
     const csvString = formatChatHistoryAsCSV(chatHistory);
 
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${filename}"`
-    );
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(csvString);
   } catch (error) {
     console.error('Error fetching or formatting chat history:', error);

@@ -27,7 +27,7 @@ interface AIResponse {
   remove_post_from_bucket?: { postID: string; bucketID: string }[];
   add_to_canvas?: { postID: string }[];
   remove_from_canvas?: { postID: string }[];
-  create_bucket_and_add_posts?: { name: string; postIDs: string[] }[]; 
+  create_bucket_and_add_posts?: { name: string; postIDs: string[] }[];
 }
 
 type ErrorInfo = {
@@ -189,7 +189,6 @@ function parseVertexAIError(errorString: string): ErrorInfo {
 
 function isValidJSON(jsonObject: any): boolean {
   try {
-
     if (!jsonObject.response) {
       return false;
     }
@@ -309,22 +308,22 @@ function parseJsonResponse(response: string): any {
   // Remove the "response" key and its value, including "<END>", "<END>"", or "<END>","
   const responseStartIndex = response.indexOf('"response": "');
   let endLength = '<END>"'.length;
-  let responseEndIndex = response.indexOf('<END>",'); 
+  let responseEndIndex = response.indexOf('<END>",');
 
   if (responseEndIndex === -1) {
     responseEndIndex = response.indexOf('<END>"');
     if (responseEndIndex !== -1) {
-      endLength = '<END>"'.length
-      responseEndIndex += endLength; 
+      endLength = '<END>"'.length;
+      responseEndIndex += endLength;
     }
   } else {
-    endLength = '<END>",'.length
+    endLength = '<END>",'.length;
     responseEndIndex += endLength;
   }
 
   if (responseStartIndex === -1 || responseEndIndex === -1) {
     console.warn('Invalid response format:', response);
-    return {}; 
+    return {};
   }
 
   const responseValue = response.substring(
@@ -342,7 +341,7 @@ function parseJsonResponse(response: string): any {
     return jsonObject;
   } catch (error) {
     console.error('Error parsing JSON:', error);
-    return {}; 
+    return {};
   }
 }
 
@@ -369,10 +368,10 @@ async function sendMessage(
 
     // Save user prompt
     await dalChatMessage.save({
-      userId: userId, 
+      userId: userId,
       boardId: boardId,
       role: 'user',
-      content: currentPrompt 
+      content: currentPrompt,
     });
 
     // 1. Fetch Upvote Counts and Create Map
@@ -392,7 +391,7 @@ async function sendMessage(
     const bucketsToSend = await fetchAndFormatBuckets(boardId);
 
     // 5. Create ID mappings
-    const { postMap, bucketMap } = createIdMappings(posts, bucketsToSend); 
+    const { postMap, bucketMap } = createIdMappings(posts, bucketsToSend);
 
     // Replace IDs in posts and buckets before sending to LLM
     const mappedPosts = replaceIds(postsWithBucketIds, postMap, bucketMap);
@@ -431,9 +430,9 @@ async function sendMessage(
 
           let isValid;
           const noJsonResponse = removeJsonMarkdown(partialResponse);
-          
+
           try {
-            const parsedResponse = parseJsonResponse(noJsonResponse)
+            const parsedResponse = parseJsonResponse(noJsonResponse);
 
             if (isValidJSON(parsedResponse)) {
               finalResponse = parsedResponse;
@@ -457,9 +456,8 @@ async function sendMessage(
               userId: userId,
               boardId: boardId,
               role: 'assistant',
-              content: removeEnd(finalResponse.response)
-            }); 
-
+              content: removeEnd(finalResponse.response),
+            });
           } else {
             const errorMessage = `Completed with invalid formatting: ${partialResponse}`;
             socket.emit(SocketEvent.AI_RESPONSE, {
@@ -472,11 +470,29 @@ async function sendMessage(
             // Restore original IDs before performing database operations
             const restoredResponse = {
               ...finalResponse,
-              remove_from_canvas: restoreIdsFromCanvas(finalResponse.remove_from_canvas, postMap),
-              add_to_canvas: restoreIdsFromCanvas(finalResponse.add_to_canvas, postMap),
-              remove_post_from_bucket: restoreIdsFromBucket(finalResponse.remove_post_from_bucket, postMap, bucketMap),
-              add_post_to_bucket: restoreIdsFromBucket(finalResponse.add_post_to_bucket, postMap, bucketMap),
-              create_bucket_and_add_posts: restoreIdsCreateBucketAndAddPosts(finalResponse.create_bucket_and_add_posts, postMap, bucketMap)
+              remove_from_canvas: restoreIdsFromCanvas(
+                finalResponse.remove_from_canvas,
+                postMap
+              ),
+              add_to_canvas: restoreIdsFromCanvas(
+                finalResponse.add_to_canvas,
+                postMap
+              ),
+              remove_post_from_bucket: restoreIdsFromBucket(
+                finalResponse.remove_post_from_bucket,
+                postMap,
+                bucketMap
+              ),
+              add_post_to_bucket: restoreIdsFromBucket(
+                finalResponse.add_post_to_bucket,
+                postMap,
+                bucketMap
+              ),
+              create_bucket_and_add_posts: restoreIdsCreateBucketAndAddPosts(
+                finalResponse.create_bucket_and_add_posts,
+                postMap,
+                bucketMap
+              ),
               // ... restore IDs for other keys as needed
             };
 
@@ -546,8 +562,12 @@ function createIdMappings(posts: any[], buckets: any[]) {
   return { postMap, bucketMap };
 }
 
-function replaceIds(data: any[], postMap: Map<string, string>, bucketMap: Map<string, string>): any[] {
-  return data.map(item => {
+function replaceIds(
+  data: any[],
+  postMap: Map<string, string>,
+  bucketMap: Map<string, string>
+): any[] {
+  return data.map((item) => {
     const updatedItem = { ...item }; // Create a copy of the item
 
     // Replace postID
@@ -562,61 +582,84 @@ function replaceIds(data: any[], postMap: Map<string, string>, bucketMap: Map<st
 
     // Replace bucketIDs in inBuckets array
     if (item.inBuckets) {
-        updatedItem.inBuckets = item.inBuckets.map((bucket: { bucketID: string }) => ({
-        ...bucket,
-        bucketID: bucketMap.get(bucket.bucketID) || bucket.bucketID
-      }));
+      updatedItem.inBuckets = item.inBuckets.map(
+        (bucket: { bucketID: string }) => ({
+          ...bucket,
+          bucketID: bucketMap.get(bucket.bucketID) || bucket.bucketID,
+        })
+      );
     }
 
     return updatedItem;
   });
 }
 
-function restoreIdsFromCanvas(data: { postID: string }[] | undefined, postMap: Map<string, string>): { postID: string }[] { 
-  const reversedPostMap = new Map([...postMap.entries()].map(([key, value]) => [value, key]));
+function restoreIdsFromCanvas(
+  data: { postID: string }[] | undefined,
+  postMap: Map<string, string>
+): { postID: string }[] {
+  const reversedPostMap = new Map(
+    [...postMap.entries()].map(([key, value]) => [value, key])
+  );
 
   if (!data) {
     return []; // Return an empty array if data is undefined
   }
 
-  return data.map(item => ({
-    ...item,
-    postID: reversedPostMap.get(item.postID) || item.postID
-  }));
-}
-
-function restoreIdsFromBucket(data: { postID: string; bucketID: string }[] | undefined, postMap: Map<string, string>, bucketMap: Map<string, string>): { postID: string; bucketID: string }[] {
-  const reversedPostMap = new Map([...postMap.entries()].map(([key, value]) => [value, key]));
-  const reversedBucketMap = new Map([...bucketMap.entries()].map(([key, value]) => [value, key]));
-
-  if (!data) {
-    return []; // Return an empty array if data is undefined
-  }
-
-  return data.map(item => ({
+  return data.map((item) => ({
     ...item,
     postID: reversedPostMap.get(item.postID) || item.postID,
-    bucketID: reversedBucketMap.get(item.bucketID) || item.bucketID
   }));
 }
 
-function restoreIdsCreateBucketAndAddPosts(data: { name: string; postIDs: string[] }[] | undefined, postMap: Map<string, string>, bucketMap: Map<string, string>): { name: string; postIDs: string[] }[] {
-  const reversedPostMap = new Map([...postMap.entries()].map(([key, value]) => [value, key]));
+function restoreIdsFromBucket(
+  data: { postID: string; bucketID: string }[] | undefined,
+  postMap: Map<string, string>,
+  bucketMap: Map<string, string>
+): { postID: string; bucketID: string }[] {
+  const reversedPostMap = new Map(
+    [...postMap.entries()].map(([key, value]) => [value, key])
+  );
+  const reversedBucketMap = new Map(
+    [...bucketMap.entries()].map(([key, value]) => [value, key])
+  );
 
   if (!data) {
     return []; // Return an empty array if data is undefined
   }
 
-  return data.map(item => ({
+  return data.map((item) => ({
     ...item,
-    postIDs: item.postIDs.map((postID: string) => reversedPostMap.get(postID) || postID)
+    postID: reversedPostMap.get(item.postID) || item.postID,
+    bucketID: reversedBucketMap.get(item.bucketID) || item.bucketID,
+  }));
+}
+
+function restoreIdsCreateBucketAndAddPosts(
+  data: { name: string; postIDs: string[] }[] | undefined,
+  postMap: Map<string, string>,
+  bucketMap: Map<string, string>
+): { name: string; postIDs: string[] }[] {
+  const reversedPostMap = new Map(
+    [...postMap.entries()].map(([key, value]) => [value, key])
+  );
+
+  if (!data) {
+    return []; // Return an empty array if data is undefined
+  }
+
+  return data.map((item) => ({
+    ...item,
+    postIDs: item.postIDs.map(
+      (postID: string) => reversedPostMap.get(postID) || postID
+    ),
   }));
 }
 
 async function performDatabaseOperations(
   response: any,
   posts: any[],
-  socket: socketIO.Socket,
+  socket: socketIO.Socket
 ) {
   const validPostIds = new Set(posts.map((post) => post.postID));
 

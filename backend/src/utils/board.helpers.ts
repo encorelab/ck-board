@@ -5,7 +5,7 @@ import {
   STUDENT_POST_COLOR,
   TEACHER_POST_COLOR,
 } from '../constants';
-import { PermissionsModel } from '../models/Board';
+import { PermissionsModel, ViewSettings } from '../models/Board';
 import Tag, { TagModel } from '../models/Tag';
 import { Role } from '../models/User';
 import dalPost from '../repository/dalPost';
@@ -21,7 +21,7 @@ export function getDefaultBoardPermissions(): PermissionsModel {
     showAuthorNameStudent: true,
     showAuthorNameTeacher: true,
     showBucketStudent: true,
-    showSnackBarStudent: true,
+    showSnackBarStudent: false,
     allowTracing: false,
   };
 }
@@ -50,4 +50,14 @@ export async function getDefaultPostColor(
   if (!user) return null;
 
   return user.role == Role.STUDENT ? STUDENT_POST_COLOR : TEACHER_POST_COLOR;
+}
+
+export function getAllViewsAllowed(): ViewSettings {
+  console.log('all views allowed');
+  return {
+    allowBuckets: true,
+    allowCanvas: true,
+    allowMonitor: true,
+    allowWorkspace: true,
+  };
 }

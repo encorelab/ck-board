@@ -99,6 +99,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
   unsubListeners: Subscription[] = [];
 
   viewType = ViewType.CANVAS;
+  isTeacher: boolean = false;
 
   @HostListener('wheel', ['$event'])
   onMouseWheel(e: WheelEvent) {
@@ -157,6 +158,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
     });
 
     this.user = this.userService.user!;
+    this.isTeacher = this.user.role === Role.TEACHER;
     this.canvas = new fabric.Canvas(
       'canvas',
       this.embedded
@@ -475,7 +477,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
         });
         this.boardService.get(this.boardID).then((board) => {
           if (board) this.intermediateBoardConfig(board);
-          if (this.board && !this.board.viewSettings?.allowCanvas) {
+          if (
+            !this.isTeacher &&
+            this.board &&
+            !this.board.viewSettings?.allowCanvas
+          ) {
             this.router.navigateByUrl(
               `project/${this.projectID}/board/${
                 this.boardID

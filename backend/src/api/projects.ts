@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { mongo } from 'mongoose';
-import { BoardScope } from '../models/Board';
+import { BoardScope, ViewSettings, ViewType } from '../models/Board';
 import { ProjectModel } from '../models/Project';
 import { UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
 import dalProject from '../repository/dalProject';
 import {
+  getAllViewsAllowed,
   getDefaultBoardPermissions,
   getDefaultBoardTags,
 } from '../utils/board.helpers';
@@ -41,6 +42,8 @@ router.post('/', async (req, res) => {
       initialZoom: 100,
       upvoteLimit: 5,
       visible: true,
+      defaultView: ViewType.CANVAS,
+      viewSettings: getAllViewsAllowed(),
     });
     savedProject = await savedProject.updateOne({ boards: [board.boardID] });
   }

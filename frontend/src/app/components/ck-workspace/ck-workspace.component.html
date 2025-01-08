@@ -5,6 +5,13 @@
     [user]="user"
     style="width: 100%"
   >
+    <button
+      mat-icon-button
+      routerLink="{{ '/project/' + project.projectID }}"
+      matTooltip="Return to Project Dashboard"
+    >
+      <mat-icon>arrow_back</mat-icon>
+    </button>
     <span *ngIf="board">CK Workspace - {{ this.board.name }}</span>
     <button
       mat-icon-button
@@ -15,15 +22,6 @@
       <mat-icon>file_copy</mat-icon>
     </button>
     <span style="flex: 1 1 auto"></span>
-    <button
-      mat-icon-button
-      routerLink="{{
-        '/project/' + project.projectID + '/board/' + board.boardID
-      }}"
-      matTooltip="Back to Board"
-    >
-      <mat-icon>keyboard_return</mat-icon>
-    </button>
     <app-view-navigation
       [boardID]="board.boardID"
       [currentView]="viewType"

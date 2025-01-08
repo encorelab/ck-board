@@ -424,10 +424,13 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
 
     // 1. Fetch all posts for the current board
     this.fetchBoardPosts().then((posts) => {
-      const prompt = this.aiPrompt;
+      const currentPrompt = this.aiPrompt;
       this.aiPrompt = ''; // Clear the prompt field
+      
+      // Construct the complete prompt including chat history
+      const prompt = this.constructPromptWithHistory(currentPrompt);
 
-      this.chatHistory.push({ role: 'user', content: prompt });
+      this.chatHistory.push({ role: 'user', content: currentPrompt });
 
       // Wait for the change detection to run and render the new message
       this.changeDetectorRef.detectChanges();
@@ -503,6 +506,21 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       );
     });
     this.isProcessingAIRequest = false;
+  }
+
+  // Helper function to construct the prompt with chat history
+  constructPromptWithHistory(currentPrompt: string): string {
+    let fullPrompt = "";
+    
+    // Add each message from the chat history to the prompt
+    this.chatHistory.forEach(message => {
+      fullPrompt += `${message.role}: ${message.content}\n`;
+    });
+
+    // Add the current prompt at the end
+    fullPrompt += `user: ${currentPrompt}`; 
+
+    return fullPrompt;
   }
 
   downloadChatHistory() {

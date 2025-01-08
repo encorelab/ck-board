@@ -426,9 +426,9 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
     this.fetchBoardPosts().then((posts) => {
       const currentPrompt = this.aiPrompt;
       this.aiPrompt = ''; // Clear the prompt field
-      
+
       // Construct the complete prompt including chat history
-      const prompt = this.constructPromptWithHistory(currentPrompt);
+      const fullPromptHistory = this.constructPromptWithHistory(currentPrompt);
 
       this.chatHistory.push({ role: 'user', content: currentPrompt });
 
@@ -439,7 +439,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       // 2. Send data and prompt to the backend via WebSocket
       this.socketService.emit(SocketEvent.AI_MESSAGE, {
         posts,
-        prompt,
+        currentPrompt: currentPrompt,
+        fullPromptHistory: fullPromptHistory,
         boardId: this.board.boardID,
         userId: this.user.userID,
       });
@@ -524,17 +525,31 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   }
 
   downloadChatHistory() {
-    const data = {
-      boardId: this.board.boardID,
-      userId: this.user.userID
-    };
+    // Generate timestamp in the desired format
+    const timestamp = new Date().toLocaleDateString('en-CA', { 
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).replace(/\//g, '-').replace(/, /g, '-'); 
+
+  const filename = `chat_history-${timestamp}.csv`;
+
+  const data = {
+    boardId: this.board.boardID,
+    userId: this.user.userID,
+    filename: filename // Add filename to the data
+  };
 
     this.http.post('chat-history', data, { 
       responseType: 'blob' 
     }).subscribe(
       (response) => {
         const blob = new Blob([response], { type: 'text/csv' });
-        saveAs(blob, 'chat_history.csv'); 
+        saveAs(blob, filename); 
         this.openSnackBar('Chat history downloaded successfully!');
       },
       (error) => {

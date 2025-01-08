@@ -6,7 +6,8 @@ import { SocketPayload } from '../types/event.types'; // Import the type for Soc
 // Define a type for the AI message data
 interface AiMessageData {
   posts: any[]; // Or a more specific type for your posts
-  prompt: string;
+  currentPrompt: string;
+  fullPromptHistory: string;
   boardId: string;
   userId: string;
 }
@@ -16,21 +17,21 @@ class AiMessage {
 
   static async handleEvent(
     data: SocketPayload<AiMessageData>
-  ): Promise<{ posts: any[]; prompt: string; boardId: string; userId: string }> {
-    const { posts, prompt, boardId, userId } = data.eventData;
+  ): Promise<{ posts: any[]; currentPrompt: string; fullPromptHistory: string; boardId: string; userId: string }> {
+    const { posts, currentPrompt, fullPromptHistory: fullPromptHistory, boardId, userId } = data.eventData;
     // ... any necessary data processing or validation ...
-    return { posts, prompt, boardId, userId };
+    return { posts, currentPrompt, fullPromptHistory: fullPromptHistory, boardId, userId };
   }
 
   static async handleResult(
     io: Server,
     socket: Socket,
-    result: { posts: any[]; prompt: string; boardId: string; userId: string }
+    result: { posts: any[]; currentPrompt: string; fullPromptHistory: string; boardId: string; userId: string }
   ): Promise<void> {
-    const { posts, prompt, boardId, userId } = result;
+    const { posts, currentPrompt, fullPromptHistory, boardId, userId } = result;
     socket.data.boardId = boardId;
     socket.data.userId = userId;
-    sendMessage(posts, prompt, socket);
+    sendMessage(posts, currentPrompt, fullPromptHistory, socket);
   }
 }
 

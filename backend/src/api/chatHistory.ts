@@ -7,7 +7,7 @@ const router = Router();
 
 router.post('/', async (req, res) => {
   try {
-    const { boardId, userId } = req.body;
+    const { boardId, userId, filename } = req.body;
     const chatHistory = await dalChatMessage.getByBoardIdAndUserId(
       boardId,
       userId
@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader(
       'Content-Disposition',
-      'attachment; filename="chat_history.csv"'
+      `attachment; filename="${filename}"`
     );
     res.send(csvString);
   } catch (error) {

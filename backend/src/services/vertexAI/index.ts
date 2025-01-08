@@ -356,7 +356,8 @@ function removeEnd(str: string): string {
 
 async function sendMessage(
   posts: any[],
-  prompt: string,
+  currentPrompt: string,
+  fullPromptHistory: string,
   socket: socketIO.Socket
 ): Promise<void> {
   try {
@@ -371,7 +372,7 @@ async function sendMessage(
       userId: userId, 
       boardId: boardId,
       role: 'user',
-      content: prompt 
+      content: currentPrompt 
     });
 
     // 1. Fetch Upvote Counts and Create Map
@@ -398,7 +399,7 @@ async function sendMessage(
     const mappedBuckets = replaceIds(bucketsToSend, postMap, bucketMap);
 
     // 6. Construct and Send Message to LLM (streaming)
-    constructAndSendMessage(mappedPosts, mappedBuckets, prompt).then(
+    constructAndSendMessage(mappedPosts, mappedBuckets, fullPromptHistory).then(
       (result) => {
         // Use .then() to handle the Promise
         const stream = result.stream;

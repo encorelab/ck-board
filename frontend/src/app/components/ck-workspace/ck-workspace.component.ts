@@ -477,7 +477,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   };
 
   onDeleteEvent = async (postID: string): Promise<void> => {
-    console.log('postID ', postID);
     if (!this.runningGroupTask) return;
     if (
       this.runningGroupTask.groupTask.status == GroupTaskStatus.COMPLETE ||
@@ -488,9 +487,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       // Check if the key exists in progress
       if (postID in this.runningGroupTask.groupTask.progress) {
         delete this.runningGroupTask.groupTask.progress[postID];
-        console.log(
-          `Key ${postID} removed from runningGroupTask.groupTask.progress.`
-        );
       } else {
         console.error(
           `Key ${postID} does not exist in runningGroupTask.groupTask.progress.`
@@ -501,6 +497,21 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         'runningGroupTask.groupTask.progress is not defined or accessible.'
       );
     }
+
+    const postIndex = this.submittedPosts.findIndex(
+      (p) => p.post.postID === postID
+    );
+    if (postIndex !== -1) {
+      this.submittedPosts.splice(postIndex, 1); // Remove the post from the array
+    } else {
+      const postIndex = this.posts.findIndex((p) => p.post.postID === postID);
+      if (postIndex !== -1) {
+        this.posts.splice(postIndex, 1); // Remove the post from the array
+      } else {
+        console.error(`Post with ID ${postID} not found in posts array.`);
+      }
+    }
+
     const t = await this.workflowService.updateGroupTask(
       this.runningGroupTask.groupTask.groupTaskID,
       {

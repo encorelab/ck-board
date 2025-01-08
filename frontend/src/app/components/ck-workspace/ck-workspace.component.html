@@ -265,6 +265,7 @@
         >
           <ng-template swiperSlide *ngFor="let htmlPost of posts">
             <div
+              *ngIf="htmlPost"
               (click)="$event.stopPropagation()"
               style="display: flex; flex-direction: column; gap: 10px"
             >

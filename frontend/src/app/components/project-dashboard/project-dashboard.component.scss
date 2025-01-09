@@ -1,6 +1,12 @@
 @use '../../../style/layout/dashboard';
 
-.heading {
+.score-heading {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; 
+}
+
+.activity-spaces-heading {
   color: gray;
 }
 
@@ -37,4 +43,23 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+
+.board-card-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center; 
+}
+
+.script-score-run-button {
+  display: block;  
+  width: 400px;     
+  margin: 2rem 0; 
+  padding: 1rem;   
+  font-size: 1.2rem;
+}
+
+.mat-title {
+  display: block; 
 }

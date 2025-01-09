@@ -13,14 +13,14 @@
       mat-icon-button
       [matMenuTriggerFor]="addMenu"
       *ngIf="user && user.role === Role.TEACHER"
-      matTooltip="Create Board"
+      matTooltip="Create Activity Space"
     >
       <mat-icon>add</mat-icon>
     </button>
 
     <mat-menu #addMenu="matMenu">
       <button mat-menu-item (click)="openCreateBoardDialog()">
-        Create Board
+        Create Activity Space
       </button>
     </mat-menu>
 
@@ -81,8 +81,20 @@
     </mat-menu>
   </app-toolbar>
   <div class="content">
-    <div class="heading">
-      <h3 class="mat-title" *ngIf="project">Boards for {{ project.name }}</h3>
+    <div class="score-heading">
+      <div *ngIf="project"> 
+        <button 
+          *ngIf="project.isScoreRun" 
+          mat-raised-button 
+          color="primary" 
+          class="script-score-run-button"
+        >
+          Script SCORE Run
+        </button>
+      </div>
+    </div>
+    <div class="activity-spaces-heading">
+      <h3 class="mat-title" *ngIf="project">Activity Spaces for "{{ project.name }}"</h3> 
     </div>
     <ng-container *ngIf="user.role === Role.TEACHER">
       <div>
@@ -92,7 +104,7 @@
           mat-button
           (click)="showSharedBoards = !showSharedBoards"
         >
-          Shared Project Boards ({{ sharedBoards.length }})
+          Shared Activity Spaces ({{ sharedBoards.length }})
           <mat-icon>{{
             showSharedBoards ? 'expand_less' : 'expand_more'
           }}</mat-icon>
@@ -136,7 +148,7 @@
                 <button
                   mat-icon-button
                   class="accent"
-                  *ngIf="user && user.role === Role.TEACHER"
+                  *ngIf="!project.isScoreRun && user && user.role === Role.TEACHER"
                   matTooltip="Toggle Visibility"
                   (click)="toggleBoardVisibility($event, board)"
                 >
@@ -176,7 +188,7 @@
           mat-button
           (click)="showStudentPersonalBoards = !showStudentPersonalBoards"
         >
-          Student Personal Boards ({{ studentPersonalBoards.length }})
+          Student Activity Spaces ({{ studentPersonalBoards.length }})
           <mat-icon>{{
             showStudentPersonalBoards ? 'expand_less' : 'expand_more'
           }}</mat-icon>
@@ -208,7 +220,7 @@
                 <button
                   mat-icon-button
                   class="accent"
-                  *ngIf="user && user.role === Role.TEACHER"
+                  *ngIf="!project.isScoreRun && user && user.role === Role.TEACHER"
                   matTooltip="Toggle Visibility"
                   (click)="toggleBoardVisibility($event, board)"
                 >
@@ -238,7 +250,7 @@
           mat-button
           (click)="showTeacherPersonalBoards = !showTeacherPersonalBoards"
         >
-          Teacher Personal Boards ({{ teacherPersonalBoards.length }})
+          Teacher Activity Spaces ({{ teacherPersonalBoards.length }})
           <mat-icon>{{
             showTeacherPersonalBoards ? 'expand_less' : 'expand_more'
           }}</mat-icon>
@@ -270,7 +282,7 @@
                 <button
                   mat-icon-button
                   class="accent"
-                  *ngIf="user && user.role === Role.TEACHER"
+                  *ngIf="!project.isScoreRun && user && user.role === Role.TEACHER"
                   matTooltip="Toggle Visibility"
                   (click)="toggleBoardVisibility($event, board)"
                 >

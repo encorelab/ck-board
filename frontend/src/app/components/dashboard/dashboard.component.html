@@ -18,15 +18,11 @@
       <mat-icon>add</mat-icon>
     </button>
     <mat-menu #addMenu="matMenu">
-      <button mat-menu-item (click)="openCreateProjectDialog()">
-        Create Project
+      <button mat-menu-item (click)="openCreateScoreRunDialog()">
+        Create SCORE Run
       </button>
-      <button
-        mat-menu-item
-        (click)="openCreateBoardDialog()"
-        *ngIf="yourProjects.length > 0"
-      >
-        Create Board
+      <button mat-menu-item (click)="openCreateProjectDialog()">
+        Create CK Project
       </button>
     </mat-menu>
     <button
@@ -38,7 +34,7 @@
     </button>
   </app-toolbar>
   <div class="content">
-    <h3 class="mat-title heading">My Projects</h3>
+    <h3 class="mat-title heading">My CK Projects</h3>
     <div class="cards">
       <ng-container *ngFor="let project of yourProjects">
         <mat-card

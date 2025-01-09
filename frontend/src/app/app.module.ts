@@ -64,6 +64,7 @@ import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component
 import { ToolbarMenuComponent } from './components/toolbar-menu/toolbar-menu.component';
 import { ViewNavigationComponent } from './components/view-navigation/view-navigation.component';
 import { MarkdownModule } from 'ngx-markdown';
+import { AddScoreRunModalComponent } from './components/add-score-run-modal/add-score-run-modal.component';
 
 const config: SocketIoConfig = {
   url: environment.socketUrl,
@@ -117,6 +118,7 @@ export function tokenGetter() {
     CkBucketsComponent,
     ToolbarMenuComponent,
     ViewNavigationComponent,
+    AddScoreRunModalComponent,
   ],
   imports: [
     BrowserModule,

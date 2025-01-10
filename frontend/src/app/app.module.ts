@@ -65,6 +65,8 @@ import { ToolbarMenuComponent } from './components/toolbar-menu/toolbar-menu.com
 import { ViewNavigationComponent } from './components/view-navigation/view-navigation.component';
 import { MarkdownModule } from 'ngx-markdown';
 import { AddScoreRunModalComponent } from './components/add-score-run-modal/add-score-run-modal.component';
+import { ScoreAuthoringComponent } from './components/score-authoring/score-authoring.component';
+import { CreateActivityModalComponent } from './components/create-activity-modal/create-activity-modal.component';
 
 const config: SocketIoConfig = {
   url: environment.socketUrl,
@@ -119,6 +121,8 @@ export function tokenGetter() {
     ToolbarMenuComponent,
     ViewNavigationComponent,
     AddScoreRunModalComponent,
+    ScoreAuthoringComponent,
+    CreateActivityModalComponent,
   ],
   imports: [
     BrowserModule,

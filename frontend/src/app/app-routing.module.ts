@@ -4,6 +4,7 @@ import { CanvasComponent } from './components/canvas/canvas.component';
 import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component';
 import { CkMonitorComponent } from './components/ck-monitor/ck-monitor.component';
 import { CkWorkspaceComponent } from './components/ck-workspace/ck-workspace.component';
+import { ScoreAuthoringComponent } from './components/score-authoring/score-authoring.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
@@ -68,6 +69,11 @@ const routes: Routes = [
     path: 'project/:projectID/todo',
     component: ProjectTodoListModalComponent,
     canActivate: [AuthGuard, ProjectGuard],
+  },
+  {
+    path: 'score-authoring/:projectID',
+    component: ScoreAuthoringComponent,
+    canActivate: [SsoGuard, AuthGuard, ProjectGuard], 
   },
   { path: 'error', component: ErrorComponent },
   { path: '**', redirectTo: 'error' },

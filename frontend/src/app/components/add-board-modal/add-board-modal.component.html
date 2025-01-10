@@ -1,8 +1,8 @@
-<h1 mat-dialog-title>Board Configuration</h1>
+<h1 mat-dialog-title>Activity Space Configuration</h1>
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Board">
-      <h2 style="margin-top: 20px">Board Type</h2>
+      <h2 style="margin-top: 20px">Activity Space Type</h2>
       <mat-radio-group 
         [(ngModel)]="boardType"
       >
@@ -20,7 +20,7 @@
         appearance="outline"
         style="width: 100%; margin-top: 20px"
       >
-        <mat-label>Board Name</mat-label>
+        <mat-label>Activity Space Name</mat-label>
         <input
           matInput
           [(ngModel)]="boardName"

@@ -1,0 +1,98 @@
+<div>
+  <app-toolbar
+    class="toolbar"
+    *ngIf="user && project"
+    [user]="user"
+    style="width: 100%"
+  >
+    <button
+      mat-icon-button
+      routerLink="{{ '/project/' + project.projectID }}"
+      matTooltip="Return to Project Dashboard"
+    >
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span>SCORE Authoring - {{ project.name }}</span>
+    <span style="flex: 1 1 auto"></span>
+    <app-toolbar-menu navbarMenu [project]="project"></app-toolbar-menu>
+  </app-toolbar>
+
+  <mat-sidenav-container class="drawer-container">
+    <mat-sidenav
+      #drawer
+      mode="side"
+      opened
+      [fixedInViewport]="true"
+      [fixedTopGap]="64"
+      style="position: fixed; padding-bottom: 64px"
+    >
+      <div class="activities-container">
+        <h3>Activities</h3>
+        <div
+          class="activities-list"
+          style="overflow-y: auto; max-height: 300px"
+        >
+          <div
+            *ngFor="let activity of activities"
+            (click)="selectActivity(activity)"
+          >
+            {{ activity.name }}
+          </div>
+        </div>
+        <button
+          mat-fab
+          color="primary"
+          class="add-activity-button"
+          (click)="openCreateActivityModal()"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <div class="main-content">
+        <div class="middle-pane">
+          <h3 *ngIf="selectedActivity">{{ selectedActivity.name }}</h3>
+          <div
+            class="activity-resources-list"
+            cdkDropList
+            (cdkDropListDropped)="drop($event)"
+          >
+            <div *ngFor="let resource of selectedActivityResources" cdkDrag>
+              {{ resource.name }}
+            </div>
+          </div>
+        </div>
+
+        <mat-sidenav
+          #rightPane
+          mode="over"
+          position="end"
+          [fixedInViewport]="true"
+          [fixedTopGap]="64"
+          [(opened)]="showResourcesPane"
+        >
+          <div class="resources-pane">
+            <h3>Available Resources</h3>
+            <div class="available-resources-list">
+              <div
+                *ngFor="let resource of availableResources"
+                (click)="addResourceToActivity(resource)"
+              >
+                {{ resource.name }}
+              </div>
+            </div>
+          </div>
+        </mat-sidenav>
+
+        <div class="groups-list" *ngIf="!showResourcesPane && selectedActivity">
+          <h3>Groups</h3>
+          <div *ngFor="let group of selectedActivityGroups">
+            {{ group.name }}
+          </div>
+        </div>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

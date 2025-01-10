@@ -1,0 +1,75 @@
+
+.toolbar {
+    width: 100%; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999; 
+  }
+  
+  .drawer-container {
+    position: absolute;
+    padding-top: 56px; 
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+  
+    @media (min-width: 600px) { 
+      padding-top: 64px;
+    }
+  }
+  
+  .activities-container {
+    padding: 1rem;
+  }
+  
+  .activities-list {
+    // Add styles for the activities list as needed (e.g., padding, margin, etc.)
+  }
+  
+  .add-activity-button {
+    position: absolute;
+    bottom: 1rem; 
+    right: 1rem;
+    transform: none; 
+  }
+
+  mat-sidenav {
+    width: 350px; 
+  }
+  
+  .main-content {
+    display: flex;
+    height: 100%; 
+  }
+  
+  .middle-pane {
+    flex: 1; 
+    padding: 1rem;
+    border-right: 1px solid #ccc; 
+    
+    h3 {
+      margin-bottom: 1rem; 
+    }
+  }
+  
+  .activity-resources-list {
+    // Add styles for the drag and drop list as needed (e.g., min-height, etc.)
+  }
+  
+  .resources-pane {
+    width: 300px; 
+    padding: 1rem;
+  }
+  
+  .available-resources-list {
+    // Add styles for the available resources list as needed (e.g., padding, margin, etc.)
+  }
+  
+  .groups-list {
+    flex: 0 0 200px;
+    padding: 1rem;
+    border-left: 1px solid #ccc; 
+  }

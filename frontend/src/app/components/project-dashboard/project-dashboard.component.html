@@ -88,12 +88,13 @@
           mat-raised-button 
           color="primary" 
           class="script-score-run-button"
+          (click)="navigateToScoreAuthoring()" 
         >
           Script SCORE Run
         </button>
       </div>
     </div>
-    <div class="activity-spaces-heading">
+    <div *ngIf="project" class="activity-spaces-heading">
       <h3 class="mat-title" *ngIf="project">Activity Spaces for "{{ project.name }}"</h3> 
     </div>
     <ng-container *ngIf="user.role === Role.TEACHER">

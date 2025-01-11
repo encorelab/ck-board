@@ -21,7 +21,6 @@ import { Activity } from 'src/app/models/activity';
 interface Resource {
   resourceID: string;
   name: string;
-  // ... other properties as needed
 }
 
 @Component({
@@ -77,7 +76,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     }
   
     try {
-      // this.activities = await this.http.get<Activity[]>(`/api/activities/project/${projectID}`).toPromise() || [];
+      this.activities = await this.http.get<Activity[]>(`activities/project/${projectID}`).toPromise() || [];
     } catch (error) {
       this.snackbarService.queueSnackbar("Error loading activities.");
       console.error("Error loading activities:", error);
@@ -118,15 +117,22 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         createActivity: this.createActivity 
       }
     });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.createActivity(result); 
+      }
+    });
   }
 
   createActivity = async (activityData: Activity) => { 
     try {
-      const response = await this.http.post('/api/activities', activityData).toPromise();
+      const response = await this.http.post('activities/', activityData).toPromise();
       const newActivity: Activity = response as Activity; 
   
       this.activities.push(newActivity); 
       this.selectActivity(newActivity); 
+      console.log("New Activity created.")
     } catch (error) {
       this.snackbarService.queueSnackbar("Error creating activity.");
       console.error("Error creating activity:", error);

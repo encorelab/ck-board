@@ -23,6 +23,8 @@ import { isAuthenticated } from './utils/auth';
 import RedisClient from './utils/redis';
 import aiRouter from './api/ai';
 import chatHistoryRouter from './api/chatHistory'; 
+import activitiesRouter from './api/activities';
+
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -70,6 +72,7 @@ app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
 app.use('/api/ai', isAuthenticated, aiRouter);
 app.use('/api/chat-history', chatHistoryRouter);
+app.use('/api/activities', activitiesRouter);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(staticFilesPath, 'index.html'));

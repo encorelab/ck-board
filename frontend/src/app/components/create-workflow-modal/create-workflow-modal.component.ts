@@ -511,7 +511,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       userId: this.user.userID
     };
 
-    this.http.post('chat-history', data, { 
+    this.http.post('chat-history/', data, { 
       responseType: 'blob' 
     }).subscribe(
       (response) => {

@@ -61,5 +61,19 @@ router.put('/:activityID', async (req, res) => {
       res.status(500).json({ error: 'Failed to delete activity.' });
     }
   });
+
+  router.post('/order', async (req, res) => {
+    try {
+      const activities: { activityID: string; order: number }[] = req.body.activities;
+      const updatePromises = activities.map(activity => 
+        dalActivity.update(activity.activityID, { order: activity.order })
+      );
+      await Promise.all(updatePromises);
+      res.status(200).json({ message: 'Activity order updated successfully.' });
+    } catch (error) {
+      console.error("Error updating activity order:", error);
+      res.status(500).json({ error: 'Failed to update activity order.' });
+    }
+  });
   
   export default router;

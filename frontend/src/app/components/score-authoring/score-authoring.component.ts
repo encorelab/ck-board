@@ -102,6 +102,25 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     // ... (Implement logic to delete the activity) ...
   }
 
+  dropActivity(event: CdkDragDrop<Activity[]>) {
+    moveItemInArray(this.activities, event.previousIndex, event.currentIndex);
+    this.updateActivityOrder();
+  }
+
+  async updateActivityOrder() {
+    try {
+      const updatedActivities = this.activities.map((activity, index) => ({
+        activityID: activity.activityID,
+        order: index + 1 // Assign new order based on index
+      }));
+
+      await this.http.post('activities/order/', { activities: updatedActivities }).toPromise(); 
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error updating activity order.");
+      console.error("Error updating activity order:", error);
+    }
+  }
+
   async fetchActivityResources(activityID: string) {
     try {
       // ... (Implement logic to fetch resources for the activity) ...

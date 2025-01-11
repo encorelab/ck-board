@@ -26,8 +26,8 @@
       display: flex; 
       align-items: center; 
       cursor: pointer;
-      padding: 0.5rem; 
-      margin-bottom: 0.5rem; 
+      padding: 0 0 0 0.5rem; 
+      margin-bottom: 0; 
   
       .activity-buttons {
         margin-left: auto; 
@@ -37,10 +37,21 @@
         }
       }
   
-      &.selected { 
-        background-color: #e0e0e0; 
+      &[cdkDrag] { // Style for draggable activities
+        cursor: move; /* Show the move cursor when hovering */
+      }
+
+      .drag-handle { /* Styles for the drag handle icon */
+        cursor: move;
+        margin-right: 0.5rem; /* Add some space to the right */
       }
     }
+  }
+
+  .selected { 
+    background-color: #e0e0e0; 
+    border-left: 4px solid #3f51b5; /* Add a thicker left border to highlight */
+    padding-left: 0.25rem; /* Adjust padding to account for the border */
   }
   
   .add-activity-button {

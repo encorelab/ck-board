@@ -17,6 +17,9 @@ export class ActivityModel {
 
   @prop({ required: true, type: () => [String] }) 
   public groupIDs!: string[]; 
+
+  @prop({ required: true, default: 0 })
+  public order!: number; 
 }
 
 const Activity = getModelForClass(ActivityModel);

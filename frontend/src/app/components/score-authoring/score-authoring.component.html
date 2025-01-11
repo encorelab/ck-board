@@ -24,15 +24,17 @@
   
       <div class="activities-pane"> 
         <h3>Activities</h3>
-        <div class="activities-list" style="overflow-y: auto; max-height: 300px;"> 
-          <div 
-            *ngFor="let activity of activities" 
-            (click)="selectActivity(activity)"
-            [class.selected]="selectedActivity?.activityID === activity.activityID" 
-          >
-            <div class="activity-item"> 
-              {{ activity.name }}
-              <div class="activity-buttons"> 
+        <div class="activities-list" cdkDropList (cdkDropListDropped)="dropActivity($event)"> 
+            <div 
+              *ngFor="let activity of activities" 
+              (click)="selectActivity(activity)"
+              [class.selected]="selectedActivity?.activityID === activity.activityID" 
+              cdkDrag 
+            >
+              <div class="activity-item">
+                <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon> 
+                {{ activity.name }}
+                <div class="activity-buttons"> 
                 <button mat-icon-button (click)="start(activity)"> 
                   <mat-icon>play_arrow</mat-icon>
                 </button>

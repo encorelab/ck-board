@@ -77,6 +77,9 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   
     try {
       this.activities = await this.http.get<Activity[]>(`activities/project/${projectID}`).toPromise() || [];
+      if (this.activities.length > 0) {
+        this.selectActivity(this.activities[0]); // Select the first activity
+      }
     } catch (error) {
       this.snackbarService.queueSnackbar("Error loading activities.");
       console.error("Error loading activities:", error);
@@ -91,10 +94,18 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     this.fetchActivityGroups(activity.groupIDs); 
   }
 
+  start(activity: Activity) {
+    // ... (Implement logic to start the activity) ...
+  }
+  
+  deleteActivity(activity: Activity) {
+    // ... (Implement logic to delete the activity) ...
+  }
+
   async fetchActivityResources(activityID: string) {
     try {
       // ... (Implement logic to fetch resources for the activity) ...
-      this.selectedActivityResources = await this.http.get<Resource[]>(`/api/resources/activity/${activityID}`).toPromise() || [];
+      this.selectedActivityResources = await this.http.get<Resource[]>(`resources/activity/${activityID}`).toPromise() || [];
     } catch (error) {
       this.snackbarService.queueSnackbar("Error fetching activity resources.");
       console.error("Error fetching activity resources:", error);

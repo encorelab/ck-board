@@ -24,6 +24,7 @@ import RedisClient from './utils/redis';
 import aiRouter from './api/ai';
 import chatHistoryRouter from './api/chatHistory'; 
 import activitiesRouter from './api/activities';
+import resourcesRouter from './api/resources';
 
 dotenv.config();
 
@@ -73,6 +74,7 @@ app.use('/api/learner', isAuthenticated, learner);
 app.use('/api/ai', isAuthenticated, aiRouter);
 app.use('/api/chat-history', chatHistoryRouter);
 app.use('/api/activities', activitiesRouter);
+app.use('/api/resources', resourcesRouter);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(staticFilesPath, 'index.html'));

@@ -1,3 +1,4 @@
+// score-authoring.component.scss
 
 .toolbar {
     width: 100%; 
@@ -8,68 +9,75 @@
     z-index: 999; 
   }
   
-  .drawer-container {
-    position: absolute;
-    padding-top: 56px; 
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: auto;
-  
-    @media (min-width: 600px) { 
-      padding-top: 64px;
-    }
+  .main-content {
+    display: flex; 
+    height: calc(100vh - 64px);  
+    margin-top: 64px; 
   }
   
-  .activities-container {
+  .activities-pane {
+    width: 250px; 
     padding: 1rem;
+    border-right: 1px solid #ccc; 
   }
   
   .activities-list {
-    // Add styles for the activities list as needed (e.g., padding, margin, etc.)
+    div.activity-item { 
+      display: flex; 
+      align-items: center; 
+      cursor: pointer;
+      padding: 0.5rem; 
+      margin-bottom: 0.5rem; 
+  
+      .activity-buttons {
+        margin-left: auto; 
+        
+        button {
+          margin-left: 0.5rem; 
+        }
+      }
+  
+      &.selected { 
+        background-color: #e0e0e0; 
+      }
+    }
   }
   
   .add-activity-button {
     position: absolute;
     bottom: 1rem; 
-    right: 1rem;
+    left: 210px; 
     transform: none; 
   }
-
-  mat-sidenav {
-    width: 350px; 
-  }
   
-  .main-content {
+  .content-and-resources {
     display: flex;
+    flex: 1; 
     height: 100%; 
   }
   
   .middle-pane {
-    flex: 1; 
+    flex: 1; // Allow middle pane to take up available space
     padding: 1rem;
-    border-right: 1px solid #ccc; 
-    
-    h3 {
-      margin-bottom: 1rem; 
-    }
   }
   
-  .activity-resources-list {
-    // Add styles for the drag and drop list as needed (e.g., min-height, etc.)
+  .right-pane-container {
+    position: relative; // Required for absolute positioning of children
+    flex: 0 0 200px; // Set a fixed width for the right pane container
+    padding: 1rem;
   }
   
   .resources-pane {
-    width: 300px; 
+    position: absolute; // Position the resources pane absolutely
+    top: 0;
+    left: 0;
+    width: 100%; 
+    height: 100%; 
+    z-index: 1; // Ensure resources pane is on top when visible
     padding: 1rem;
-  }
-  
-  .available-resources-list {
-    // Add styles for the available resources list as needed (e.g., padding, margin, etc.)
   }
   
   .groups-list {
     flex: 0 0 200px;
     padding: 1rem;
-    border-left: 1px solid #ccc; 
   }

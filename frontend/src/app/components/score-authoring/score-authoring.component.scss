@@ -55,10 +55,9 @@
   }
   
   .add-activity-button {
-    position: absolute;
-    bottom: 1rem; 
-    left: 210px; 
-    transform: none; 
+    position: static;
+    margin-top: 1rem;
+    margin-left: 195px;
   }
   
   .content-and-resources {
@@ -70,11 +69,54 @@
   .middle-pane {
     flex: 1; // Allow middle pane to take up available space
     padding: 1rem;
+    
+    .add-resource-button {
+      position: absolute;
+      bottom: 1rem; 
+      right: 440px;
+    }
+
+    .activity-resources-list {
+      .resource-item { /* Add styles for the resource items */
+        display: flex;
+        align-items: center; 
+        height: 2rem;
+
+        &.canvas { 
+          background-color: #81d4fa; /* Lighter Blue */
+          color: #000; 
+        }
+  
+        &.bucketView { 
+          background-color: #80cbc4; /* Lighter Teal */
+          color: #000; 
+        }
+  
+        &.workspace { 
+          background-color: #ffcc80; /* Lighter Orange */
+          color: #000; 
+        }
+  
+        &.monitor { 
+          background-color: #ef9a9a; /* Lighter Red */
+          color: #000; 
+        }
+  
+        .drag-handle {
+          cursor: move;
+          margin-right: 0.5rem;
+        }
+
+        .delete-button { /* Add styles for the delete button */
+          margin-left: auto; /* Push the button to the right */
+        }
+      }
+    }
   }
   
   .right-pane-container {
     position: relative; // Required for absolute positioning of children
-    flex: 0 0 200px; // Set a fixed width for the right pane container
+    flex: 0 0 400px; // Set a fixed width for the right pane container
     padding: 1rem;
   }
   
@@ -86,9 +128,70 @@
     height: 100%; 
     z-index: 1; // Ensure resources pane is on top when visible
     padding: 1rem;
+
+    background-color: #fff; // White background
+    border: 1px solid #ccc; // Light gray border
+    border-radius: 5px; // Add rounded corners
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); // Add a subtle shadow
+
+    h3 { // Styles for h3 headings
+      font-size: 1.5rem; // Increase font size
+      font-weight: bold;
+      margin-bottom: 1rem; // Add space below
+    }
+  
+    h4 { // Styles for h4 headings
+      font-size: 1.2rem; // Increase font size
+      font-weight: bold;
+      margin-bottom: 0.5rem; // Add space below
+    }
+
+    .close-resource-button {
+      float: right;
+      margin-right: 1.25rem;
+    }
+
+    .available-resources-list {
+      .available-resource-item {
+        cursor: grab; /* Use grab cursor to indicate draggability */
+        padding: 0.5rem;
+        padding-right: 1rem;
+        border: 1px solid #ccc; /* Add a border to resemble material */
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        max-width: 375px;
+
+        &.canvas { 
+          background-color: #81d4fa; /* Lighter Blue */
+          color: #000; 
+        }
+  
+        &.bucketView { 
+          background-color: #80cbc4; /* Lighter Teal */
+          color: #000; 
+        }
+  
+        &.workspace { 
+          background-color: #ffcc80; /* Lighter Orange */
+          color: #000; 
+        }
+  
+        &.monitor { 
+          background-color: #ef9a9a; /* Lighter Red */
+          color: #000; 
+        }
+      }
+    }
   }
+
+  /* Style for the drop placeholder */
+.cdk-drop-list-dragging .cdk-drop-list-placeholder { 
+  background: #ccc; /* Light gray background */
+  border: dotted 3px #999; /* Dotted border */
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
   
   .groups-list {
-    flex: 0 0 200px;
+    flex: 0 0 400px;
     padding: 1rem;
   }

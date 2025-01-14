@@ -8,6 +8,9 @@ export class ResourceModel {
   public resourceID!: string;
 
   @prop({ required: true })
+  public name!: string;
+
+  @prop({ required: true })
   public activityID!: string; 
 
   @prop({ required: true })

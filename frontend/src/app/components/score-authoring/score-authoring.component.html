@@ -35,11 +35,11 @@
                 <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon> 
                 {{ activity.name }}
                 <div class="activity-buttons"> 
+                <button mat-icon-button (click)="editActivity(activity)"> 
+                  <mat-icon>edit</mat-icon>
+                </button>
                 <button mat-icon-button (click)="start(activity)"> 
                   <mat-icon>play_arrow</mat-icon>
-                </button>
-                <button mat-icon-button (click)="deleteActivity(activity)"> 
-                  <mat-icon>delete</mat-icon>
                 </button>
               </div>
             </div>
@@ -50,23 +50,65 @@
         </button>
       </div>
   
-      <div class="content-and-resources"> 
+      <div class="content-and-resources">
         <div class="middle-pane">
+          <button 
+            mat-fab 
+            color="primary" 
+            class="add-resource-button" 
+            (click)="toggleResourcesPane()"
+            *ngIf="!showResourcesPane" 
+          > 
+            <mat-icon>add</mat-icon>
+          </button>
           <h3 *ngIf="selectedActivity">{{ selectedActivity.name }}</h3>
-          <div class="activity-resources-list" cdkDropList (cdkDropListDropped)="drop($event)">
-            <div *ngFor="let resource of selectedActivityResources" cdkDrag>
-              {{ resource.name }}
+          <div class="activity-resources-list" 
+            cdkDropList 
+            (cdkDropListDropped)="dropResource($event)" 
+          >
+            <div *ngFor="let resource of selectedActivityResources; let i = index" cdkDrag>
+              <div 
+                class="resource-item" 
+                [class.canvas]="resource.canvas" 
+                [class.bucketView]="resource.bucketView"
+                [class.workspace]="resource.workspace"
+                [class.monitor]="resource.monitor"
+              >
+                <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon> 
+                Tab {{ i + 1 }}: {{ resource.name }} 
+                <button mat-icon-button (click)="deleteResource(resource, i)" class="delete-button"> 
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
             </div>
           </div>
+          
         </div>
-  
+      
         <div class="right-pane-container"> 
           <mat-sidenav #rightPane mode="over" position="end" [(opened)]="showResourcesPane">
             <div class="resources-pane">
-              <h3>Available Resources</h3>
-              <div class="available-resources-list">
-                <div *ngFor="let resource of availableResources" (click)="addResourceToActivity(resource)">
-                  {{ resource.name }}
+              <button mat-icon-button class="close-resource-button" (click)="showResourcesPane = false"> 
+                <mat-icon>close</mat-icon>
+              </button>
+              <h3>Resources</h3>
+              <h4>View</h4>
+              <div 
+                class="available-resources-list" 
+                cdkDropList 
+                cdkDropListOrientation="vertical" 
+                (cdkDropListDropped)="dropResourceFromAvailable($event)"
+              >
+                <div *ngFor="let resource of availableResources" cdkDrag>
+                  <div 
+                    class="available-resource-item"
+                    [class.canvas]="resource.type === 'canvas'" 
+                    [class.bucketView]="resource.type === 'bucketView'"
+                    [class.workspace]="resource.type === 'workspace'"
+                    [class.monitor]="resource.type === 'monitor'"
+                  > 
+                    {{ resource.name }}
+                  </div>
                 </div>
               </div>
             </div>

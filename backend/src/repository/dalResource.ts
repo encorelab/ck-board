@@ -33,6 +33,16 @@ const dalResource = {
     }
   },
 
+  remove: async (id: string): Promise<ResourceModel | null | undefined> => {
+    try {
+      const deletedResource = await Resource.findOneAndDelete({ resourceID: id });
+      return deletedResource;
+    } catch (error) {
+      console.error("Error deleting resource:", error);
+      return undefined; 
+    }
+  },
+
   update: async (id: string, resource: Partial<ResourceModel>): Promise<ResourceModel | null | undefined> => {
     try {
       return await Resource.findOneAndUpdate({ resourceID: id }, resource, { new: true });

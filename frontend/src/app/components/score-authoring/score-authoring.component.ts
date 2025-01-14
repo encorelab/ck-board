@@ -16,12 +16,9 @@ import { CreateActivityModalComponent } from '../create-activity-modal/create-ac
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'; 
 import { HttpClient } from '@angular/common/http';
 import { Activity } from 'src/app/models/activity';
+import { generateUniqueID } from 'src/app/utils/Utils';
+import { Resource } from 'src/app/models/resource';
 
-
-interface Resource {
-  resourceID: string;
-  name: string;
-}
 
 @Component({
   selector: 'app-score-authoring',
@@ -38,7 +35,16 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   selectedActivity: Activity | null = null; 
   selectedActivityResources: Resource[] = []; 
   selectedActivityGroups: Group[] = []; 
-  availableResources: Resource[] = []; 
+
+  allAvailableResources: any[] = [ //define available resources
+    { name: 'Canvas', type: 'canvas' },
+    { name: 'Bucket View', type: 'bucketView' },
+    { name: 'Workspace', type: 'workspace' },
+    { name: 'Monitor', type: 'monitor' }
+  ];
+
+  availableResources: any[] = [...this.allAvailableResources]; // Duplicate the array to be filtered based on selected values
+
 
   showResourcesPane = false; 
 
@@ -88,9 +94,17 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectActivity(activity: Activity) {
+  async selectActivity(activity: Activity) {
     this.selectedActivity = activity;
-    this.fetchActivityResources(activity.activityID); 
+    this.showResourcesPane = false; //Close the resources pane
+    try {
+      // Fetch resources for the selected activity
+      this.selectedActivityResources = await this.http.get<Resource[]>(`resources/activity/${activity.activityID}`).toPromise() || []; 
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error fetching activity resources.");
+      console.error("Error fetching activity resources:", error);
+    }
+
     this.fetchActivityGroups(activity.groupIDs); 
   }
 
@@ -98,8 +112,68 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     // ... (Implement logic to start the activity) ...
   }
   
-  deleteActivity(activity: Activity) {
+  editActivity(activity: Activity) {
     // ... (Implement logic to delete the activity) ...
+  }
+
+  dropResource(event: CdkDragDrop<any[]>) {
+    moveItemInArray(this.selectedActivityResources, event.previousIndex, event.currentIndex);
+    this.updateResourceOrder();
+  }
+
+  dropResourceFromAvailable(event: CdkDragDrop<any[]>) {
+    const resource = this.availableResources[event.previousIndex];
+
+    this.createResource(resource)
+      .then(newResource => {
+        this.availableResources.splice(event.previousIndex, 1);
+        this.selectedActivityResources.splice(event.currentIndex, 0, newResource); 
+        this.updateResourceOrder();
+      })
+      .catch(error => {
+        // Handle error (e.g., display an error message)
+        console.error("Error creating resource:", error);
+      });
+  }
+
+  async createResource(resourceData: any): Promise<any> { 
+    try {
+      const newResourceData = {
+        resourceID: generateUniqueID(), // Add resourceID
+        name: resourceData.name,
+        activityID: this.selectedActivity!.activityID,
+        [resourceData.type]: true,
+        order: this.selectedActivityResources.length + 1,
+      };
+
+      const response = await this.http.post('resources/create', newResourceData).toPromise();
+      return response as Resource; 
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error creating resource.");
+      console.error("Error creating resource:", error);
+      throw error; // Re-throw the error to be caught in the calling function
+    }
+  }
+
+  async deleteResource(resource: Resource, index: number) {
+    try {
+      // 1. Delete the resource from the database
+      await this.http.delete(`resources/delete/${resource.resourceID}`).toPromise();
+
+      // 2. Remove the resource from the list
+      this.selectedActivityResources.splice(index, 1); 
+
+      // 3. Update the resource order in the database
+      this.updateResourceOrder(); 
+
+      // 4. If the resources pane is open, update the available resources
+      if (this.showResourcesPane) {
+        this.filterAvailableResources(); 
+      }
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error deleting resource.");
+      console.error("Error deleting resource:", error);
+    }
   }
 
   dropActivity(event: CdkDragDrop<Activity[]>) {
@@ -118,6 +192,28 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.queueSnackbar("Error updating activity order.");
       console.error("Error updating activity order:", error);
+    }
+  }
+
+  async updateResourceOrder() {
+    if (!this.selectedActivity) {
+      return; // Do nothing if no activity is selected
+    }
+
+    try {
+      const updatedResources = this.selectedActivityResources.map((resource, index) => ({
+        resourceID: resource.resourceID, 
+        order: index + 1, 
+      }));
+
+      await this.http.post('resources/order/', { 
+        activityID: this.selectedActivity.activityID, 
+        resources: updatedResources 
+      }).toPromise(); 
+
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error updating resource order.");
+      console.error("Error updating resource order:", error);
     }
   }
 
@@ -171,6 +267,21 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   addResourceToActivity(resource: Resource) {
     this.showResourcesPane = false; 
+  }
+
+  toggleResourcesPane() {
+    this.showResourcesPane = !this.showResourcesPane;
+
+    if (this.showResourcesPane) {
+      this.filterAvailableResources(); // Filter resources when the pane is opened
+    }
+  }
+
+  filterAvailableResources() {
+    const existingResourceNames = new Set(this.selectedActivityResources.map(r => r.name));
+    this.availableResources = this.allAvailableResources.filter(resource => 
+      !existingResourceNames.has(resource.name)
+    );
   }
 
   drop(event: CdkDragDrop<string[]>) {

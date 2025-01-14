@@ -61,6 +61,7 @@ import { TodoItemCardModalComponent } from './components/todo-item-card-modal/to
 import { LearnerModelsComponent } from './components/learner-models/learner-models.component';
 import { AddLearnerModalComponent } from './components/add-learner-modal/add-learner-modal.component';
 import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component';
+import { CkIdeasComponent } from './components/ck-ideas/ck-ideas.component';
 import { ToolbarMenuComponent } from './components/toolbar-menu/toolbar-menu.component';
 import { ViewNavigationComponent } from './components/view-navigation/view-navigation.component';
 import { MarkdownModule } from 'ngx-markdown';
@@ -115,6 +116,7 @@ export function tokenGetter() {
     LearnerModelsComponent,
     AddLearnerModalComponent,
     CkBucketsComponent,
+    CkIdeasComponent,
     ToolbarMenuComponent,
     ViewNavigationComponent,
   ],

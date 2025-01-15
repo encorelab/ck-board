@@ -1,6 +1,7 @@
 
 import express from 'express';
 import dalActivity from '../repository/dalActivity';
+import dalResource from '../repository/dalResource';
 import { ActivityModel } from '../models/Activity';
 
 const router = express.Router();
@@ -31,20 +32,32 @@ router.get('/project/:projectID', async (req, res) => {
 
 // Update an activity
 router.put('/:activityID', async (req, res) => {
-    try {
-      const activityID = req.params.activityID;
-      const updatedData: Partial<ActivityModel> = req.body;
-      const updatedActivity = await dalActivity.update(activityID, updatedData);
-      if (updatedActivity) {
-        res.status(200).json(updatedActivity);
-      } else {
-        res.status(404).json({ error: 'Activity not found.' });
-      }
-    } catch (error) {
-      console.error("Error updating activity:", error);
-      res.status(500).json({ error: 'Failed to update activity.' });
+  try {
+    const activityID = req.params.activityID;
+    const updatedData: Partial<ActivityModel> = req.body;
+
+    // If groupIDs are modified, update the resources
+    if (updatedData.groupIDs) { 
+      const originalGroupIDs = (await dalActivity.getById(activityID))?.groupIDs; 
+      const removedGroupIDs = originalGroupIDs?.filter(id => !updatedData.groupIDs?.includes(id)) || [];
+      const removePromises = removedGroupIDs.map(groupID => 
+        dalResource.removeGroupFromActivityResources(activityID, groupID)
+      );
+      await Promise.all(removePromises);
     }
-  });
+
+    const updatedActivity = await dalActivity.update(activityID, updatedData);
+
+    if (updatedActivity) {
+      res.status(200).json(updatedActivity);
+    } else {
+      res.status(404).json({ error: 'Activity not found.' });
+    }
+  } catch (error) {
+    console.error("Error updating activity:", error);
+    res.status(500).json({ error: 'Failed to update activity.' });
+  }
+});
   
   // Delete an activity
   router.delete('/:activityID', async (req, res) => {

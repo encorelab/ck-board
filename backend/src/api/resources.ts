@@ -59,6 +59,42 @@ router.post('/order', async (req, res) => {
   }
 });
 
+// Add a group to a resource
+router.post('/:resourceID/groups/:groupID', async (req, res) => {
+  try {
+    const resourceID = req.params.resourceID;
+    const groupID = req.params.groupID;
+    const updatedResource = await dalResource.addGroupToResource(resourceID, groupID);
+    
+    if (updatedResource) {
+      res.status(200).json(updatedResource);
+    } else {
+      res.status(404).json({ error: 'Resource not found.' });
+    }
+  } catch (error) {
+    console.error("Error adding group to resource:", error);
+    res.status(500).json({ error: 'Failed to add group to resource.' });
+  }
+});
+
+// Remove a group from a resource
+router.delete('/:resourceID/groups/:groupID', async (req, res) => {
+  try {
+    const resourceID = req.params.resourceID;
+    const groupID = req.params.groupID;
+    const updatedResource = await dalResource.removeGroupFromResource(resourceID, groupID);
+
+    if (updatedResource) {
+      res.status(200).json(updatedResource);
+    } else {
+      res.status(404).json({ error: 'Resource not found.' });
+    }
+  } catch (error) {
+    console.error("Error removing group from resource:", error);
+    res.status(500).json({ error: 'Failed to remove group from resource.' });
+  }
+});
+
 
 // ... add other routes for creating, updating, deleting, reordering resources ...
 

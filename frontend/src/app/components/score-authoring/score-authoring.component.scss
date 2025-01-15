@@ -1,220 +1,221 @@
 // score-authoring.component.scss
 
 .toolbar {
-    width: 100%; 
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 999; 
+  width: 100%; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999; 
+}
+
+.main-content {
+  display: flex; 
+  height: calc(100vh - 64px);  
+  margin-top: 64px; 
+}
+
+.activities-pane {
+  width: 250px; 
+  padding: 1rem;
+  border-right: 1px solid #ccc; 
+
+  h3 { 
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
   }
-  
-  .main-content {
+
+  h4 { 
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem; 
+  }
+}
+
+.activities-list {
+  div.activity-item { 
     display: flex; 
-    height: calc(100vh - 64px);  
-    margin-top: 64px; 
-  }
-  
-  .activities-pane {
-    width: 250px; 
-    padding: 1rem;
-    border-right: 1px solid #ccc; 
+    align-items: center; 
+    cursor: pointer;
+    padding: 0 0 0 0.5rem; 
+    margin-bottom: 0; 
 
-    h3 { 
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 1rem;
+    .activity-buttons {
+      margin-left: auto; 
+      
+      button {
+        margin-left: 0.5rem; 
+      }
     }
-  
-    h4 { 
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin-bottom: 0.5rem; 
+
+    &[cdkDrag] { // Style for draggable activities
+      cursor: move; /* Show the move cursor when hovering */
+    }
+
+    .drag-handle { /* Styles for the drag handle icon */
+      cursor: move;
+      margin-right: 0.5rem; /* Add some space to the right */
     }
   }
+}
+
+.selected { 
+  background-color: #e0e0e0; 
+  border-left: 4px solid #3f51b5; /* Add a thicker left border to highlight */
+  padding-left: 0.25rem; /* Adjust padding to account for the border */
+}
+
+.add-activity-button {
+  position: static;
+  margin-top: 1rem;
+  margin-left: 195px;
+}
+
+.content-and-resources {
+  display: flex;
+  flex: 1; 
+  height: 100%; 
+}
+
+.middle-pane {
+  flex: 1; // Allow middle pane to take up available space
+  padding: 1rem;
+  padding-top: 2.5rem;
   
-  .activities-list {
-    div.activity-item { 
-      display: flex; 
+  .add-resource-button {
+    position: absolute;
+    bottom: 1rem; 
+    right: 440px;
+  }
+
+  .activity-resources-list {
+    margin-top: 2rem;
+
+    .resource-item { /* Add styles for the resource items */
+      display: flex;
       align-items: center; 
-      cursor: pointer;
-      padding: 0 0 0 0.5rem; 
-      margin-bottom: 0; 
-  
-      .activity-buttons {
-        margin-left: auto; 
-        
-        button {
-          margin-left: 0.5rem; 
-        }
-      }
-  
-      &[cdkDrag] { // Style for draggable activities
-        cursor: move; /* Show the move cursor when hovering */
+      height: 40px;
+      margin-bottom: 5px;
+
+      &.canvas { 
+        background-color: #81d4fa; /* Lighter Blue */
+        color: #000; 
       }
 
-      .drag-handle { /* Styles for the drag handle icon */
+      &.bucketView { 
+        background-color: #80cbc4; /* Lighter Teal */
+        color: #000; 
+      }
+
+      &.workspace { 
+        background-color: #ffcc80; /* Lighter Orange */
+        color: #000; 
+      }
+
+      &.monitor { 
+        background-color: #ef9a9a; /* Lighter Red */
+        color: #000; 
+      }
+
+      .drag-handle {
         cursor: move;
-        margin-right: 0.5rem; /* Add some space to the right */
+        margin-right: 0.5rem;
+      }
+
+      .delete-button { /* Add styles for the delete button */
+        margin-left: auto; /* Push the button to the right */
       }
     }
   }
 
-  .selected { 
-    background-color: #e0e0e0; 
-    border-left: 4px solid #3f51b5; /* Add a thicker left border to highlight */
-    padding-left: 0.25rem; /* Adjust padding to account for the border */
+  h3, h4 { /* Target both h3 and h4 */
+    text-align: center; 
   }
-  
-  .add-activity-button {
-    position: static;
-    margin-top: 1rem;
-    margin-left: 195px;
+
+  h3 { 
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
   }
-  
-  .content-and-resources {
-    display: flex;
-    flex: 1; 
-    height: 100%; 
+
+  h4 { 
+    font-size: 1.2rem; 
+    font-weight: bold;
+    margin-bottom: 0.5rem; 
+    color: #888; // Medium gray color
   }
-  
-  .middle-pane {
-    flex: 1; // Allow middle pane to take up available space
-    padding: 1rem;
-    padding-top: 2rem;
-    
-    .add-resource-button {
-      position: absolute;
-      bottom: 1rem; 
-      right: 440px;
-    }
+}
 
-    .activity-resources-list {
-      margin-top: 2rem;
+.right-pane-container {
+  position: relative; // Required for absolute positioning of children
+  flex: 0 0 400px; // Set a fixed width for the right pane container
+  padding: 1rem;
+}
 
-      .resource-item { /* Add styles for the resource items */
-        display: flex;
-        align-items: center; 
-        height: 2rem;
+.resources-pane {
+  position: absolute; // Position the resources pane absolutely
+  top: 0;
+  left: 0;
+  width: 100%; 
+  height: 100%; 
+  z-index: 1; // Ensure resources pane is on top when visible
+  padding: 1rem;
 
-        &.canvas { 
-          background-color: #81d4fa; /* Lighter Blue */
-          color: #000; 
-        }
-  
-        &.bucketView { 
-          background-color: #80cbc4; /* Lighter Teal */
-          color: #000; 
-        }
-  
-        &.workspace { 
-          background-color: #ffcc80; /* Lighter Orange */
-          color: #000; 
-        }
-  
-        &.monitor { 
-          background-color: #ef9a9a; /* Lighter Red */
-          color: #000; 
-        }
-  
-        .drag-handle {
-          cursor: move;
-          margin-right: 0.5rem;
-        }
+  background-color: #fff; // White background
+  border: 1px solid #ccc; // Light gray border
+  border-radius: 5px; // Add rounded corners
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); // Add a subtle shadow
 
-        .delete-button { /* Add styles for the delete button */
-          margin-left: auto; /* Push the button to the right */
-        }
+  h3 { 
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  h4 { 
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem; 
+  }
+
+  .close-resource-button {
+    float: right;
+    margin-right: 1.25rem;
+  }
+
+  .available-resources-list {
+    .available-resource-item {
+      cursor: grab; /* Use grab cursor to indicate draggability */
+      padding: 0.5rem;
+      padding-right: 1rem;
+      border: 1px solid #ccc; /* Add a border to resemble material */
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      max-width: 375px;
+
+      &.canvas { 
+        background-color: #81d4fa; /* Lighter Blue */
+        color: #000; 
       }
-    }
 
-    h3, h4 { /* Target both h3 and h4 */
-      text-align: center; 
-    }
+      &.bucketView { 
+        background-color: #80cbc4; /* Lighter Teal */
+        color: #000; 
+      }
 
-    h3 { 
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 0.25rem;
-    }
-  
-    h4 { 
-      font-size: 1.2rem; 
-      font-weight: bold;
-      margin-bottom: 0.5rem; 
-      color: #888; // Medium gray color
-    }
-  }
-  
-  .right-pane-container {
-    position: relative; // Required for absolute positioning of children
-    flex: 0 0 400px; // Set a fixed width for the right pane container
-    padding: 1rem;
-  }
-  
-  .resources-pane {
-    position: absolute; // Position the resources pane absolutely
-    top: 0;
-    left: 0;
-    width: 100%; 
-    height: 100%; 
-    z-index: 1; // Ensure resources pane is on top when visible
-    padding: 1rem;
+      &.workspace { 
+        background-color: #ffcc80; /* Lighter Orange */
+        color: #000; 
+      }
 
-    background-color: #fff; // White background
-    border: 1px solid #ccc; // Light gray border
-    border-radius: 5px; // Add rounded corners
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); // Add a subtle shadow
-
-    h3 { 
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 1rem;
-    }
-  
-    h4 { 
-      font-size: 1.2rem;
-      font-weight: bold;
-      margin-bottom: 0.5rem; 
-    }
-
-    .close-resource-button {
-      float: right;
-      margin-right: 1.25rem;
-    }
-
-    .available-resources-list {
-      .available-resource-item {
-        cursor: grab; /* Use grab cursor to indicate draggability */
-        padding: 0.5rem;
-        padding-right: 1rem;
-        border: 1px solid #ccc; /* Add a border to resemble material */
-        border-radius: 4px;
-        margin-bottom: 0.5rem;
-        max-width: 375px;
-
-        &.canvas { 
-          background-color: #81d4fa; /* Lighter Blue */
-          color: #000; 
-        }
-  
-        &.bucketView { 
-          background-color: #80cbc4; /* Lighter Teal */
-          color: #000; 
-        }
-  
-        &.workspace { 
-          background-color: #ffcc80; /* Lighter Orange */
-          color: #000; 
-        }
-  
-        &.monitor { 
-          background-color: #ef9a9a; /* Lighter Red */
-          color: #000; 
-        }
+      &.monitor { 
+        background-color: #ef9a9a; /* Lighter Red */
+        color: #000; 
       }
     }
   }
+}
 
   /* Style for the drop placeholder */
 .cdk-drop-list-dragging .cdk-drop-list-placeholder { 
@@ -223,7 +224,83 @@
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
   
-  .groups-list {
-    flex: 0 0 400px;
-    padding: 1rem;
+.groups-list {
+  h3 { 
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
   }
+
+  .group-resource-table {
+    display: flex;
+    flex-direction: column; 
+    width: 100%; 
+    margin-top: 3rem;
+  }
+
+  .group-header-row {
+    display: flex;
+    margin-bottom: 0.5rem; 
+  }
+
+  .group-header-cell {
+    flex: 1; 
+    text-align: left;
+    max-width: 40px;
+    margin-bottom: 0.4rem;
+    transform: rotate(-45deg); /* Rotate the text */
+    white-space: nowrap; 
+  }
+
+  .resource-row {
+    display: flex;
+    align-items: center; 
+    margin-bottom: 0; 
+  }
+
+  .resource-label-cell {
+    white-space: nowrap; 
+    margin-right: 1rem; 
+  }
+
+  .group-resource-cell {
+    flex: 1; 
+    height: 40px; 
+    border: 0;
+    cursor: pointer; 
+    margin-right: 5px; 
+    margin-bottom: 5px;
+    max-width: 40px; // Set max-width to create a square
+
+    &.selected {
+      position: relative; // Required for positioning the overlay
+      padding: 0;
+
+      &::before { // Create a pseudo-element overlay
+        content: '';
+        position: absolute;
+        top: 7px;
+        left: 7px;
+        width: 26px;
+        height: 26px;
+        background-color: rgba(0, 0, 0, 0.4); // Semi-transparent black overlay
+      }
+    }
+
+    &.canvas { 
+      background-color: #81d4fa; 
+    }
+
+    &.bucketView { 
+      background-color: #80cbc4; 
+    }
+
+    &.workspace { 
+      background-color: #ffcc80; 
+    }
+
+    &.monitor { 
+      background-color: #ef9a9a; 
+    }
+  }
+}

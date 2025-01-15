@@ -12,6 +12,16 @@ const dalActivity = {
     }
   },
 
+  getById: async (id: string): Promise<ActivityModel | null | undefined> => {
+    try {
+      const activity = await Activity.findOne({ activityID: id });
+      return activity;
+    } catch (error) {
+      console.error("Error getting activity by ID:", error);
+      return undefined;
+    }
+  },
+
   getByProject: async (projectID: string): Promise<ActivityModel[]> => {
     try {
       const activities = await Activity.find({ projectID });

@@ -49,6 +49,44 @@ const dalResource = {
     } catch (error) {
       console.error("Error updating resource:", error); // Log the error
       return undefined;
+    } 
+  },
+
+  addGroupToResource: async (resourceID: string, groupID: string): Promise<ResourceModel | null | undefined> => {
+    try {
+      return await Resource.findOneAndUpdate(
+        { resourceID: resourceID }, 
+        { $addToSet: { groupIDs: groupID } }, // Add to set to avoid duplicates
+        { new: true }
+      );
+    } catch (error) {
+      console.error("Error adding group to resource:", error); // Log the error
+      return undefined;
+    }
+  },
+
+  removeGroupFromResource: async (resourceID: string, groupID: string): Promise<ResourceModel | null | undefined> => {
+    try {
+      return await Resource.findOneAndUpdate(
+        { resourceID: resourceID }, 
+        { $pull: { groupIDs: groupID } }, // Remove from array
+        { new: true }
+      );
+    } catch (error) {
+      console.error("Error removing group from resource:", error); // Log the error
+      return undefined;
+    }
+  },
+
+  removeGroupFromActivityResources: async (activityID: string, groupID: string): Promise<void> => {
+    try {
+      await Resource.updateMany(
+        { activityID: activityID },
+        { $pull: { groupIDs: groupID } }
+      );
+    } catch (error) {
+      console.error("Error removing group from activity resources:", error); // Log the error
+      return undefined;
     }
   },
 

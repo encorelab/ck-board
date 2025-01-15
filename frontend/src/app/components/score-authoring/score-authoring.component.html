@@ -115,10 +115,28 @@
             </div>
           </mat-sidenav>
   
-          <div class="groups-list" *ngIf="!showResourcesPane && selectedActivity"> 
-            <h3>Groups</h3>
-            <div *ngFor="let group of selectedActivityGroups">
-              {{ group.name }}
+          <div class="groups-list" *ngIf="!showResourcesPane && selectedActivity">
+            <h3>Groups</h3> 
+          
+            <div class="group-resource-table">
+              <div class="group-header-row">
+                <div class="group-header-cell" *ngFor="let group of selectedActivityGroups">
+                  {{ group.name }}
+                </div>
+              </div>
+              <div class="resource-row" *ngFor="let resource of selectedActivityResources; let resourceIndex = index">
+                <div 
+                  class="group-resource-cell" 
+                  *ngFor="let group of selectedActivityGroups" 
+                  (click)="toggleResourceGroupAssignment(resource, group)"
+                  [class.selected]="isResourceAssignedToGroup(resource, group)"
+                  [class.canvas]="resource.canvas" 
+                  [class.bucketView]="resource.bucketView"
+                  [class.workspace]="resource.workspace"
+                  [class.monitor]="resource.monitor"
+                >
+                </div>
+              </div>
             </div>
           </div>
         </div>

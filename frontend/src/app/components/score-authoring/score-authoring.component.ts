@@ -146,9 +146,10 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         this.activities[index] = updatedActivity as Activity;
       }
 
-      // If the updated activity is the selected one, update the selectedActivity
+      // If the updated activity is the selected one, update the selectedActivity and selectedActivityGroups
       if (this.selectedActivity?.activityID === activity.activityID) {
         this.selectedActivity = updatedActivity as Activity;
+        this.fetchActivityGroups(this.selectedActivity.groupIDs);
       }
     } catch (error) {
       this.snackbarService.queueSnackbar("Error updating activity.");
@@ -351,6 +352,32 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     if (this.showResourcesPane) {
       this.filterAvailableResources(); // Filter resources when the pane is opened
     }
+  }
+
+  async toggleResourceGroupAssignment(resource: Resource, group: Group) {
+    try {
+      let updatedResource;
+      if (this.isResourceAssignedToGroup(resource, group)) {
+        // Remove the group from the resource
+        updatedResource = await this.http.delete(`resources/${resource.resourceID}/groups/${group.groupID}`).toPromise();
+      } else {
+        // Add the group to the resource
+        updatedResource = await this.http.post(`resources/${resource.resourceID}/groups/${group.groupID}`, {}).toPromise();
+      }
+
+      // Update the resource in the list
+      const resourceIndex = this.selectedActivityResources.findIndex(r => r.resourceID === resource.resourceID);
+      if (resourceIndex !== -1) {
+        this.selectedActivityResources[resourceIndex] = updatedResource as Resource;
+      }
+    } catch (error) {
+      this.snackbarService.queueSnackbar(`Error ${this.isResourceAssignedToGroup(resource, group) ? 'removing' : 'adding'} group assignment.`);
+      console.error(`Error ${this.isResourceAssignedToGroup(resource, group) ? 'removing' : 'adding'} group assignment:`, error);
+    }
+  }
+
+  isResourceAssignedToGroup(resource: Resource, group: Group): boolean {
+    return resource.groupIDs.includes(group.groupID);
   }
 
   filterAvailableResources() {

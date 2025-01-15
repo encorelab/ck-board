@@ -185,7 +185,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.runningGroupTask = groupTask;
     this.runningGroupTask.groupTask = await this.groupTaskService.getGroupTask(
       this.runningGroupTask.group.groupID,
-      this.runningGroupTask.workflow.workflowID
+      this.runningGroupTask.workflow.workflowID,
+      this.user.userID
     );
     this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
     this.averageGroupProgress = await this._calcAverageProgress(
@@ -364,9 +365,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       tagRequired: this.hasTagRequirement(this.runningGroupTask!),
       onComplete: async (post: Post) => {
         if (this.runningGroupTask) {
-          post.type = PostType.WORKFLOW;
           const destinationType =
             PostType[this.runningGroupTask?.workflow.destinations[0].type];
+          post.type = destinationType;
           if (destinationType === PostType.BUCKET) {
             post.boardID = this.board.boardID;
           } else {

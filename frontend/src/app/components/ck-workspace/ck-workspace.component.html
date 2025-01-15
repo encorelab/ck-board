@@ -46,14 +46,14 @@
         <button
           class="subheader-button"
           mat-button
-          (click)="showInactive = !showInactive"
+          (click)="showActive = !showActive"
         >
-          Pending Tasks ({{ inactiveGroupTasks.length }})
-          <mat-icon>{{
-            showInactive ? 'expand_less' : 'expand_more'
-          }}</mat-icon>
+          Active Tasks ({{
+            activeGroupTasks.length + inactiveGroupTasks.length
+          }})
+          <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <ng-container *ngIf="showInactive">
+        <ng-container *ngIf="showActive">
           <mat-list-item *ngFor="let task of inactiveGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
@@ -70,17 +70,6 @@
               Begin Task
             </button>
           </mat-list-item>
-        </ng-container>
-        <mat-divider></mat-divider>
-        <button
-          class="subheader-button"
-          mat-button
-          (click)="showActive = !showActive"
-        >
-          Active Tasks ({{ activeGroupTasks.length }})
-          <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
-        </button>
-        <ng-container *ngIf="showActive">
           <mat-list-item *ngFor="let task of activeGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
@@ -88,6 +77,19 @@
               {{ task.group.name }}: {{ task.workflow.prompt }}
             </p>
             <span style="flex: 1 1 auto"></span>
+            <button
+              *ngIf="
+                runningGroupTask &&
+                runningGroupTask.groupTask.groupTaskID ===
+                  task.groupTask.groupTaskID
+              "
+              mat-raised-button
+              color="primary"
+              style="margin-left: 10px; min-width: unset"
+              (click)="close()"
+            >
+              Hide Task
+            </button>
             <button
               *ngIf="
                 (runningGroupTask &&
@@ -101,19 +103,6 @@
               (click)="view(task)"
             >
               Resume Task
-            </button>
-            <button
-              *ngIf="
-                runningGroupTask &&
-                runningGroupTask.groupTask.groupTaskID ===
-                  task.groupTask.groupTaskID
-              "
-              mat-raised-button
-              color="primary"
-              style="margin-left: 10px; min-width: unset"
-              (click)="close()"
-            >
-              Hide Task
             </button>
           </mat-list-item>
         </ng-container>

@@ -332,8 +332,16 @@ export class FabricUtils {
 	@returns display attributes for post
 	*/
   async resetTagFeatures(postID: string): Promise<DisplayAttributes> {
-    let fabricPost = this.getObjectFromId(postID);
-    const fill = await this.defaultPostColor(fabricPost.userID);
+    let fabricPost;
+    let fill;
+    if (this._canvas) {
+      console.log('here');
+      fabricPost = await this.getObjectFromId(postID);
+      if (fabricPost) {
+        fill = await this.defaultPostColor(fabricPost.userID);
+      }
+    }
+
     if (fabricPost) {
       fabricPost = this.setBorderColor(fabricPost, POST_DEFAULT_BORDER);
       fabricPost = this.setBorderThickness(

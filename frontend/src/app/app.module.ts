@@ -67,6 +67,7 @@ import { MarkdownModule } from 'ngx-markdown';
 import { AddScoreRunModalComponent } from './components/add-score-run-modal/add-score-run-modal.component';
 import { ScoreAuthoringComponent } from './components/score-authoring/score-authoring.component';
 import { CreateActivityModalComponent } from './components/create-activity-modal/create-activity-modal.component';
+import { EditActivityModalComponent } from './components/edit-activity-modal/edit-activity-modal.component';
 
 const config: SocketIoConfig = {
   url: environment.socketUrl,
@@ -123,6 +124,7 @@ export function tokenGetter() {
     AddScoreRunModalComponent,
     ScoreAuthoringComponent,
     CreateActivityModalComponent,
+    EditActivityModalComponent,
   ],
   imports: [
     BrowserModule,

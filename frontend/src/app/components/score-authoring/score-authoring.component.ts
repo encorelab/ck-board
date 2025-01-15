@@ -11,8 +11,10 @@ import { SnackbarService } from 'src/app/services/snackbar.service';
 import { UserService } from 'src/app/services/user.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { ProjectService } from 'src/app/services/project.service';
+import { BoardService } from 'src/app/services/board.service';
 import { Subscription } from 'rxjs';
 import { CreateActivityModalComponent } from '../create-activity-modal/create-activity-modal.component';
+import { EditActivityModalComponent } from '../edit-activity-modal/edit-activity-modal.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'; 
 import { HttpClient } from '@angular/common/http';
 import { Activity } from 'src/app/models/activity';
@@ -35,6 +37,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   selectedActivity: Activity | null = null; 
   selectedActivityResources: Resource[] = []; 
   selectedActivityGroups: Group[] = []; 
+  selectedBoardName = '';
 
   allAvailableResources: any[] = [ //define available resources
     { name: 'Canvas', type: 'canvas' },
@@ -53,6 +56,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     public snackbarService: SnackbarService,
     public socketService: SocketService, 
     private projectService: ProjectService,
+    private boardService: BoardService,
     private groupService: GroupService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -100,6 +104,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     try {
       // Fetch resources for the selected activity
       this.selectedActivityResources = await this.http.get<Resource[]>(`resources/activity/${activity.activityID}`).toPromise() || []; 
+      this.selectedBoardName = await this.getSelectedBoardName();
     } catch (error) {
       this.snackbarService.queueSnackbar("Error fetching activity resources.");
       console.error("Error fetching activity resources:", error);
@@ -113,7 +118,78 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   }
   
   editActivity(activity: Activity) {
-    // ... (Implement logic to delete the activity) ...
+    const dialogRef = this.dialog.open(EditActivityModalComponent, {
+      data: { 
+        project: this.project,
+        activity: activity 
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: { activity: Activity, delete: boolean }) => { 
+      if (result) {
+        if (result.delete) {
+          this.deleteActivity(result.activity); 
+        } else {
+          this.updateActivity(result.activity); 
+        }
+      }
+    });
+  }
+
+  async updateActivity(activity: Activity) {
+    try {
+      const updatedActivity = await this.http.put(`activities/${activity.activityID}`, activity).toPromise();
+
+      // Update the activity in the activities list
+      const index = this.activities.findIndex(a => a.activityID === activity.activityID);
+      if (index !== -1) {
+        this.activities[index] = updatedActivity as Activity;
+      }
+
+      // If the updated activity is the selected one, update the selectedActivity
+      if (this.selectedActivity?.activityID === activity.activityID) {
+        this.selectedActivity = updatedActivity as Activity;
+      }
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error updating activity.");
+      console.error("Error updating activity:", error);
+    }
+  }
+
+  async deleteActivity(activity: Activity) {
+    try {
+      // 1. (Optional) Ask for confirmation before deleting
+
+      // 2. Call the API to delete the activity
+      await this.http.delete(`activities/${activity.activityID}`).toPromise(); 
+
+      // 3. Remove the activity from the activities list
+      this.activities = this.activities.filter(a => a.activityID !== activity.activityID);
+
+      // 4. If the deleted activity was the selected one, clear the selection
+      if (this.selectedActivity?.activityID === activity.activityID) {
+        this.selectedActivity = null;
+        this.selectedActivityResources = []; // Clear resources as well
+        this.selectedActivityGroups = []; // Clear groups as well
+      }
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error deleting activity.");
+      console.error("Error deleting activity:", error);
+    }
+  }
+
+  async getSelectedBoardName(): Promise<string> {
+    if (this.selectedActivity) {
+      try {
+        const board = await this.boardService.get(this.selectedActivity.boardID);
+        return board ? board.name : '';
+      } catch (error) {
+        console.error("Error fetching board:", error);
+        return '';
+      }
+    } else {
+      return '';
+    }
   }
 
   dropResource(event: CdkDragDrop<any[]>) {

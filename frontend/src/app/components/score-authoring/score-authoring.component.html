@@ -57,11 +57,12 @@
             color="primary" 
             class="add-resource-button" 
             (click)="toggleResourcesPane()"
-            *ngIf="!showResourcesPane" 
+            *ngIf="!showResourcesPane && selectedActivity" 
           > 
             <mat-icon>add</mat-icon>
           </button>
           <h3 *ngIf="selectedActivity">{{ selectedActivity.name }}</h3>
+          <h4 *ngIf="selectedActivity">Activity Space: {{ selectedBoardName }}</h4>
           <div class="activity-resources-list" 
             cdkDropList 
             (cdkDropListDropped)="dropResource($event)" 

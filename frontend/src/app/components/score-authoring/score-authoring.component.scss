@@ -19,6 +19,18 @@
     width: 250px; 
     padding: 1rem;
     border-right: 1px solid #ccc; 
+
+    h3 { 
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+  
+    h4 { 
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem; 
+    }
   }
   
   .activities-list {
@@ -69,6 +81,7 @@
   .middle-pane {
     flex: 1; // Allow middle pane to take up available space
     padding: 1rem;
+    padding-top: 2rem;
     
     .add-resource-button {
       position: absolute;
@@ -77,6 +90,8 @@
     }
 
     .activity-resources-list {
+      margin-top: 2rem;
+
       .resource-item { /* Add styles for the resource items */
         display: flex;
         align-items: center; 
@@ -112,6 +127,23 @@
         }
       }
     }
+
+    h3, h4 { /* Target both h3 and h4 */
+      text-align: center; 
+    }
+
+    h3 { 
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+  
+    h4 { 
+      font-size: 1.2rem; 
+      font-weight: bold;
+      margin-bottom: 0.5rem; 
+      color: #888; // Medium gray color
+    }
   }
   
   .right-pane-container {
@@ -134,16 +166,16 @@
     border-radius: 5px; // Add rounded corners
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); // Add a subtle shadow
 
-    h3 { // Styles for h3 headings
-      font-size: 1.5rem; // Increase font size
+    h3 { 
+      font-size: 1.5rem;
       font-weight: bold;
-      margin-bottom: 1rem; // Add space below
+      margin-bottom: 1rem;
     }
   
-    h4 { // Styles for h4 headings
-      font-size: 1.2rem; // Increase font size
+    h4 { 
+      font-size: 1.2rem;
       font-weight: bold;
-      margin-bottom: 0.5rem; // Add space below
+      margin-bottom: 0.5rem; 
     }
 
     .close-resource-button {

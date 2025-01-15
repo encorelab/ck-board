@@ -1,0 +1,41 @@
+<h1 mat-dialog-title>Edit Activity</h1>
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" style="width: 100%">
+    <mat-label>Activity Name</mat-label>
+    <input matInput [(ngModel)]="activityName" required /> 
+    <mat-error *ngIf="!activityName">Activity name is required</mat-error> 
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width: 100%">
+    <mat-label>Activity Space</mat-label>
+    <mat-select [(ngModel)]="selectedBoardID" required> 
+      <mat-option *ngFor="let board of boards" [value]="board.boardID">
+        {{ board.name }}
+      </mat-option>
+    </mat-select>
+    <mat-error *ngIf="!selectedBoardID">Activity Space is required</mat-error> 
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width: 100%">
+    <mat-label>Groups</mat-label>
+    <mat-select [(ngModel)]="selectedGroupIDs" multiple required>
+      <mat-option *ngFor="let group of availableGroups" [value]="group.groupID"> 
+        {{ group.name }}
+      </mat-option>
+    </mat-select>
+    <mat-error *ngIf="selectedGroupIDs.length === 0">At least one group is required</mat-error> 
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button (click)="toggleDeleteButton()"> 
+    {{ showDeleteButton ? 'Cancel Deletion' : 'Delete Activity' }} 
+  </button>
+  <button mat-button (click)="onNoClick()">Cancel</button>
+  <button mat-button (click)="handleEditActivity()" [disabled]="!activityName || !selectedBoardID || selectedGroupIDs.length === 0"> 
+    Save Changes
+  </button>
+  <button mat-button (click)="handleDeleteActivity()" *ngIf="showDeleteButton" color="warn"> 
+    Confirm Delete 
+  </button>
+</div>

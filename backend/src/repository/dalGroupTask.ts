@@ -54,6 +54,7 @@ export const expandGroupTasks = async (
         groupTask: task,
         workflow: workflow,
         group: group,
+        assignmentType: workflow.assignmentType,
       };
     })
   );

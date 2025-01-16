@@ -57,8 +57,19 @@
           <mat-list-item *ngFor="let task of inactiveGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p matLine class="list-task-prompt">
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'GROUP'"
+            >
               {{ task.group.name }}: {{ task.workflow.prompt }}
+            </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual: {{ task.workflow.prompt }}
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -73,8 +84,19 @@
           <mat-list-item *ngFor="let task of activeGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p matLine class="list-task-prompt">
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'GROUP'"
+            >
               {{ task.group.name }}: {{ task.workflow.prompt }}
+            </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual: {{ task.workflow.prompt }}
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -121,8 +143,19 @@
           <mat-list-item *ngFor="let task of completeGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p matLine class="list-task-prompt">
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'GROUP'"
+            >
               {{ task.group.name }}: {{ task.workflow.prompt }}
+            </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual: {{ task.workflow.prompt }}
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -160,9 +193,12 @@
     </mat-sidenav>
     <mat-sidenav-content>
       <div *ngIf="!loading && runningGroupTask">
-        <h1>
+        <h1 *ngIf="runningGroupTask.assignmentType === 'GROUP'">
           {{ runningGroupTask.group.name }}:
           {{ runningGroupTask.workflow.name }}
+        </h1>
+        <h1 *ngIf="runningGroupTask.assignmentType === 'INDIVIDUAL'">
+          Individual: {{ runningGroupTask.workflow.name }}
         </h1>
         <h2 style="font-weight: bold">
           {{ runningGroupTask.workflow.prompt }}
@@ -355,7 +391,16 @@
             style="width: 350px; margin: 10px auto"
           >
             <div style="margin-bottom: 10px">
-              <label class="example-margin">Your Group's Progress</label>
+              <label
+                class="example-margin"
+                *ngIf="runningGroupTask.assignmentType === 'GROUP'"
+                >Your Group's Progress</label
+              >
+              <label
+                class="example-margin"
+                *ngIf="runningGroupTask.assignmentType === 'INDIVIDUAL'"
+                >Your Progress</label
+              >
               <mat-progress-bar
                 mode="determinate"
                 [value]="currentGroupProgress"

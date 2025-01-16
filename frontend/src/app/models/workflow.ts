@@ -77,6 +77,7 @@ export class ExpandedGroupTask {
   groupTask: GroupTask;
   workflow: TaskWorkflow;
   group: Group;
+  assignmentType: AssignmentType;
 }
 
 export class Workflow {

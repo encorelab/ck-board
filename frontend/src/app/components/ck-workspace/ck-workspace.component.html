@@ -193,35 +193,12 @@
     </mat-sidenav>
     <mat-sidenav-content>
       <div *ngIf="!loading && runningGroupTask">
-        <h1 *ngIf="runningGroupTask.assignmentType === 'GROUP'">
-          {{ runningGroupTask.group.name }}:
+        <h1 style="font-weight: bold; margin: 15px">
           {{ runningGroupTask.workflow.name }}
         </h1>
-        <h1 *ngIf="runningGroupTask.assignmentType === 'INDIVIDUAL'">
-          Individual: {{ runningGroupTask.workflow.name }}
-        </h1>
-        <h2 style="font-weight: bold">
+        <p style="margin: 15px; font-size: 18px">
           {{ runningGroupTask.workflow.prompt }}
-        </h2>
-        <section>
-          <ul
-            style="
-              list-style-position: inside;
-              padding-left: 30px;
-              font-weight: bold;
-            "
-          >
-            <li *ngIf="hasCommentRequirement(runningGroupTask)">
-              Comment on each post at least once!
-            </li>
-            <li *ngIf="hasTagRequirement(runningGroupTask)">
-              Tag each post at least once!
-            </li>
-            <li *ngIf="hasCreatePostRequirement(runningGroupTask)">
-              Create {{ numberOfPosts(runningGroupTask) }} posts
-            </li>
-          </ul>
-        </section>
+        </p>
       </div>
       <div class="heading no-workflow-select" *ngIf="!runningGroupTask">
         No task selected!
@@ -415,9 +392,38 @@
               ></mat-progress-bar>
             </div>
             <section>
-              <h4 style="font-weight: bold; margin-top: 16px">
-                Group Members:
-              </h4>
+              <p
+                style="font-weight: bold; margin-top: 16px"
+                *ngIf="!hasMultipleRequirements(runningGroupTask)"
+              >
+                Task:
+              </p>
+              <p
+                style="font-weight: bold; margin-top: 16px"
+                *ngIf="hasMultipleRequirements(runningGroupTask)"
+              >
+                Tasks:
+              </p>
+              <ul
+                style="
+                  list-style-position: inside;
+                  padding-left: 0;
+                  font-weight: bold;
+                "
+              >
+                <li *ngIf="hasCommentRequirement(runningGroupTask)">
+                  Comment on each post at least once!
+                </li>
+                <li *ngIf="hasTagRequirement(runningGroupTask)">
+                  Tag each post at least once!
+                </li>
+                <li *ngIf="hasCreatePostRequirement(runningGroupTask)">
+                  Create {{ numberOfPosts(runningGroupTask) }} posts
+                </li>
+              </ul>
+            </section>
+            <section *ngIf="runningGroupTask.assignmentType === 'GROUP'">
+              <p style="font-weight: bold; margin-top: 16px">Group Members:</p>
               <ul
                 style="
                   list-style-position: inside;

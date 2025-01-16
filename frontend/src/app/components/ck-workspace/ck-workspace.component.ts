@@ -347,6 +347,14 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
   }
 
+  hasMultipleRequirements(runningGroupTask: ExpandedGroupTask): boolean {
+    if (runningGroupTask.workflow.requiredActions.length > 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   numberOfPosts(runningGroupTask: ExpandedGroupTask): number | undefined {
     return runningGroupTask.workflow.requiredActions.find(
       (a) => a.type == TaskActionType.CREATE_POST

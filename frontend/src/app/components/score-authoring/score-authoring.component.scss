@@ -31,6 +31,13 @@
     font-weight: bold;
     margin-bottom: 0.5rem; 
   }
+
+  .classroom-bindings-button {
+    position: static;
+    margin-top: 0.25rem;
+    margin-bottom: 2rem;
+    width: 100%; // Make the button take full width
+  }
 }
 
 .activities-list {
@@ -85,8 +92,9 @@
   
   .add-resource-button {
     position: absolute;
-    bottom: 1rem; 
-    right: 440px;
+    bottom: 2rem; 
+    right: 2rem;
+    z-index: 999;
   }
 
   .activity-resources-list {
@@ -97,6 +105,7 @@
       align-items: center; 
       height: 40px;
       margin-bottom: 5px;
+      border-radius: 5px;
 
       &.canvas { 
         background-color: #81d4fa; /* Lighter Blue */
@@ -145,12 +154,30 @@
     margin-bottom: 0.5rem; 
     color: #888; // Medium gray color
   }
+
+  .canvas-container {
+    position: absolute;
+    top: 64px;
+    left: 283px;
+    width: 100%;
+    height: 100%;
+    z-index: 997; // Ensure canvas is on top of everything except resource pane and add button
+  }
 }
 
-.right-pane-container {
+.resources-right-pane-container {
   position: relative; // Required for absolute positioning of children
   flex: 0 0 400px; // Set a fixed width for the right pane container
   padding: 1rem;
+
+  .canvas-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000; 
+  }
 }
 
 .resources-pane {
@@ -159,12 +186,11 @@
   left: 0;
   width: 100%; 
   height: 100%; 
-  z-index: 1; // Ensure resources pane is on top when visible
   padding: 1rem;
 
-  background-color: #fff; // White background
-  border: 1px solid #ccc; // Light gray border
-  border-radius: 5px; // Add rounded corners
+  background-color: #fff; 
+  border: 1px solid #ccc; 
+  border-radius: 5px; 
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); // Add a subtle shadow
 
   h3 { 
@@ -215,6 +241,14 @@
       }
     }
   }
+}
+
+.classroom-right-pane-container {
+  position: relative; 
+  flex: 0 0 400px; 
+  padding: 1rem;
+  z-index: 998; // This pane will be above the canvas
+  background-color: #f5f5f5;
 }
 
   /* Style for the drop placeholder */
@@ -271,6 +305,7 @@
     margin-right: 5px; 
     margin-bottom: 5px;
     max-width: 40px; // Set max-width to create a square
+    border-radius: 5px;
 
     &.selected {
       position: relative; // Required for positioning the overlay
@@ -284,6 +319,7 @@
         width: 26px;
         height: 26px;
         background-color: rgba(0, 0, 0, 0.4); // Semi-transparent black overlay
+        border-radius: 3px;
       }
     }
 
@@ -303,4 +339,27 @@
       background-color: #ef9a9a; 
     }
   }
+}
+
+.timeline-container {
+  position: fixed; 
+  bottom: 0; 
+  left: 283px; // Adjust based on the width of the activities pane
+  width: calc(100% - 283px); // Adjust based on the width of the activities pane
+  height: 100px; // Adjust as needed
+  background-color: #f5f5f5; // Light gray background
+  border-top: 1px solid #ccc;
+  z-index: 997; // Ensure timeline is on top of everything except resource pane
+}
+
+.middle-pane .canvas-container {
+  // ... other styles ...
+
+  canvas {
+    background-color: #f5f5f5; /* Set a white background */
+  }
+}
+
+.classroom-resources-pane {
+  z-index: 999;
 }

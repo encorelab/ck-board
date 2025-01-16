@@ -20,6 +20,8 @@ import { HttpClient } from '@angular/common/http';
 import { Activity } from 'src/app/models/activity';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Resource } from 'src/app/models/resource';
+import { fabric } from 'fabric'; 
+import { HostListener } from '@angular/core';
 
 
 @Component({
@@ -38,6 +40,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   selectedActivityResources: Resource[] = []; 
   selectedActivityGroups: Group[] = []; 
   selectedBoardName = '';
+  canvas: fabric.Canvas | undefined;
 
   allAvailableResources: any[] = [ //define available resources
     { name: 'Canvas', type: 'canvas' },
@@ -48,8 +51,26 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   availableResources: any[] = [...this.allAvailableResources]; // Duplicate the array to be filtered based on selected values
 
+  availableClassroomObjects: any[] = [
+    { name: 'Table', type: 'table', icon: 'table_restaurant' },
+    { name: 'Projector', type: 'projector', icon: 'videocam' },
+    { name: 'Student', type: 'student', icon: 'person' },
+    { name: 'Student Group', type: 'studentGroup', icon: 'groups' },
+    { name: 'Teacher', type: 'teacher', icon: 'school' }
+    // ... add more classroom objects
+  ];
 
   showResourcesPane = false; 
+  showClassroomBindings = false;
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    if (this.showClassroomBindings) {
+      this.canvas?.dispose(); 
+      this.canvas = undefined;
+      this.initializeCanvas();
+    }
+  }
 
   constructor(
     public userService: UserService,
@@ -67,6 +88,75 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.user = this.userService.user!;
     this.loadScoreAuthoringData(); 
+  }
+
+  initializeCanvas() {
+    const canvasContainer = document.getElementById('classroomCanvas')?.parentElement; // Get the parent div
+
+    if (canvasContainer) {
+      this.canvas = new fabric.Canvas('classroomCanvas', {
+        width: canvasContainer.offsetWidth - 283,  // Set width to parent's width
+        height: canvasContainer.offsetHeight -64 // Set height to parent's height
+      });
+
+      this.createDotGrid();
+      this.drawInnerBox();
+
+      // Add event listeners for object:added and object:moving
+      this.canvas.on('object:added', this.onObjectAdded);
+      this.canvas.on('object:moving', this.onObjectMoving);
+    }
+  }
+
+  createDotGrid() {
+    if (this.canvas) {
+      const canvasWidth = this.canvas.getWidth();
+      const canvasHeight = this.canvas.getHeight();
+      const gridSpacing = 40; // Adjust the spacing between dots as needed
+  
+      for (let x = 0; x <= canvasWidth; x += gridSpacing) {
+        for (let y = 0; y <= canvasHeight; y += gridSpacing) {
+          const dot = new fabric.Circle({
+            left: x,
+            top: y,
+            radius: 2, // Adjust the dot size as needed
+            fill: '#ddd' // Adjust the dot color as needed
+          });
+          this.canvas.add(dot);
+        }
+      }
+  
+      this.canvas.renderAll(); // Render the canvas to show the dots
+    }
+  }
+
+  drawInnerBox() {
+    if (this.canvas) {
+      const canvasWidth = this.canvas.getWidth();
+      const canvasHeight = this.canvas.getHeight();
+      const inset = 41; // Adjust the inset value as needed
+
+      const rect = new fabric.Rect({
+        left: inset,
+        top: inset,
+        width: canvasWidth - inset * 2,
+        height: canvasHeight - inset * 2,
+        fill: 'transparent', // Or any fill color you prefer
+        stroke: '#ccc', // Or any stroke color you prefer
+        strokeWidth: 2 // Adjust the stroke width as needed
+      });
+
+      this.canvas.add(rect);
+      this.canvas.sendToBack(rect); // Send the rectangle to the back
+    }
+  }
+
+  onObjectAdded(event: any) {
+    // ... (Implement logic to save the added object to the database) ...
+  }
+
+  onObjectMoving(event: any) {
+    // ... (Implement logic to update the object's position in the database) ...
   }
 
   async loadScoreAuthoringData(): Promise<void> {
@@ -373,6 +463,20 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     } catch (error) {
       this.snackbarService.queueSnackbar(`Error ${this.isResourceAssignedToGroup(resource, group) ? 'removing' : 'adding'} group assignment.`);
       console.error(`Error ${this.isResourceAssignedToGroup(resource, group) ? 'removing' : 'adding'} group assignment:`, error);
+    }
+  }
+
+  toggleClassroomBindings() { 
+    this.showClassroomBindings = !this.showClassroomBindings;
+
+    if (this.showClassroomBindings) {
+      // Add a slight delay before initializing the canvas
+      setTimeout(() => { 
+        this.initializeCanvas();
+      }, 100); // Adjust the delay as needed
+    } else {
+      this.canvas?.dispose();
+      this.canvas = undefined;
     }
   }
 

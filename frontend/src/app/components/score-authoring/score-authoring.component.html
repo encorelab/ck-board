@@ -23,6 +23,9 @@
     <div class="main-content"> 
   
       <div class="activities-pane"> 
+        <button mat-raised-button color="primary" class="classroom-bindings-button" (click)="toggleClassroomBindings()">
+          {{ showClassroomBindings ? 'Author Resources' : 'Author Classroom' }} 
+        </button>
         <h3>Activities</h3>
         <div class="activities-list" cdkDropList (cdkDropListDropped)="dropActivity($event)"> 
             <div 
@@ -47,11 +50,14 @@
         </div>
         <button mat-fab color="primary" class="add-activity-button" (click)="openCreateActivityModal()">
           <mat-icon>add</mat-icon>
-        </button>
+        </button> 
       </div>
   
       <div class="content-and-resources">
         <div class="middle-pane">
+          <div class="canvas-container" *ngIf="showClassroomBindings"> 
+            <canvas id="classroomCanvas"></canvas> 
+          </div>
           <button 
             mat-fab 
             color="primary" 
@@ -86,9 +92,9 @@
           
         </div>
       
-        <div class="right-pane-container"> 
-          <mat-sidenav #rightPane mode="over" position="end" [(opened)]="showResourcesPane">
-            <div class="resources-pane">
+        <div class="resources-right-pane-container"> 
+          <mat-sidenav #authoringResourcesPane mode="over" position="end" [(opened)]="showResourcesPane">
+            <div class="resources-pane" *ngIf="!showClassroomBindings">
               <button mat-icon-button class="close-resource-button" (click)="showResourcesPane = false"> 
                 <mat-icon>close</mat-icon>
               </button>
@@ -140,7 +146,32 @@
             </div>
           </div>
         </div>
-  
+
+        <div class="classroom-right-pane-container" *ngIf="showClassroomBindings && showResourcesPane"> 
+          <mat-sidenav #classroomResourcesPane mode="over" position="end" [(opened)]="showResourcesPane">
+            <div class="resources-pane" *ngIf="showClassroomBindings"> 
+              <button mat-icon-button class="close-resource-button" (click)="showResourcesPane = false"> 
+                <mat-icon>close</mat-icon>
+              </button>
+              <h3>Resources</h3>
+      
+              <h4>Classroom Objects</h4>
+              <div 
+                class="available-resources-list" 
+                cdkDropList 
+                cdkDropListOrientation="vertical" 
+                (cdkDropListDropped)="dropResourceFromAvailable($event)"
+              >
+                <div *ngFor="let resource of availableClassroomObjects" cdkDrag>
+                  <div class="available-resource-item"> 
+                    <mat-icon>{{ resource.icon }}</mat-icon> 
+                    {{ resource.name }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-sidenav>
+        </div>
       </div> 
   
     </div>

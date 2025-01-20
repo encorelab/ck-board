@@ -23,9 +23,9 @@
     <div class="main-content"> 
   
       <div class="activities-pane"> 
-        <button mat-raised-button color="primary" class="classroom-bindings-button" (click)="toggleClassroomBindings()">
+        <!--<button mat-raised-button color="primary" class="classroom-bindings-button" (click)="toggleClassroomBindings()">
           {{ showClassroomBindings ? 'Author Resources' : 'Author Classroom' }} 
-        </button>
+        </button>-->
         <h3>Activities</h3>
         <div class="activities-list" cdkDropList (cdkDropListDropped)="dropActivity($event)"> 
             <div 
@@ -69,6 +69,8 @@
           </button>
           <h3 *ngIf="selectedActivity">{{ selectedActivity.name }}</h3>
           <h4 *ngIf="selectedActivity">Activity Space: {{ selectedBoardName }}</h4>
+          
+          <h5>Resource Assignments</h5>
           <div class="activity-resources-list" 
             cdkDropList 
             (cdkDropListDropped)="dropResource($event)" 
@@ -89,6 +91,19 @@
               </div>
             </div>
           </div>
+
+          <h5>Teacher Tasks</h5>
+          <div class="teacher-tasks-list" cdkDropList (cdkDropListDropped)="dropTeacherAction($event)"> 
+            <div *ngFor="let task of teacherTasks; let i = index" cdkDrag>
+              <div class="resource-item">
+                <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon> 
+                Task {{ i + 1 }}: {{ task.name }} 
+                <button mat-icon-button (click)="deleteTeacherTask(task, i)"> 
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
           
         </div>
       
@@ -98,8 +113,8 @@
               <button mat-icon-button class="close-resource-button" (click)="showResourcesPane = false"> 
                 <mat-icon>close</mat-icon>
               </button>
-              <h3>Resources</h3>
-              <h4>View</h4>
+              <h3>Resources & Actions</h3>
+              <h4>Resources</h4>
               <div 
                 class="available-resources-list" 
                 cdkDropList 
@@ -118,16 +133,49 @@
                   </div>
                 </div>
               </div>
+
+              <h4>Teacher Actions</h4> 
+              <div 
+                class="available-teacher-actions-list" 
+                cdkDropList 
+                cdkDropListOrientation="vertical" 
+                (cdkDropListDropped)="dropTeacherActionFromAvailable($event)" 
+              >
+                <div *ngFor="let action of availableTeacherActions" cdkDrag>
+                  <div 
+                    class="available-resource-item"
+                    [class.activateWorkflow]="action.type === 'activateWorkflow'"
+                    [class.activateAiAgent]="action.type === 'activateAiAgent'"
+                    [class.regroupStudents]="action.type === 'regroupStudents'"
+                    [class.viewBuckets]="action.type === 'viewBuckets'"
+                    [class.viewTodos]="action.type === 'viewTodos'"
+                    [class.monitorTask]="action.type === 'monitorTask'"
+                    [class.customPrompt]="action.type === 'customPrompt'"
+                  >  
+                    <mat-icon>{{ action.icon }}</mat-icon> 
+                    {{ action.name }}
+                  </div>
+                </div>
+              </div>
             </div>
           </mat-sidenav>
   
           <div class="groups-list" *ngIf="!showResourcesPane && selectedActivity">
-            <h3>Groups</h3> 
-          
+            <div class="groups-header">
+              <h3>Groups</h3> 
+              <button mat-icon-button (click)="openGroupDialog()"> 
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
             <div class="group-resource-table">
               <div class="group-header-row">
                 <div class="group-header-cell" *ngFor="let group of selectedActivityGroups">
                   {{ group.name }}
+                </div>
+                <div class="group-header-cell edit-cell"> 
+                  <button mat-icon-button (click)="editActivity(selectedActivity!)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
                 </div>
               </div>
               <div class="resource-row" *ngFor="let resource of selectedActivityResources; let resourceIndex = index">

@@ -1,4 +1,3 @@
-// score-authoring.component.scss
 
 .toolbar {
   width: 100%; 
@@ -98,7 +97,7 @@
   }
 
   .activity-resources-list {
-    margin-top: 2rem;
+    margin-bottom: 2rem;
 
     .resource-item { /* Add styles for the resource items */
       display: flex;
@@ -151,8 +150,15 @@
   h4 { 
     font-size: 1.2rem; 
     font-weight: bold;
-    margin-bottom: 0.5rem; 
-    color: #888; // Medium gray color
+    margin-bottom: 1.5rem; 
+    color: #888; 
+  }
+
+  h5 { 
+    font-size: 1rem; 
+    font-weight: bold;
+    color: #888; 
+    margin-bottom: 0.5rem;
   }
 
   .canvas-container {
@@ -211,6 +217,7 @@
   }
 
   .available-resources-list {
+    margin-bottom: 2rem;
     .available-resource-item {
       cursor: grab; /* Use grab cursor to indicate draggability */
       padding: 0.5rem;
@@ -237,6 +244,62 @@
 
       &.monitor { 
         background-color: #ef9a9a; /* Lighter Red */
+        color: #000; 
+      }
+    }
+  }
+  .available-teacher-actions-list {
+    .available-resource-item { 
+      cursor: grab; 
+      padding: 0.5rem;
+      border: 1px solid #ccc; 
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      max-width: 80%; 
+      padding-right: 1rem; 
+      display: flex;
+      align-items: center;
+
+      mat-icon {
+        margin-right: 0.5rem; // Add some space between the icon and the text
+      }
+
+      &:active { 
+        background-color: #e0e0e0;
+      }
+
+      &.activateWorkflow {
+        background-color: #90caf9;  // Slightly darker blue
+        color: #000; 
+      }
+
+      &.activateAiAgent {
+        background-color: #a5d6a7;  // Slightly darker green
+        color: #000; 
+      }
+
+      &.regroupStudents {
+        background-color: #fff59d;  // Slightly darker yellow
+        color: #000; 
+      }
+
+      &.viewBuckets {
+        background-color: #f48fb1;  // Slightly darker red
+        color: #000; 
+      }
+
+      &.viewTodos {
+        background-color: #b39ddb;  // Slightly darker pink
+        color: #000; 
+      }
+
+      &.monitorTask {
+        background-color: #ce93d8;  // Slightly darker purple
+        color: #000; 
+      }
+
+      &.customPrompt {
+        background-color: #bcaaa4;  // Slightly darker brown
         color: #000; 
       }
     }
@@ -272,18 +335,37 @@
     margin-top: 3rem;
   }
 
+  .groups-header {
+    display: flex;
+    align-items: center; 
+  }
+
+  .groups-header h3 {
+    margin-right: 0.5rem;
+  }
+
+  .groups-header button { 
+    margin-top: -1rem;
+  }
+
   .group-header-row {
     display: flex;
-    margin-bottom: 0.5rem; 
+    margin-left: 1rem;
   }
 
   .group-header-cell {
     flex: 1; 
     text-align: left;
     max-width: 40px;
-    margin-bottom: 0.4rem;
     transform: rotate(-45deg); /* Rotate the text */
     white-space: nowrap; 
+  }
+
+  .edit-cell {
+    flex: 0 0 40px;
+    text-align: center;
+    transform: none;
+    margin: 0rem 0rem;
   }
 
   .resource-row {

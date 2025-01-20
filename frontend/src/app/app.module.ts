@@ -68,6 +68,9 @@ import { AddScoreRunModalComponent } from './components/add-score-run-modal/add-
 import { ScoreAuthoringComponent } from './components/score-authoring/score-authoring.component';
 import { CreateActivityModalComponent } from './components/create-activity-modal/create-activity-modal.component';
 import { EditActivityModalComponent } from './components/edit-activity-modal/edit-activity-modal.component';
+import { SelectWorkflowModalComponent } from './components/select-workflow-modal/select-workflow-modal.component';
+import { SelectAiAgentModalComponent } from './components/select-ai-agent-modal/select-ai-agent-modal.component';
+import { CustomTeacherPromptModalComponent } from './components/custom-teacher-prompt-modal/custom-teacher-prompt-modal.component';
 
 const config: SocketIoConfig = {
   url: environment.socketUrl,
@@ -125,6 +128,9 @@ export function tokenGetter() {
     ScoreAuthoringComponent,
     CreateActivityModalComponent,
     EditActivityModalComponent,
+    SelectWorkflowModalComponent,
+    SelectAiAgentModalComponent,
+    CustomTeacherPromptModalComponent,
   ],
   imports: [
     BrowserModule,

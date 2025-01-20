@@ -693,12 +693,12 @@ async function performDatabaseOperations(
 
 async function constructAndSendMessage(
   postsWithBucketIds: any[],
-  bucketsToSend: any[],
+  bucketData: any[],
   prompt: string
 ): Promise<any> {
-  const postsAsKeyValuePairs = postsToKeyValuePairs(postsWithBucketIds);
+  const postData = postsToKeyValuePairs(postsWithBucketIds);
 
-  const message =
+  const promptTemplate =
     `
     Please provide your response in the following JSON format, including the 
     "response" key and optionally any of the following keys: "create_bucket", 
@@ -738,13 +738,13 @@ async function constructAndSendMessage(
     }
 
     Here are the posts from the project:` +
-    postsAsKeyValuePairs + // Concatenate variables here
+    postData + 
     `\nHere are the buckets:\n` +
-    JSON.stringify(bucketsToSend, null, 2) +
+    JSON.stringify(bucketData, null, 2) +
     `\nUser prompt: ${prompt}`;
 
   try {
-    const result = await chat.sendMessageStream(message); // Get the StreamGenerateContentResult
+    const result = await chat.sendMessageStream(promptTemplate); // Get the StreamGenerateContentResult
 
     return result;
   } catch (error) {

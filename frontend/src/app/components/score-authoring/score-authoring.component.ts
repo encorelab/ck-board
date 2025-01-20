@@ -15,6 +15,10 @@ import { BoardService } from 'src/app/services/board.service';
 import { Subscription } from 'rxjs';
 import { CreateActivityModalComponent } from '../create-activity-modal/create-activity-modal.component';
 import { EditActivityModalComponent } from '../edit-activity-modal/edit-activity-modal.component';
+import { SelectWorkflowModalComponent } from '../select-workflow-modal/select-workflow-modal.component';
+import { SelectAiAgentModalComponent } from '../select-ai-agent-modal/select-ai-agent-modal.component';
+import { CustomTeacherPromptModalComponent } from '../custom-teacher-prompt-modal/custom-teacher-prompt-modal.component';
+import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop'; 
 import { HttpClient } from '@angular/common/http';
 import { Activity } from 'src/app/models/activity';
@@ -59,6 +63,18 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     { name: 'Teacher', type: 'teacher', icon: 'school' }
     // ... add more classroom objects
   ];
+
+  availableTeacherActions: any[] = [
+    { name: 'Activate Workflow', type: 'activateWorkflow', icon: 'timeline' },
+    { name: 'Activate AI Agent', type: 'activateAiAgent', icon: 'smart_toy' },
+    { name: 'Manually Regroup Students', type: 'regroupStudents', icon: 'group_work' },
+    { name: 'View Buckets', type: 'viewBuckets', icon: 'view_module' },
+    { name: 'View TODOs', type: 'viewTodos', icon: 'assignment' },
+    { name: 'Monitor Task', type: 'monitorTask', icon: 'monitoring' },
+    { name: 'Custom Teacher Prompt', type: 'customPrompt', icon: 'chat_bubble' }
+  ];
+
+  teacherTasks: any[] = [];
 
   showResourcesPane = false; 
   showClassroomBindings = false;
@@ -298,7 +314,6 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         this.updateResourceOrder();
       })
       .catch(error => {
-        // Handle error (e.g., display an error message)
         console.error("Error creating resource:", error);
       });
   }
@@ -403,6 +418,14 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     }
   }
 
+  openGroupDialog() {
+    this.dialog.open(ManageGroupModalComponent, {
+      data: {
+        project: this.project,
+      },
+    });
+  }
+
   openCreateActivityModal() {
     const dialogRef = this.dialog.open(CreateActivityModalComponent, {
       data: { 
@@ -434,6 +457,110 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   addResourceToActivity(resource: Resource) {
     this.showResourcesPane = false; 
+  }
+
+  dropTeacherActionFromAvailable(event: CdkDragDrop<any[]>) {
+    const action = this.availableTeacherActions[event.previousIndex];
+
+    // Call a function to handle creating the teacher task
+    this.createTeacherTask(action); 
+  }
+
+  dropTeacherAction(event: CdkDragDrop<any[]>) {
+    moveItemInArray(this.teacherTasks, event.previousIndex, event.currentIndex);
+    this.updateTeacherTaskOrder();
+  }
+
+  async createTeacherTask(actionData: any) {
+    try {
+      let taskData = {
+        taskID: generateUniqueID(),
+        name: actionData.name, 
+        activityID: this.selectedActivity!.activityID,
+        order: this.teacherTasks.length + 1,
+        type: actionData.type,
+        // ... other properties you might need for teacher tasks ...
+      };
+  
+      // Open a modal based on the action type
+      if (actionData.type === 'activateWorkflow') {
+        taskData = await this.openWorkflowModal(taskData);
+      } else if (actionData.type === 'activateAiAgent') {
+        taskData = await this.openAiAgentModal(taskData);
+      } else if (actionData.type === 'customPrompt') {
+        taskData = await this.openCustomPromptModal(taskData);
+      } 
+      // ... add more cases for other action types as needed ...
+  
+      // If taskData is not null (i.e., the modal was not canceled), create the task
+      if (taskData) {
+        const newTask = await this.http.post('/api/teacher-tasks', taskData).toPromise();
+        this.teacherTasks.push(newTask);
+        this.updateTeacherTaskOrder();
+      }
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error creating teacher task.");
+      console.error("Error creating teacher task:", error);
+    }
+  }
+  
+  async openWorkflowModal(taskData: any): Promise<any> {
+    const dialogRef = this.dialog.open(SelectWorkflowModalComponent, { // Assuming you create this component
+      data: {
+        boardID: this.selectedActivity!.boardID, // Pass the board ID
+        taskData: taskData
+      }
+    });
+  
+    return dialogRef.afterClosed().toPromise();
+  }
+  
+  async openAiAgentModal(taskData: any): Promise<any> {
+    const dialogRef = this.dialog.open(SelectAiAgentModalComponent, { // Assuming you create this component
+      data: {
+        // ... pass any necessary data for AI agent selection ...
+        taskData: taskData
+      }
+    });
+  
+    return dialogRef.afterClosed().toPromise();
+  }
+  
+  async openCustomPromptModal(taskData: any): Promise<any> {
+    const dialogRef = this.dialog.open(CustomTeacherPromptModalComponent, { // Assuming you create this component
+      data: {
+        // ... pass any necessary data for the custom prompt ...
+        taskData: taskData
+      }
+    });
+  
+    return dialogRef.afterClosed().toPromise();
+  }
+
+  async updateTeacherTaskOrder() {
+    try {
+      // ... (Implement logic to update teacher task order in the database) ...
+    } catch (error) {
+      // ... (error handling) ...
+    }
+  }
+
+  async deleteTeacherTask(task: any, index: number) {
+    try {
+      // 1. (Optional) Ask for confirmation before deleting
+
+      // 2. Call the API to delete the task
+      await this.http.delete(`/api/teacher-tasks/delete/${task.taskID}`).toPromise();
+
+      // 3. Remove the task from the teacherTasks array
+      this.teacherTasks.splice(index, 1);
+
+      // 4. Update the task order in the database
+      this.updateTeacherTaskOrder();
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error deleting teacher task.");
+      console.error("Error deleting teacher task:", error);
+    }
   }
 
   toggleResourcesPane() {

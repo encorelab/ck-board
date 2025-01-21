@@ -1,3 +1,4 @@
+// score-authoring.component.scss
 
 .toolbar {
   width: 100%; 
@@ -283,6 +284,11 @@
         color: #000; 
       }
 
+      &.viewCanvas {
+        background-color: #ffcc80;
+        color: #000;
+      }
+
       &.viewBuckets {
         background-color: #f48fb1;  // Slightly darker red
         color: #000; 
@@ -312,6 +318,77 @@
   padding: 1rem;
   z-index: 998; // This pane will be above the canvas
   background-color: #f5f5f5;
+}
+
+.teacher-task-list {
+  .teacher-task-item { 
+    display: flex;
+    align-items: center; 
+    height: 40px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+
+    .task-content {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    &.activateWorkflow { 
+      background-color: #90caf9;  // Slightly darker blue
+      color: #000; 
+    }
+
+    &.activateAiAgent {
+      background-color: #a5d6a7;  // Slightly darker green
+      color: #000; 
+    }
+
+    &.regroupStudents {
+      background-color: #fff59d;  // Slightly darker yellow
+      color: #000; 
+      cursor: pointer;
+    }
+
+    &.viewCanvas {
+      background-color: #ffcc80;
+      color: #000;
+    }
+
+    &.viewBuckets {
+      background-color: #f48fb1;  // Slightly darker red
+      color: #000; 
+    }
+
+    &.viewTodos {
+      background-color: #b39ddb;  // Slightly darker pink
+      color: #000; 
+    }
+
+    &.monitorTask {
+      background-color: #ce93d8;  // Slightly darker purple
+      color: #000; 
+    }
+
+    &.customPrompt {
+      background-color: #bcaaa4;  // Slightly darker brown
+      color: #000; 
+    }
+
+    .drag-handle {
+      cursor: move;
+      margin-right: 0.5rem;
+    }
+
+    button { /* Target the delete button */
+      margin-left: auto; // Push the button to the right 
+    }
+
+    .teacher-task-icon {
+      margin: 0 0.5rem;
+    }
+  }
 }
 
   /* Style for the drop placeholder */
@@ -444,4 +521,39 @@
 
 .classroom-resources-pane {
   z-index: 999;
+}
+
+.activity-space-header {
+  display: flex;
+  justify-content: center; // Center the container horizontally
+  align-items: center; // Align items to the center vertically
+  margin-bottom: 1rem;
+
+  .heading-and-settings-container {
+    display: flex;
+    align-items: center; // Align the heading and button vertically
+
+    h4 {
+      margin-bottom: 0; // Remove default margin if needed
+      margin-right: 0.5rem; // Add some space between heading and button
+    }
+  }
+
+  .config-button {
+    // Add any specific styles for the button if needed
+  }
+}
+
+:host {
+  display: block;
+  padding: 0 !important; // Remove default padding
+}
+
+.mat-dialog-container {
+  padding: 0 !important; // Remove default padding for dialog container
+}
+
+.mat-dialog-content {
+  margin: 0 !important; // Remove default margin
+  max-height: 100vh; // Allow content to take up full height
 }

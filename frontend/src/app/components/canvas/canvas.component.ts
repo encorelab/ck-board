@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, HostListener, ElementRef, Renderer2, ChangeDetectorRef } from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
@@ -107,6 +107,9 @@ export class CanvasComponent implements OnInit, OnDestroy {
     e.stopPropagation();
   }
 
+  @Input() isModalView = false;
+  private resizeObserver: ResizeObserver;
+
   constructor(
     public postService: PostService,
     public boardService: BoardService,
@@ -122,7 +125,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
     // public fileUploadService: FileUploadService,
     private socketService: SocketService,
     private canvasService: CanvasService,
-    private traceService: TraceService
+    private traceService: TraceService,
+    private elementRef: ElementRef,
+    private renderer: Renderer2,
+    private cdr: ChangeDetectorRef
   ) {
     this.groupEventToHandler = new Map<SocketEvent, Function>([
       [SocketEvent.POST_CREATE, this.handlePostCreateEvent],
@@ -148,6 +154,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
       [SocketEvent.WORKFLOW_POST_SUBMIT, this.handleWorkflowPost],
       [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent],
     ]);
+  }
+
+  ngAfterViewInit(): void {
+    if (this.isModalView) {
+      this.initResizeObserver();
+    }
   }
 
   async ngOnInit() {
@@ -579,27 +591,42 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.canvas.renderAll();
   }
 
-  onResize(event) {
-    const scaleX = event.target.innerWidth / this.canvas.getWidth();
-    // Without toolbar height
-    const scaleY = (event.target.innerHeight - 64) / this.canvas.getHeight();
-    const objects = this.canvas.getObjects();
+  onResize(event?: any) {
+    if (!this.isModalView || !this.canvas) {
+      return;
+    }
+    const canvasElement = document.getElementById('canvas');
+    if (canvasElement) {
+      const modalContent = canvasElement.closest('.mat-dialog-content');
+      if (modalContent) {
+        this.resizeCanvas(modalContent.clientWidth, modalContent.clientHeight);
+      }
+    }
+  }
 
-    // Resize all objects inside the canvas
-    for (const i in objects) {
-      objects[i].scaleX = objects[i].getObjectScaling().scaleX * scaleY;
-      objects[i].scaleY = objects[i].getObjectScaling().scaleY * scaleY;
-      objects[i].left = (objects[i].left || 0) * scaleX;
-      objects[i].top = (objects[i].top || 0) * scaleY;
-      objects[i].setCoords();
+  resizeCanvas(width: number, height: number) {
+    if (!this.canvas) {
+      console.warn('Canvas not initialized yet!');
+      return;
     }
 
-    this.canvas.setWidth(event.target.innerWidth);
-    // Without toolbar height
-    this.canvas.setHeight(event.target.innerHeight - 64);
-
-    this.canvas.renderAll();
+    this.canvas.setWidth(width);
+    this.canvas.setHeight(height);
     this.canvas.calcOffset();
+    this.canvas.renderAll();
+  }
+
+  initResizeObserver() {
+    const canvasElement = document.getElementById('canvas');
+    if (canvasElement) {
+      const modalContent = canvasElement.closest('.mat-dialog-content');
+      if (modalContent) {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.onResize();
+        });
+        this.resizeObserver.observe(modalContent);
+      }
+    }
   }
 
   hideAuthorNames() {
@@ -1106,11 +1133,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   private _calcUpvoteCounter() {
-    this.upvotesService
+    if (this.board && this.board.upvoteLimit) {
+      this.upvotesService
       .getByBoardAndUser(this.boardID, this.user.userID)
       .then((votes) => {
         this.upvoteCounter = this.board.upvoteLimit - votes.length;
       });
+    }
   }
 
   private _postsMovementAllowed() {
@@ -1136,5 +1165,8 @@ export class CanvasComponent implements OnInit, OnDestroy {
     this.unsubListeners.forEach((s) => s.unsubscribe());
     this.socketService.disconnect(this.user.userID, this.boardID);
     this.snackbarService.ngOnDestroy();
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   }
 }

@@ -71,6 +71,7 @@ import { EditActivityModalComponent } from './components/edit-activity-modal/edi
 import { SelectWorkflowModalComponent } from './components/select-workflow-modal/select-workflow-modal.component';
 import { SelectAiAgentModalComponent } from './components/select-ai-agent-modal/select-ai-agent-modal.component';
 import { CustomTeacherPromptModalComponent } from './components/custom-teacher-prompt-modal/custom-teacher-prompt-modal.component';
+import { ScoreViewModalComponent } from './components/score-view-modal/score-view-modal.component';
 
 const config: SocketIoConfig = {
   url: environment.socketUrl,
@@ -131,6 +132,10 @@ export function tokenGetter() {
     SelectWorkflowModalComponent,
     SelectAiAgentModalComponent,
     CustomTeacherPromptModalComponent,
+    ScoreViewModalComponent,
+  ],
+  entryComponents: [
+    ScoreViewModalComponent,
   ],
   imports: [
     BrowserModule,

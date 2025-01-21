@@ -1,3 +1,5 @@
+<!-- score-authoring.component.html -->
+
 <div>
     <app-toolbar
       class="toolbar"
@@ -68,7 +70,20 @@
             <mat-icon>add</mat-icon>
           </button>
           <h3 *ngIf="selectedActivity">{{ selectedActivity.name }}</h3>
-          <h4 *ngIf="selectedActivity">Activity Space: {{ selectedBoardName }}</h4>
+          <div class="activity-space-header">
+            <div class="heading-and-settings-container">
+              <h4 *ngIf="selectedActivity">Activity Space: {{ selectedBoardName }}</h4>
+              <button
+                *ngIf="selectedActivity"
+                mat-icon-button
+                class="config-button"
+                (click)="openConfigurationModal()"
+                matTooltip="Configure Activity Space"
+              >
+                <mat-icon>settings</mat-icon>
+              </button>
+            </div>
+          </div>
           
           <h5>Resource Assignments</h5>
           <div class="activity-resources-list" 
@@ -93,18 +108,34 @@
           </div>
 
           <h5>Teacher Tasks</h5>
-          <div class="teacher-tasks-list" cdkDropList (cdkDropListDropped)="dropTeacherAction($event)"> 
-            <div *ngFor="let task of teacherTasks; let i = index" cdkDrag>
-              <div class="resource-item">
-                <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon> 
-                Task {{ i + 1 }}: {{ task.name }} 
-                <button mat-icon-button (click)="deleteTeacherTask(task, i)"> 
-                  <mat-icon>close</mat-icon>
-                </button>
+          <div cdkDropList class="teacher-task-list" (cdkDropListDropped)="dropTeacherAction($event)">
+            <div
+              *ngFor="let task of teacherTasks; let i = index"
+              cdkDrag
+              class="teacher-task-item"
+              [class.activateWorkflow]="task.type === 'activateWorkflow'"
+              [class.activateAiAgent]="task.type === 'activateAiAgent'"
+              [class.regroupStudents]="task.type === 'regroupStudents'"
+              [class.viewCanvas]="task.type === 'viewCanvas'"
+              [class.viewBuckets]="task.type === 'viewBuckets'"
+              [class.viewTodos]="task.type === 'viewTodos'"
+              [class.monitorTask]="task.type === 'monitorTask'"
+              [class.customPrompt]="task.type === 'customPrompt'"
+            >
+              <div 
+                class="task-content" 
+                (click)="handleTeacherTaskClick(task)"
+              >
+                <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                Task {{ task.order }}:
+                <mat-icon class="teacher-task-icon">{{ getIconForTask(task) }}</mat-icon>
+                {{ task.name }}
               </div>
+              <button mat-icon-button (click)="deleteTeacherTask(task, i)">
+                <mat-icon>close</mat-icon>
+              </button>
             </div>
           </div>
-          
         </div>
       
         <div class="resources-right-pane-container"> 
@@ -147,6 +178,7 @@
                     [class.activateWorkflow]="action.type === 'activateWorkflow'"
                     [class.activateAiAgent]="action.type === 'activateAiAgent'"
                     [class.regroupStudents]="action.type === 'regroupStudents'"
+                    [class.viewCanvas]="action.type === 'viewCanvas'"
                     [class.viewBuckets]="action.type === 'viewBuckets'"
                     [class.viewTodos]="action.type === 'viewTodos'"
                     [class.monitorTask]="action.type === 'monitorTask'"

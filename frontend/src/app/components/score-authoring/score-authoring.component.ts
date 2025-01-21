@@ -24,8 +24,12 @@ import { HttpClient } from '@angular/common/http';
 import { Activity } from 'src/app/models/activity';
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Resource } from 'src/app/models/resource';
+import { TeacherTask } from 'src/app/models/teacherTask';
 import { fabric } from 'fabric'; 
 import { HostListener } from '@angular/core';
+import { ScoreViewModalComponent } from '../score-view-modal/score-view-modal.component';
+import { Board } from 'src/app/models/board'
+import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
 
 
 @Component({
@@ -68,9 +72,10 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     { name: 'Activate Workflow', type: 'activateWorkflow', icon: 'timeline' },
     { name: 'Activate AI Agent', type: 'activateAiAgent', icon: 'smart_toy' },
     { name: 'Manually Regroup Students', type: 'regroupStudents', icon: 'group_work' },
+    { name: 'View Canvas', type: 'viewCanvas', icon: 'visibility' },
     { name: 'View Buckets', type: 'viewBuckets', icon: 'view_module' },
-    { name: 'View TODOs', type: 'viewTodos', icon: 'assignment' },
-    { name: 'Monitor Task', type: 'monitorTask', icon: 'monitoring' },
+    { name: 'View Monitor', type: 'viewTodos', icon: 'assignment' },
+    { name: 'Monitor Workspace', type: 'monitorTask', icon: 'monitoring' },
     { name: 'Custom Teacher Prompt', type: 'customPrompt', icon: 'chat_bubble' }
   ];
 
@@ -202,11 +207,16 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       this.router.navigate(['error']); 
       return;
     }
+
+    // Load teacher tasks after selecting the first activity
+    if (this.selectedActivity) {
+      this.loadTeacherTasks();
+    }
   }
 
   async selectActivity(activity: Activity) {
     this.selectedActivity = activity;
-    this.showResourcesPane = false; //Close the resources pane
+    this.showResourcesPane = false; 
     try {
       // Fetch resources for the selected activity
       this.selectedActivityResources = await this.http.get<Resource[]>(`resources/activity/${activity.activityID}`).toPromise() || []; 
@@ -217,6 +227,76 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     }
 
     this.fetchActivityGroups(activity.groupIDs); 
+
+    this.loadTeacherTasks();
+  }
+
+  async loadTeacherTasks() {
+    if (!this.selectedActivity) {
+      console.warn("No activity selected.");
+      return;
+    }
+
+    try {
+      this.teacherTasks = await this.http.get<TeacherTask[]>(`teacher-tasks/activity/${this.selectedActivity.activityID}`).toPromise() || [];
+      this.teacherTasks.sort((a, b) => a.order - b.order);
+    } catch (error) {
+      this.snackbarService.queueSnackbar("Error loading teacher tasks.");
+      console.error("Error loading teacher tasks:", error);
+    }
+  }
+
+  async getSelectedBoard(): Promise<Board | undefined> {
+    if (this.selectedActivity) {
+      try {
+        const board = await this.boardService.get(this.selectedActivity.boardID);
+        return board;
+      } catch (error) {
+        console.error("Error fetching board:", error);
+        return undefined;
+      }
+    } else {
+      return undefined;
+    }
+  }
+
+  handleTeacherTaskClick(task: TeacherTask) {
+    switch (task.type) {
+      case 'regroupStudents':
+        this.openGroupDialog();
+        break;
+      case 'viewCanvas':
+      case 'viewBuckets':
+      case 'monitorWorkspaceTask':
+      case 'workspace':
+        this.getSelectedBoard().then((board) => {
+          if (board) {
+            // Map task.type to componentType
+            let componentType = '';
+            switch (task.type) {
+              case 'viewCanvas':
+                componentType = 'canvas';
+                break;
+              case 'viewBuckets':
+                componentType = 'bucketView';
+                break;
+              case 'viewTodos':
+                componentType = 'monitor';
+                break;
+              case 'monitorTask': 
+                componentType = 'workspace';
+                break;
+            }
+            this.openViewModal(componentType, this.project, board);
+          } else {
+            console.error('Selected board is undefined');
+          }
+        });
+        break;
+      default:
+        // Handle other task types or do nothing
+        break;
+    }
   }
 
   start(activity: Activity) {
@@ -471,6 +551,11 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     this.updateTeacherTaskOrder();
   }
 
+  getIconForTask(task: any): string {
+    const action = this.availableTeacherActions.find(a => a.type === task.type);
+    return action ? action.icon : ''; 
+  }
+
   async createTeacherTask(actionData: any) {
     try {
       let taskData = {
@@ -484,9 +569,11 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   
       // Open a modal based on the action type
       if (actionData.type === 'activateWorkflow') {
-        taskData = await this.openWorkflowModal(taskData);
+        const { updatedTaskData, selectedWorkflowId } = await this.openWorkflowModal(taskData);
+        taskData = updatedTaskData;
       } else if (actionData.type === 'activateAiAgent') {
-        taskData = await this.openAiAgentModal(taskData);
+        const { updatedTaskData, selectedAiAgentId } = await this.openAiAgentModal(taskData);
+        taskData = updatedTaskData;
       } else if (actionData.type === 'customPrompt') {
         taskData = await this.openCustomPromptModal(taskData);
       } 
@@ -494,7 +581,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   
       // If taskData is not null (i.e., the modal was not canceled), create the task
       if (taskData) {
-        const newTask = await this.http.post('/api/teacher-tasks', taskData).toPromise();
+        const newTask = await this.http.post('teacher-tasks/', taskData).toPromise();
         this.teacherTasks.push(newTask);
         this.updateTeacherTaskOrder();
       }
@@ -502,6 +589,60 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       this.snackbarService.queueSnackbar("Error creating teacher task.");
       console.error("Error creating teacher task:", error);
     }
+  }
+
+  openConfigurationModal() {
+    if (!this.selectedActivity) {
+      return;
+    }
+  
+    this.boardService.get(this.selectedActivity.boardID).then((board) => {
+      if (board) {
+        this.dialog.open(ConfigurationModalComponent, {
+          data: {
+            project: this.project,
+            board: board,
+            update: (updatedBoard: Board, removed = false) => {
+              if (removed) {
+                // Handle board removal if necessary
+                this.snackbarService.queueSnackbar('Board removed successfully.');
+                // You might want to update your UI here, e.g., by refreshing the activities list
+              } else {
+                // Update the board in your component
+                this.selectedBoardName = updatedBoard.name; // Assuming you want to update the displayed board name
+                // You might need to update other parts of your UI that depend on the board data
+              }
+            },
+          },
+        });
+      } else {
+        this.snackbarService.queueSnackbar('Error: Could not find selected board.');
+      }
+    }).catch((error) => {
+      console.error('Error fetching board:', error);
+      this.snackbarService.queueSnackbar('Error: Could not open configuration.');
+    });
+  }
+
+  openViewModal(componentType: string, project: Project, board: Board) {
+    const dialogRef = this.dialog.open(ScoreViewModalComponent, {
+      maxWidth: '80vw',
+      maxHeight: '80vh',
+      height: '80%',
+      width: '80%',
+      data: {
+        componentType,
+        project,
+        board,
+        user: this.user,
+        projectID: project.projectID, 
+        boardID: board.boardID 
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Handle any actions after closing the modal (if needed)
+    });
   }
   
   async openWorkflowModal(taskData: any): Promise<any> {
@@ -538,25 +679,34 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   }
 
   async updateTeacherTaskOrder() {
+    if (!this.selectedActivity) {
+      console.warn("No activity selected.");
+      return;
+    }
+
     try {
-      // ... (Implement logic to update teacher task order in the database) ...
+      const updatedTasks = this.teacherTasks.map((task, index) => ({
+        taskID: task.taskID,
+        order: index + 1,
+      }));
+
+      await this.http.post('teacher-tasks/order/', {
+        activityID: this.selectedActivity.activityID,
+        tasks: updatedTasks
+      }).toPromise();
+
+      await this.loadTeacherTasks();
     } catch (error) {
-      // ... (error handling) ...
+      this.snackbarService.queueSnackbar("Error updating teacher task order.");
+      console.error("Error updating teacher task order:", error);
     }
   }
 
   async deleteTeacherTask(task: any, index: number) {
     try {
-      // 1. (Optional) Ask for confirmation before deleting
-
-      // 2. Call the API to delete the task
-      await this.http.delete(`/api/teacher-tasks/delete/${task.taskID}`).toPromise();
-
-      // 3. Remove the task from the teacherTasks array
+      await this.http.delete(`teacher-tasks/delete/${task.taskID}`).toPromise();
       this.teacherTasks.splice(index, 1);
-
-      // 4. Update the task order in the database
-      this.updateTeacherTaskOrder();
+      this.updateTeacherTaskOrder(); // Update order after deleting a task
     } catch (error) {
       this.snackbarService.queueSnackbar("Error deleting teacher task.");
       console.error("Error deleting teacher task:", error);

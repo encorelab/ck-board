@@ -53,6 +53,7 @@ export class PostModalData {
   commentPress?: boolean;
   onCommentEvent?: Function;
   onTagEvent?: Function;
+  onDeleteEvent?: Function;
   numSavedPosts: number = 0;
   updateNumSavedPosts?: Function;
 }
@@ -145,7 +146,8 @@ export class PostModalComponent {
       this.editingDesc = linkifyStr(p.desc, {
         defaultProtocol: 'https',
         target: '_blank',
-      }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+      })
+        .replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
         .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
         .replace(/(?:\r\n|\r|\n)/g, '<br>');
       this.tags = p.tags;
@@ -247,7 +249,8 @@ export class PostModalComponent {
     this.editingDesc = linkifyStr(this.desc, {
       defaultProtocol: 'https',
       target: '_blank',
-    }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+    })
+      .replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
       .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
       .replace(/(?:\r\n|\r|\n)/g, '<br>');
 
@@ -268,6 +271,9 @@ export class PostModalComponent {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this post?',
         handleConfirm: async () => {
+          if (this.data.onDeleteEvent) {
+            this.data.onDeleteEvent(this.post.postID);
+          }
           await this.canvasService.removePost(this.post);
           this.dialogRef.close(DELETE);
         },

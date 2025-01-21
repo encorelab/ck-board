@@ -16,7 +16,7 @@ import { Project } from 'src/app/models/project';
 import { Tag } from 'src/app/models/tag';
 import { BoardService } from 'src/app/services/board.service';
 import { CanvasService } from 'src/app/services/canvas.service';
-// import { FileUploadService } from 'src/app/services/fileUpload.service';
+import { FileUploadService } from 'src/app/services/fileUpload.service';
 import { SocketService } from 'src/app/services/socket.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
@@ -29,6 +29,7 @@ import {
 } from 'src/app/utils/constants';
 import { PostService } from '../../services/post.service';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-configuration-modal',
@@ -51,7 +52,6 @@ export class ConfigurationModalComponent {
   isTeacherPersonalBoard = false;
 
   currentBgImage: any;
-  newCompressedImage: any;
 
   taskTitle: string;
   taskMessage: string;
@@ -84,7 +84,7 @@ export class ConfigurationModalComponent {
     public userService: UserService,
     public upvoteService: UpvotesService,
     public canvasService: CanvasService,
-    //    public fileUploadService: FileUploadService,
+    public fileUploadService: FileUploadService,
     public socketService: SocketService,
     private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -133,24 +133,44 @@ export class ConfigurationModalComponent {
     await this.boardService.update(this.boardID, { tags: this.tags });
   }
 
-  compressFile() {
-    // this.fileUploadService.compressFile().then(async (compressedImage) => {
-    //   this.newCompressedImage = compressedImage;
-    //   const board = await this.canvasService.updateBoardImage(
-    //     this.boardID,
-    //     this.newCompressedImage
-    //   );
-    //   this.data.update(board);
-    //   this.currentBgImage = board.bgImage;
-    //   if (board.bgImage) {
-    //     this.bgImgSettings = board.bgImage.imgSettings;
-    //     this.backgroundPosX = board.bgImage.imgSettings.left;
-    //     this.backgroundPosY = board.bgImage.imgSettings.top;
-    //     this.backgroundScale = board.bgImage
-    //       ? Math.round(board.bgImage.imgSettings.scaleX * 100)
-    //       : 100;
-    //   }
-    // });
+  uploadImage(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.click();
+
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) {
+        this.fileUploadService.uploadImage(file).subscribe({
+          next: (response: any) => {
+            console.log('Image uploaded successfully', response);
+            const bgImgURL =
+              environment.ckboardDomain + '/api/image/' + response.imageUrl;
+            this.canvasService
+              .updateBoardImage(this.boardID, bgImgURL)
+              .then((board) => {
+                if (board) {
+                  this.data.update(board);
+                  this.currentBgImage = bgImgURL;
+
+                  if (board.bgImage?.imgSettings) {
+                    this.bgImgSettings = board.bgImage.imgSettings;
+                    this.backgroundPosX = this.bgImgSettings.left;
+                    this.backgroundPosY = this.bgImgSettings.top;
+                    this.backgroundScale = board.bgImage
+                      ? Math.round(board.bgImage.imgSettings.scaleX * 100)
+                      : 100;
+                  }
+                }
+              });
+          },
+          error: (error) => {
+            console.error('Image upload failed', error);
+          },
+        });
+      }
+    };
   }
 
   async updateBoardImageSettings(): Promise<Board> {
@@ -167,6 +187,16 @@ export class ConfigurationModalComponent {
   }
 
   async removeImage() {
+    const url = this.currentBgImage.url;
+    const imageId: string = url.split('/').pop() || '';
+    this.fileUploadService.deleteImage(imageId).subscribe(
+      (response) => {
+        console.log('File deleted successfully:', response);
+      },
+      (error) => {
+        console.error('Error deleting file:', error);
+      }
+    );
     this.currentBgImage = null;
     const board = await this.canvasService.updateBoardImage(this.boardID, null);
     this.data.update(board);

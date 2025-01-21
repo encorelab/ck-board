@@ -12,6 +12,7 @@ import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
+  AssignmentType,
   ExpandedGroupTask,
   GroupTask,
   GroupTaskStatus,
@@ -666,9 +667,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         'expanded'
       );
 
-    const totalProgress = tasks.reduce(
-      (partialSum) => partialSum + this._calcGroupProgress(task),
-      0
+    console.log(tasks);
+
+    let totalProgress = 0;
+
+    tasks.forEach(
+      (task) => (totalProgress = totalProgress + this._calcGroupProgress(task))
     );
     return totalProgress / tasks.length;
   }

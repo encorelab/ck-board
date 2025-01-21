@@ -384,7 +384,16 @@
               ></mat-progress-bar>
             </div>
             <div>
-              <label class="example-margin">Avg. Group's Progress</label>
+              <label
+                class="example-margin"
+                *ngIf="runningGroupTask.assignmentType === 'GROUP'"
+                >Avg. Group's Progress</label
+              >
+              <label
+                class="example-margin"
+                *ngIf="runningGroupTask.assignmentType === 'INDIVIDUAL'"
+                >Avg. Group Member's Progress</label
+              >
               <mat-progress-bar
                 mode="determinate"
                 [value]="averageGroupProgress"
@@ -422,8 +431,10 @@
                 </li>
               </ul>
             </section>
-            <section *ngIf="runningGroupTask.assignmentType === 'GROUP'">
-              <p style="font-weight: bold; margin-top: 16px">Group Members:</p>
+            <section>
+              <p style="font-weight: bold; margin-top: 16px">
+                {{ runningGroupTask.group.name }} Members:
+              </p>
               <ul
                 style="
                   list-style-position: inside;

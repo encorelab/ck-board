@@ -38,6 +38,43 @@
     margin-bottom: 2rem;
     width: 100%; // Make the button take full width
   }
+
+  .item-info-section {
+    margin-top: 2rem; // Add some spacing above the section
+
+    h4 {
+      text-align: left; // Center the heading
+      margin-bottom: 1rem; // Add spacing below heading
+    }
+
+    .item-info-grid {
+      display: grid;
+      grid-template-columns: auto auto 1fr; 
+      gap: 0.5rem; 
+      align-items: center;
+      margin-left: 10%;
+
+      .grid-item {
+        // Add any styling for grid cells if needed
+      }
+
+      .item-label {
+        font-weight: bold;
+        text-align: left; // Left-align labels
+      }
+
+      .item-count {
+        text-align: left; // Left-align counts
+      }
+
+      .add-item-button {
+        .mat-icon {
+          color: black;
+        }
+      }
+    }
+  }
+  
 }
 
 .activities-list {
@@ -409,7 +446,7 @@
     display: flex;
     flex-direction: column; 
     width: 100%; 
-    margin-top: 3rem;
+    margin-top: 4rem;
   }
 
   .groups-header {

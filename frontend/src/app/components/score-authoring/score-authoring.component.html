@@ -53,6 +53,36 @@
         <button mat-fab color="primary" class="add-activity-button" (click)="openCreateActivityModal()">
           <mat-icon>add</mat-icon>
         </button> 
+
+        <div *ngIf="selectedActivity" class="item-info-section">
+          <h4>Buckets & Workflows</h4>
+  
+          <div class="item-info-grid">
+            <div class="grid-item">
+                <span class="item-label">Buckets:</span>
+            </div>
+            <div class="grid-item">
+                <span class="item-count">{{ bucketCount }}</span>
+            </div>
+            <div class="grid-item">
+                <button mat-icon-button class="add-item-button" (click)="openWorkflowBucketModal(0)" matTooltip="Create/Modify Buckets">
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </div>
+
+            <div class="grid-item">
+                <span class="item-label">Workflows:</span>
+            </div>
+            <div class="grid-item">
+                <span class="item-count">{{ workflowCount }}</span>
+            </div>
+            <div class="grid-item">
+                <button mat-icon-button class="add-item-button" (click)="openWorkflowBucketModal(1)" matTooltip="Create/Modify Workflows">
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </div>
+          </div>
+        </div>
       </div>
   
       <div class="content-and-resources">

@@ -1,6 +1,7 @@
 // score-authoring.component.ts
 
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { ComponentType } from '@angular/cdk/portal';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from 'src/app/models/project';
@@ -30,6 +31,9 @@ import { HostListener } from '@angular/core';
 import { ScoreViewModalComponent } from '../score-view-modal/score-view-modal.component';
 import { Board } from 'src/app/models/board'
 import { ConfigurationModalComponent } from '../configuration-modal/configuration-modal.component';
+import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { BucketService } from 'src/app/services/bucket.service';
+import { WorkflowService } from 'src/app/services/workflow.service';
 
 
 @Component({
@@ -49,6 +53,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   selectedActivityGroups: Group[] = []; 
   selectedBoardName = '';
   canvas: fabric.Canvas | undefined;
+  bucketCount: number = 0;
+  workflowCount: number = 0;
 
   allAvailableResources: any[] = [ //define available resources
     { name: 'Canvas', type: 'canvas' },
@@ -100,6 +106,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private boardService: BoardService,
     private groupService: GroupService,
+    private bucketService: BucketService,
+    private workflowService: WorkflowService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog,
@@ -109,6 +117,9 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.user = this.userService.user!;
     this.loadScoreAuthoringData(); 
+    if (this.selectedActivity) {
+      this.updateBucketAndWorkflowCounts();
+    }
   }
 
   initializeCanvas() {
@@ -229,6 +240,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     this.fetchActivityGroups(activity.groupIDs); 
 
     this.loadTeacherTasks();
+
+    this.updateBucketAndWorkflowCounts();
   }
 
   async loadTeacherTasks() {
@@ -498,11 +511,66 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     }
   }
 
+  async updateBucketAndWorkflowCounts() {
+    if (!this.selectedActivity) {
+      return;
+    }
+
+    try {
+      const board = await this.boardService.get(this.selectedActivity.boardID);
+      if (board) {
+        // Fetch buckets using BucketService
+        const buckets = await this.bucketService.getAllByBoard(board.boardID);
+        this.bucketCount = buckets ? buckets.length : 0;
+
+        // Fetch workflows using WorkflowService's getAll() method
+        const workflows = await this.workflowService.getAll(board.boardID);
+        this.workflowCount = workflows.length;
+      } else {
+        this.snackbarService.queueSnackbar('Error: Could not find selected board.');
+      }
+    } catch (error) {
+      console.error('Error fetching counts:', error);
+    }
+  }
+
   openGroupDialog() {
     this.dialog.open(ManageGroupModalComponent, {
       data: {
         project: this.project,
       },
+    });
+  }
+
+  async openWorkflowBucketModal(selectedTabIndex: number) {
+    if (!this.selectedActivity) {
+      return;
+    }
+
+    // Get the board (similar to how you did it in openConfigurationModal)
+    try {
+      const board = await this.boardService.get(this.selectedActivity.boardID);
+      if (board) {
+        this._openDialog(CreateWorkflowModalComponent, {
+          board: board,
+          project: this.project,
+          selectedTabIndex: selectedTabIndex,
+        });
+      } else {
+        this.snackbarService.queueSnackbar('Error: Could not find selected board.');
+      }
+    } catch (error) {
+      console.error('Error fetching board:', error);
+      this.snackbarService.queueSnackbar('Error opening Workflows & Buckets modal.');
+    }
+  }
+
+  private _openDialog(component: ComponentType<unknown>, data: any, width = '700px') {
+    this.dialog.open(component, {
+      maxWidth: 1280,
+      width: width,
+      autoFocus: false, // Add this line to disable autofocus
+      data: data,
     });
   }
 

@@ -98,7 +98,7 @@ export class ScoreViewModalComponent implements OnInit, AfterViewInit, OnDestroy
     this.project = this.data.project;
     this.board = this.data.board;
     this.user = this.data.user;
-    this.title = `View ${this.data.componentType}`;
+    this.title = `${this.data.componentType}`;
 
     // Subscribe to queryParams changes if needed
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {

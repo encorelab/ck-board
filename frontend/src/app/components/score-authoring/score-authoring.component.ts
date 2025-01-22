@@ -547,7 +547,6 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Get the board (similar to how you did it in openConfigurationModal)
     try {
       const board = await this.boardService.get(this.selectedActivity.boardID);
       if (board) {

@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import {
+  HttpRequest,
+  HttpHandler,
   HttpEvent,
   HttpInterceptor,
-  HttpHandler,
-  HttpRequest,
   HttpResponse,
+  HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { tap, timeout } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, tap, timeout } from 'rxjs/operators';
 import { UserService } from '../services/user.service';
 import { environment } from 'src/environments/environment';
+import { Router } from '@angular/router';
 
 export const DEFAULT_TIMEOUT = 30000;
 
@@ -17,7 +19,7 @@ export const DEFAULT_TIMEOUT = 30000;
 export class APIInterceptor implements HttpInterceptor {
   private cache: Map<string, HttpResponse<any>>;
 
-  constructor(public auth: UserService) {
+  constructor(public auth: UserService, private router: Router) {
     this.cache = new Map();
   }
 
@@ -51,6 +53,16 @@ export class APIInterceptor implements HttpInterceptor {
           if (httpEvent instanceof HttpResponse && this.shouldCache(apiReq)) {
             this.cache.set(apiReq.urlWithParams, httpEvent.clone());
           }
+        })
+      )
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 401) {
+            // Token expired or invalid, clear user data and navigate to login
+            this.auth.logout();
+            this.router.navigate(['/login']);
+          }
+          return throwError(() => error);
         })
       );
   }

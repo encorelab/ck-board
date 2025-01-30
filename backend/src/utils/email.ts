@@ -7,11 +7,30 @@ dotenv.config();
 export const generateEmail = async (
     emailTo: string,
     subject: string,
-    message: string
+    resetLink: string  // Add the resetLink parameter
   ): Promise<void> => {
+
+    // Create the email body with the reset link as a hyperlink
+    const message = `
+      <p>Hello from the SCORE Support Team,</p>
+
+      <p>We've received a request to reset your password for your account.</p>
+
+      <p>To reset your password, please click on the following link: <a href="${resetLink}">Reset Password</a></p>
+
+      <p>If you did not request a password reset, you can ignore this email.</p>
+
+      <p>Please note that this link is only valid for 24 hours.</p>
+
+      <p>Thank you,</p>
+      <p>The SCORE Support Team</p>
+
+      <p>P.S. Please do not reply to this email as no one monitors this inbox.</p>
+    `;
+
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || "587"),
+      port: parseInt(process.env.SMTP_PORT || "465"),
       secure: true,
       auth: {
         user: process.env.SMTP_EMAIL,
@@ -23,7 +42,7 @@ export const generateEmail = async (
       from: process.env.SMTP_EMAIL,
       to: emailTo,
       subject: subject,
-      text: message,
+      html: message, // Use html instead of text
     };
   
     try {

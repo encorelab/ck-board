@@ -3,11 +3,18 @@ import { Redis, RedisOptions } from 'ioredis';
 class RedisClient {
   private static pubClient: Redis;
   private static subClient: Redis;
+  private static _initialized = false;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {} // Prevent direct instantiation
 
   static init(redisOptions: RedisOptions): void {
+    if (this._initialized) {
+      console.warn('Socket server already initialized. Skipping...');
+      return;
+    }
+    this._initialized = true;
+
     if (!RedisClient.pubClient || !RedisClient.subClient) {
       RedisClient.pubClient = new Redis(redisOptions);
       RedisClient.subClient = new Redis(redisOptions);

@@ -40,9 +40,12 @@ class Socket {
           origin: process.env.CKBOARD_SERVER_ADDRESS || 'http://localhost:4200', // Specific origin or localhost
           methods: ['GET', 'POST'],
         },
-        adapter: createAdapter(redis.getPublisher, redis.getSubscriber),
+        adapter: createAdapter(
+          RedisClient.getPublisher(),
+          RedisClient.getSubscriber()
+        ),
         pingTimeout: 60000, // 60 seconds (adjust as needed)
-        pingInterval: 25000, // 25 seconds (adjust as needed) 
+        pingInterval: 25000, // 25 seconds (adjust as needed)
       });
 
       this._io = io;
@@ -102,7 +105,9 @@ class Socket {
         // Error handling within the connection handler
         socket.on('error', (error: any) => {
           if (error.code === 'ECONNRESET') {
-            console.error(`Socket ${socket.id} connection reset. Attempting to reconnect...`);
+            console.error(
+              `Socket ${socket.id} connection reset. Attempting to reconnect...`
+            );
           } else {
             console.error(`Socket ${socket.id} error:`, error);
           }

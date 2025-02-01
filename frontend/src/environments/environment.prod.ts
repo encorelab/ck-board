@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://ck-board.oise.utoronto.ca/api',
-  socketUrl: 'https://ck-board.oise.utoronto.ca',
-  ckboardDomain: 'https://ck-board.oise.utoronto.ca',
+  apiUrl: 'https://ck-board-app-ky2q7.ondigitalocean.app/api',
+  socketUrl: 'https://ck-board-app-ky2q7.ondigitalocean.app',
+  ckboardDomain: 'https://ck-board-app-ky2q7.ondigitalocean.app',
 };

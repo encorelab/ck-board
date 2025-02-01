@@ -45,7 +45,7 @@ app.use(express.static(staticFilesPath));
 
 const server = http.createServer(app);
 
-const redis = new RedisClient({
+const redis = RedisClient.getInstance({
   host: redisHost,
   port: redisPort,
   password: redisPassword,

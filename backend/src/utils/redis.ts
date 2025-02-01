@@ -1,24 +1,22 @@
 import { Redis, RedisOptions } from 'ioredis';
 
 class RedisClient {
+  private static instance: RedisClient;
   private pubClient: Redis;
   private subClient: Redis;
 
-  constructor(redisOptions: RedisOptions) {
+  private constructor(redisOptions: RedisOptions) {
     this.pubClient = new Redis(redisOptions);
     this.subClient = new Redis(redisOptions);
 
     this.pubClient.on('connect', () => {
       console.log('Publisher client connected to Redis.');
-      console.log(this.pubClient);
     });
 
     this.subClient.on('connect', () => {
       console.log('Subscriber client connected to Redis.');
-      console.log(this.subClient);
     });
 
-    // Handling error events
     this.pubClient.on('error', (err) => {
       console.error('Publisher client encountered an error:', err);
     });
@@ -26,6 +24,13 @@ class RedisClient {
     this.subClient.on('error', (err) => {
       console.error('Subscriber client encountered an error:', err);
     });
+  }
+
+  static getInstance(redisOptions: RedisOptions): RedisClient {
+    if (!RedisClient.instance) {
+      RedisClient.instance = new RedisClient(redisOptions);
+    }
+    return RedisClient.instance;
   }
 
   get getPublisher(): Redis {

@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "build": "cd frontend && npm install --legacy-peer-deps && npm run build && cd ../backend && npm install --production=false && npm run build", 
-    "start": "cd backend && npm start"
+    "build": "cd frontend && npm install --legacy-peer-deps && npm run build && cd ../backend && npm install --production=false && npm run build",
+    "start": "cd backend && npm start",
+    "heroku-prebuild": "mkdir -p backend/secrets && printf \"%s\" \"${GOOGLE_CREDENTIALS}\" > backend/secrets/keyfile.json"
   },
   "engines": {
     "node": "18.x",

@@ -49,7 +49,10 @@ RedisClient.init({
   host: redisHost,
   port: redisPort,
   password: redisPassword,
-  tls: {}, // Ensures DigitalOcean's managed Redis works properly
+  tls: {
+    rejectUnauthorized: true, // Important for proper security
+    minVersion: 'TLSv1.2', // Ensure TLS 1.2 or higher
+  },
   retryStrategy(times) {
     const delay = Math.min(times * 50, 2000);
     console.log(`Redis retry attempt #${times}, retrying in ${delay}ms...`);

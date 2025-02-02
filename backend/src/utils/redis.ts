@@ -16,8 +16,16 @@ class RedisClient {
     this._initialized = true;
 
     if (!RedisClient.pubClient || !RedisClient.subClient) {
-      RedisClient.pubClient = new Redis(redisOptions);
-      RedisClient.subClient = new Redis(redisOptions);
+      RedisClient.pubClient = new Redis({
+        ...redisOptions,
+        enableAutoPipelining: true, // Optimize multiple requests into a single pipeline
+        maxRetriesPerRequest: null, // Prevent unnecessary reconnections
+      });
+      RedisClient.subClient = new Redis({
+        ...redisOptions,
+        enableAutoPipelining: true, // Optimize multiple requests into a single pipeline
+        maxRetriesPerRequest: null, // Prevent unnecessary reconnections
+      });
 
       RedisClient.pubClient.on('connect', () => {
         console.log('Publisher client connected to Redis.');

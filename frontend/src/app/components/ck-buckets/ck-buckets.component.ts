@@ -3,7 +3,7 @@ import { ComponentType } from '@angular/cdk/portal';
 import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { SocketEvent } from 'src/app/utils/constants';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -27,6 +27,8 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
 })
 export class CkBucketsComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+
+  @Input() isModalView = false;
 
   boardID: string;
   projectID: string;

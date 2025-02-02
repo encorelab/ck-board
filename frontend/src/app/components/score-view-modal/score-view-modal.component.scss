@@ -1,26 +1,25 @@
+
 .dialog-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px; // Add some spacing between header and content
-  
-    .dialog-title {
-      margin-bottom: 0; // Remove default margin from h2
-    }
-  
-    .close-button {
-      // Add any specific styles for the close button if needed
-    }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+
+  .dialog-title {
+    margin-bottom: 0;
   }
-  
-  // Other styles for mat-dialog-content, etc. (as before)
-  .mat-dialog-container {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .mat-dialog-content {
-    flex-grow: 1; // Allow content to take up available space
-    overflow: auto; // Add scrollbar if content overflows
-    padding: 0px; // Remove padding to extend to the full width of the modal
-  }
+}
+
+.mat-dialog-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-content {
+  height: 100%;
+  overflow: scroll;
+}
+
+.close-button {
+  cursor: pointer;
+}

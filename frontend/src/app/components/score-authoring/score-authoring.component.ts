@@ -697,6 +697,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       maxHeight: '80vh',
       height: '80%',
       width: '80%',
+      panelClass: 'score-view-modal-dialog',
       data: {
         componentType,
         project,

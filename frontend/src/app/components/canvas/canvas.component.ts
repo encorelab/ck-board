@@ -610,7 +610,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.canvas.setWidth(width);
+    this.canvas.setWidth(width - 40);
     this.canvas.setHeight(height);
     this.canvas.calcOffset();
     this.canvas.renderAll();
@@ -657,7 +657,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
       this.updateAuthorNames(post.postID, 'Anonymous');
     } else {
-      console.log('can');
       this.userService.getOneById(post.userID).then((user: any) => {
         this.updateAuthorNames(post.postID, user.username);
       });

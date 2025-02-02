@@ -94,11 +94,16 @@ export class ScoreViewModalComponent implements OnInit, AfterViewInit, OnDestroy
     private cdr: ChangeDetectorRef
   ) {}
 
+  capitalizeFirstLetter(str: string): string {
+    if (!str) return ''; // Handle empty or null strings
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   ngOnInit(): void {
     this.project = this.data.project;
     this.board = this.data.board;
     this.user = this.data.user;
-    this.title = `${this.data.componentType}`;
+    this.title = this.capitalizeFirstLetter(this.data.componentType);
 
     // Subscribe to queryParams changes if needed
     this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
@@ -138,42 +143,13 @@ export class ScoreViewModalComponent implements OnInit, AfterViewInit, OnDestroy
       );
       this.componentRef = this.viewContainer.createComponent(componentFactory);
 
-      // Pass necessary data to the dynamically loaded component
-      this.componentRef.instance.projectID = this.project?.projectID;
-      this.componentRef.instance.user = this.user;
-      this.componentRef.instance.boardID = this.data.board?.boardID; // Assuming boardID is needed
+      this.componentRef.instance.isModalView = true;
 
       if (componentToLoad === CanvasComponent) {
-        this.componentRef.instance.isModalView = true;
         this.componentRef.instance.onResize();
       }
 
-      // Handle board and project data for specific components
-      if (
-        componentToLoad === CkBucketsComponent ||
-        componentToLoad === CkMonitorComponent
-      ) {
-        try {
-          this.project = await this.projectService.get(this.project.projectID);
-          this.componentRef.instance.project = this.project;
-
-          const board = await this.boardService.get(this.data.board.boardID);
-          if (board) {
-            this.board = board;
-            this.componentRef.instance.board = this.board;
-
-            if (componentToLoad === CkMonitorComponent) {
-              this.componentRef.instance.viewType = 'monitor';
-            } else if (componentToLoad === CkBucketsComponent) {
-              this.componentRef.instance.viewType = 'buckets';
-            }
-          } else {
-            console.error('Board not found for boardID:', this.data.board.boardID);
-          }
-        } catch (error) {
-          console.error('Error fetching project or board:', error);
-        }
-      }
+      this.cdr.detectChanges();
     }
   }
 

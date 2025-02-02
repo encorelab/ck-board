@@ -1,6 +1,7 @@
-<app-toolbar *ngIf="user" [user]="user">
+<app-toolbar *ngIf="user && board && !isModalView" [user]="user">
   <button
     mat-icon-button
+    *ngIf="projectID"
     routerLink="{{ '/project/' + projectID }}"
     matTooltip="Return to Project Dashboard"
   >
@@ -21,6 +22,7 @@
   </button>
   <span style="flex: 1 1 auto"></span>
   <app-view-navigation
+    *ngIf="boardID"
     [boardID]="boardID"
     [currentView]="viewType"
   ></app-view-navigation>
@@ -33,7 +35,6 @@
 </app-toolbar>
 <div class="container d-flex align-items-center justify-content-center">
   <div class="heading">
-    <h1 mat-title style="margin: 0"><span>CK Buckets</span></h1>
     <span style="flex: 1 1 auto"></span>
     <div
       *ngIf="

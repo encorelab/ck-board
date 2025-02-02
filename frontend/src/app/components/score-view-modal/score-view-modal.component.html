@@ -1,9 +1,11 @@
-<div class="dialog-header">
-    <h2 mat-dialog-title class="dialog-title">{{ title }}</h2>
-    <button mat-icon-button class="close-button" mat-dialog-close>
-        <mat-icon>close</mat-icon>
-    </button>
+<div class="score-view-modal-container">
+    <div class="dialog-header">
+        <h2 mat-dialog-title class="dialog-title">{{ title }}</h2>
+        <button mat-icon-button class="close-button" [mat-dialog-close]="true">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+    <mat-dialog-content class="dialog-content">
+        <ng-container #viewContainer></ng-container>
+    </mat-dialog-content>
 </div>
-<mat-dialog-content>
-<div #viewContainer></div>
-</mat-dialog-content>

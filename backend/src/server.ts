@@ -51,7 +51,7 @@ RedisClient.init({
   password: redisPassword,
   tls: {
     rejectUnauthorized: true, // Important for proper security
-    secureProtocol: 'TLSv1_2_method',
+    secureProtocol: 'TLSv1_3',
   },
   retryStrategy(times) {
     const delay = Math.min(times * 50, 2000);

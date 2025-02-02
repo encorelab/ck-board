@@ -32,7 +32,14 @@ class Socket {
    * @returns void
    */
 
+  private _initialized = false;
+
   async init(server: Server, redis: RedisClient) {
+    if (this._initialized) {
+      console.warn('Socket server already initialized. Skipping...');
+      return;
+    }
+    this._initialized = true;
     try {
       const io = new socketIO.Server(server, {
         transports: ['websocket', 'polling'],

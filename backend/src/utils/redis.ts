@@ -22,12 +22,10 @@ class RedisClient {
 
       RedisClient.pubClient.on('connect', () => {
         console.log('Publisher client connected to Redis.');
-        console.log(RedisClient.pubClient);
       });
 
       RedisClient.subClient.on('connect', () => {
         console.log('Subscriber client connected to Redis.');
-        console.log(RedisClient.subClient);
       });
 
       RedisClient.pubClient.on('error', (err) => {

@@ -52,12 +52,6 @@ RedisClient.init({
   tls: {
     minVersion: 'TLSv1.3',
   },
-  retryStrategy(times) {
-    const delay = Math.min(times * 50, 2000);
-    console.log(`Redis retry attempt #${times}, retrying in ${delay}ms...`);
-    return delay;
-  },
-  maxRetriesPerRequest: 2, // Prevents infinite retries
 });
 
 const socket = Socket.Instance;

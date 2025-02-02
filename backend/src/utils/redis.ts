@@ -22,10 +22,24 @@ class RedisClient {
 
       RedisClient.pubClient.on('connect', () => {
         console.log('Publisher client connected to Redis.');
+        setInterval(async () => {
+          try {
+            await RedisClient.pubClient.ping(); //Keeps the client connected, preventing from idle timeout
+          } catch (error) {
+            console.error('❌ Redis PING failed:', error);
+          }
+        }, 240000); // Every 4 minutes (240,000 ms)
       });
 
       RedisClient.subClient.on('connect', () => {
         console.log('Subscriber client connected to Redis.');
+        setInterval(async () => {
+          try {
+            await RedisClient.subClient.ping(); //Keeps the client connected, preventing from idle timeout
+          } catch (error) {
+            console.error('❌ Redis PING failed:', error);
+          }
+        }, 240000); // Every 4 minutes (240,000 ms)
       });
 
       RedisClient.pubClient.on('error', (err) => {

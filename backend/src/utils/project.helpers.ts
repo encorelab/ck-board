@@ -5,7 +5,7 @@ import {
   UnauthorizedError,
 } from '../errors/client.errors';
 import { InternalServerError } from '../errors/server.errors';
-import { BoardScope, BoardType } from '../models/Board';
+import { BoardScope, BoardType, ViewType } from '../models/Board';
 import Project, { ProjectModel } from '../models/Project';
 import { Role, UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
@@ -13,6 +13,7 @@ import dalLearnerModel from '../repository/dalLearnerModel';
 import dalProject from '../repository/dalProject';
 import dalUser from '../repository/dalUser';
 import {
+  getAllViewsAllowed,
   getDefaultBoardPermissions,
   getDefaultBoardTags,
 } from './board.helpers';
@@ -61,6 +62,8 @@ export async function addUserToProject(
       initialZoom: 100,
       upvoteLimit: 5,
       visible: true,
+      defaultView: ViewType.CANVAS,
+      viewSettings: getAllViewsAllowed(),
     });
     updatedProject = await Project.findOneAndUpdate(
       { projectID: updatedProject.projectID },

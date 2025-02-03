@@ -92,6 +92,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
   embedded: boolean = false; // If standalone board embed
   viewType = ViewType.WORKSPACE;
+  isTeacher: boolean = false;
 
   constructor(
     public userService: UserService,
@@ -118,6 +119,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.user = this.userService.user!;
+    this.isTeacher = this.user.role === Role.TEACHER;
     this.loadWorkspaceData();
   }
 
@@ -144,7 +146,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       this.user.userID
     );
 
-    if (!this.board.viewSettings?.allowWorkspace) {
+    if (!this.isTeacher && !this.board.viewSettings?.allowWorkspace) {
       this.router.navigateByUrl(
         `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
       );
@@ -476,6 +478,58 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     }
   };
 
+  onDeleteEvent = async (postID: string): Promise<void> => {
+    if (!this.runningGroupTask) return;
+    if (
+      this.runningGroupTask.groupTask.status == GroupTaskStatus.COMPLETE ||
+      this.runningGroupTask.groupTask.status == GroupTaskStatus.INACTIVE
+    )
+      return;
+    if (this.runningGroupTask?.groupTask?.progress) {
+      // Check if the key exists in progress
+      if (postID in this.runningGroupTask.groupTask.progress) {
+        delete this.runningGroupTask.groupTask.progress[postID];
+      } else {
+        console.error(
+          `Key ${postID} does not exist in runningGroupTask.groupTask.progress.`
+        );
+      }
+    } else {
+      console.error(
+        'runningGroupTask.groupTask.progress is not defined or accessible.'
+      );
+    }
+
+    const postIndex = this.submittedPosts.findIndex(
+      (p) => p.post.postID === postID
+    );
+    if (postIndex !== -1) {
+      this.submittedPosts.splice(postIndex, 1); // Remove the post from the array
+    } else {
+      const postIndex = this.posts.findIndex((p) => p.post.postID === postID);
+      if (postIndex !== -1) {
+        this.posts.splice(postIndex, 1); // Remove the post from the array
+      } else {
+        console.error(`Post with ID ${postID} not found in posts array.`);
+      }
+    }
+
+    const t = await this.workflowService.updateGroupTask(
+      this.runningGroupTask.groupTask.groupTaskID,
+      {
+        posts: this.posts.map((p) => p.post.postID),
+        progress: this.runningGroupTask.groupTask.progress,
+      }
+    );
+    this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
+    this.averageGroupProgress = await this._calcAverageProgress(
+      this.runningGroupTask
+    );
+    this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
+      this.runningGroupTask.groupTask,
+    ]);
+  };
+
   toggleSubmittedPosts(): void {
     this.showSubmittedPosts = !this.showSubmittedPosts;
   }
@@ -485,6 +539,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       this.socketService.listen(
         SocketEvent.WORKFLOW_PROGRESS_UPDATE,
         async (updates) => {
+          console.log('updates ', updates);
           if (!this.runningGroupTask) return;
 
           const found = updates.find(

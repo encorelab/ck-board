@@ -1,6 +1,6 @@
 export const environment = {
   production: false, //  Important: Set this to false for staging
-  apiUrl: 'https://ck-board-staging-app-7dd8f.ondigitalocean.app/api',
-  socketUrl: 'https://ck-board-staging-app-7dd8f.ondigitalocean.app',
-  ckboardDomain: 'https://ck-board-staging-app-7dd8f.ondigitalocean.app',
+  apiUrl: 'https://ck-board-188ef16f21a5.herokuapp.com/api',
+  socketUrl: 'https://ck-board-188ef16f21a5.herokuapp.com',
+  ckboardDomain: 'https://ck-board-188ef16f21a5.herokuapp.com',
 };

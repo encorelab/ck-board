@@ -1,43 +1,79 @@
 import { Redis, RedisOptions } from 'ioredis';
 
 class RedisClient {
-  private pubClient: Redis;
-  private subClient: Redis;
+  private static pubClient: Redis;
+  private static subClient: Redis;
 
-  constructor(redisOptions: RedisOptions) {
-    this.pubClient = new Redis(redisOptions);
-    this.subClient = new Redis(redisOptions);
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  private constructor() {} // Prevent direct instantiation
 
-    this.pubClient.on('connect', () => {
-      console.log('Publisher client connected to Redis.');
-    });
+  static init(redisOptions: RedisOptions): void {
+    if (!RedisClient.pubClient || !RedisClient.subClient) {
+      RedisClient.pubClient = new Redis({
+        ...redisOptions,
+        enableAutoPipelining: true, // Optimize multiple requests into a single pipeline
+        maxRetriesPerRequest: null, // Prevent unnecessary reconnections
+      });
+      RedisClient.subClient = new Redis({
+        ...redisOptions,
+        enableAutoPipelining: true, // Optimize multiple requests into a single pipeline
+        maxRetriesPerRequest: null, // Prevent unnecessary reconnections
+      });
 
-    this.subClient.on('connect', () => {
-      console.log('Subscriber client connected to Redis.');
-    });
+      RedisClient.pubClient.on('connect', () => {
+        console.log('Publisher client connected to Redis.');
+        setInterval(async () => {
+          try {
+            await RedisClient.pubClient.ping(); //Keeps the client connected, preventing from idle timeout
+          } catch (error) {
+            console.error('❌ Redis PING failed:', error);
+          }
+        }, 240000); // Every 4 minutes (240,000 ms)
+      });
 
-    // Handling error events
-    this.pubClient.on('error', (err) => {
-      console.error('Publisher client encountered an error:', err);
-    });
+      RedisClient.subClient.on('connect', () => {
+        console.log('Subscriber client connected to Redis.');
+        setInterval(async () => {
+          try {
+            await RedisClient.subClient.ping(); //Keeps the client connected, preventing from idle timeout
+          } catch (error) {
+            console.error('❌ Redis PING failed:', error);
+          }
+        }, 240000); // Every 4 minutes (240,000 ms)
+      });
 
-    this.subClient.on('error', (err) => {
-      console.error('Subscriber client encountered an error:', err);
-    });
+      RedisClient.pubClient.on('error', (err) => {
+        console.error('Publisher client encountered an error:', err);
+      });
+
+      RedisClient.subClient.on('error', (err) => {
+        console.error('Subscriber client encountered an error:', err);
+      });
+    }
   }
 
-  get getPublisher(): Redis {
-    return this.pubClient;
+  static getPublisher(): Redis {
+    if (!RedisClient.pubClient) {
+      throw new Error(
+        'RedisClient not initialized. Call RedisClient.init() first.'
+      );
+    }
+    return RedisClient.pubClient;
   }
 
-  get getSubscriber(): Redis {
-    return this.subClient;
+  static getSubscriber(): Redis {
+    if (!RedisClient.subClient) {
+      throw new Error(
+        'RedisClient not initialized. Call RedisClient.init() first.'
+      );
+    }
+    return RedisClient.subClient;
   }
 
-  async disconnect(): Promise<void> {
+  static async disconnect(): Promise<void> {
     try {
-      await this.pubClient.quit();
-      await this.subClient.quit();
+      if (RedisClient.pubClient) await RedisClient.pubClient.quit();
+      if (RedisClient.subClient) await RedisClient.subClient.quit();
       console.log('Redis clients disconnected successfully.');
     } catch (error) {
       console.error('Error disconnecting Redis clients:', error);

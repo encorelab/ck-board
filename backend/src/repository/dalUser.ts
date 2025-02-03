@@ -68,6 +68,41 @@ export const update = async (id: string, user: Partial<UserModel>) => {
   }
 };
 
+export const findByPasswordResetToken = async (token: string): Promise<UserModel | null> => {
+  try {
+    const user: UserModel | null = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() }, // Check that token is not expired
+    });
+    return user;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const updatePassword = async (
+  userID: string,
+  newPassword: string
+): Promise<UserModel | null> => {
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10); // Hash the new password
+
+    const updatedUser = await User.findOneAndUpdate(
+      { userID },
+      {
+        password: hashedPassword,
+        resetPasswordToken: null, // Clear the token
+        resetPasswordExpires: null, // Clear the expiration
+      },
+      { new: true } // Return the updated document
+    );
+
+    return updatedUser;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 const dalUser = {
   findByUserID,
   findByUserIDs,
@@ -75,6 +110,8 @@ const dalUser = {
   findByEmail,
   create,
   update,
+  findByPasswordResetToken,
+  updatePassword
 };
 
 export default dalUser;

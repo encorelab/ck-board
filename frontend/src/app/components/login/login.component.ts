@@ -53,4 +53,8 @@ export class LoginComponent {
         this.invalidCredentials = true;
       });
   }
+
+  onForgotPassword() {
+    this.router.navigate(['forgot-password']);
+  }
 }

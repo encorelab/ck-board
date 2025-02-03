@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import User, { AuthUser, TokenResponse } from '../models/user';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -60,6 +61,22 @@ export class UserService {
         }
         return true;
       });
+  }
+
+  async requestPasswordReset(email: string): Promise<boolean> {
+    return this.http
+    .post<{ success: boolean }>('auth/forgot-password', { email }) // Expect a success: boolean response
+    .toPromise()
+    .then((result) => {
+        if (result) {
+          console.log("password reset requested");
+        }
+        return true;
+      });
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await lastValueFrom(this.http.post('auth/reset-password', { token, newPassword }));
   }
 
   async isSsoEnabled(): Promise<boolean> {

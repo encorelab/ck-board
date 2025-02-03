@@ -22,7 +22,7 @@ import learner from './api/learner';
 import { isAuthenticated } from './utils/auth';
 import RedisClient from './utils/redis';
 import aiRouter from './api/ai';
-import chatHistoryRouter from './api/chatHistory'; 
+import chatHistoryRouter from './api/chatHistory';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -30,7 +30,7 @@ const dbUsername = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const dbUrl = process.env.DB_URL;
 const dbName = process.env.DB_NAME;
-const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}/${dbName}?replicaSet=db-mongodb-tor1-20374&tls=true&authSource=admin`;
 
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = (process.env.REDIS_PORT || 6379) as number;

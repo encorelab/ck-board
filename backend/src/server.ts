@@ -45,15 +45,18 @@ app.use(express.static(staticFilesPath));
 
 const server = http.createServer(app);
 
-const redis = new RedisClient({
+RedisClient.init({
   host: redisHost,
   port: redisPort,
   password: redisPassword,
+  tls: {
+    minVersion: 'TLSv1.3',
+  },
 });
 
 const socket = Socket.Instance;
 
-socket.init(server, redis);
+socket.init(server, RedisClient);
 
 app.use('/api/projects', isAuthenticated, projects);
 app.use('/api/boards', isAuthenticated, boards);
@@ -76,8 +79,15 @@ app.get('*', (req, res) => {
 });
 
 const shutdown = async () => {
-  await redis.disconnect();
-  process.exit(0);
+  console.log('Shutting down server...');
+  try {
+    await RedisClient.disconnect(); // Ensure Redis clients are closed
+    console.log('Redis disconnected.');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    process.exit(1);
+  }
 };
 
 // Handle termination signals

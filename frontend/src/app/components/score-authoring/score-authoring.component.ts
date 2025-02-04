@@ -80,8 +80,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     { name: 'Manually Regroup Students', type: 'regroupStudents', icon: 'group_work' },
     { name: 'View Canvas', type: 'viewCanvas', icon: 'visibility' },
     { name: 'View Buckets', type: 'viewBuckets', icon: 'view_module' },
-    { name: 'View Monitor', type: 'viewTodos', icon: 'assignment' },
-    { name: 'Monitor Workspace', type: 'monitorTask', icon: 'monitoring' },
+    { name: 'View All Tasks, TODOs, & Analytics', type: 'viewTodos', icon: 'assignment' },
+    { name: 'View Personal Workspace', type: 'viewWorkspace', icon: 'monitoring' },
     { name: 'Custom Teacher Prompt', type: 'customPrompt', icon: 'chat_bubble' }
   ];
 
@@ -280,8 +280,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         break;
       case 'viewCanvas':
       case 'viewBuckets':
-      case 'monitorWorkspaceTask':
-      case 'workspace':
+      case 'viewWorkspace':
+      case 'viewTodos':
         this.getSelectedBoard().then((board) => {
           if (board) {
             // Map task.type to componentType
@@ -296,7 +296,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
               case 'viewTodos':
                 componentType = 'monitor';
                 break;
-              case 'monitorTask': 
+              case 'viewWorkspace': 
                 componentType = 'workspace';
                 break;
             }

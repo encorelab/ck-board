@@ -2,6 +2,7 @@ import { ComponentType } from '@angular/cdk/overlay';
 import {
   Component,
   OnDestroy,
+  Input,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -59,6 +60,8 @@ SwiperCore.use([EffectCards]);
 })
 export class CkWorkspaceComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
+
+  @Input() isModalView = false;
 
   loading = false;
 

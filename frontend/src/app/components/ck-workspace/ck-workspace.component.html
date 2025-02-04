@@ -1,7 +1,7 @@
 <div>
   <app-toolbar
     class="toolbar"
-    *ngIf="user && project && board && !embedded"
+    *ngIf="user && project && board && !embedded && !isModalView"
     [user]="user"
     style="width: 100%"
   >
@@ -32,14 +32,14 @@
       [project]="project"
     ></app-toolbar-menu>
   </app-toolbar>
-  <mat-sidenav-container class="drawer-container">
+  <mat-sidenav-container class="drawer-container ck-workspace-drawer-container" [class.modal-view]="isModalView">
     <mat-sidenav
       #drawer
       mode="side"
       opened
       [fixedInViewport]="!embedded ? true : false"
-      [fixedTopGap]="64"
-      style="position: fixed"
+      [fixedTopGap]="(user && project && board && !embedded && !isModalView) ? 64 : 0"
+      style="position: absolute"
       [ngStyle]="(!embedded && { 'padding-bottom': '64px' }) || null"
     >
       <mat-list *ngIf="activeGroupTasks">

@@ -2,6 +2,7 @@ import { ComponentType } from '@angular/cdk/overlay';
 import {
   Component,
   OnDestroy,
+  Input,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -95,6 +96,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   @ViewChild(MatSort) set matSort(sort: MatSort) {
     this.todoDataSource.sort = sort;
   }
+
+  @Input() isModalView = false;
 
   user: AuthUser;
   group: Group;

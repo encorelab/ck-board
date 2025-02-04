@@ -224,6 +224,10 @@
   }
 }
 
+#authoringResourcesPane {
+  width: 400px;
+}
+
 .resources-pane {
   position: absolute; // Position the resources pane absolutely
   top: 0;
@@ -336,7 +340,7 @@
         color: #000; 
       }
 
-      &.monitorTask {
+      &.viewWorkspace {
         background-color: #ce93d8;  // Slightly darker purple
         color: #000; 
       }
@@ -403,7 +407,7 @@
       color: #000; 
     }
 
-    &.monitorTask {
+    &.viewWorkspace {
       background-color: #ce93d8;  // Slightly darker purple
       color: #000; 
     }

@@ -149,7 +149,7 @@
               [class.viewCanvas]="task.type === 'viewCanvas'"
               [class.viewBuckets]="task.type === 'viewBuckets'"
               [class.viewTodos]="task.type === 'viewTodos'"
-              [class.monitorTask]="task.type === 'monitorTask'"
+              [class.viewWorkspace]="task.type === 'viewWorkspace'"
               [class.customPrompt]="task.type === 'customPrompt'"
             >
               <div 
@@ -169,7 +169,7 @@
         </div>
       
         <div class="resources-right-pane-container"> 
-          <mat-sidenav #authoringResourcesPane mode="over" position="end" [(opened)]="showResourcesPane">
+          <mat-sidenav #authoringResourcesPane id="authoringResourcesPane" mode="over" position="end" [(opened)]="showResourcesPane">
             <div class="resources-pane" *ngIf="!showClassroomBindings">
               <button mat-icon-button class="close-resource-button" (click)="showResourcesPane = false"> 
                 <mat-icon>close</mat-icon>
@@ -211,7 +211,7 @@
                     [class.viewCanvas]="action.type === 'viewCanvas'"
                     [class.viewBuckets]="action.type === 'viewBuckets'"
                     [class.viewTodos]="action.type === 'viewTodos'"
-                    [class.monitorTask]="action.type === 'monitorTask'"
+                    [class.viewWorkspace]="action.type === 'viewWorkspace'"
                     [class.customPrompt]="action.type === 'customPrompt'"
                   >  
                     <mat-icon>{{ action.icon }}</mat-icon> 

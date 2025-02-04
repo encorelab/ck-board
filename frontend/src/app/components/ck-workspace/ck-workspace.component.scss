@@ -85,13 +85,24 @@
   background-color: rgb(54, 94, 77);
 } 
 
-.drawer-container {
+.ck-workspace-drawer-container {
   position: absolute;
   padding-top: 56px;
   left: 0;
   right: 0;
   bottom: 0;
   overflow: auto;
+
+  &.modal-view {
+    // Styles for when the component is inside a modal
+    position: relative; // Reset to default
+    height: 100%; // Take up full height of parent (dialog content)
+    overflow: auto;
+
+    mat-sidenav-content {
+      height: 100%;
+    }
+  }
 
   @media (min-width: breakpoint('sm', 'min')) {
     padding-top: 64px;
@@ -103,19 +114,21 @@
   text-align: left !important;
 }
 
-mat-sidenav {
-  width: 30%;
-  height: 100%;
-}
-
-mat-sidenav-content {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-
-  min-height: 90vh;
-  overflow: hidden;
+.ck-workspace-drawer-container {
+  mat-sidenav {
+    width: 30%;
+    height: 100%;
+  }
+  
+  mat-sidenav-content {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  
+    min-height: 90vh;
+    overflow: hidden;
+  }
 }
 
 .workflow-create-post{

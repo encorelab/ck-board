@@ -1,6 +1,6 @@
 // score-authoring.component.ts
 
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { ComponentType } from '@angular/cdk/portal';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -42,6 +42,9 @@ import { WorkflowService } from 'src/app/services/workflow.service';
   styleUrls: ['./score-authoring.component.scss']
 })
 export class ScoreAuthoringComponent implements OnInit, OnDestroy {
+
+  @ViewChild('editWorkflowsButton') editWorkflowsButton: ElementRef;
+  workflowMap: Map<string, string> = new Map();
 
   project: Project;
   user: AuthUser;
@@ -227,17 +230,17 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   async selectActivity(activity: Activity) {
     this.selectedActivity = activity;
-    this.showResourcesPane = false; 
+    this.showResourcesPane = false;
     try {
       // Fetch resources for the selected activity
-      this.selectedActivityResources = await this.http.get<Resource[]>(`resources/activity/${activity.activityID}`).toPromise() || []; 
+      this.selectedActivityResources = await this.http.get<Resource[]>(`resources/activity/${activity.activityID}`).toPromise() || [];
       this.selectedBoardName = await this.getSelectedBoardName();
     } catch (error) {
       this.snackbarService.queueSnackbar("Error fetching activity resources.");
       console.error("Error fetching activity resources:", error);
     }
 
-    this.fetchActivityGroups(activity.groupIDs); 
+    this.fetchActivityGroups(activity.groupIDs);
 
     this.loadTeacherTasks();
 
@@ -253,10 +256,39 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     try {
       this.teacherTasks = await this.http.get<TeacherTask[]>(`teacher-tasks/activity/${this.selectedActivity.activityID}`).toPromise() || [];
       this.teacherTasks.sort((a, b) => a.order - b.order);
+
+      //  Populate workflowMap
+      await this.loadWorkflowsForActivity();
     } catch (error) {
       this.snackbarService.queueSnackbar("Error loading teacher tasks.");
       console.error("Error loading teacher tasks:", error);
     }
+  }
+
+  async loadWorkflowsForActivity() {
+    if (!this.selectedActivity) {
+      return;
+    }
+    try {
+        const board = await this.boardService.get(this.selectedActivity.boardID);
+        if(!board) {return;}
+        const workflows = await this.workflowService.getAll(board.boardID);
+        this.workflowMap.clear(); // Clear existing entries
+        workflows.forEach(workflow => {
+            this.workflowMap.set(workflow.workflowID, workflow.name);
+        });
+
+    }
+    catch(error) {
+        console.error('Failed to load workflows', error);
+    }
+  }
+
+  getWorkflowName(workflowID: string | null | undefined): string {
+    if (!workflowID) {
+        return 'Workflow Not Found'; // Or some other placeholder
+    }
+    return this.workflowMap.get(workflowID) || 'Loading...';
   }
 
   async getSelectedBoard(): Promise<Board | undefined> {
@@ -625,7 +657,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   async createTeacherTask(actionData: any) {
     try {
-      let taskData = {
+      let taskData: Partial<TeacherTask> = {
         taskID: generateUniqueID(),
         name: actionData.name, 
         activityID: this.selectedActivity!.activityID,
@@ -636,13 +668,22 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   
       // Open a modal based on the action type
       if (actionData.type === 'activateWorkflow') {
-        const { updatedTaskData, selectedWorkflowId } = await this.openWorkflowModal(taskData);
-        taskData = updatedTaskData;
+        const updatedTaskData = await this.openWorkflowModal(taskData);
+        if (updatedTaskData) {
+          taskData = updatedTaskData;
+        } else {
+          return;
+        }
       } else if (actionData.type === 'activateAiAgent') {
         const { updatedTaskData, selectedAiAgentId } = await this.openAiAgentModal(taskData);
         taskData = updatedTaskData;
       } else if (actionData.type === 'customPrompt') {
-        taskData = await this.openCustomPromptModal(taskData);
+        const updatedTaskData = await this.openCustomPromptModal(taskData);
+        if (updatedTaskData) {
+          taskData = updatedTaskData;
+        } else {
+          return;
+        }
       } 
       // ... add more cases for other action types as needed ...
   
@@ -713,15 +754,32 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     });
   }
   
-  async openWorkflowModal(taskData: any): Promise<any> {
-    const dialogRef = this.dialog.open(SelectWorkflowModalComponent, { // Assuming you create this component
+  async openWorkflowModal(taskData: Partial<TeacherTask>): Promise<any> {
+    const dialogRef = this.dialog.open(SelectWorkflowModalComponent, {
+      width: '500px',
       data: {
-        boardID: this.selectedActivity!.boardID, // Pass the board ID
-        taskData: taskData
+        boardID: this.selectedActivity!.boardID,
+        taskData: taskData,  //still needed for the create workflow option
+        board: await this.boardService.get(this.selectedActivity!.boardID),
+        project: this.project
       }
     });
   
-    return dialogRef.afterClosed().toPromise();
+    const result = await dialogRef.afterClosed().toPromise();
+  
+    if (result && result.shouldOpenCreateModal) {
+       this.openWorkflowBucketModal(1);
+       return null; // Important: Consistent return type
+    } else if (result){ //user selected workflow
+       const updatedTaskData = {
+        ...taskData,
+        workflowID: result
+      };
+      return updatedTaskData;
+    }
+    else {
+      return null; // User cancelled
+    }
   }
   
   async openAiAgentModal(taskData: any): Promise<any> {
@@ -736,14 +794,53 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   }
   
   async openCustomPromptModal(taskData: any): Promise<any> {
-    const dialogRef = this.dialog.open(CustomTeacherPromptModalComponent, { // Assuming you create this component
-      data: {
-        // ... pass any necessary data for the custom prompt ...
-        taskData: taskData
-      }
+    const dialogRef = this.dialog.open(CustomTeacherPromptModalComponent, {
+      width: '500px',
+      data: { taskData: taskData } // Pass any data needed by the modal
     });
   
-    return dialogRef.afterClosed().toPromise();
+    const result = await dialogRef.afterClosed().toPromise();
+  
+    if (result) {
+      const updatedTaskData = {
+        ...taskData,
+        customPrompt: result // Store the prompt in the taskData
+      };
+      return updatedTaskData;
+    } else {
+      return null; // Indicate cancellation
+    }
+  }
+
+  async editCustomPrompt(task: TeacherTask) {
+    const dialogRef = this.dialog.open(CustomTeacherPromptModalComponent, {
+      width: '500px',
+      data: { prompt: task.customPrompt } // Pass the existing prompt
+    });
+  
+    const result = await dialogRef.afterClosed().toPromise();
+  
+    if (result) {
+      // Update the task with the new prompt
+      try {
+        const updatedTask = await this.http.put<TeacherTask>(`teacher-tasks/${task.taskID}`, { ...task, customPrompt: result }).toPromise();
+  
+        if (updatedTask) {
+          // Update the task in the teacherTasks array
+          const index = this.teacherTasks.findIndex(t => t.taskID === updatedTask.taskID);
+          if (index !== -1) {
+            this.teacherTasks[index] = updatedTask;
+          }
+        } else {
+          // Handle the case where the update failed (e.g., show an error)
+          this.snackbarService.queueSnackbar("Error updating prompt: Update failed.");
+          console.error("Error updating prompt: API returned null/undefined");
+        }
+      } catch (error) {
+        this.snackbarService.queueSnackbar("Error updating prompt.");
+        console.error("Error updating prompt:", error);
+      }
+    }
   }
 
   async updateTeacherTaskOrder() {

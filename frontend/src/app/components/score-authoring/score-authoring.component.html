@@ -77,7 +77,7 @@
                 <span class="item-count">{{ workflowCount }}</span>
             </div>
             <div class="grid-item">
-                <button mat-icon-button class="add-item-button" (click)="openWorkflowBucketModal(1)" matTooltip="Create/Modify Workflows">
+                <button mat-icon-button class="add-item-button" (click)="openWorkflowBucketModal(1)" matTooltip="Create/Modify Workflows" #editWorkflowsButton>
                     <mat-icon>edit</mat-icon>
                 </button>
             </div>
@@ -159,7 +159,17 @@
                 <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
                 Task {{ task.order }}:
                 <mat-icon class="teacher-task-icon">{{ getIconForTask(task) }}</mat-icon>
-                {{ task.name }}
+                <ng-container *ngIf="task.type === 'customPrompt'">Prompt: {{ task.customPrompt || task.name }}</ng-container>
+                <ng-container *ngIf="task.type === 'activateWorkflow'">
+                    Activate Workflow: {{ getWorkflowName(task.workflowID) }}
+                </ng-container>
+                {{ (task.type !== 'customPrompt' && task.type !== 'activateWorkflow') ? task.name : '' }}
+                <button *ngIf="task.type === 'activateWorkflow'" mat-icon-button (click)="openWorkflowBucketModal(2); $event.stopPropagation();" class="workflow-play-button">
+                  <mat-icon>play_circle_outline</mat-icon>
+                </button>
+                <button *ngIf="task.type === 'customPrompt'" mat-icon-button (click)="editCustomPrompt(task); $event.stopPropagation();" class="prompt-edit-button">
+                  <mat-icon>edit</mat-icon>
+                </button>
               </div>
               <button mat-icon-button (click)="deleteTeacherTask(task, i)">
                 <mat-icon>close</mat-icon>

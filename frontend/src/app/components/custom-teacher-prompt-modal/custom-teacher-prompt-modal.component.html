@@ -1,1 +1,12 @@
-<p>custom-teacher-prompt-modal works!</p>
+<h1 mat-dialog-title>Custom Teacher Prompt</h1>
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" style="width: 100%">
+    <mat-label>Prompt</mat-label>
+    <textarea matInput [(ngModel)]="prompt" placeholder="Enter your custom prompt here..." required></textarea>
+    <mat-error *ngIf="!prompt">Prompt is required</mat-error>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Cancel</button>
+  <button mat-button (click)="onSave()" [disabled]="!prompt">Save</button>
+</div>

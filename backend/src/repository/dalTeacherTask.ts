@@ -15,10 +15,26 @@ const dalTeacherTask = {
 
   create: async (task: TeacherTaskModel): Promise<TeacherTaskModel | undefined> => {
     try {
-      return await TeacherTask.create(task);
+      // Create a new object with only the fields defined in your TeacherTaskModel
+      const newTaskData = {
+        taskID: task.taskID,
+        name: task.name,
+        activityID: task.activityID,
+        order: task.order,
+        type: task.type,
+        workflowID: task.workflowID, // Handle optional fields
+        aiAgentID: task.aiAgentID, // Handle optional fields
+        customPrompt: task.customPrompt, // Explicitly include customPrompt
+        // ... other fields from TeacherTaskModel
+      };
+
+      // Use the spread operator to copy only the defined properties
+      const newTask = await TeacherTask.create({ ...newTaskData }); 
+
+      return newTask;
     } catch (error) {
       console.error("Error creating teacher task:", error);
-      return undefined; 
+      return undefined;
     }
   },
 

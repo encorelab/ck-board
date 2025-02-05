@@ -1,7 +1,6 @@
-// backend/src/api/teacherTasks.ts
-
+// ... (existing imports and routes) ...
 import express from 'express';
-import dalTeacherTask from '../repository/dalTeacherTask'; 
+import dalTeacherTask from '../repository/dalTeacherTask';
 import { TeacherTaskModel } from '../models/TeacherTask';
 
 const router = express.Router();
@@ -10,8 +9,20 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   try {
     const taskData: TeacherTaskModel = req.body;
+
+    // Log the received taskData for debugging
+    console.log('Received taskData:', taskData);
+
     const newTask = await dalTeacherTask.create(taskData);
-    res.status(201).json(newTask);
+
+    // Log the newly created task for debugging
+    console.log('Created teacher task:', newTask);
+
+    if (newTask) {
+      res.status(201).json(newTask);
+    } else {
+      res.status(500).json({ error: 'Failed to create teacher task.' });
+    }
   } catch (error) {
     console.error("Error creating teacher task:", error);
     res.status(500).json({ error: 'Failed to create teacher task.' });
@@ -50,7 +61,7 @@ router.get('/activity/:activityID', async (req, res) => {
 // Update the order of teacher tasks for an activity
 router.post('/order', async (req, res) => {
   try {
-    const activityID = req.body.activityID; 
+    const activityID = req.body.activityID;
     const tasks = req.body.tasks;
     const updatePromises = tasks.map((task: any) =>
       dalTeacherTask.update(task.taskID, { order: task.order })
@@ -60,6 +71,24 @@ router.post('/order', async (req, res) => {
   } catch (error) {
     console.error("Error updating teacher task order:", error);
     res.status(500).json({ error: 'Failed to update teacher task order.' });
+  }
+});
+
+router.put('/:taskID', async (req, res) => {
+  try {
+    const taskID = req.params.taskID;
+    const taskData: TeacherTaskModel = req.body;
+
+    const updatedTask = await dalTeacherTask.update(taskID, taskData);
+
+    if (updatedTask) {
+      res.status(200).json(updatedTask);
+    } else {
+      res.status(404).json({ error: 'Teacher task not found.' });
+    }
+  } catch (error) {
+    console.error("Error updating teacher task:", error);
+    res.status(500).json({ error: 'Failed to update teacher task.' });
   }
 });
 

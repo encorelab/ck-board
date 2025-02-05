@@ -345,6 +345,11 @@
         background-color: #bcaaa4;  // Slightly darker brown
         color: #000; 
       }
+
+      &.showJoinCode {
+        background-color: #9fa8da; // Consistent with task list
+        color: #000;
+      }
     }
   }
 }
@@ -411,6 +416,11 @@
     &.customPrompt {
       background-color: #bcaaa4;  // Slightly darker brown
       color: #000; 
+    }
+
+    &.showJoinCode {
+      background-color: #9fa8da; // Consistent with task list
+      color: #000;
     }
 
     .drag-handle {

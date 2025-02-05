@@ -1,0 +1,20 @@
+.join-code {
+    font-size: 6em;
+    font-weight: bold;
+    text-align: center;
+    word-break: break-all;
+}
+
+.dialog-content {
+    display: flex; // Use flexbox
+    flex-direction: column; // Stack items vertically
+    justify-content: center; // Center vertically
+    align-items: center; // Center horizontally (for good measure)
+    min-height: 200px; // Set a minimum height - IMPORTANT!
+    padding: 24px 24px 0px 24px; // Add padding around the content
+}
+
+// Style the mat-dialog-actions to push button to bottom and add margin
+.mat-dialog-actions {
+    margin-bottom: 12px; // Add some space below buttons.
+}

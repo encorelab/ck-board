@@ -34,6 +34,7 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketService } from 'src/app/services/bucket.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
+import { ShowJoinCodeComponent } from '../show-join-code/show-join-code.component'; // Import
 
 
 @Component({
@@ -85,7 +86,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     { name: 'View Buckets', type: 'viewBuckets', icon: 'view_module' },
     { name: 'View All Tasks, TODOs, & Analytics', type: 'viewTodos', icon: 'assignment' },
     { name: 'View Personal Workspace', type: 'viewWorkspace', icon: 'monitoring' },
-    { name: 'Custom Teacher Prompt', type: 'customPrompt', icon: 'chat_bubble' }
+    { name: 'Custom Teacher Prompt', type: 'customPrompt', icon: 'chat_bubble' },
+    { name: 'Show Student Join Code', type: 'showJoinCode', icon: 'qr_code' },
   ];
 
   teacherTasks: any[] = [];
@@ -337,6 +339,15 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
             console.error('Selected board is undefined');
           }
         });
+        break;
+      case 'activateWorkflow':
+          this.openWorkflowBucketModal(2);
+        break;
+      case 'customPrompt':
+        this.editCustomPrompt(task); 
+        break;
+      case 'showJoinCode':
+        this.showJoinCode(task); 
         break;
       default:
         // Handle other task types or do nothing
@@ -734,10 +745,10 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   openViewModal(componentType: string, project: Project, board: Board) {
     const dialogRef = this.dialog.open(ScoreViewModalComponent, {
-      maxWidth: '80vw',
-      maxHeight: '80vh',
-      height: '80%',
-      width: '80%',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      height: '80vh',
+      width: '90vw',
       panelClass: 'score-view-modal-dialog',
       data: {
         componentType,
@@ -780,6 +791,14 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     else {
       return null; // User cancelled
     }
+  }
+
+  showJoinCode(task: TeacherTask) {
+    const dialogRef = this.dialog.open(ShowJoinCodeComponent, {
+      width: '800px',
+      height: '400px',
+      data: { joinCode: this.project.studentJoinCode }, // Pass the project's join code
+    });
   }
   
   async openAiAgentModal(taskData: any): Promise<any> {

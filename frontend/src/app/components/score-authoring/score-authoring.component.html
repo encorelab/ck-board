@@ -151,6 +151,7 @@
               [class.viewTodos]="task.type === 'viewTodos'"
               [class.viewWorkspace]="task.type === 'viewWorkspace'"
               [class.customPrompt]="task.type === 'customPrompt'"
+              [class.showJoinCode]="task.type === 'showJoinCode'"
             >
               <div 
                 class="task-content" 
@@ -163,13 +164,10 @@
                 <ng-container *ngIf="task.type === 'activateWorkflow'">
                     Activate Workflow: {{ getWorkflowName(task.workflowID) }}
                 </ng-container>
+                <ng-container *ngIf="task.type === 'showJoinCode'">
+                    Show Join Code
+                </ng-container>
                 {{ (task.type !== 'customPrompt' && task.type !== 'activateWorkflow') ? task.name : '' }}
-                <button *ngIf="task.type === 'activateWorkflow'" mat-icon-button (click)="openWorkflowBucketModal(2); $event.stopPropagation();" class="workflow-play-button">
-                  <mat-icon>play_circle_outline</mat-icon>
-                </button>
-                <button *ngIf="task.type === 'customPrompt'" mat-icon-button (click)="editCustomPrompt(task); $event.stopPropagation();" class="prompt-edit-button">
-                  <mat-icon>edit</mat-icon>
-                </button>
               </div>
               <button mat-icon-button (click)="deleteTeacherTask(task, i)">
                 <mat-icon>close</mat-icon>
@@ -223,6 +221,7 @@
                     [class.viewTodos]="action.type === 'viewTodos'"
                     [class.viewWorkspace]="action.type === 'viewWorkspace'"
                     [class.customPrompt]="action.type === 'customPrompt'"
+                    [class.showJoinCode]="action.type === 'showJoinCode'"
                   >  
                     <mat-icon>{{ action.icon }}</mat-icon> 
                     {{ action.name }}

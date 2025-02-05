@@ -169,6 +169,7 @@
         margin-left: auto; /* Push the button to the right */
       }
     }
+
   }
 
   h3, h4 { /* Target both h3 and h4 */
@@ -193,6 +194,10 @@
     font-weight: bold;
     color: #888; 
     margin-bottom: 0.5rem;
+  }
+
+  mat-expansion-panel-header h5 {
+    margin-bottom: 0;
   }
 
   .canvas-container {

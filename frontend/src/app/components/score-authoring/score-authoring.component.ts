@@ -34,7 +34,8 @@ import { ConfigurationModalComponent } from '../configuration-modal/configuratio
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { BucketService } from 'src/app/services/bucket.service';
 import { WorkflowService } from 'src/app/services/workflow.service';
-import { ShowJoinCodeComponent } from '../show-join-code/show-join-code.component'; // Import
+import { ShowJoinCodeComponent } from '../show-join-code/show-join-code.component';
+import {MatExpansionModule} from '@angular/material/expansion'; 
 
 
 @Component({
@@ -94,6 +95,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   showResourcesPane = false; 
   showClassroomBindings = false;
+
+  isTeacherTasksExpanded: boolean = true; 
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -703,6 +706,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         const newTask = await this.http.post('teacher-tasks/', taskData).toPromise();
         this.teacherTasks.push(newTask);
         this.updateTeacherTaskOrder();
+
+        this.isTeacherTasksExpanded = true;
       }
     } catch (error) {
       this.snackbarService.queueSnackbar("Error creating teacher task.");

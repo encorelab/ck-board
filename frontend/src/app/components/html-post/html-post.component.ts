@@ -2,7 +2,7 @@ import { DELETE } from '@angular/cdk/keycodes';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { PostModalComponent } from 'src/app/components/post-modal/post-modal.component';
-import { Board } from 'src/app/models/board';
+import { Board, ViewType } from 'src/app/models/board';
 import Post from 'src/app/models/post';
 import { AuthUser } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
@@ -49,6 +49,7 @@ export class HtmlPostComponent implements OnInit {
   @Input() onCommentEvent: Function;
   @Input() onTagEvent: Function;
   @Input() onDeleteEvent: Function;
+  @Input() currentView: ViewType;
   @Output() movePostToBoardEvent = new EventEmitter<string>();
 
   exists = true;
@@ -90,6 +91,7 @@ export class HtmlPostComponent implements OnInit {
           onCommentEvent: this.onCommentEvent,
           onTagEvent: this.onTagEvent,
           onDeleteEvent: this.onDeleteEvent,
+          currentView: this.currentView,
         },
       })
       .afterClosed()

@@ -11,12 +11,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
-import {
+import workflows, {
+  DistributionWorkflow,
   ExpandedGroupTask,
   GroupTask,
   GroupTaskStatus,
   TaskAction,
   TaskActionType,
+  TaskWorkflow,
   TaskWorkflowType,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
@@ -47,6 +49,8 @@ import { AddPostComponent } from '../add-post-modal/add-post.component';
 import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { GroupTaskService } from 'src/app/services/groupTask.service';
+import Upvote from 'src/app/models/upvote';
+import { EventBusService } from 'src/app/services/event-bus.service';
 
 // install Swiper modules
 SwiperCore.use([EffectCards]);
@@ -72,6 +76,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   project: Project;
   board: Board;
 
+  groupEventToHandler: Map<SocketEvent, Function>;
+
+  unsubListeners: Subscription[] = [];
+
   inactiveGroupTasks: ExpandedGroupTask[] = [];
   activeGroupTasks: ExpandedGroupTask[] = [];
   completeGroupTasks: ExpandedGroupTask[] = [];
@@ -94,6 +102,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   viewType = ViewType.WORKSPACE;
   isTeacher: boolean = false;
 
+  private subscription!: Subscription;
+
   constructor(
     public userService: UserService,
     public projectService: ProjectService,
@@ -105,6 +115,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     public snackbarService: SnackbarService,
     public canvasService: CanvasService,
     public groupTaskService: GroupTaskService,
+    private eventBus: EventBusService,
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
@@ -115,12 +126,53 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.embedded = true;
       }
     });
+    this.groupEventToHandler = new Map<SocketEvent, Function>([
+      [SocketEvent.POST_UPDATE, this.handlePostUpdateEvent.bind(this)],
+      [SocketEvent.POST_DELETE, this.handlePostDeleteEvent.bind(this)],
+      [SocketEvent.POST_UPVOTE_ADD, this.handlePostUpvoteAddEvent.bind(this)],
+      [
+        SocketEvent.POST_UPVOTE_REMOVE,
+        this.handlePostUpvoteRemoveEvent.bind(this),
+      ],
+      [SocketEvent.POST_COMMENT_ADD, this.handlePostCommentAddEvent.bind(this)],
+      [
+        SocketEvent.POST_COMMENT_REMOVE,
+        this.handlePostCommentRemoveEvent.bind(this),
+      ],
+      [SocketEvent.POST_TAG_ADD, this.handlePostTagAddEvent.bind(this)],
+      [SocketEvent.POST_TAG_REMOVE, this.handlePostTagRemoveEvent.bind(this)],
+      [
+        SocketEvent.BOARD_NAME_UPDATE,
+        this.handleBoardNameUpdateEvent.bind(this),
+      ],
+      [
+        SocketEvent.BOARD_TAGS_UPDATE,
+        this.handleBoardTagsUpdateEvent.bind(this),
+      ],
+      [
+        SocketEvent.BOARD_UPVOTE_UPDATE,
+        this.handleBoardUpvoteUpdateEvent.bind(this),
+      ],
+      [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent.bind(this)],
+      [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent.bind(this)],
+      [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent.bind(this)],
+      [SocketEvent.WORKFLOW_RUN_TASK, this.handleWorkflowRunTask.bind(this)],
+      [SocketEvent.WORKFLOW_DELETE_TASK, this.handleWorkflowDeleteTask],
+      [
+        SocketEvent.WORKFLOW_PROGRESS_UPDATE,
+        this.handleWorkflowUpdate.bind(this),
+      ],
+      [SocketEvent.WORKFLOW_POST_SUBMIT, this.handlePostSubmitEvent.bind(this)],
+    ]);
   }
 
   ngOnInit(): void {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
     this.loadWorkspaceData();
+
+    this.initGroupEventsListener();
+    this.initEventBusListeners();
   }
 
   async loadWorkspaceData(): Promise<boolean> {
@@ -223,6 +275,271 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     }
 
     this._startListening();
+  }
+
+  initEventBusListeners() {
+    this.subscription = this.eventBus.event$.subscribe(({ event, data }) => {
+      if (event === 'createWorkflowTask') {
+        this.handleWorkflowRunTask(data);
+      } else if (event === 'deleteWorkflowTask') {
+        this.handleWorkflowDeleteTask(data);
+      }
+    });
+  }
+
+  initGroupEventsListener() {
+    for (const [k, v] of this.groupEventToHandler) {
+      const unsub = this.socketService.listen(k, v);
+      this.unsubListeners.push(unsub);
+    }
+  }
+
+  handlePostUpdateEvent = async (postToUpdate: Post) => {
+    if (!this.runningGroupTask) return;
+    let postIndex = this.posts.findIndex(
+      (post) => post.post.postID === postToUpdate.postID
+    );
+    const newPost = await this.converters.toHTMLPost(postToUpdate);
+    if (postIndex != -1) {
+      this.posts[postIndex] = {
+        ...newPost,
+      };
+    } else {
+      postIndex = this.submittedPosts.findIndex(
+        (post) => post.post.postID === postToUpdate.postID
+      );
+      if (postIndex != -1) {
+        this.submittedPosts[postIndex] = {
+          ...newPost,
+        };
+      }
+    }
+    this.posts = [...this.posts];
+    this.submittedPosts = [...this.submittedPosts];
+  };
+
+  handlePostDeleteEvent = (id: string) => {
+    this.onDeleteEvent(id);
+  };
+
+  handlePostUpvoteAddEvent = (result) => {
+    let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
+    if (found) {
+      found.upvotes.push(result.upvote);
+    } else {
+      found = this.submittedPosts.find(
+        (p) => p.post.postID == result.upvote.postID
+      );
+      if (found) {
+        found.upvotes.push(result.upvote);
+      }
+    }
+  };
+
+  handlePostUpvoteRemoveEvent = (result) => {
+    let found = this.posts.find((p) => p.post.postID == result.upvote.postID);
+    if (found) {
+      found.upvotes = found.upvotes.filter(
+        (upvote) => upvote.upvoteID != result.upvote.upvoteID
+      );
+    } else {
+      found = this.submittedPosts.find(
+        (p) => p.post.postID == result.upvote.postID
+      );
+      if (found) {
+        found.upvotes = found.upvotes.filter(
+          (upvote) => upvote.upvoteID != result.upvote.upvoteID
+        );
+      }
+    }
+  };
+
+  handlePostCommentAddEvent = (result) => {
+    let found = this.posts.find((p) => p.post.postID == result.comment.postID);
+    if (found) {
+      found.comments += 1;
+    } else {
+      found = this.submittedPosts.find(
+        (p) => p.post.postID == result.comment.postID
+      );
+      if (found) {
+        found.comments += 1;
+      }
+    }
+  };
+
+  handlePostCommentRemoveEvent = (result) => {
+    let found = this.posts.find((p) => p.post.postID == result.comment.postID);
+    if (found) {
+      found.comments -= 1;
+    } else {
+      found = this.submittedPosts.find(
+        (p) => p.post.postID == result.comment.postID
+      );
+      if (found) {
+        found.comments -= 1;
+      }
+    }
+  };
+
+  handlePostTagAddEvent = ({ post }) => {
+    let found = this.posts.find((p) => p.post.postID == post.postID);
+    if (found) {
+      found.post = post;
+    } else {
+      found = this.submittedPosts.find((p) => p.post.postID == post.postID);
+      if (found) {
+        found.post = post;
+      }
+    }
+  };
+
+  handlePostTagRemoveEvent = ({ post }) => {
+    let found = this.posts.find((p) => p.post.postID == post.postID);
+    if (found) {
+      found.post = post;
+    } else {
+      found = this.submittedPosts.find((p) => p.post.postID == post.postID);
+      if (found) {
+        found.post = post;
+      }
+    }
+  };
+
+  handleBoardNameUpdateEvent = (board: Board) => {
+    this.board = board;
+  };
+
+  handleBoardTagsUpdateEvent = (board: Board) => {
+    this.board = board;
+  };
+
+  handleBoardUpvoteUpdateEvent = (board: Board) => {
+    this.board = board;
+  };
+
+  handleVotesClearEvent = (result: Upvote[]) => {
+    if (!this.runningGroupTask) return;
+    const resetedPosts: string[] = [];
+    for (const upvotes of result) {
+      if (!resetedPosts.includes(upvotes.postID)) {
+        let found = this.posts.find((p) => p.post.postID == upvotes.postID);
+        if (found) {
+          found.upvotes = [];
+          resetedPosts.push(upvotes.postID);
+        } else {
+          found = this.submittedPosts.find(
+            (p) => p.post.postID == upvotes.postID
+          );
+          if (found) {
+            found.upvotes = [];
+            resetedPosts.push(upvotes.postID);
+          }
+        }
+      }
+    }
+  };
+
+  handleBoardClearEvent = (ids: string[]) => {
+    ids.forEach((id) => {
+      this.handlePostDeleteEvent(id);
+    });
+  };
+
+  handleBoardConnEvent = () => {
+    if (this.user.role === Role.TEACHER) return;
+    this.router.navigate(['/error'], {
+      state: {
+        code: 403,
+        message: 'You do not have access to this board!',
+      },
+    });
+  };
+
+  handleWorkflowRunTask = async (result: any) => {
+    if (result.assignedGroups.includes(this.group.groupID)) {
+      const tasks = await this.workflowService.getGroupTasks(
+        this.board.boardID,
+        'expanded'
+      );
+      tasks.forEach((t) => {
+        if (result.workflowID === t.workflow.workflowID) {
+          if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
+            this.inactiveGroupTasks.push(t);
+          } else if (t.groupTask.status == GroupTaskStatus.ACTIVE) {
+            this.activeGroupTasks.push(t);
+          } else if (t.groupTask.status == GroupTaskStatus.COMPLETE) {
+            this.completeGroupTasks.push(t);
+          }
+        }
+      });
+    }
+  };
+
+  handleWorkflowDeleteTask = async (workflowID: string) => {
+    let found = this.inactiveGroupTasks.find(
+      (t) => t.workflow.workflowID === workflowID
+    );
+    if (found) {
+      this.inactiveGroupTasks = this.inactiveGroupTasks.filter(
+        (t) => t.workflow.workflowID != workflowID
+      );
+    } else {
+      found = this.activeGroupTasks.find(
+        (t) => t.workflow.workflowID === workflowID
+      );
+      if (found) {
+        this.activeGroupTasks = this.activeGroupTasks.filter(
+          (t) => t.workflow.workflowID != workflowID
+        );
+      } else {
+        found = this.completeGroupTasks.find(
+          (t) => t.workflow.workflowID === workflowID
+        );
+        if (found) {
+          this.completeGroupTasks = this.completeGroupTasks.filter(
+            (t) => t.workflow.workflowID != workflowID
+          );
+        }
+      }
+    }
+  };
+
+  handleWorkflowUpdate = async (updates) => {
+    if (!this.runningGroupTask) return;
+
+    const found = updates.find(
+      (u) => u.groupTaskID == this.runningGroupTask?.groupTask.groupTaskID
+    );
+    if (found) {
+      this.runningGroupTask.groupTask = found;
+      if (
+        this.runningGroupTask?.workflow.type === TaskWorkflowType.GENERATION
+      ) {
+        const _newPosts = found.posts.filter(
+          (p) => !this.posts.map((post) => post.post.postID).includes(p)
+        );
+        const newPosts = await this.postService.getAll(_newPosts);
+        const htmlPosts = await this.converters.toHTMLPosts(newPosts);
+        this.posts = this.posts.concat(htmlPosts);
+      }
+      this.currentGroupProgress = this._calcGroupProgress(
+        this.runningGroupTask
+      );
+    }
+  };
+
+  handlePostSubmitEvent = async (postID: string) => {
+    if (!this.runningGroupTask) return;
+    const submittedPost = this.posts.find((p) => p.post.postID == postID);
+    this.posts = this.posts.filter((p) => p.post.postID != postID);
+    if (submittedPost) this.submittedPosts.push(submittedPost);
+  };
+
+  _isTaskWorkflow(
+    object: DistributionWorkflow | TaskWorkflow
+  ): object is TaskWorkflow {
+    return (object as TaskWorkflow).requiredActions !== undefined;
   }
 
   close(): void {
@@ -406,7 +723,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
             this.runningGroupTask.groupTask,
           ]);
-
+          this.socketService.emit(
+            SocketEvent.WORKFLOW_POST_SUBMIT,
+            post.postID
+          );
           for (const _ of post.tags) {
             await this.onTagEvent(post.postID, 'add');
           }
@@ -536,104 +856,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
   private _startListening(): void {
     this.listeners.push(
-      this.socketService.listen(
-        SocketEvent.WORKFLOW_PROGRESS_UPDATE,
-        async (updates) => {
-          console.log('updates ', updates);
-          if (!this.runningGroupTask) return;
-
-          const found = updates.find(
-            (u) => u.groupTaskID == this.runningGroupTask?.groupTask.groupTaskID
-          );
-          if (found) {
-            this.runningGroupTask.groupTask = found;
-            if (
-              this.runningGroupTask?.workflow.type ===
-              TaskWorkflowType.GENERATION
-            ) {
-              const _newPosts = found.posts.filter(
-                (p) => !this.posts.map((post) => post.post.postID).includes(p)
-              );
-              const newPosts = await this.postService.getAll(_newPosts);
-              const htmlPosts = await this.converters.toHTMLPosts(newPosts);
-              this.posts = this.posts.concat(htmlPosts);
-            }
-            this.currentGroupProgress = this._calcGroupProgress(
-              this.runningGroupTask
-            );
-          }
-        }
-      )
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_UPVOTE_ADD, (result) => {
-        const found = this.posts.find(
-          (p) => p.post.postID == result.upvote.postID
-        );
-        if (found) {
-          found.upvotes.push(result.upvote);
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_UPVOTE_REMOVE, (result) => {
-        const found = this.posts.find(
-          (p) => p.post.postID == result.upvote.postID
-        );
-        if (found) {
-          found.upvotes = found.upvotes.filter(
-            (upvote) => upvote.upvoteID != result.upvote.upvoteID
-          );
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_COMMENT_ADD, (result) => {
-        const found = this.posts.find(
-          (p) => p.post.postID == result.comment.postID
-        );
-        if (found) {
-          found.comments += 1;
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_COMMENT_REMOVE, (result) => {
-        const found = this.posts.find(
-          (p) => p.post.postID == result.comment.postID
-        );
-        if (found) {
-          found.comments -= 1;
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_TAG_ADD, ({ post }) => {
-        const found = this.posts.find((p) => p.post.postID == post.postID);
-        if (found) {
-          found.post = post;
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(SocketEvent.POST_TAG_REMOVE, ({ post }) => {
-        const found = this.posts.find((p) => p.post.postID == post.postID);
-        if (found) {
-          found.post = post;
-        }
-      })
-    );
-    this.listeners.push(
-      this.socketService.listen(
-        SocketEvent.WORKFLOW_POST_SUBMIT,
-        (postID: string) => {
-          const submittedPost = this.posts.find((p) => p.post.postID == postID);
-          this.posts = this.posts.filter((p) => p.post.postID != postID);
-          if (submittedPost) this.submittedPosts.push(submittedPost);
-        }
-      )
-    );
-    this.listeners.push(
       interval(30 * 1000).subscribe(async () => {
         this.averageGroupProgress = await this._calcAverageProgress(
           this.runningGroupTask
@@ -654,7 +876,11 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.listeners.map((l) => l.unsubscribe());
+    this.unsubListeners.forEach((s) => s.unsubscribe());
     this.socketService.disconnect(this.user.userID, this.board.boardID);
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   private _calcGroupProgress(task: ExpandedGroupTask | null): number {

@@ -62,10 +62,29 @@ class WorkflowUpdate {
   }
 }
 
+class WorkflowDeleteTask {
+  static type: SocketEvent = SocketEvent.WORKFLOW_DELETE_TASK;
+
+  static async handleEvent(
+    input: SocketPayload<GroupTaskModel>
+  ): Promise<GroupTaskModel | null> {
+    return input.eventData;
+  }
+
+  static async handleResult(
+    io: Server,
+    socket: Socket,
+    result: GroupTaskModel | null
+  ) {
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
+
 const workflowEvents = [
   WorkflowRunDistribution,
   WorkflowRunTask,
   WorkflowUpdate,
+  WorkflowDeleteTask,
 ];
 
 export default workflowEvents;

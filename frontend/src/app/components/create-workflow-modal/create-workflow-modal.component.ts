@@ -53,6 +53,7 @@ import { UserService } from 'src/app/services/user.service';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { SocketEvent } from 'src/app/utils/constants';
 import { saveAs } from 'file-saver';
+import { EventBusService } from 'src/app/services/event-bus.service';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -163,6 +164,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
     public groupService: GroupService,
     private http: HttpClient,
     private socketService: SocketService,
+    private eventBus: EventBusService,
     private changeDetectorRef: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -348,6 +350,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
         .runTaskWorkflow(workflow)
         .then(() => {
           workflow.active = true;
+          this.eventBus.emit('createWorkflowTask', workflow);
           this.openSnackBar('Workflow: ' + workflow.name + ' now active!');
         })
         .catch(() => {
@@ -384,6 +387,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
         handleConfirm: async () => {
           if (this._isTaskWorkflow(workflow)) {
             await this.workflowService.removeTask(workflow.workflowID);
+            this.eventBus.emit('deleteWorkflowTask', workflow.workflowID);
           } else {
             await this.workflowService.removeDistribution(workflow.workflowID);
           }

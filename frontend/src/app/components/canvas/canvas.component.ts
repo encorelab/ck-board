@@ -213,7 +213,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
   handlePostCreateEvent = (post: Post) => {
     if (post.type === PostType.BOARD) {
-      const fabricPost = new FabricPostComponent(post);
+      const fabricPost = new FabricPostComponent(
+        this.userService,
+        this.boardService,
+        post
+      );
       this.canvas.add(fabricPost);
     }
   };
@@ -402,7 +406,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       postData.post.type === PostType.BOARD &&
       this.board.scope === BoardScope.PROJECT_PERSONAL
     ) {
-      const fabricPost = new FabricPostComponent(postData.post);
+      const fabricPost = new FabricPostComponent(
+        this.userService,
+        this.boardService,
+        postData.post
+      );
       this.canvas.add(fabricPost);
     }
   };
@@ -468,10 +476,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
               post.postID
             );
             this.canvas.add(
-              new FabricPostComponent(post, {
-                upvotes: upvotes.length,
-                comments: comments.length,
-              })
+              new FabricPostComponent(
+                this.userService,
+                this.boardService,
+                post,
+                {
+                  upvotes: upvotes.length,
+                  comments: comments.length,
+                }
+              )
             );
           }
         });
@@ -509,10 +522,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
               post.postID
             );
             this.canvas.add(
-              new FabricPostComponent(post, {
-                upvotes: upvotes.length,
-                comments: comments.length,
-              })
+              new FabricPostComponent(
+                this.userService,
+                this.boardService,
+                post,
+                {
+                  upvotes: upvotes.length,
+                  comments: comments.length,
+                }
+              )
             );
           }
         });

@@ -51,6 +51,7 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { GroupTaskService } from 'src/app/services/groupTask.service';
 import Upvote from 'src/app/models/upvote';
 import { EventBusService } from 'src/app/services/event-bus.service';
+import { TraceService } from 'src/app/services/trace.service';
 
 // install Swiper modules
 SwiperCore.use([EffectCards]);
@@ -115,6 +116,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     public snackbarService: SnackbarService,
     public canvasService: CanvasService,
     public groupTaskService: GroupTaskService,
+    public traceService: TraceService,
     private eventBus: EventBusService,
     private converters: Converters,
     private router: Router,
@@ -144,6 +146,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       [
         SocketEvent.BOARD_NAME_UPDATE,
         this.handleBoardNameUpdateEvent.bind(this),
+      ],
+      [
+        SocketEvent.BOARD_PERMISSIONS_UPDATE,
+        this.handleBoardPermsUpdateEvent.bind(this),
       ],
       [
         SocketEvent.BOARD_TAGS_UPDATE,
@@ -408,6 +414,46 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
   handleBoardNameUpdateEvent = (board: Board) => {
     this.board = board;
+  };
+
+  handleBoardPermsUpdateEvent = (board: Board) => {
+    this.board = board;
+    this.traceService.setTraceContext(
+      this.project.projectID,
+      this.board.boardID
+    );
+    if (this.runningGroupTask) {
+      this.posts.forEach((post) => {
+        if (
+          this.user.role == Role.STUDENT &&
+          board?.permissions.showAuthorNameStudent
+        ) {
+          post.hideAuthorName = false;
+        } else if (
+          this.user.role == Role.TEACHER &&
+          board?.permissions.showAuthorNameTeacher
+        ) {
+          post.hideAuthorName = false;
+        } else {
+          post.hideAuthorName = true;
+        }
+      });
+      this.submittedPosts.forEach((post) => {
+        if (
+          this.user.role == Role.STUDENT &&
+          board?.permissions.showAuthorNameStudent
+        ) {
+          post.hideAuthorName = false;
+        } else if (
+          this.user.role == Role.TEACHER &&
+          board?.permissions.showAuthorNameTeacher
+        ) {
+          post.hideAuthorName = false;
+        } else {
+          post.hideAuthorName = true;
+        }
+      });
+    }
   };
 
   handleBoardTagsUpdateEvent = (board: Board) => {

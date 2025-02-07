@@ -4,7 +4,7 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { PostModalComponent } from 'src/app/components/post-modal/post-modal.component';
 import { Board, ViewType } from 'src/app/models/board';
 import Post from 'src/app/models/post';
-import { AuthUser } from 'src/app/models/user';
+import { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { CommentService } from 'src/app/services/comment.service';
@@ -76,6 +76,7 @@ export class HtmlPostComponent implements OnInit {
   ngOnInit(): void {
     this.user = this.userService.user!;
     this.postColor = this.post.post.displayAttributes.fillColor;
+    this.setIsAuthorVisible();
   }
 
   openPostDialog(commentPress = false) {
@@ -119,6 +120,23 @@ export class HtmlPostComponent implements OnInit {
     this.canvasService
       .unupvote(this.user.userID, this.post.post)
       .catch((e) => this.setError(getErrorMessage(e)));
+  }
+
+  async setIsAuthorVisible() {
+    const board = this.post.board;
+    if (
+      this.user.role == Role.STUDENT &&
+      board?.permissions.showAuthorNameStudent
+    ) {
+      this.post.hideAuthorName = false;
+    } else if (
+      this.user.role == Role.TEACHER &&
+      board?.permissions.showAuthorNameTeacher
+    ) {
+      this.post.hideAuthorName = false;
+    } else {
+      this.post.hideAuthorName = true;
+    }
   }
 
   movePostToBoard(postID: string) {

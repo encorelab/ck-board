@@ -1,6 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { fabric } from 'fabric';
 import Post from 'src/app/models/post';
+import { Role } from 'src/app/models/user';
+import { BoardService } from 'src/app/services/board.service';
+import { UserService } from 'src/app/services/user.service';
 import {
   POST_DEFAULT_BORDER,
   POST_DEFAULT_BORDER_THICKNESS,
@@ -24,6 +27,8 @@ export interface PostOptions {
 })
 export class FabricPostComponent extends fabric.Group {
   constructor(
+    public userService: UserService,
+    public boardService: BoardService,
     @Inject(Object) post: Post,
     @Inject(Object) options?: PostOptions
   ) {
@@ -39,7 +44,7 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    const author = new fabric.Textbox(post.author, {
+    let author = new fabric.Textbox('Anonymous', {
       name: 'author',
       width: 300,
       left: 18,
@@ -50,6 +55,33 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
+    const user = userService.user!;
+    let board;
+    boardService.get(post.boardID).then((b) => {
+      board = b;
+    });
+    let hideAuthorName = true;
+
+    if (user.role == Role.STUDENT && board?.permissions.showAuthorNameStudent) {
+      hideAuthorName = false;
+    } else if (
+      user.role == Role.TEACHER &&
+      board?.permissions.showAuthorNameTeacher
+    ) {
+      hideAuthorName = false;
+    }
+    if (!hideAuthorName) {
+      author = new fabric.Textbox(post.author, {
+        name: 'author',
+        width: 300,
+        left: 18,
+        top: title.getScaledHeight() + AUTHOR_OFFSET,
+        fontSize: 13,
+        fontFamily: 'Helvetica',
+        fill: '#555555',
+        splitByGrapheme: true,
+      });
+    }
     const desc = new fabric.Textbox(
       post.desc.length > 200 ? post.desc.substr(0, 200) + '...' : post.desc,
       {

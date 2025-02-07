@@ -50,7 +50,11 @@ export class CanvasService {
       throw new Error('Failed to create post');
     }
 
-    const fabricPost = new FabricPostComponent(post);
+    const fabricPost = new FabricPostComponent(
+      this.userService,
+      this.boardService,
+      post
+    );
     this.fabricUtils._canvas.add(fabricPost);
     this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
   }
@@ -93,10 +97,15 @@ export class CanvasService {
     const comments = await this.commentService.getCommentsByPost(post.postID);
     post.type = PostType.BOARD;
 
-    const fabricPost = new FabricPostComponent(post, {
-      upvotes: upvotes.length,
-      comments: comments.length,
-    });
+    const fabricPost = new FabricPostComponent(
+      this.userService,
+      this.boardService,
+      post,
+      {
+        upvotes: upvotes.length,
+        comments: comments.length,
+      }
+    );
     post = await this.postService.update(post.postID, post);
     if (!post) {
       throw new Error('Failed to update post');

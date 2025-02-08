@@ -352,23 +352,40 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
     // if post from bucket => delete from bucket
     if (workflow.source.type === ContainerType.WORKFLOW) {
       if (destination.type === ContainerType.BOARD) {
-        await dalPost.update(post, { type: PostType.BOARD });
+        const updatedPost = await dalPost.update(post, {
+          type: PostType.BOARD,
+        });
+        Socket.Instance.emit(
+          SocketEvent.POST_CREATE,
+          updatedPost,
+          workflow.boardID
+        );
       } else {
         await dalPost.update(post, { type: PostType.BUCKET });
+        Socket.Instance.emit(
+          SocketEvent.WORKFLOW_POST_SUBMIT,
+          post,
+          workflow.boardID
+        );
       }
     } else {
       if (workflow.source.type === ContainerType.BOARD) {
         await dalPost.update(post, { type: PostType.LIST });
+        Socket.Instance.emit(
+          SocketEvent.WORKFLOW_POST_SUBMIT,
+          post,
+          workflow.boardID
+        );
       } else if (workflow.source.type === ContainerType.BUCKET) {
         await dalBucket.removePost(workflow.source.id, [post]);
+        Socket.Instance.emit(
+          SocketEvent.WORKFLOW_POST_SUBMIT,
+          post,
+          workflow.boardID
+        );
       }
     }
 
-    Socket.Instance.emit(
-      SocketEvent.WORKFLOW_POST_SUBMIT,
-      post,
-      workflow.boardID
-    );
     return res.status(200).json(updatedGroupTask);
   } catch (e) {
     return res.status(500).end('Unable to submit post!');

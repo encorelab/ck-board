@@ -269,7 +269,7 @@ export class AddPostComponent {
 
   async addPost() {
     const post = this.getBoardPost();
-    await this.canvasService.createPost(post);
+    await this.canvasService.createPost(post, this.board.boardID);
     return post;
   }
 

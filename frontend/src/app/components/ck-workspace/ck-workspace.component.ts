@@ -160,7 +160,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.handleBoardUpvoteUpdateEvent.bind(this),
       ],
       [SocketEvent.VOTES_CLEAR, this.handleVotesClearEvent.bind(this)],
-      [SocketEvent.BOARD_CLEAR, this.handleBoardClearEvent.bind(this)],
       [SocketEvent.BOARD_CONN_UPDATE, this.handleBoardConnEvent.bind(this)],
       [SocketEvent.WORKFLOW_RUN_TASK, this.handleWorkflowRunTask.bind(this)],
       [SocketEvent.WORKFLOW_DELETE_TASK, this.handleWorkflowDeleteTask],
@@ -169,6 +168,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.handleWorkflowUpdate.bind(this),
       ],
       [SocketEvent.WORKFLOW_POST_SUBMIT, this.handlePostSubmitEvent.bind(this)],
+      [SocketEvent.WORKFLOW_POST_ADD, this.handlePostAddEvent.bind(this)],
     ]);
   }
 
@@ -486,12 +486,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     }
   };
 
-  handleBoardClearEvent = (ids: string[]) => {
-    ids.forEach((id) => {
-      this.handlePostDeleteEvent(id);
-    });
-  };
-
   handleBoardConnEvent = () => {
     if (this.user.role === Role.TEACHER) return;
     this.router.navigate(['/error'], {
@@ -580,6 +574,13 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     const submittedPost = this.posts.find((p) => p.post.postID == postID);
     this.posts = this.posts.filter((p) => p.post.postID != postID);
     if (submittedPost) this.submittedPosts.push(submittedPost);
+  };
+
+  handlePostAddEvent = async (update) => {
+    if (!this.runningGroupTask) return;
+    if (this.runningGroupTask.groupTask.groupTaskID !== update[1]) return;
+    const submittedPost = await this.converters.toHTMLPost(update[0]);
+    this.submittedPosts.push(submittedPost);
   };
 
   _isTaskWorkflow(
@@ -746,6 +747,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           }
           const htmlPost = await this.converters.toHTMLPost(post);
           this.posts.push(htmlPost);
+          this.submittedPosts.push(htmlPost);
           this.postService.create(post);
           this.runningGroupTask.groupTask.progress[post.postID] =
             this.runningGroupTask.workflow.requiredActions.filter(
@@ -769,10 +771,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
             this.runningGroupTask.groupTask,
           ]);
-          this.socketService.emit(
-            SocketEvent.WORKFLOW_POST_SUBMIT,
-            post.postID
-          );
+          this.socketService.emit(SocketEvent.WORKFLOW_POST_ADD, [
+            post,
+            this.runningGroupTask.groupTask.groupTaskID,
+          ]);
           for (const _ of post.tags) {
             await this.onTagEvent(post.postID, 'add');
           }

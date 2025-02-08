@@ -217,7 +217,8 @@ export class PostModalComponent {
     if (destType == PostType.BOARD) {
       if (event.checked) {
         this.post = await this.canvasService.createBoardPostFromBucket(
-          this.post
+          this.post,
+          this.data.board.boardID
         );
       } else {
         this.post = (

@@ -27,8 +27,8 @@ export interface PostOptions {
 })
 export class FabricPostComponent extends fabric.Group {
   constructor(
-    public userService: UserService,
-    public boardService: BoardService,
+    @Inject(Object) userRole: string,
+    @Inject(Object) boardPermissions: any,
     @Inject(Object) post: Post,
     @Inject(Object) options?: PostOptions
   ) {
@@ -55,18 +55,12 @@ export class FabricPostComponent extends fabric.Group {
       splitByGrapheme: true,
     });
 
-    const user = userService.user!;
-    let board;
-    boardService.get(post.boardID).then((b) => {
-      board = b;
-    });
     let hideAuthorName = true;
-
-    if (user.role == Role.STUDENT && board?.permissions.showAuthorNameStudent) {
+    if (userRole == Role.STUDENT && boardPermissions.showAuthorNameStudent) {
       hideAuthorName = false;
     } else if (
-      user.role == Role.TEACHER &&
-      board?.permissions.showAuthorNameTeacher
+      userRole == Role.TEACHER &&
+      boardPermissions.showAuthorNameTeacher
     ) {
       hideAuthorName = false;
     }

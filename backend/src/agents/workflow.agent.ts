@@ -100,6 +100,7 @@ class WorkflowManager {
     let sourcePosts;
     if (source.type == ContainerType.BOARD) {
       sourcePosts = await dalPost.getByBoard(source.id);
+      sourcePosts = sourcePosts.filter((p) => p.type === PostType.BOARD);
       sourcePosts = sourcePosts.map((p) => p.postID);
     } else {
       const bucket: BucketModel | null = await dalBucket.getById(source.id);

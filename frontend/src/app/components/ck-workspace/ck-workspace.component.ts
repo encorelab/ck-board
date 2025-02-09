@@ -604,7 +604,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       (g) => g.groupTask.groupTaskID !== groupTask.groupTask.groupTaskID
     );
     this.completeGroupTasks.push(groupTask);
-    if (this.runningGroupTask === groupTask) {
+    if (
+      this.runningGroupTask?.groupTask.groupTaskID ===
+      groupTask.groupTask.groupTaskID
+    ) {
       this.close();
     }
   };

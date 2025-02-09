@@ -15,6 +15,9 @@ import { GroupService } from 'src/app/services/group.service';
 import { Group } from 'src/app/models/group';
 import { MatLegacyTabChangeEvent as MatTabChangeEvent } from '@angular/material/legacy-tabs';
 import { SnackbarService } from 'src/app/services/snackbar.service';
+import { SocketEvent } from 'src/app/utils/constants';
+import { SocketService } from 'src/app/services/socket.service';
+import { EventBusService } from 'src/app/services/event-bus.service';
 
 @Component({
   selector: 'app-manage-group-modal',
@@ -38,6 +41,8 @@ export class ManageGroupModalComponent implements OnInit {
   matcher = new MyErrorStateMatcher();
 
   constructor(
+    private socketService: SocketService,
+    private eventBus: EventBusService,
     private groupService: GroupService,
     private dialog: MatDialog,
     private dialogRef: MatDialogRef<ManageGroupModalComponent>,
@@ -75,6 +80,8 @@ export class ManageGroupModalComponent implements OnInit {
     const promises: Promise<Group>[] = [];
     this.updatedGroups.forEach((group) => {
       promises.push(this.groupService.update(group.groupID, group));
+      this.socketService.emit(SocketEvent.GROUP_CHANGE, group.groupID);
+      this.eventBus.emit('groupChange', group.groupID);
       if (this.editGroup && this.editGroup.groupID === group.groupID)
         this.editGroup = group;
       this.groups.forEach((elem, index) => {
@@ -138,6 +145,8 @@ export class ManageGroupModalComponent implements OnInit {
 
   async updateGroup(group: Group) {
     await this.groupService.update(group.groupID, group);
+    this.socketService.emit(SocketEvent.GROUP_CHANGE, group.groupID);
+    this.eventBus.emit('groupChange', group.groupID);
     this.closeEdit();
     this.groups.forEach((elem, index) => {
       if (elem.groupID === group.groupID) this.groups[index] = group;
@@ -164,6 +173,8 @@ export class ManageGroupModalComponent implements OnInit {
         message: 'Are you sure you want to permanently delete this group?',
         handleConfirm: async () => {
           await this.groupService.delete(group.groupID);
+          this.socketService.emit(SocketEvent.GROUP_DELETE, group);
+          this.eventBus.emit('deleteWorkflowTask', group);
           this.groups.forEach((obj, index) => {
             if (obj.groupID == group.groupID) this.groups.splice(index, 1);
           });

@@ -73,6 +73,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
   user: AuthUser;
   group: Group;
+  groups: string[] = [];
 
   project: Project;
   board: Board;
@@ -169,6 +170,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       ],
       [SocketEvent.WORKFLOW_POST_SUBMIT, this.handlePostSubmitEvent.bind(this)],
       [SocketEvent.WORKFLOW_POST_ADD, this.handlePostAddEvent.bind(this)],
+      [SocketEvent.GROUP_CHANGE, this.handleGroupChange.bind(this)],
+      [SocketEvent.GROUP_DELETE, this.handleGroupDelete.bind(this)],
     ]);
   }
 
@@ -199,11 +202,13 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     }
     this.board = fetchedBoard;
     this.project = await this.projectService.get(projectID);
+    this.groups = await this.groupService
+      .getByUserAndProject(this.user.userID, this.project.projectID)
+      .then((groups) => groups.map((g) => g.groupID));
     this.group = await this.groupService.getByProjectUser(
       projectID,
       this.user.userID
     );
-
     if (!this.isTeacher && !this.board.viewSettings?.allowWorkspace) {
       this.router.navigateByUrl(
         `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
@@ -289,6 +294,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.handleWorkflowRunTask(data);
       } else if (event === 'deleteWorkflowTask') {
         this.handleWorkflowDeleteTask(data);
+      } else if (event === 'groupChange') {
+        this.handleGroupChange(data);
+      } else if (event === 'groupDelete') {
+        this.handleGroupDelete(data);
       }
     });
   }
@@ -583,6 +592,55 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.submittedPosts.push(submittedPost);
   };
 
+  handleGroupChange = async (groupID: string) => {
+    const group = await this.groupService.getById(groupID);
+    if (this.groups.includes(groupID)) {
+      if (group.members.includes(this.user.userID)) return;
+      // The user was part of the group and is not anymore
+      this.groups = this.groups.filter((g) => g != groupID);
+      this.inactiveGroupTasks = this.inactiveGroupTasks.filter(
+        (t) => t.group.groupID != groupID
+      );
+      this.activeGroupTasks = this.activeGroupTasks.filter(
+        (t) => t.group.groupID != groupID
+      );
+      this.completeGroupTasks = this.completeGroupTasks.filter(
+        (t) => t.group.groupID != groupID
+      );
+    } else if (group.members.includes(this.user.userID)) {
+      //The user was not part of the group and is now
+      this.groups.push(groupID);
+      const tasks = await this.workflowService.getGroupTasks(
+        this.board.boardID,
+        'expanded'
+      );
+      tasks.forEach((t) => {
+        if (groupID === t.group.groupID) {
+          if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
+            this.inactiveGroupTasks.push(t);
+          } else if (t.groupTask.status == GroupTaskStatus.ACTIVE) {
+            this.activeGroupTasks.push(t);
+          } else if (t.groupTask.status == GroupTaskStatus.COMPLETE) {
+            this.completeGroupTasks.push(t);
+          }
+        }
+      });
+    }
+  };
+
+  handleGroupDelete = async (group: Group) => {
+    this.groups = this.groups.filter((g) => g !== group.groupID);
+    this.inactiveGroupTasks = this.inactiveGroupTasks.filter(
+      (t) => t.group.groupID != group.groupID
+    );
+    this.activeGroupTasks = this.activeGroupTasks.filter(
+      (t) => t.group.groupID != group.groupID
+    );
+    this.completeGroupTasks = this.completeGroupTasks.filter(
+      (t) => t.group.groupID != group.groupID
+    );
+  };
+
   _isTaskWorkflow(
     object: DistributionWorkflow | TaskWorkflow
   ): object is TaskWorkflow {
@@ -746,7 +804,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
             post.displayAttributes = displayAttributes;
           }
           const htmlPost = await this.converters.toHTMLPost(post);
-          this.posts.push(htmlPost);
           this.submittedPosts.push(htmlPost);
           this.postService.create(post);
           this.runningGroupTask.groupTask.progress[post.postID] =

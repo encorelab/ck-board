@@ -510,23 +510,21 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   };
 
   handleWorkflowRunTask = async (result: any) => {
-    if (result.assignedGroups.includes(this.group.groupID)) {
-      const tasks = await this.workflowService.getGroupTasks(
-        this.board.boardID,
-        'expanded'
-      );
-      tasks.forEach((t) => {
-        if (result.workflowID === t.workflow.workflowID) {
-          if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
-            this.inactiveGroupTasks.push(t);
-          } else if (t.groupTask.status == GroupTaskStatus.ACTIVE) {
-            this.activeGroupTasks.push(t);
-          } else if (t.groupTask.status == GroupTaskStatus.COMPLETE) {
-            this.completeGroupTasks.push(t);
-          }
+    const tasks = await this.workflowService.getGroupTasks(
+      this.board.boardID,
+      'expanded'
+    );
+    tasks.forEach((t) => {
+      if (result.workflowID === t.workflow.workflowID) {
+        if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
+          this.inactiveGroupTasks.push(t);
+        } else if (t.groupTask.status == GroupTaskStatus.ACTIVE) {
+          this.activeGroupTasks.push(t);
+        } else if (t.groupTask.status == GroupTaskStatus.COMPLETE) {
+          this.completeGroupTasks.push(t);
         }
-      });
-    }
+      }
+    });
   };
 
   handleWorkflowDeleteTask = async (workflowID: string) => {
@@ -555,6 +553,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           );
         }
       }
+    }
+    if (this.runningGroupTask?.workflow.workflowID === workflowID) {
+      this.close();
     }
   };
 

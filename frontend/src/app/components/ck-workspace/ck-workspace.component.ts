@@ -902,6 +902,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     const workflowID = this.runningGroupTask.workflow.workflowID;
     const groupTaskID = this.runningGroupTask.groupTask.groupTaskID;
+    if (
+      this.runningGroupTask.workflow.requiredActions.find(
+        (a) => a.type === TaskActionType.TAG
+      ) === undefined
+    )
+      return;
     if (type == 'add') {
       await this.workflowService.updateTaskProgress(
         workflowID,

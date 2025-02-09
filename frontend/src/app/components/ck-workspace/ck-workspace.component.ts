@@ -170,6 +170,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       ],
       [SocketEvent.WORKFLOW_POST_SUBMIT, this.handlePostSubmitEvent.bind(this)],
       [SocketEvent.WORKFLOW_POST_ADD, this.handlePostAddEvent.bind(this)],
+      [
+        SocketEvent.WORKFLOW_TASK_COMPLETE,
+        this.handleWorkflowTaskComplete.bind(this),
+      ],
       [SocketEvent.GROUP_CHANGE, this.handleGroupChange.bind(this)],
       [SocketEvent.GROUP_DELETE, this.handleGroupDelete.bind(this)],
     ]);
@@ -592,6 +596,19 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.submittedPosts.push(submittedPost);
   };
 
+  handleWorkflowTaskComplete = async (groupTask: ExpandedGroupTask) => {
+    this.inactiveGroupTasks = this.inactiveGroupTasks.filter(
+      (g) => g.groupTask.groupTaskID !== groupTask.groupTask.groupTaskID
+    );
+    this.activeGroupTasks = this.activeGroupTasks.filter(
+      (g) => g.groupTask.groupTaskID !== groupTask.groupTask.groupTaskID
+    );
+    this.completeGroupTasks.push(groupTask);
+    if (this.runningGroupTask === groupTask) {
+      this.close();
+    }
+  };
+
   handleGroupChange = async (groupID: string) => {
     const group = await this.groupService.getById(groupID);
     if (this.groups.includes(groupID)) {
@@ -686,7 +703,10 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       (g) => g.groupTask.groupTaskID !== task.groupTaskID
     );
     this.completeGroupTasks.push(this.runningGroupTask);
-
+    this.socketService.emit(
+      SocketEvent.WORKFLOW_TASK_COMPLETE,
+      this.runningGroupTask
+    );
     this.close();
   }
 

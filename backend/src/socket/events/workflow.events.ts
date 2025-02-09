@@ -98,12 +98,31 @@ class WorkflowPostAdd {
   }
 }
 
+class WorkflowTaskComplete {
+  static type: SocketEvent = SocketEvent.WORKFLOW_TASK_COMPLETE;
+
+  static async handleEvent(
+    input: SocketPayload<GroupTaskModel>
+  ): Promise<GroupTaskModel | null> {
+    return input.eventData;
+  }
+
+  static async handleResult(
+    io: Server,
+    socket: Socket,
+    result: GroupTaskModel | null
+  ) {
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
+
 const workflowEvents = [
   WorkflowRunDistribution,
   WorkflowRunTask,
   WorkflowUpdate,
   WorkflowDeleteTask,
   WorkflowPostAdd,
+  WorkflowTaskComplete,
 ];
 
 export default workflowEvents;

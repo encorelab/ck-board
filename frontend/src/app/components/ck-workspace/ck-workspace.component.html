@@ -60,7 +60,7 @@
             <p
               matLine
               class="list-task-prompt"
-              *ngIf="task.assignmentType === 'GROUP'"
+              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
             >
               {{ task.group.name }}: {{ task.workflow.prompt }}
             </p>
@@ -87,7 +87,7 @@
             <p
               matLine
               class="list-task-prompt"
-              *ngIf="task.assignmentType === 'GROUP'"
+              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
             >
               {{ task.group.name }}: {{ task.workflow.prompt }}
             </p>
@@ -146,7 +146,7 @@
             <p
               matLine
               class="list-task-prompt"
-              *ngIf="task.assignmentType === 'GROUP'"
+              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
             >
               {{ task.group.name }}: {{ task.workflow.prompt }}
             </p>
@@ -370,7 +370,10 @@
             <div style="margin-bottom: 10px">
               <label
                 class="example-margin"
-                *ngIf="runningGroupTask.assignmentType === 'GROUP'"
+                *ngIf="
+                  runningGroupTask.assignmentType === 'GROUP' ||
+                  !runningGroupTask.assignmentType
+                "
                 >Your Group's Progress</label
               >
               <label
@@ -386,7 +389,10 @@
             <div>
               <label
                 class="example-margin"
-                *ngIf="runningGroupTask.assignmentType === 'GROUP'"
+                *ngIf="
+                  runningGroupTask.assignmentType === 'GROUP' ||
+                  !runningGroupTask.assignmentType
+                "
                 >Avg. Group's Progress</label
               >
               <label

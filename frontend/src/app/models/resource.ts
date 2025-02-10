@@ -7,6 +7,7 @@ export interface Resource {
     bucketView: boolean;
     workspace: boolean;
     monitor: boolean;
+    ideaAgent: boolean;
     groupIDs: string[];
     // ... other properties as needed ...
   }

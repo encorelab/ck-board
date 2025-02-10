@@ -69,11 +69,10 @@ import { ScoreAuthoringComponent } from './components/score-authoring/score-auth
 import { CreateActivityModalComponent } from './components/create-activity-modal/create-activity-modal.component';
 import { EditActivityModalComponent } from './components/edit-activity-modal/edit-activity-modal.component';
 import { SelectWorkflowModalComponent } from './components/select-workflow-modal/select-workflow-modal.component';
-import { SelectAiAgentModalComponent } from './components/select-ai-agent-modal/select-ai-agent-modal.component';
+import { ConfigureAiAgentModalComponent } from './components/configure-ai-agent-modal/configure-ai-agent-modal.component';
 import { CustomTeacherPromptModalComponent } from './components/custom-teacher-prompt-modal/custom-teacher-prompt-modal.component';
 import { ScoreViewModalComponent } from './components/score-view-modal/score-view-modal.component';
 import { ShowJoinCodeComponent } from './components/show-join-code/show-join-code.component';
-import { MatExpansionModule } from '@angular/material/expansion';
 
 
 const config: SocketIoConfig = {
@@ -133,7 +132,7 @@ export function tokenGetter() {
     CreateActivityModalComponent,
     EditActivityModalComponent,
     SelectWorkflowModalComponent,
-    SelectAiAgentModalComponent,
+    ConfigureAiAgentModalComponent,
     CustomTeacherPromptModalComponent,
     ScoreViewModalComponent,
     ShowJoinCodeComponent,

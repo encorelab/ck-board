@@ -26,6 +26,7 @@ import chatHistoryRouter from './api/chatHistory';
 import activitiesRouter from './api/activities';
 import resourcesRouter from './api/resources';
 import teacherTaskRouter from './api/teacherTasks'
+import aiAgentRoutes from './api/aiAgents';
 
 dotenv.config();
 
@@ -73,6 +74,7 @@ app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
 app.use('/api/ai', isAuthenticated, aiRouter);
+app.use('/api/ai-agents', aiAgentRoutes);
 app.use('/api/chat-history', chatHistoryRouter);
 app.use('/api/activities', activitiesRouter);
 app.use('/api/resources', resourcesRouter);

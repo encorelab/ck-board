@@ -28,6 +28,9 @@ export class ResourceModel {
   @prop({ required: true, default: false })
   public monitor!: boolean;
 
+  @prop({ required: true, default: false })
+  public ideaAgent!: boolean;
+
   @prop({ required: true, type: () => [String], default: [] })
   public groupIDs!: string[]; 
 

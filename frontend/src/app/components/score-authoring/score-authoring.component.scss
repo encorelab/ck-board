@@ -160,6 +160,11 @@
         color: #000; 
       }
 
+      &.ideaAgent {
+        background-color: #c5cae9;  // Indigo 
+        color: #000;
+      }
+
       .drag-handle {
         cursor: move;
         margin-right: 0.5rem;
@@ -288,6 +293,11 @@
       &.monitor { 
         background-color: #ef9a9a; /* Lighter Red */
         color: #000; 
+      }
+
+      &.ideaAgent {
+        background-color: #c5cae9;  //  Indigo 100
+        color: #000;
       }
     }
   }
@@ -549,6 +559,11 @@
     &.monitor { 
       background-color: #ef9a9a; 
     }
+
+    &.ideaAgent {
+      background-color: #c5cae9;
+      color: #000;
+    }
   }
 }
 
@@ -604,4 +619,21 @@
 .mat-dialog-content {
   margin: 0 !important; // Remove default margin
   max-height: 100vh; // Allow content to take up full height
+}
+
+mat-tab-group {
+  width: 100%; // Make the tabs take up the full width of the middle pane
+
+  ::ng-deep .mat-tab-header {
+    margin-bottom: 20px;
+  }
+
+  ::ng-deep .mat-tab-label { // Target the tab labels (::ng-deep is needed for shadow DOM piercing)
+    // Example styles:
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+    ::ng-deep .mat-tab-body-wrapper{
+        min-height: 100px;  //THIS IS IMPORTANT, or else it won't show up
+    }
 }

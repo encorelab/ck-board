@@ -71,6 +71,7 @@ export class GroupTask {
   posts: string[];
   progress: Map<string, TaskAction[]>;
   status: GroupTaskStatus;
+  userID?: string;
 }
 
 export class ExpandedGroupTask {

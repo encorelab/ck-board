@@ -265,6 +265,7 @@
         >
           <ng-template swiperSlide *ngFor="let htmlPost of posts">
             <div
+              *ngIf="htmlPost"
               (click)="$event.stopPropagation()"
               style="display: flex; flex-direction: column; gap: 10px"
             >
@@ -274,6 +275,7 @@
                 [disableDownload]="true"
                 [onCommentEvent]="onCommentEvent"
                 [onTagEvent]="onTagEvent"
+                [onDeleteEvent]="onDeleteEvent"
                 style="width: 360px; height: 100%"
               >
               </app-html-post>
@@ -319,6 +321,7 @@
                 (click)="$event.stopPropagation()"
                 [post]="htmlPost"
                 [disableDownload]="true"
+                [onDeleteEvent]="onDeleteEvent"
                 style="width: 360px; height: 100%"
               >
               </app-html-post>

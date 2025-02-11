@@ -165,7 +165,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.project = await this.projectService.get(this.projectID);
     //get group may return undefined.
     try {
-        this.group = await this.groupService.getByProjectUser( //no longer need to await
+        this.group = await this.groupService.getByProjectUser(
           this.projectID,
           this.user.userID
         );
@@ -253,7 +253,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     this._startListening();
   }
-  
+
   close(): void {
     this.runningGroupTask = null;
     this.currentGroupProgress = 0;

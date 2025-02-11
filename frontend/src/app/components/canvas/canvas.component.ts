@@ -552,7 +552,7 @@ export class CanvasComponent implements OnInit, OnDestroy {
             this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
         this.traceService.setTraceContext(this.projectID, this.boardID);
 
-        try {  // *** ADDED try/catch ***
+        try { 
             const tempBoard = await this.boardService.get(this.boardID); // Await here
             if (!tempBoard) {
                 console.error("Board not found for ID:", this.boardID);
@@ -600,11 +600,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
                 );
                 }
             });
-        } catch (error: any) { // *** ADDED ERROR HANDLING ***
+        } catch (error: any) { 
             console.error("Error configuring board (routed):", error);
             this.snackbarService.queueSnackbar("Error configuring board.");
             this.router.navigate(['/error']); // Or handle differently
-            return; // IMPORTANT
+            return; 
         }
     } else if (map.has('projectID')) { //personal board
         this.projectID =

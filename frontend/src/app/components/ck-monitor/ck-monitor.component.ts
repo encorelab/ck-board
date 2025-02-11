@@ -259,7 +259,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.project = await this.projectService.get(this.projectID);
     //get group may return undefined.
     try {
-        this.group = await this.groupService.getByProjectUser( //no longer need to await
+        this.group = await this.groupService.getByProjectUser( 
           this.projectID,
           this.user.userID
         );
@@ -358,7 +358,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.activeTaskWorkflows = activeTaskWorkflows;
     this.loading = false;
   }
-  
+
   async updateTodoItemDataSource(): Promise<void> {
     const data: TodoItemDisplay[] = [];
 

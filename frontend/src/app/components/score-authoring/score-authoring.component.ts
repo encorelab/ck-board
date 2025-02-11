@@ -355,7 +355,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
             topic: ideaChatResult.topic,
             enabled: ideaChatResult.enabled,
             payloadScope: ideaChatResult.payloadScope,
-          }, // Pass the *class*
+          },
         }
       );
       const ideaAmbientResult = await ideaAgentAmbientDialogRef
@@ -371,7 +371,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     } else {
       const dialogRef = this.dialog.open(ConfigureAiAgentModalComponent, {
         width: '600px',
-        data: { agentType, agentClass: agentClass }, // Pass the *class*
+        data: { agentType, agentClass: agentClass }, 
       });
 
       const result = await dialogRef.afterClosed().toPromise();
@@ -582,16 +582,6 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       monitor: res.monitor,
       ideaAgent: res.ideaAgent,
     }));
-
-    // *** ADD THESE LOG STATEMENTS ***
-    console.log("start() called for activity:", activity);
-    console.log("Emitting RESOURCES_UPDATE with data:", {
-      eventData: {
-        projectID: this.project.projectID,
-        activityID: this.selectedActivity.activityID, // Include activityID
-        resources: resources,
-      }
-    });
 
 
     // Emit the event with the correct structure:

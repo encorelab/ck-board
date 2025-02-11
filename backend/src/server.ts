@@ -26,11 +26,7 @@ import chatHistoryRouter from './api/chatHistory';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
-const dbUsername = process.env.DB_USER;
-const dbPassword = process.env.DB_PASSWORD;
-const dbUrl = process.env.DB_URL;
-const dbName = process.env.DB_NAME;
-const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}/${dbName}?replicaSet=db-mongodb-tor1-20374&tls=true&authSource=admin`;
+const dbURI = `${process.env.MONGO_URI}`;
 
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = (process.env.REDIS_PORT || 6379) as number;

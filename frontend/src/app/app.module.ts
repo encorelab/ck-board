@@ -73,6 +73,7 @@ import { ConfigureAiAgentModalComponent } from './components/configure-ai-agent-
 import { CustomTeacherPromptModalComponent } from './components/custom-teacher-prompt-modal/custom-teacher-prompt-modal.component';
 import { ScoreViewModalComponent } from './components/score-view-modal/score-view-modal.component';
 import { ShowJoinCodeComponent } from './components/show-join-code/show-join-code.component';
+import { ScoreRoomcastingEnvironmentComponent } from './components/score-roomcasting-environment/score-roomcasting-environment.component';
 
 
 const config: SocketIoConfig = {
@@ -136,6 +137,7 @@ export function tokenGetter() {
     CustomTeacherPromptModalComponent,
     ScoreViewModalComponent,
     ShowJoinCodeComponent,
+    ScoreRoomcastingEnvironmentComponent,
   ],
   entryComponents: [
     ScoreViewModalComponent,

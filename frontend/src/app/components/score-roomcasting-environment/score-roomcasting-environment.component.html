@@ -1,0 +1,52 @@
+<mat-toolbar *ngIf="user && project" class="toolbar" style="width: 100%">
+    <span *ngIf="board">SCORE Roomcasting - {{ project.name }} - {{board.name}}</span>
+    <span style="flex: 1 1 auto"></span>
+  </mat-toolbar>
+<mat-tab-group *ngIf="user" animationDuration="0ms">
+  <mat-tab *ngIf="availableTabs['canvas']">
+    <ng-template mat-tab-label>
+      <span (click)="setActiveTab('canvas')">Canvas</span>
+    </ng-template>
+     <div *ngIf="isTabActive('canvas') && boardID">
+        <app-canvas [projectID]="projectID" [boardID]="boardID" [embedded]="true"></app-canvas>
+     </div>
+  </mat-tab>
+
+  <mat-tab *ngIf="availableTabs['bucketView']">
+   <ng-template mat-tab-label>
+      <span (click)="setActiveTab('bucketView')">Bucket View</span>
+    </ng-template>
+    <div *ngIf="isTabActive('bucketView') && boardID">
+        <app-ck-buckets [projectID]="projectID" [boardID]="boardID"  [embedded]="true"></app-ck-buckets>
+    </div>
+  </mat-tab>
+
+    <mat-tab *ngIf="availableTabs['workspace']">
+     <ng-template mat-tab-label>
+        <span (click)="setActiveTab('workspace')">Workspace</span>
+     </ng-template>
+     <div *ngIf="isTabActive('workspace') && boardID">
+        <app-ck-workspace [projectID]="projectID" [boardID]="boardID"  [embedded]="true"></app-ck-workspace> </div>
+  </mat-tab>
+
+    <mat-tab *ngIf="availableTabs['monitor']">
+     <ng-template mat-tab-label>
+          <span (click)="setActiveTab('monitor')">Monitor</span>
+     </ng-template>
+        <div *ngIf="isTabActive('monitor') && boardID">
+            <app-ck-monitor [projectID]="projectID" [boardID]="boardID" [embedded]="true"></app-ck-monitor> </div>
+  </mat-tab>
+
+    <mat-tab *ngIf="availableTabs['ideaAgent']">
+    <ng-template mat-tab-label>
+        <span (click)="setActiveTab('ideaAgent')">Idea Agent</span>
+    </ng-template>
+        <div *ngIf="isTabActive('ideaAgent') && boardID">
+            Content3
+             </div>
+  </mat-tab>
+    </mat-tab-group>
+
+<div *ngIf="!user">
+    Loading...
+</div>

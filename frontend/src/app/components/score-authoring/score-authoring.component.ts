@@ -50,6 +50,7 @@ import {
   GroupInteractionAgent,
   WorkflowAgent,
 } from 'src/app/models/ai-agent';
+import { SocketEvent } from 'src/app/utils/constants';
 
 @Component({
   selector: 'app-score-authoring',
@@ -325,65 +326,62 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   }
 
   async dropAiAgentFromAvailable(event: CdkDragDrop<any[]>) {
-      const agentType = this.availableAiAgents[event.previousIndex].type;
-      const agentClass = this.availableAiAgents[event.previousIndex].class;
-      // Open configuration modal *before* creating in the database
-      let newAgentData: Partial<AiAgent> = { type: agentType }; //for idea agents
-      if (agentType === 'idea') {
-        const ideaAgentDialogRef = this.dialog.open(
-          ConfigureAiAgentModalComponent,
-          {
-            width: '800px',
-            height: '600px',
-            data: { agentType: 'idea_chat', agentClass: IdeaAgentChat }, 
-          }
-        );
-        const ideaChatResult = await ideaAgentDialogRef
-          .afterClosed()
-          .toPromise();
-
-        if (!ideaChatResult) {
-          //if cancelled, don't make any agents
-          return;
+    const agentType = this.availableAiAgents[event.previousIndex].type;
+    const agentClass = this.availableAiAgents[event.previousIndex].class;
+    // Open configuration modal *before* creating in the database
+    let newAgentData: Partial<AiAgent> = { type: agentType }; //for idea agents
+    if (agentType === 'idea') {
+      const ideaAgentDialogRef = this.dialog.open(
+        ConfigureAiAgentModalComponent,
+        {
+          width: '800px',
+          height: '600px',
+          data: { agentType: 'idea_chat', agentClass: IdeaAgentChat },
         }
-        const ideaAgentAmbientDialogRef = this.dialog.open(
-          ConfigureAiAgentModalComponent,
-          {
-            width: '600px',
-            data: {
-              agentType: 'idea_ambient',
-              agentClass: IdeaAgentAmbient,
-              topic: ideaChatResult.topic,
-              enabled: ideaChatResult.enabled,
-              payloadScope: ideaChatResult.payloadScope,
-            }, // Pass the *class*
-          }
-        );
-        const ideaAmbientResult = await ideaAgentAmbientDialogRef
-          .afterClosed()
-          .toPromise();
-        if (!ideaAmbientResult) {
-          //if cancelled, don't make any agents
-          return;
-        }
-        //Create and add both agents
-        await this.createAndAddAiAgent(ideaChatResult);
-        await this.createAndAddAiAgent(ideaAmbientResult);
-      } else {
-        const dialogRef = this.dialog.open(ConfigureAiAgentModalComponent, {
-          width: '600px',
-          data: { agentType, agentClass: agentClass }, // Pass the *class*
-        });
+      );
+      const ideaChatResult = await ideaAgentDialogRef.afterClosed().toPromise();
 
-        const result = await dialogRef.afterClosed().toPromise();
-
-        if (result) {
-          // Create the agent in the database and add to the active list
-          newAgentData = result;
-          await this.createAndAddAiAgent(newAgentData);
-        }
+      if (!ideaChatResult) {
+        //if cancelled, don't make any agents
+        return;
       }
-    
+      const ideaAgentAmbientDialogRef = this.dialog.open(
+        ConfigureAiAgentModalComponent,
+        {
+          width: '600px',
+          data: {
+            agentType: 'idea_ambient',
+            agentClass: IdeaAgentAmbient,
+            topic: ideaChatResult.topic,
+            enabled: ideaChatResult.enabled,
+            payloadScope: ideaChatResult.payloadScope,
+          }, // Pass the *class*
+        }
+      );
+      const ideaAmbientResult = await ideaAgentAmbientDialogRef
+        .afterClosed()
+        .toPromise();
+      if (!ideaAmbientResult) {
+        //if cancelled, don't make any agents
+        return;
+      }
+      //Create and add both agents
+      await this.createAndAddAiAgent(ideaChatResult);
+      await this.createAndAddAiAgent(ideaAmbientResult);
+    } else {
+      const dialogRef = this.dialog.open(ConfigureAiAgentModalComponent, {
+        width: '600px',
+        data: { agentType, agentClass: agentClass }, // Pass the *class*
+      });
+
+      const result = await dialogRef.afterClosed().toPromise();
+
+      if (result) {
+        // Create the agent in the database and add to the active list
+        newAgentData = result;
+        await this.createAndAddAiAgent(newAgentData);
+      }
+    }
   }
   async createAndAddAiAgent(agentData: Partial<AiAgent>) {
     if (!this.selectedActivity) {
@@ -570,7 +568,44 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   }
 
   start(activity: Activity) {
-    // ... (Implement logic to start the activity) ...
+    if (!this.selectedActivity) {
+      return;
+    }
+    // Construct the resource list object.
+    const resources = this.selectedActivityResources.map((res) => ({
+      name: res.name,
+      order: res.order,
+      groupIDs: res.groupIDs,
+      canvas: res.canvas,
+      bucketView: res.bucketView,
+      workspace: res.workspace,
+      monitor: res.monitor,
+      ideaAgent: res.ideaAgent,
+    }));
+
+    // *** ADD THESE LOG STATEMENTS ***
+    console.log("start() called for activity:", activity);
+    console.log("Emitting RESOURCES_UPDATE with data:", {
+      eventData: {
+        projectID: this.project.projectID,
+        activityID: this.selectedActivity.activityID, // Include activityID
+        resources: resources,
+      }
+    });
+
+
+    // Emit the event with the correct structure:
+    this.socketService.emit(SocketEvent.RESOURCES_UPDATE, {
+      eventData: {
+        // This matches the RoomcastData interface
+        projectID: this.project.projectID,
+        resources: resources,
+      },
+    });
+  }
+
+  openRoomCasting() {
+    this.router.navigate(['/roomcast', this.project.projectID]);
   }
 
   editActivity(activity: Activity) {

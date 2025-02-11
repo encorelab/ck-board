@@ -29,9 +29,9 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   @Input() isModalView = false;
-
-  boardID: string;
-  projectID: string;
+  @Input() projectID: string; 
+  @Input() boardID: string;  
+  @Input() embedded: boolean = false;
 
   buckets: any[] = [];
   user: AuthUser;
@@ -69,19 +69,28 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
-    await this.configureBoard();
-    await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-      if (buckets) {
-        for (const bucket of buckets) {
-          if (bucket.addedToView) {
-            this.bucketsOnView.push(bucket);
-            this.loadBucketPosts(bucket);
-          } else {
-            this.buckets.push(bucket);
-          }
+    // Prioritize Input properties.  If they are provided, use them.
+    if (this.boardID && this.projectID) {
+      // We got the IDs from the inputs, proceed as normal.
+      await this.configureBoard();  // Load board data
+      this.loadBuckets();          // Load buckets
+
+    } else {
+      // Fallback to ActivatedRoute *only* if inputs are not provided.
+      this.activatedRoute.paramMap.subscribe(async params => { // Use paramMap (Observable)
+        this.boardID = params.get('boardID')!; //use of ! operator
+        this.projectID = params.get('projectID')!; //use of ! operator
+
+        if (!this.boardID || !this.projectID) {
+          console.error("Missing boardID or projectID in route parameters");
+          this.router.navigate(['/error']); // Redirect to an error page, or handle appropriately
+          return; // IMPORTANT: Stop execution
         }
-      }
-    });
+
+        await this.configureBoard(); // Load board data
+        this.loadBuckets();          // Load buckets
+      });
+    }
     this.socketService.connect(this.user.userID, this.boardID);
   }
 
@@ -89,6 +98,21 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
     for (const [k, v] of this.groupEventToHandler) {
       const unsub = this.socketService.listen(k, v);
       this.unsubListeners.push(unsub);
+    }
+  }
+
+  async loadBuckets() {
+    if(!this.boardID) return;
+    const buckets = await this.bucketService.getAllByBoard(this.boardID);
+    if(buckets) {
+        for (const bucket of buckets) {
+            if (bucket.addedToView) {
+                this.bucketsOnView.push(bucket);
+                this.loadBucketPosts(bucket);
+            } else {
+                this.buckets.push(bucket);
+            }
+        }
     }
   }
 

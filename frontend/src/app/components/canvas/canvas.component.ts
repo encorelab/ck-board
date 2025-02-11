@@ -1,4 +1,13 @@
-import { Component, Input, OnDestroy, OnInit, HostListener, ElementRef, Renderer2, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  HostListener,
+  ElementRef,
+  Renderer2,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { fabric } from 'fabric';
 import { Canvas } from 'fabric/fabric-impl';
 
@@ -57,8 +66,6 @@ import { ProjectTodoListModalComponent } from '../project-todo-list-modal/projec
   styleUrls: ['./canvas.component.scss'],
 })
 export class CanvasComponent implements OnInit, OnDestroy {
-  boardID: string;
-  projectID: string;
   canvas: Canvas;
 
   user: AuthUser;
@@ -72,8 +79,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
   initialClientY = 0;
   finalClientX = 0;
   finalClientY = 0;
-
-  embedded = false;
 
   numSavedPosts: number = 0;
 
@@ -108,6 +113,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   @Input() isModalView = false;
+  @Input() projectID: string;
+  @Input() boardID: string;
+  @Input() embedded: boolean = false;
+
   private resizeObserver: ResizeObserver;
 
   constructor(
@@ -163,29 +172,51 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.activatedRoute.queryParams.subscribe((params) => {
-      if (params.embedded == 'true') {
-        this.embedded = true;
-      }
-    });
+    // Prioritize @Input() properties if provided
+    if (this.projectID && this.boardID) {
+      this.user = this.userService.user!;
+      this.isTeacher = this.user.role === Role.TEACHER;
+        this.canvas = new fabric.Canvas(
+          'canvas',
+          this.embedded
+            ? this.fabricUtils.embeddedCanvasConfig
+            : this.fabricUtils.canvasConfig
+        );
+        this.fabricUtils._canvas = this.canvas;
+      await this.configureBoard();  // Load board data
+      this.socketService.connect(this.user.userID, this.boardID);
+      this.initCanvasEventsListener();
+      this.initGroupEventsListener();
+      window.onbeforeunload = () => this.ngOnDestroy();
 
-    this.user = this.userService.user!;
-    this.isTeacher = this.user.role === Role.TEACHER;
-    this.canvas = new fabric.Canvas(
-      'canvas',
-      this.embedded
-        ? this.fabricUtils.embeddedCanvasConfig
-        : this.fabricUtils.canvasConfig
-    );
-    this.fabricUtils._canvas = this.canvas;
 
-    await this.configureBoard();
-    this.socketService.connect(this.user.userID, this.boardID);
+    } else {
+        // Fallback to ActivatedRoute (for direct routing)
+        this.activatedRoute.queryParams.subscribe((params) => {
+          if (params.embedded == 'true') {
+            this.embedded = true;
+          }
+        });
 
-    this.initCanvasEventsListener();
-    this.initGroupEventsListener();
+        this.user = this.userService.user!;
+        this.isTeacher = this.user.role === Role.TEACHER;
+        this.canvas = new fabric.Canvas(
+          'canvas',
+          this.embedded
+            ? this.fabricUtils.embeddedCanvasConfig
+            : this.fabricUtils.canvasConfig
+        );
+        this.fabricUtils._canvas = this.canvas;
 
-    window.onbeforeunload = () => this.ngOnDestroy();
+        this.configureBoard().then(() => {  //Use then as configure board is now async
+
+          this.socketService.connect(this.user.userID, this.boardID);
+          this.initCanvasEventsListener();
+          this.initGroupEventsListener();
+
+        });
+        window.onbeforeunload = () => this.ngOnDestroy();
+    }
   }
 
   initCanvasEventsListener() {
@@ -465,78 +496,173 @@ export class CanvasComponent implements OnInit, OnDestroy {
   async configureBoard() {
     const map = this.activatedRoute.snapshot.paramMap;
 
-    if (map.has('boardID') && map.has('projectID')) {
-      this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-      this.projectID =
-        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-      this.traceService.setTraceContext(this.projectID, this.boardID);
-      this.postService.getAllByBoard(this.boardID).then((data) => {
-        data.forEach(async (post) => {
-          if (post.type == PostType.BOARD) {
-            const upvotes = await this.upvotesService.getUpvotesByPost(
-              post.postID
-            );
-            const comments = await this.commentService.getCommentsByPost(
-              post.postID
-            );
-            this.canvas.add(
-              new FabricPostComponent(post, {
-                upvotes: upvotes.length,
-                comments: comments.length,
-              })
-            );
-          }
-        });
-        this.boardService.get(this.boardID).then((board) => {
-          if (board) this.intermediateBoardConfig(board);
-          if (
-            !this.isTeacher &&
-            this.board &&
-            !this.board.viewSettings?.allowCanvas
-          ) {
-            this.router.navigateByUrl(
-              `project/${this.projectID}/board/${
-                this.boardID
-              }/${this.board.defaultView?.toLowerCase()}`
-            );
-          }
-        });
-      });
-    } else if (map.has('projectID')) {
-      this.projectID =
-        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-      const personalBoard = await this.boardService.getPersonal(this.projectID);
-      if (personalBoard) {
-        this.boardID = personalBoard.boardID;
-        this.traceService.setTraceContext(this.projectID, this.boardID);
-      } else this.router.navigate(['error']);
+    if (this.projectID && this.boardID) {
+        //use inputs if available
+        try {
+            const tempBoard = await this.boardService.get(this.boardID); // Await here
+            if (!tempBoard) {
+                // Handle the case where the board is not found.
+                console.error("Board not found:", this.boardID);
+                this.snackbarService.queueSnackbar("Board not found.");
+                this.router.navigate(['/error']); // Redirect, or show error
+                return;  // IMPORTANT: Stop execution
+            }
+            this.board = tempBoard;
+            this.project = await this.projectService.get(this.projectID); //load project
+            if(!this.project){
+                console.error("Project not found:", this.projectID);
+                this.snackbarService.queueSnackbar("Project not found.");
+                this.router.navigate(['/error']); // Redirect, or show error
+                return;  // IMPORTANT: Stop execution
+            }
 
-      this.postService.getAllByBoard(this.boardID).then((data) => {
-        data.forEach(async (post) => {
-          if (post.type == PostType.BOARD) {
-            const upvotes = await this.upvotesService.getUpvotesByPost(
-              post.postID
-            );
-            const comments = await this.commentService.getCommentsByPost(
-              post.postID
-            );
-            this.canvas.add(
-              new FabricPostComponent(post, {
-                upvotes: upvotes.length,
-                comments: comments.length,
-              })
-            );
-          }
-        });
-        if (personalBoard) this.intermediateBoardConfig(personalBoard);
-      });
-    } else {
-      this.router.navigate(['error']);
+            this.intermediateBoardConfig(this.board); // Configure
+            this.traceService.setTraceContext(this.projectID, this.boardID); //moved here
+            this.postService.getAllByBoard(this.boardID).then((data) => { //get all posts
+              data.forEach(async (post) => {
+                if (post.type == PostType.BOARD) {
+                  const upvotes = await this.upvotesService.getUpvotesByPost(
+                    post.postID
+                  );
+                  const comments = await this.commentService.getCommentsByPost(
+                    post.postID
+                  );
+                  this.canvas.add(
+                    new FabricPostComponent(post, {
+                      upvotes: upvotes.length,
+                      comments: comments.length,
+                    })
+                  );
+                }
+              });
+          });
+        }
+        catch(error: any)
+        {
+            console.error("Error in configure board", error);
+            this.snackbarService.queueSnackbar("Error in configure board");
+            this.router.navigate(['/error']);
+            return;
+        }
+
     }
-    this.projectService
-      .get(this.projectID)
-      .then((project) => (this.project = project));
-  }
+    else if (map.has('boardID') && map.has('projectID')) { //get from routed params
+        this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
+        this.projectID =
+            this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+        this.traceService.setTraceContext(this.projectID, this.boardID);
+
+        try {  // *** ADDED try/catch ***
+            const tempBoard = await this.boardService.get(this.boardID); // Await here
+            if (!tempBoard) {
+                console.error("Board not found for ID:", this.boardID);
+                this.snackbarService.queueSnackbar("Board not found.");
+                this.router.navigate(['/error']);
+                return;
+            }
+            this.board = tempBoard;
+
+            this.project = await this.projectService.get(this.projectID); // Await here
+            if (!this.project) {
+              console.error("Project not found for ID:", this.projectID);
+              this.snackbarService.queueSnackbar("Project not found.");
+              this.router.navigate(['/error']);
+              return;
+            }
+
+            this.intermediateBoardConfig(this.board);
+            this.postService.getAllByBoard(this.boardID).then((data) => {
+              data.forEach(async (post) => {
+                if (post.type == PostType.BOARD) {
+                  const upvotes = await this.upvotesService.getUpvotesByPost(
+                    post.postID
+                  );
+                  const comments = await this.commentService.getCommentsByPost(
+                    post.postID
+                  );
+                  this.canvas.add(
+                    new FabricPostComponent(post, {
+                      upvotes: upvotes.length,
+                      comments: comments.length,
+                    })
+                  );
+                }
+              });
+            if (
+                !this.isTeacher &&
+                this.board &&
+                !this.board.viewSettings?.allowCanvas
+                ) {
+                this.router.navigateByUrl(
+                    `project/${this.projectID}/board/${
+                    this.boardID
+                    }/${this.board.defaultView?.toLowerCase()}`
+                );
+                }
+            });
+        } catch (error: any) { // *** ADDED ERROR HANDLING ***
+            console.error("Error configuring board (routed):", error);
+            this.snackbarService.queueSnackbar("Error configuring board.");
+            this.router.navigate(['/error']); // Or handle differently
+            return; // IMPORTANT
+        }
+    } else if (map.has('projectID')) { //personal board
+        this.projectID =
+        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+        try {
+            const personalBoard = await this.boardService.getPersonal(this.projectID);
+            if (personalBoard) {
+            this.boardID = personalBoard.boardID;
+            this.traceService.setTraceContext(this.projectID, this.boardID);
+            } else {
+                console.error("Personal board not found for projectID:", this.projectID);
+                this.snackbarService.queueSnackbar("Personal board not found");
+                this.router.navigate(['/error']);
+                return;
+            }
+            this.project = await this.projectService.get(this.projectID); // Await here
+            if (!this.project) {
+              console.error("Project not found for ID:", this.projectID);
+              this.snackbarService.queueSnackbar("Project not found.");
+              this.router.navigate(['/error']);
+              return;
+            }
+
+            this.postService.getAllByBoard(this.boardID).then((data) => { //get all posts
+            data.forEach(async (post) => {
+                if (post.type == PostType.BOARD) {
+                const upvotes = await this.upvotesService.getUpvotesByPost(
+                    post.postID
+                );
+                const comments = await this.commentService.getCommentsByPost(
+                    post.postID
+                );
+                this.canvas.add(
+                    new FabricPostComponent(post, {
+                    upvotes: upvotes.length,
+                    comments: comments.length,
+                    })
+                );
+                }
+            });
+            if (personalBoard) this.intermediateBoardConfig(personalBoard);
+            });
+
+        }
+        catch(error: any){
+            console.error("Error in configure board, personal board", error);
+            this.snackbarService.queueSnackbar("Error in configure board");
+            this.router.navigate(['/error']);
+            return;
+        }
+
+    } else { //no project id or board id
+        console.error("Missing required route parameters (projectID and/or boardID)");
+        this.snackbarService.queueSnackbar("Error in configure board");
+        this.router.navigate(['error']); // Or handle differently
+        return; // IMPORTANT
+    }
+}
 
   // TODO: handle board update from toolbar-menu
   configureZoom() {
@@ -1134,10 +1260,10 @@ export class CanvasComponent implements OnInit, OnDestroy {
   private _calcUpvoteCounter() {
     if (this.board && this.board.upvoteLimit) {
       this.upvotesService
-      .getByBoardAndUser(this.boardID, this.user.userID)
-      .then((votes) => {
-        this.upvoteCounter = this.board.upvoteLimit - votes.length;
-      });
+        .getByBoardAndUser(this.boardID, this.user.userID)
+        .then((votes) => {
+          this.upvoteCounter = this.board.upvoteLimit - votes.length;
+        });
     }
   }
 

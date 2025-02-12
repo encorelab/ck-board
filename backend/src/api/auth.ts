@@ -38,7 +38,7 @@ router.post('/login', async (req, res) => {
   }
 
   const user = userToToken(foundUser);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = sign(user, getJWTSecret(), { expiresIn: '5h' });
   const expiresAt = addHours(2);
 
   res.status(200).send({ token, user, expiresAt });
@@ -53,7 +53,7 @@ router.post('/register', async (req, res) => {
   const savedUser = await dalUser.create(body);
 
   const user = userToToken(savedUser);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = sign(user, getJWTSecret(), { expiresIn: '5h' });
   const expiresAt = addHours(2);
 
   res.status(200).send({ token, user, expiresAt });

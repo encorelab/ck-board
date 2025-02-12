@@ -43,4 +43,19 @@ export class GroupTaskService {
       .toPromise()
       .then((groupTasks) => groupTasks ?? []); // Default to an empty array
   }
+
+  getGroupTasksByGroup(groupID: string): Promise<GroupTask[]> {
+    return this.http
+      .get<GroupTask[]>('groupTasks/group/' + groupID)
+      .toPromise()
+      .then((groupTasks) => groupTasks ?? []); // Default to an empty array
+  }
+
+  async createGroupTask(groupTask: GroupTask): Promise<GroupTask> {
+    const result = await this.http
+      .post<GroupTask>('groupTasks/', groupTask)
+      .toPromise();
+    if (!result) throw new Error('Failed to create group task.');
+    return result as GroupTask;
+  }
 }

@@ -202,6 +202,13 @@ router.delete('/task/:id', async (req, res) => {
   res.status(200).end();
 });
 
+router.get('/task/group/:id', async (req, res) => {
+  const id = req.params.id;
+
+  const workflows = await dalWorkflow.getAllByGroupId(id);
+  res.status(200).json(workflows);
+});
+
 /**
  *
  *

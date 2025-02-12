@@ -15,9 +15,6 @@ export class GroupTaskModel {
   @prop({ required: true })
   public groupID!: string;
 
-  @prop({ required: false })
-  public userID?: string;
-
   @prop({ required: true })
   public workflowID!: string;
 

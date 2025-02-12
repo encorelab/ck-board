@@ -46,30 +46,19 @@
         <button
           class="subheader-button"
           mat-button
-          (click)="showActive = !showActive"
+          (click)="showInactive = !showInactive"
         >
-          Active Tasks ({{
-            activeGroupTasks.length + inactiveGroupTasks.length
-          }})
-          <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
+          Pending Tasks ({{ inactiveGroupTasks.length }})
+          <mat-icon>{{
+            showInactive ? 'expand_less' : 'expand_more'
+          }}</mat-icon>
         </button>
-        <ng-container *ngIf="showActive">
+        <ng-container *ngIf="showInactive">
           <mat-list-item *ngFor="let task of inactiveGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p
-              matLine
-              class="list-task-prompt"
-              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
-            >
+            <p matLine class="list-task-prompt">
               {{ task.group.name }}: {{ task.workflow.prompt }}
-            </p>
-            <p
-              matLine
-              class="list-task-prompt"
-              *ngIf="task.assignmentType === 'INDIVIDUAL'"
-            >
-              Individual: {{ task.workflow.prompt }}
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -81,37 +70,24 @@
               Begin Task
             </button>
           </mat-list-item>
+        </ng-container>
+        <mat-divider></mat-divider>
+        <button
+          class="subheader-button"
+          mat-button
+          (click)="showActive = !showActive"
+        >
+          Active Tasks ({{ activeGroupTasks.length }})
+          <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        <ng-container *ngIf="showActive">
           <mat-list-item *ngFor="let task of activeGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p
-              matLine
-              class="list-task-prompt"
-              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
-            >
+            <p matLine class="list-task-prompt">
               {{ task.group.name }}: {{ task.workflow.prompt }}
             </p>
-            <p
-              matLine
-              class="list-task-prompt"
-              *ngIf="task.assignmentType === 'INDIVIDUAL'"
-            >
-              Individual: {{ task.workflow.prompt }}
-            </p>
             <span style="flex: 1 1 auto"></span>
-            <button
-              *ngIf="
-                runningGroupTask &&
-                runningGroupTask.groupTask.groupTaskID ===
-                  task.groupTask.groupTaskID
-              "
-              mat-raised-button
-              color="primary"
-              style="margin-left: 10px; min-width: unset"
-              (click)="close()"
-            >
-              Hide Task
-            </button>
             <button
               *ngIf="
                 (runningGroupTask &&
@@ -125,6 +101,19 @@
               (click)="view(task)"
             >
               Resume Task
+            </button>
+            <button
+              *ngIf="
+                runningGroupTask &&
+                runningGroupTask.groupTask.groupTaskID ===
+                  task.groupTask.groupTaskID
+              "
+              mat-raised-button
+              color="primary"
+              style="margin-left: 10px; min-width: unset"
+              (click)="close()"
+            >
+              Hide Task
             </button>
           </mat-list-item>
         </ng-container>
@@ -143,19 +132,8 @@
           <mat-list-item *ngFor="let task of completeGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p
-              matLine
-              class="list-task-prompt"
-              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
-            >
+            <p matLine class="list-task-prompt">
               {{ task.group.name }}: {{ task.workflow.prompt }}
-            </p>
-            <p
-              matLine
-              class="list-task-prompt"
-              *ngIf="task.assignmentType === 'INDIVIDUAL'"
-            >
-              Individual: {{ task.workflow.prompt }}
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -193,12 +171,32 @@
     </mat-sidenav>
     <mat-sidenav-content>
       <div *ngIf="!loading && runningGroupTask">
-        <h1 style="font-weight: bold; margin: 15px">
+        <h1>
+          {{ runningGroupTask.group.name }}:
           {{ runningGroupTask.workflow.name }}
         </h1>
-        <p style="margin: 15px; font-size: 18px">
+        <h2 style="font-weight: bold">
           {{ runningGroupTask.workflow.prompt }}
-        </p>
+        </h2>
+        <section>
+          <ul
+            style="
+              list-style-position: inside;
+              padding-left: 30px;
+              font-weight: bold;
+            "
+          >
+            <li *ngIf="hasCommentRequirement(runningGroupTask)">
+              Comment on each post at least once!
+            </li>
+            <li *ngIf="hasTagRequirement(runningGroupTask)">
+              Tag each post at least once!
+            </li>
+            <li *ngIf="hasCreatePostRequirement(runningGroupTask)">
+              Create {{ numberOfPosts(runningGroupTask) }} posts
+            </li>
+          </ul>
+        </section>
       </div>
       <div class="heading no-workflow-select" *ngIf="!runningGroupTask">
         No task selected!
@@ -371,38 +369,14 @@
             style="width: 350px; margin: 10px auto"
           >
             <div style="margin-bottom: 10px">
-              <label
-                class="example-margin"
-                *ngIf="
-                  runningGroupTask.assignmentType === 'GROUP' ||
-                  !runningGroupTask.assignmentType
-                "
-                >Your Group's Progress</label
-              >
-              <label
-                class="example-margin"
-                *ngIf="runningGroupTask.assignmentType === 'INDIVIDUAL'"
-                >Your Progress</label
-              >
+              <label class="example-margin">Your Group's Progress</label>
               <mat-progress-bar
                 mode="determinate"
                 [value]="currentGroupProgress"
               ></mat-progress-bar>
             </div>
             <div>
-              <label
-                class="example-margin"
-                *ngIf="
-                  runningGroupTask.assignmentType === 'GROUP' ||
-                  !runningGroupTask.assignmentType
-                "
-                >Avg. Group's Progress</label
-              >
-              <label
-                class="example-margin"
-                *ngIf="runningGroupTask.assignmentType === 'INDIVIDUAL'"
-                >Avg. Group Member's Progress</label
-              >
+              <label class="example-margin">Avg. Group's Progress</label>
               <mat-progress-bar
                 mode="determinate"
                 [value]="averageGroupProgress"
@@ -410,40 +384,9 @@
               ></mat-progress-bar>
             </div>
             <section>
-              <p
-                style="font-weight: bold; margin-top: 16px"
-                *ngIf="!hasMultipleRequirements(runningGroupTask)"
-              >
-                Task:
-              </p>
-              <p
-                style="font-weight: bold; margin-top: 16px"
-                *ngIf="hasMultipleRequirements(runningGroupTask)"
-              >
-                Tasks:
-              </p>
-              <ul
-                style="
-                  list-style-position: inside;
-                  padding-left: 0;
-                  font-weight: bold;
-                "
-              >
-                <li *ngIf="hasCommentRequirement(runningGroupTask)">
-                  Comment on each post at least once!
-                </li>
-                <li *ngIf="hasTagRequirement(runningGroupTask)">
-                  Tag each post at least once!
-                </li>
-                <li *ngIf="hasCreatePostRequirement(runningGroupTask)">
-                  Create {{ numberOfPosts(runningGroupTask) }} posts
-                </li>
-              </ul>
-            </section>
-            <section>
-              <p style="font-weight: bold; margin-top: 16px">
-                {{ runningGroupTask.group.name }} Members:
-              </p>
+              <h4 style="font-weight: bold; margin-top: 16px">
+                Group Members:
+              </h4>
               <ul
                 style="
                   list-style-position: inside;

@@ -6,19 +6,6 @@
   >
     <mat-icon>arrow_back</mat-icon>
   </button>
-  <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
-  <button
-    mat-icon-button
-    *ngIf="user.role === Role.TEACHER"
-    (click)="
-      board?.scope === BoardScope.PROJECT_SHARED
-        ? copyEmbedCode()
-        : copyPersonalEmbedCode()
-    "
-    matTooltip="Copy embeddable URL"
-  >
-    <mat-icon>file_copy</mat-icon>
-  </button>
   <span style="flex: 1 1 auto"></span>
 
   <app-view-navigation
@@ -30,6 +17,8 @@
     navbarMenu
     [board]="board"
     [project]="project"
+    (copyEmbedCodeClick)="copyEmbedCode()"
+    (copyPersonalEmbedCodeClick)="copyPersonalEmbedCode()"
   ></app-toolbar-menu>
 </app-toolbar>
 

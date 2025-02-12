@@ -26,6 +26,22 @@
         <mat-icon>settings</mat-icon>
         Adjust Settings
     </button>
+    <button
+          *ngIf="project && board && board.scope === BoardScope.PROJECT_SHARED"
+          mat-menu-item
+          (click)="copyEmbedCode()"
+        >
+          <mat-icon>file_copy</mat-icon>
+          <span>Copy Embed Code</span>
+        </button>
+        <button
+        *ngIf="project && board && board.scope === BoardScope.PROJECT_PERSONAL"
+        mat-menu-item
+        (click)="copyPersonalEmbedCode()"
+      >
+        <mat-icon>file_copy</mat-icon>
+        <span>Copy Personal Embed Code</span>
+      </button>
     <button mat-menu-item (click)="signOut()">
         <mat-icon class="material-icons-outlined">logout</mat-icon>
         Log Out

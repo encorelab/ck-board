@@ -212,8 +212,12 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   handlePostCreateEvent = (post: Post) => {
-    if (post.type === PostType.BOARD) {
-      const fabricPost = new FabricPostComponent(post);
+    if (post.type === PostType.BOARD && post.boardID === this.boardID) {
+      const fabricPost = new FabricPostComponent(
+        this.user.role,
+        this.board.permissions,
+        post
+      );
       this.canvas.add(fabricPost);
     }
   };
@@ -402,7 +406,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
       postData.post.type === PostType.BOARD &&
       this.board.scope === BoardScope.PROJECT_PERSONAL
     ) {
-      const fabricPost = new FabricPostComponent(postData.post);
+      const fabricPost = new FabricPostComponent(
+        this.user.role,
+        this.board.permissions,
+        postData.post
+      );
       this.canvas.add(fabricPost);
     }
   };
@@ -455,6 +463,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
 
     if (map.has('boardID') && map.has('projectID')) {
       this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
+      const board = await this.boardService.get(this.boardID);
+      if (!board) {
+        throw new Error('Board not found');
+      }
+      this.board = board;
       this.projectID =
         this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
       this.traceService.setTraceContext(this.projectID, this.boardID);
@@ -468,10 +481,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
               post.postID
             );
             this.canvas.add(
-              new FabricPostComponent(post, {
-                upvotes: upvotes.length,
-                comments: comments.length,
-              })
+              new FabricPostComponent(
+                this.user.role,
+                this.board.permissions,
+                post,
+                {
+                  upvotes: upvotes.length,
+                  comments: comments.length,
+                }
+              )
             );
           }
         });
@@ -509,10 +527,15 @@ export class CanvasComponent implements OnInit, OnDestroy {
               post.postID
             );
             this.canvas.add(
-              new FabricPostComponent(post, {
-                upvotes: upvotes.length,
-                comments: comments.length,
-              })
+              new FabricPostComponent(
+                this.user.role,
+                this.board.permissions,
+                post,
+                {
+                  upvotes: upvotes.length,
+                  comments: comments.length,
+                }
+              )
             );
           }
         });

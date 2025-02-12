@@ -12,6 +12,9 @@ import {
 import { BucketService } from './bucket.service';
 import { PostService } from './post.service';
 import { UserService } from './user.service';
+import { SocketService } from './socket.service';
+import { SocketEvent } from '../utils/constants';
+import { error } from 'console';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +24,7 @@ export class WorkflowService {
     public userService: UserService,
     public postService: PostService,
     public bucketService: BucketService,
+    private socketService: SocketService,
     public http: HttpClient
   ) {}
 
@@ -115,6 +119,8 @@ export class WorkflowService {
       .delete<TaskWorkflow>('workflows/task/' + workflowID)
       .toPromise();
     if (!result) throw new Error('Failed to remove task workflow.');
+
+    this.socketService.emit(SocketEvent.WORKFLOW_DELETE_TASK, workflowID);
     return result;
   }
 

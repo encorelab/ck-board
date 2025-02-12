@@ -165,12 +165,16 @@ export class ManageGroupModalComponent implements OnInit {
 
     console.log(removedMembers);
     console.log(addedMembers);
+    const workflows = await this.workflowService.getWorkflowsByGroup(
+      group.groupID
     );
     console.log(workflows);
     for (const member of addedMembers) {
       for (const workflow of workflows) {
+        if (!workflow.active) return;
         console.log('here2', workflow);
         let taskExists = true;
+        try {
           const groupTask =
             await this.workflowService.getGroupTaskByWorkflowGroup(
               group.groupID,
@@ -185,6 +189,8 @@ export class ManageGroupModalComponent implements OnInit {
           console.log('here5');
           const source = workflow.source;
           console.log(source);
+          const assignedIndividual = workflow.assignedIndividual;
+          let posts: string[] = [];
           const progress: Map<string, TaskAction[]> = new Map<
             string,
             TaskAction[]
@@ -204,6 +210,7 @@ export class ManageGroupModalComponent implements OnInit {
 
             // if (taskWorkflow?.type === TaskWorkflowType.GENERATION) sourcePosts = [];
             const commentAction = workflow.requiredActions.find(
+              (a) => a.type == TaskActionType.COMMENT
             );
             const tagAction = workflow.requiredActions.find(
               (a) => a.type == TaskActionType.TAG
@@ -235,6 +242,7 @@ export class ManageGroupModalComponent implements OnInit {
           }
           console.log(progress);
           const newGroupTask: GroupTask = {
+            groupTaskID: generateUniqueID(),
             groupID: group.groupID,
             workflowID: workflow.workflowID,
             posts: posts,
@@ -250,6 +258,7 @@ export class ManageGroupModalComponent implements OnInit {
           };
           console.log(newGroupTask);
           await this.groupTaskService.createGroupTask(newGroupTask);
+        }
       }
     }
     await this.groupService.update(group.groupID, group);

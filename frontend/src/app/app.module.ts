@@ -74,7 +74,8 @@ import { CustomTeacherPromptModalComponent } from './components/custom-teacher-p
 import { ScoreViewModalComponent } from './components/score-view-modal/score-view-modal.component';
 import { ShowJoinCodeComponent } from './components/show-join-code/show-join-code.component';
 import { ScoreRoomcastingEnvironmentComponent } from './components/score-roomcasting-environment/score-roomcasting-environment.component';
-
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 const config: SocketIoConfig = {
   url: environment.socketUrl,
@@ -138,6 +139,8 @@ export function tokenGetter() {
     ScoreViewModalComponent,
     ShowJoinCodeComponent,
     ScoreRoomcastingEnvironmentComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent,
   ],
   entryComponents: [
     ScoreViewModalComponent,

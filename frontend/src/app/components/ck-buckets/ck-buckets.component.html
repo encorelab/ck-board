@@ -12,7 +12,7 @@
     mat-icon-button
     *ngIf="user.role === Role.TEACHER"
     (click)="
-      board?.scope === BoardScope.PROJECT_SHARED
+      board.scope === BoardScope.PROJECT_SHARED
         ? copyEmbedCode()
         : copyPersonalEmbedCode()
     "

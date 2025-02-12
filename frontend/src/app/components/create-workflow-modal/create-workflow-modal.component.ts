@@ -424,10 +424,13 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
 
     // 1. Fetch all posts for the current board
     this.fetchBoardPosts().then((posts) => {
-      const prompt = this.aiPrompt;
+      const currentPrompt = this.aiPrompt;
       this.aiPrompt = ''; // Clear the prompt field
 
-      this.chatHistory.push({ role: 'user', content: prompt });
+      // Construct the complete prompt including chat history
+      const fullPromptHistory = this.constructPromptWithHistory(currentPrompt);
+
+      this.chatHistory.push({ role: 'user', content: currentPrompt });
 
       // Wait for the change detection to run and render the new message
       this.changeDetectorRef.detectChanges();
@@ -436,7 +439,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       // 2. Send data and prompt to the backend via WebSocket
       this.socketService.emit(SocketEvent.AI_MESSAGE, {
         posts,
-        prompt,
+        currentPrompt: currentPrompt,
+        fullPromptHistory: fullPromptHistory,
         boardId: this.board.boardID,
         userId: this.user.userID,
       });
@@ -505,25 +509,59 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
     this.isProcessingAIRequest = false;
   }
 
+  // Helper function to construct the prompt with chat history
+  constructPromptWithHistory(currentPrompt: string): string {
+    let fullPrompt = '';
+
+    // Add each message from the chat history to the prompt
+    this.chatHistory.forEach((message) => {
+      fullPrompt += `${message.role}: ${message.content}\n`;
+    });
+
+    // Add the current prompt at the end
+    fullPrompt += `user: ${currentPrompt}`;
+
+    return fullPrompt;
+  }
+
   downloadChatHistory() {
+    // Generate timestamp in the desired format
+    const timestamp = new Date()
+      .toLocaleDateString('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      })
+      .replace(/\//g, '-')
+      .replace(/, /g, '-');
+
+    const filename = `chat_history-${timestamp}.csv`;
+
     const data = {
       boardId: this.board.boardID,
-      userId: this.user.userID
+      userId: this.user.userID,
+      filename: filename, // Add filename to the data
     };
 
-    this.http.post('chat-history/', data, { 
-      responseType: 'blob' 
-    }).subscribe(
-      (response) => {
-        const blob = new Blob([response], { type: 'text/csv' });
-        saveAs(blob, 'chat_history.csv'); 
-        this.openSnackBar('Chat history downloaded successfully!');
-      },
-      (error) => {
-        console.error('Error downloading chat history:', error);
-        this.openSnackBar(`Error downloading chat history: ${error.message}`); 
-      }
-    );
+    this.http
+      .post('chat-history', data, {
+        responseType: 'blob',
+      })
+      .subscribe(
+        (response) => {
+          const blob = new Blob([response], { type: 'text/csv' });
+          saveAs(blob, filename);
+          this.openSnackBar('Chat history downloaded successfully!');
+        },
+        (error) => {
+          console.error('Error downloading chat history:', error);
+          this.openSnackBar(`Error downloading chat history: ${error.message}`);
+        }
+      );
   }
 
   private escapeJsonResponse(response: string): string {

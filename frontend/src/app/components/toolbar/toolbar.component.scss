@@ -13,12 +13,12 @@
 }
 
 .mat-menu-panel {  
-  min-width: 250px !important; // Adjust as needed
+  min-width: 250px !important; 
 }
 
 // Add spacing between icons
 ::ng-deep .mat-toolbar-single-row button[mat-icon-button] {
-    margin-right: 12px;  // Adjust as needed
+    margin-right: 12px; 
 
     &:last-child {
       margin-right: 0; // Remove margin from the *last* icon button

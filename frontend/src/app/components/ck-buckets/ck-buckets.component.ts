@@ -157,6 +157,24 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
     }
   }
 
+  async refreshBuckets() {
+    //Set all the buckets to loading
+    for(let i = 0; i < this.bucketsOnView.length; i++){
+        this.bucketsOnView[i].loading = true;
+    }
+
+    // Refetch posts for each displayed bucket.
+    for (const bucket of this.bucketsOnView) {
+        const currentBucket = await this.bucketService.get(bucket.bucketID); // get bucket from the service
+        if(currentBucket){
+            bucket.posts = currentBucket.posts; // update the posts
+            bucket.htmlPosts = await this.converters.toHTMLPosts(bucket.posts); // reconvert
+        }
+        bucket.loading = false;
+
+    }
+  }
+
   dragDropPostInBucket(event: CdkDragDrop<any[]>) {
     if (event.previousContainer !== event.container) {
       const post = event.previousContainer.data[event.previousIndex].post;

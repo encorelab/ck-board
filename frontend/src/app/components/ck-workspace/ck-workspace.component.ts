@@ -5,7 +5,7 @@ import {
   OnInit,
   ViewChild,
   ViewEncapsulation,
-  HostListener
+  HostListener,
 } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,7 +28,12 @@ import { WorkflowService } from 'src/app/services/workflow.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
 import { SwiperComponent } from 'swiper/angular';
-import SwiperCore, { EffectCards, SwiperOptions, Navigation, Pagination } from 'swiper'; // Import EffectCards
+import SwiperCore, {
+  EffectCards,
+  SwiperOptions,
+  Navigation,
+  Pagination,
+} from 'swiper'; // Import EffectCards
 import { HTMLPost } from '../html-post/html-post.component';
 import { Group } from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
@@ -47,7 +52,7 @@ import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { GroupTaskService } from 'src/app/services/groupTask.service';
 
-// install Swiper modules.  
+// install Swiper modules.
 SwiperCore.use([EffectCards, Navigation, Pagination]);
 
 @Component({
@@ -127,36 +132,36 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.updateSidenavState(); // Set initial sidenav state based on screen size.
   }
 
-
   ngOnInit(): void {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
     this.loadWorkspaceData();
   }
 
-    @HostListener('window:resize', ['$event'])
-    onResize(event) {
-      this.updateSidenavState();
-    }
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    this.updateSidenavState();
+  }
 
-    updateSidenavState() {
-        const wideWidth = window.innerWidth > 768
-        this.isSidenavOpen = wideWidth; // Or whatever breakpoint you prefer
-        this.showExpandIcon = !wideWidth;
+  updateSidenavState() {
+    const wideWidth = window.innerWidth > 768;
+    this.isSidenavOpen = wideWidth; // Or whatever breakpoint you prefer
+    this.showExpandIcon = !wideWidth;
 
-        // Force open on mobile, on initial load/refresh ONLY
-        if (!wideWidth) {  // If it's a mobile screen
-          this.isSidenavOpen = true; // Set it to open
-          this.showExpandIcon = false;
-        }
+    // Force open on mobile, on initial load/refresh ONLY
+    if (!wideWidth) {
+      // If it's a mobile screen
+      this.isSidenavOpen = true; // Set it to open
+      this.showExpandIcon = false;
     }
+  }
 
-    toggleSidenav() {
-        this.isSidenavOpen = !this.isSidenavOpen;
-        if(window.innerWidth <= 768){
-            this.showExpandIcon = !this.isSidenavOpen;
-        }
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;
+    if (window.innerWidth <= 768) {
+      this.showExpandIcon = !this.isSidenavOpen;
     }
+  }
 
   async loadWorkspaceData(): Promise<boolean> {
     const map = this.activatedRoute.snapshot.paramMap;
@@ -183,7 +188,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     if (!this.isTeacher && !this.board.viewSettings?.allowWorkspace) {
       this.router.navigateByUrl(
-        `project/<span class="math-inline">\{projectID\}/board/</span>{boardID}/${this.board.defaultView?.toLowerCase()}`
+        `project/<span class="math-inline">{projectID}/board/</span>{boardID}/${this.board.defaultView?.toLowerCase()}`
       );
     }
 
@@ -201,43 +206,43 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     return true;
   }
 
-    async refreshWorkspace() {
-        this.loading = true;
+  async refreshWorkspace() {
+    this.loading = true;
 
-        // Clear existing data
-        this.inactiveGroupTasks = [];
-        this.activeGroupTasks = [];
-        this.completeGroupTasks = [];
-        this.runningGroupTask = null;
-        this.posts = [];
-        this.submittedPosts = [];
-        this.members = [];
+    // Clear existing data
+    this.inactiveGroupTasks = [];
+    this.activeGroupTasks = [];
+    this.completeGroupTasks = [];
+    this.runningGroupTask = null;
+    this.posts = [];
+    this.submittedPosts = [];
+    this.members = [];
 
-        // Reload workspace data
-        await this.loadWorkspaceData(); // Re-fetches and populates tasks.
+    // Reload workspace data
+    await this.loadWorkspaceData(); // Re-fetches and populates tasks.
 
-        this.loading = false;
+    this.loading = false;
+  }
+
+  async begin(expandedGroupTask: ExpandedGroupTask): Promise<void> {
+    const groupTask = expandedGroupTask.groupTask;
+    groupTask.status = GroupTaskStatus.ACTIVE;
+    await this.workflowService.updateGroupTask(groupTask.groupTaskID, {
+      status: GroupTaskStatus.ACTIVE,
+    });
+
+    this.inactiveGroupTasks = this.inactiveGroupTasks.filter(
+      (g) => g.groupTask.groupTaskID !== groupTask.groupTaskID
+    );
+    this.activeGroupTasks.push(expandedGroupTask);
+    this.view(expandedGroupTask);
+
+    // Close sidenav on mobile
+    if (window.innerWidth <= 768) {
+      this.isSidenavOpen = false;
+      this.showExpandIcon = true;
     }
-
-    async begin(expandedGroupTask: ExpandedGroupTask): Promise<void> {
-      const groupTask = expandedGroupTask.groupTask;
-      groupTask.status = GroupTaskStatus.ACTIVE;
-      await this.workflowService.updateGroupTask(groupTask.groupTaskID, {
-        status: GroupTaskStatus.ACTIVE,
-      });
-  
-      this.inactiveGroupTasks = this.inactiveGroupTasks.filter(
-        (g) => g.groupTask.groupTaskID !== groupTask.groupTaskID
-      );
-      this.activeGroupTasks.push(expandedGroupTask);
-      this.view(expandedGroupTask);
-  
-      // Close sidenav on mobile
-      if (window.innerWidth <= 768) {
-          this.isSidenavOpen = false;
-          this.showExpandIcon = true;
-      }
-    }
+  }
 
   async view(groupTask: ExpandedGroupTask): Promise<void> {
     this.loading = true;

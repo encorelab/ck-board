@@ -630,7 +630,6 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (!(isStudentAndVisible || IsTeacherAndVisisble)) {
       this.updateAuthorNames(post.postID, 'Anonymous');
     } else {
-      console.log('can');
       this.userService.getOneById(post.userID).then((user: any) => {
         this.updateAuthorNames(post.postID, user.username);
       });

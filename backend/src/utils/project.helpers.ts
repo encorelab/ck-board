@@ -17,6 +17,21 @@ import {
   getDefaultBoardPermissions,
   getDefaultBoardTags,
 } from './board.helpers';
+import dalWorkflow from '../repository/dalWorkflow';
+import dalGroupTask from '../repository/dalGroupTask';
+import {
+  ContainerType,
+  TaskAction,
+  TaskActionType,
+  TaskWorkflowType,
+} from '../models/Workflow';
+import dalPost from '../repository/dalPost';
+import { PostType } from '../models/Post';
+import { BucketModel } from '../models/Bucket';
+import dalBucket from '../repository/dalBucket';
+import { distribute, shuffle } from './workflow.helpers';
+import { GroupTaskModel, GroupTaskStatus } from '../models/GroupTask';
+import { generateUniqueID } from './Utils';
 
 export async function addUserToProject(
   user: UserModel,
@@ -91,6 +106,102 @@ export async function addUserToProject(
       await dalLearnerModel.addDimensionValues(model.modelID, dimValues);
     }
   }
-
   return updatedProject;
+}
+
+export async function addUserToWorkflows(groupID: string, userID: string) {
+  console.log('in the helper function');
+  const workflows = await dalWorkflow.getAllByGroupId(groupID);
+  console.log(workflows);
+  for (const workflow of workflows) {
+    if (!workflow.active) return;
+    let taskExists = true;
+    const groupTask = await dalGroupTask.getByWorkflowGroup(
+      groupID,
+      workflow.workflowID,
+      userID
+    );
+    console.log(groupTask);
+    if (groupTask === null) {
+      taskExists = false;
+    }
+    console.log(taskExists);
+    if (!taskExists) {
+      console.log('task doesnt exist');
+      const source = workflow.source;
+      const assignedIndividual = workflow.assignedIndividual;
+      let posts: string[] = [];
+      const progress: Map<string, TaskAction[]> = new Map<
+        string,
+        TaskAction[]
+      >();
+      if (workflow.type != TaskWorkflowType.GENERATION) {
+        let sourcePosts;
+        if (source.type == ContainerType.BOARD) {
+          sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
+          sourcePosts = sourcePosts.map((p) => p.postID);
+        } else {
+          const bucket = await dalBucket.getById(source.id);
+          sourcePosts = bucket ? bucket.posts : [];
+        }
+
+        // if (taskWorkflow?.type === TaskWorkflowType.GENERATION) sourcePosts = [];
+        const commentAction = workflow.requiredActions.find(
+          (a) => a.type == TaskActionType.COMMENT
+        );
+        const tagAction = workflow.requiredActions.find(
+          (a) => a.type == TaskActionType.TAG
+        );
+        const createPostAction = workflow.requiredActions.find(
+          (a) => a.type == TaskActionType.CREATE_POST
+        );
+
+        const actions: TaskAction[] = [];
+        if (commentAction)
+          actions.push({
+            type: TaskActionType.COMMENT,
+            amountRequired: commentAction.amountRequired,
+          });
+        if (tagAction)
+          actions.push({
+            type: TaskActionType.TAG,
+            amountRequired: tagAction.amountRequired,
+          });
+        if (!assignedIndividual) return;
+        const split = await distribute(
+          shuffle(sourcePosts),
+          sourcePosts.length / assignedIndividual.members.length
+        );
+        posts = split[0];
+        posts.forEach((post) => {
+          progress.set(post, actions);
+        });
+      }
+      console.log(
+        'groupID:',
+        groupID,
+        'workflowID:',
+        workflow.workflowID,
+        'posts:',
+        posts,
+        'progress:',
+        progress,
+        'userID:',
+        userID,
+        'status:',
+        GroupTaskStatus.INACTIVE
+      );
+      const newGroupTask: GroupTaskModel = {
+        groupTaskID: generateUniqueID(),
+        groupID: groupID,
+        workflowID: workflow.workflowID,
+        posts: posts,
+        progress: progress,
+        userID: userID,
+        status: GroupTaskStatus.INACTIVE,
+      };
+      console.log(newGroupTask);
+      await dalGroupTask.create(newGroupTask);
+    }
+  }
 }

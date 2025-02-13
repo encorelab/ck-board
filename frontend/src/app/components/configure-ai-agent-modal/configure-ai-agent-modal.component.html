@@ -1,0 +1,64 @@
+<h1 mat-dialog-title>Configure AI Agent: {{ agentInstance.name }}</h1>
+<div mat-dialog-content>
+    <form [formGroup]="agentForm" (ngSubmit)="onSubmit()">
+        <div *ngFor="let field of sortedFieldConfigs">
+            <ng-container *ngIf="agentConfig[field[0]].editable">
+                <mat-form-field appearance="outline" style="width: 100%;" *ngIf="agentConfig[field[0]].type === 'string'">
+                    <mat-label>{{ agentConfig[field[0]].label }}</mat-label>
+                    <input matInput [formControlName]="field[0]">
+                    <mat-error *ngIf="getControl(field[0])?.hasError('required')">
+                        {{ agentConfig[field[0]].label }} is required.
+                    </mat-error>
+                    <mat-hint *ngIf="agentConfig[field[0]].tooltip">{{ agentConfig[field[0]].tooltip }}</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" style="width: 100%;" *ngIf="agentConfig[field[0]].type === 'number'">
+                    <mat-label>{{ agentConfig[field[0]].label }}</mat-label>
+                    <input matInput type="number" [formControlName]="field[0]">
+                    <mat-error *ngIf="getControl(field[0])?.hasError('required')">
+                        {{ agentConfig[field[0]].label }} is required.
+                    </mat-error>
+                    <mat-hint *ngIf="agentConfig[field[0]].tooltip">{{ agentConfig[field[0]].tooltip }}</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" style="width: 100%;" *ngIf="agentConfig[field[0]].type === 'boolean'">
+                    <mat-label>{{ agentConfig[field[0]].label }}</mat-label>
+                    <mat-select [formControlName]="field[0]">
+                        <mat-option *ngFor="let option of getOptions(field[0])" [value]="option.value">
+                            {{ option.label }}
+                        </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="getControl(field[0])?.hasError('required')">
+                        {{ agentConfig[field[0]].label }} is required.
+                    </mat-error>
+                    <mat-hint *ngIf="agentConfig[field[0]].tooltip">{{ agentConfig[field[0]].tooltip }}</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" style="width: 100%;" *ngIf="agentConfig[field[0]].type === 'string[]'">
+                    <mat-label>{{ agentConfig[field[0]].label }}</mat-label>
+                    <mat-select [formControlName]="field[0]" multiple>
+                        <mat-option *ngFor="let option of getOptions(field[0])" [value]="option.value">
+                            {{ option.label }}
+                        </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="getControl(field[0])?.hasError('required')">
+                        {{ agentConfig[field[0]].label }} is required.
+                    </mat-error>
+                    <mat-error *ngIf="getControl(field[0])?.hasError('invalidWorkflowId')">
+                        Invalid workflow ID(s) selected.
+                    </mat-error>
+                    <mat-error *ngIf="getControl(field[0])?.hasError('apiError')">
+                        Server Error.
+                    </mat-error>
+                    <mat-hint *ngIf="agentConfig[field[0]].tooltip">{{ agentConfig[field[0]].tooltip }}</mat-hint>
+                </mat-form-field>
+            </ng-container>
+
+            </div>
+
+        <div mat-dialog-actions>
+            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+            <button mat-button type="submit" [disabled]="!agentForm.valid">Save</button>
+        </div>
+    </form>
+</div>

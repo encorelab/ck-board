@@ -1,0 +1,29 @@
+// src/app/components/show-join-code/show-join-code.component.scss
+
+.join-code {
+  font-size: 6em;
+  font-weight: bold;
+  text-align: center;
+  word-break: break-all;
+  margin-top: 1rem;
+}
+
+.server-url {
+  // Style for the server URL
+  font-size: 2em;
+  text-align: center;
+  margin-bottom: 3rem; // Add space below the URL
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 24px 24px 0px 24px;
+}
+
+.mat-dialog-actions {
+  margin-bottom: 12px;
+}

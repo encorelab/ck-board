@@ -64,6 +64,16 @@ import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component
 import { ToolbarMenuComponent } from './components/toolbar-menu/toolbar-menu.component';
 import { ViewNavigationComponent } from './components/view-navigation/view-navigation.component';
 import { MarkdownModule } from 'ngx-markdown';
+import { AddScoreRunModalComponent } from './components/add-score-run-modal/add-score-run-modal.component';
+import { ScoreAuthoringComponent } from './components/score-authoring/score-authoring.component';
+import { CreateActivityModalComponent } from './components/create-activity-modal/create-activity-modal.component';
+import { EditActivityModalComponent } from './components/edit-activity-modal/edit-activity-modal.component';
+import { SelectWorkflowModalComponent } from './components/select-workflow-modal/select-workflow-modal.component';
+import { ConfigureAiAgentModalComponent } from './components/configure-ai-agent-modal/configure-ai-agent-modal.component';
+import { CustomTeacherPromptModalComponent } from './components/custom-teacher-prompt-modal/custom-teacher-prompt-modal.component';
+import { ScoreViewModalComponent } from './components/score-view-modal/score-view-modal.component';
+import { ShowJoinCodeComponent } from './components/show-join-code/show-join-code.component';
+import { ScoreRoomcastingEnvironmentComponent } from './components/score-roomcasting-environment/score-roomcasting-environment.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
@@ -119,8 +129,21 @@ export function tokenGetter() {
     CkBucketsComponent,
     ToolbarMenuComponent,
     ViewNavigationComponent,
+    AddScoreRunModalComponent,
+    ScoreAuthoringComponent,
+    CreateActivityModalComponent,
+    EditActivityModalComponent,
+    SelectWorkflowModalComponent,
+    ConfigureAiAgentModalComponent,
+    CustomTeacherPromptModalComponent,
+    ScoreViewModalComponent,
+    ShowJoinCodeComponent,
+    ScoreRoomcastingEnvironmentComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
+  ],
+  entryComponents: [
+    ScoreViewModalComponent,
   ],
   imports: [
     BrowserModule,

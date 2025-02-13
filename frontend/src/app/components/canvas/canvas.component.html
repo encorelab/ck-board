@@ -1,6 +1,6 @@
 <div>
   <div>
-    <app-toolbar *ngIf="user && board && !embedded" [user]="user">
+    <app-toolbar *ngIf="user && board && !embedded && !isModalView" [user]="user">
       <button
         mat-icon-button
         routerLink="{{ '/project/' + projectID }}"

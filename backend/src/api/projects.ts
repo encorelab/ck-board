@@ -24,13 +24,16 @@ router.post('/', async (req, res) => {
     return res.status(403).end('Unauthorized to create project.');
   }
 
+  // Set isScoreRun to false if not provided
+  project.isScoreRun = project.isScoreRun || false; 
+
   let savedProject = await dalProject.create(project);
   if (project.personalBoardSetting.enabled) {
     const image = project.personalBoardSetting.bgImage;
-    const boardID = new mongo.ObjectId().toString();
-    const board = await dalBoard.create({
+    const personalBoardID = new mongo.ObjectId().toString();
+    const personalBoard = await dalBoard.create({
       projectID: project.projectID,
-      boardID: boardID,
+      boardID: personalBoardID,
       ownerID: user.userID,
       name: `${user.username}'s Personal Board`,
       scope: BoardScope.PROJECT_PERSONAL,
@@ -38,14 +41,36 @@ router.post('/', async (req, res) => {
       permissions: getDefaultBoardPermissions(),
       bgImage: image,
       type: BoardType.BRAINSTORMING,
-      tags: getDefaultBoardTags(boardID),
+      tags: getDefaultBoardTags(personalBoardID),
       initialZoom: 100,
       upvoteLimit: 5,
       visible: true,
       defaultView: ViewType.CANVAS,
       viewSettings: getAllViewsAllowed(),
     });
-    savedProject = await savedProject.updateOne({ boards: [board.boardID] });
+    savedProject = await savedProject.updateOne({ boards: [personalBoard.boardID] });
+
+    // --- Create default shared board ---
+    const communityBoardID = new mongo.ObjectId().toString();
+    const communityBoard = await dalBoard.create({
+      projectID: savedProject.projectID, // Use the saved project's ID
+      boardID: communityBoardID,
+      ownerID: user.userID, 
+      name: 'Demo Community Board', // Or any default name you prefer
+      scope: BoardScope.PROJECT_SHARED,
+      task: undefined,
+      permissions: getDefaultBoardPermissions(),
+      bgImage: undefined, 
+      type: BoardType.BRAINSTORMING, // Or another default type
+      tags: getDefaultBoardTags(communityBoardID),
+      initialZoom: 100,
+      upvoteLimit: 5,
+      visible: true,
+      defaultView: ViewType.CANVAS,
+      viewSettings: getAllViewsAllowed(),
+    });
+    // Add the board to the project's boards array
+    savedProject = await savedProject.updateOne({ $push: { boards: communityBoard.boardID } }); 
   }
 
   res.status(200).json(savedProject);

@@ -2,6 +2,7 @@ import { ComponentType } from '@angular/cdk/overlay';
 import {
   Component,
   OnDestroy,
+  Input,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -65,6 +66,11 @@ SwiperCore.use([EffectCards, Navigation, Pagination]);
 export class CkWorkspaceComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
 
+  @Input() isModalView = false;
+  @Input() projectID: string; 
+  @Input() boardID: string;  
+  @Input() embedded: boolean = false;
+
   loading = false;
 
   showInactive = true;
@@ -95,7 +101,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   TaskActionType: typeof TaskActionType = TaskActionType;
   TaskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
-  embedded: boolean = false; // If standalone board embed
   viewType = ViewType.WORKSPACE;
   isTeacher: boolean = false;
   isSidenavOpen: boolean = true; // Control the sidenav's open/closed state
@@ -133,10 +138,29 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.updateSidenavState(); // Set initial sidenav state based on screen size.
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
-    this.loadWorkspaceData();
+    // Prioritize Input properties.  If they are provided, use them.
+    if (this.projectID && this.boardID) {
+        await this.loadWorkspaceData(); // Load with Input IDs
+        this.socketService.connect(this.user.userID, this.boardID); //Moved to after board loaded
+    } else {
+      // Fallback to ActivatedRoute ONLY if inputs are not provided.
+       this.activatedRoute.paramMap.subscribe(async params => {
+        this.boardID = params.get('boardID')!;
+        this.projectID = params.get('projectID')!;
+
+        if (!this.boardID || !this.projectID) {
+          console.error("Missing boardID or projectID in route parameters");
+          this.router.navigate(['/error']); // Redirect to an error page
+          return; // Stop execution
+        }
+
+        await this.loadWorkspaceData();
+        this.socketService.connect(this.user.userID, this.boardID);
+       });
+    }
   }
 
   @HostListener('window:resize', ['$event'])
@@ -164,36 +188,41 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     }
   }
 
-  async loadWorkspaceData(): Promise<boolean> {
-    const map = this.activatedRoute.snapshot.paramMap;
-    let boardID: string, projectID: string;
 
-    if (map.has('boardID') && map.has('projectID')) {
-      boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-      projectID = this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-    } else {
-      return this.router.navigate(['error']);
+  async loadWorkspaceData(): Promise<boolean> {
+    // No longer need to get from route since we prioritize inputs
+    if (!this.boardID || !this.projectID) {
+        console.error("boardId or projectId is null");
+        return false;
     }
 
-    const fetchedBoard = await this.boardService.get(boardID);
+    const fetchedBoard = await this.boardService.get(this.boardID);
     if (!fetchedBoard) {
+      console.error("board not found")
       this.router.navigate(['error']);
       return false;
     }
     this.board = fetchedBoard;
-    this.project = await this.projectService.get(projectID);
-    this.group = await this.groupService.getByProjectUser(
-      projectID,
-      this.user.userID
-    );
+    this.project = await this.projectService.get(this.projectID);
+    //get group may return undefined.
+    try {
+        this.group = await this.groupService.getByProjectUser(
+          this.projectID,
+          this.user.userID
+        );
+    }
+    catch (error: any)
+    {
+        console.error("Could not fetch group");
+    }
 
     if (!this.isTeacher && !this.board.viewSettings?.allowWorkspace) {
       this.router.navigateByUrl(
-        `project/<span class="math-inline">{projectID}/board/</span>{boardID}/${this.board.defaultView?.toLowerCase()}`
+        `project/<span class="math-inline">{this.projectID}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
       );
     }
 
-    const tasks = await this.workflowService.getGroupTasks(boardID, 'expanded');
+    const tasks = await this.workflowService.getGroupTasks(this.boardID, 'expanded');
     tasks.forEach((t) => {
       if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
         this.inactiveGroupTasks.push(t);
@@ -203,7 +232,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.completeGroupTasks.push(t);
       }
     });
-    this.socketService.connect(this.user.userID, this.board.boardID);
+
     return true;
   }
 

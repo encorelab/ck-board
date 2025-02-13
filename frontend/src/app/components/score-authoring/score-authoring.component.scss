@@ -70,7 +70,15 @@
       }
     }
   }
-  
+  .open-tools-buttons {  // Add a class to wrap the buttons
+    margin-top: 1rem;   // Add margin above the div
+
+    button { 
+      display: block;    // Make buttons stack vertically
+      width: auto;      // Make buttons take full width
+      margin-bottom: 1rem; // Add space between buttons
+    }
+  }
 }
 
 .activities-list {

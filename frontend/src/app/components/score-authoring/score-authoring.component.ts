@@ -1093,6 +1093,20 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     }
   }
 
+  openTeacherAgentModal() {
+    this.getSelectedBoard().then((board) => {
+      if (board) {
+        this._openDialog(CreateWorkflowModalComponent, { // Reuse the existing modal component
+          board: board,
+          project: this.project,
+          selectedTabIndex: 3, 
+        });
+      } else {
+        console.error('Selected board is undefined');
+      }
+    });
+  }
+
   showJoinCode(task: TeacherTask) {
     const dialogRef = this.dialog.open(ShowJoinCodeComponent, {
       width: '800px',

@@ -177,7 +177,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     if (!this.isTeacher && !this.board.viewSettings?.allowWorkspace) {
       this.router.navigateByUrl(
-        `project/<span class="math-inline">\{this\.projectID\}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
+        `project/<span class="math-inline">{this.projectID}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
       );
     }
 

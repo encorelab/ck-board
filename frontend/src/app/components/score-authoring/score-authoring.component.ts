@@ -1053,11 +1053,12 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         componentType,
         project,
         board,
-        user: this.user,
-        projectID: project.projectID,
-        boardID: board.boardID,
+        user: this.user
       },
     });
+
+    dialogRef.componentInstance.projectID = project.projectID;
+    dialogRef.componentInstance.boardID = board.boardID;
 
     dialogRef.afterClosed().subscribe((result) => {
       // Handle any actions after closing the modal (if needed)

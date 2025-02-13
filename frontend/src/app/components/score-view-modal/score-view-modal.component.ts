@@ -7,7 +7,8 @@ import {
   ComponentFactoryResolver,
   OnDestroy,
   AfterViewInit,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  Input
 } from '@angular/core';
 import {
   MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
@@ -31,48 +32,14 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
   selector: 'app-score-view-modal',
   templateUrl: './score-view-modal.component.html',
   styleUrls: ['./score-view-modal.component.scss'],
-  providers: [
-    // Provide a mock ActivatedRoute
-    {
-      provide: ActivatedRoute,
-      useFactory: (data: any) => {
-        // Create a mock ActivatedRoute with defined properties
-        const mockActivatedRoute = {
-          snapshot: {
-            paramMap: {
-              get: (key: string) => {
-                switch (key) {
-                  case 'projectID':
-                    return data.projectID || null; // Return null if undefined
-                  case 'boardID':
-                    return data.boardID || null; // Return null if undefined
-                  default:
-                    return null;
-                }
-              },
-              has: (key: string) => {
-                // Check if the key exists in data
-                return data.hasOwnProperty(key);
-              },
-            },
-            queryParams: {
-              subscribe: (fn: (value: any) => void) => {
-                fn({}); // Provide mock queryParams
-                return { unsubscribe: () => {} }; // Return a dummy subscription
-              },
-            },
-          },
-          queryParams: new Subject<any>(),
-        };
-        return mockActivatedRoute;
-      },
-      deps: [MAT_DIALOG_DATA], // Inject MAT_DIALOG_DATA as a dependency
-    },
-  ],
 })
 export class ScoreViewModalComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('viewContainer', { read: ViewContainerRef })
   viewContainer: ViewContainerRef;
+
+  @Input() projectID: string;
+  @Input() boardID: string;
+  @Input() isModalView: boolean = false;
 
   title = '';
   componentRef: any;
@@ -89,7 +56,6 @@ export class ScoreViewModalComponent implements OnInit, AfterViewInit, OnDestroy
     private componentFactoryResolver: ComponentFactoryResolver,
     private boardService: BoardService,
     private projectService: ProjectService,
-    private route: ActivatedRoute,
     public dialog: MatDialog,
     private cdr: ChangeDetectorRef
   ) {}
@@ -104,11 +70,6 @@ export class ScoreViewModalComponent implements OnInit, AfterViewInit, OnDestroy
     this.board = this.data.board;
     this.user = this.data.user;
     this.title = this.capitalizeFirstLetter(this.data.componentType);
-
-    // Subscribe to queryParams changes if needed
-    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
-      // Handle queryParams changes if your component logic depends on it
-    });
   }
 
   ngAfterViewInit(): void {
@@ -144,6 +105,8 @@ export class ScoreViewModalComponent implements OnInit, AfterViewInit, OnDestroy
       this.componentRef = this.viewContainer.createComponent(componentFactory);
 
       this.componentRef.instance.isModalView = true;
+      this.componentRef.instance.projectID = this.projectID;
+      this.componentRef.instance.boardID = this.boardID;
 
       if (componentToLoad === CanvasComponent) {
         this.componentRef.instance.onResize();

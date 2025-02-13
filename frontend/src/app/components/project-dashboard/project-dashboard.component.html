@@ -84,7 +84,7 @@
     <div class="score-heading">
       <div *ngIf="project"> 
         <button 
-          *ngIf="project.isScoreRun" 
+          *ngIf="user && user.role === Role.TEACHER && project.isScoreRun" 
           mat-raised-button 
           color="primary" 
           class="script-score-run-button"

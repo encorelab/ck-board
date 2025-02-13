@@ -21,6 +21,12 @@ export class UserModel {
 
   @prop({ enum: Role, type: String, required: true })
   public role!: Role;
+
+  @prop()
+  public resetPasswordToken?: string;
+
+  @prop()
+  public resetPasswordExpires?: Date;
 }
 
 export default getModelForClass(UserModel);

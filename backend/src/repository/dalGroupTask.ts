@@ -54,7 +54,6 @@ export const expandGroupTasks = async (
         groupTask: task,
         workflow: workflow,
         group: group,
-        assignmentType: workflow.assignmentType,
       };
     })
   );
@@ -101,10 +100,8 @@ export const getByBoardAndUser = async (board: string, user: string) => {
       groupID: { $in: groups },
       workflowID: { $in: workflows },
     });
-    const filteredGroupTasks = groupTasks.filter(
-      (t) => t.userID === user || !t.userID
-    );
-    return filteredGroupTasks;
+
+    return groupTasks;
   } catch (err) {
     throw new Error('500');
   }
@@ -121,21 +118,10 @@ export const getAllByWorkflowId = async (id: string) => {
 
 export const getByWorkflowGroup = async (
   workflowID: string,
-  groupID: string,
-  userID: string
+  groupID: string
 ) => {
   try {
-    let groupTask = await GroupTask.findOne({
-      workflowID: workflowID,
-      groupID: groupID,
-    });
-    if (groupTask?.userID) {
-      groupTask = await GroupTask.findOne({
-        workflowID: workflowID,
-        groupID: groupID,
-        userID: userID,
-      });
-    }
+    const groupTask = await GroupTask.findOne({ workflowID, groupID });
     return groupTask;
   } catch (err) {
     throw new Error('500');
@@ -174,21 +160,11 @@ export const update = async (
   groupTask: Partial<GroupTaskModel>
 ) => {
   try {
-    const initialGroupTask = await GroupTask.findOne({ groupTaskID: id });
-    let updatedGroupTask;
-    if (initialGroupTask?.userID) {
-      updatedGroupTask = await GroupTask.findOneAndUpdate(
-        { groupTaskID: id, userID: initialGroupTask.userID },
-        groupTask,
-        { new: true }
-      );
-    } else {
-      updatedGroupTask = await GroupTask.findOneAndUpdate(
-        { groupTaskID: id },
-        groupTask,
-        { new: true }
-      );
-    }
+    const updatedGroupTask = await GroupTask.findOneAndUpdate(
+      { groupTaskID: id },
+      groupTask,
+      { new: true }
+    );
     return updatedGroupTask;
   } catch (err) {
     throw new Error('500');
@@ -215,27 +191,15 @@ export const updateMany = async (groupTasks: GroupTaskModel[]) => {
   }
 };
 
-export const removePosts = async (
-  id: string,
-  posts: string[],
-  userID?: string
-) => {
+export const removePosts = async (id: string, posts: string[]) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    if (userID) {
-      return await GroupTask.findOneAndUpdate(
-        { groupTaskID: id, userID: userID },
-        { $pull: { posts: { $in: posts } } },
-        { new: true }
-      );
-    } else {
-      return await GroupTask.findOneAndUpdate(
-        { groupTaskID: id },
-        { $pull: { posts: { $in: posts } } },
-        { new: true }
-      );
-    }
+    return await GroupTask.findOneAndUpdate(
+      { groupTaskID: id },
+      { $pull: { posts: { $in: posts } } },
+      { new: true }
+    );
   } catch (err) {
     throw new Error('500');
   } finally {

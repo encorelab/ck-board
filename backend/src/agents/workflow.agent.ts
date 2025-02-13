@@ -14,7 +14,6 @@ import {
   DistributionWorkflowType,
   Container,
   TaskWorkflowType,
-  AssignmentType,
 } from '../models/Workflow';
 import dalBucket from '../repository/dalBucket';
 import dalPost from '../repository/dalPost';
@@ -100,12 +99,17 @@ class WorkflowManager {
     const { source, assignedGroups } = taskWorkflow;
     let sourcePosts;
     if (source.type == ContainerType.BOARD) {
-      sourcePosts = await dalPost.getByBoard(source.id, PostType.BOARD);
+      sourcePosts = await dalPost.getByBoard(source.id);
       sourcePosts = sourcePosts.map((p) => p.postID);
     } else {
       const bucket: BucketModel | null = await dalBucket.getById(source.id);
       sourcePosts = bucket ? bucket.posts : [];
     }
+
+    const split: string[][] = await distribute(
+      shuffle(sourcePosts),
+      sourcePosts.length / taskWorkflow.assignedGroups.length
+    );
 
     // if (taskWorkflow?.type === TaskWorkflowType.GENERATION) sourcePosts = [];
     const commentAction = taskWorkflow.requiredActions.find(
@@ -130,53 +134,14 @@ class WorkflowManager {
         amountRequired: tagAction.amountRequired,
       });
 
-    const assignmentType = taskWorkflow.assignmentType;
-    if (assignmentType === AssignmentType.GROUP) {
-      const split: string[][] = await distribute(
-        shuffle(sourcePosts),
-        sourcePosts.length / taskWorkflow.assignedGroups.length
-      );
-      if (assignedGroups.length > 0) {
-        for (let i = 0; i < assignedGroups.length; i++) {
-          const assignedGroup = assignedGroups[i];
-          const posts =
-            taskWorkflow?.type === TaskWorkflowType.GENERATION
-              ? []
-              : split[i] ?? [];
-
-          const progress: Map<string, TaskAction[]> = new Map<
-            string,
-            TaskAction[]
-          >();
-          posts.forEach((post) => {
-            progress.set(post, actions);
-          });
-
-          const groupTask: GroupTaskModel = {
-            groupTaskID: new mongo.ObjectId().toString(),
-            groupID: assignedGroup,
-            workflowID: taskWorkflow.workflowID,
-            posts: posts,
-            progress: progress,
-            status: GroupTaskStatus.INACTIVE,
-          };
-
-          await dalGroupTask.create(groupTask);
-        }
-      }
-    } else if (assignmentType === AssignmentType.INDIVIDUAL) {
-      const assignedIndividual = taskWorkflow.assignedIndividual;
-      if (!assignedIndividual) return;
-      const split: string[][] = await distribute(
-        shuffle(sourcePosts),
-        sourcePosts.length / assignedIndividual.members.length
-      );
-      for (let i = 0; i < assignedIndividual?.members.length; i++) {
-        const assignedMember = assignedIndividual.members[i];
+    if (assignedGroups.length > 0) {
+      for (let i = 0; i < assignedGroups.length; i++) {
+        const assignedGroup = assignedGroups[i];
         const posts =
           taskWorkflow?.type === TaskWorkflowType.GENERATION
             ? []
             : split[i] ?? [];
+
         const progress: Map<string, TaskAction[]> = new Map<
           string,
           TaskAction[]
@@ -184,10 +149,10 @@ class WorkflowManager {
         posts.forEach((post) => {
           progress.set(post, actions);
         });
+
         const groupTask: GroupTaskModel = {
           groupTaskID: new mongo.ObjectId().toString(),
-          groupID: assignedIndividual.groupID,
-          userID: assignedMember,
+          groupID: assignedGroup,
           workflowID: taskWorkflow.workflowID,
           posts: posts,
           progress: progress,

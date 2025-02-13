@@ -1,4 +1,5 @@
 @import './../../../../node_modules/swiper/swiper.min.css';
+@import './../../../../node_modules/swiper/swiper-bundle.min.css'; // Import Swiper styles.
 
 .spinner {
   margin: 70px auto;
@@ -6,7 +7,7 @@
 }
 
 .toolbar {
-  width: 100%; 
+  width: 100%;
   position: fixed;
   top: 0;
   left: 0;
@@ -18,95 +19,31 @@
   color: gray;
 }
 
-.heading {
-  font-size: 24px;
-  font-weight: bold;
-  color: grey;
-}
-
-.no-workflow-select {
-  position: absolute; 
-  top: 30%; 
-  left: 40%;
-}
-
-.no-posts {
-  width: 380px;
-  height: 100%;
-
-  margin: 150px 70px 0px 50px;
+.no-task-selected {
+  margin-top: 20px; 
   text-align: center;
+  width: 100%;
+  font-size: 24px;    
+  font-weight: bold; 
+  color: #666; 
 }
 
-.swiper {
-  width: 380px;
-  height: 100%;
 
-  margin: 30px 70px 0px 50px;
+.no-posts-message {
+  width: 100%;
+  text-align: center;
+  color: gray;
+  margin-top: 20px;
 }
 
-.swiper-slide {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 18px;
-  font-size: 22px;
-  font-weight: bold;
-  color: #fff;
-
-  padding: 15px 0px;
-}
-
-.swiper-slide:nth-child(1n) {
-  background-color: rgb(10, 184, 111);
-}
-
-.swiper-slide:nth-child(2n) {
-  background-color: rgb(211, 122, 7);
-}
-
-.swiper-slide:nth-child(3n) {
-  background-color: rgb(118, 163, 12);
-}
-
-.swiper-slide:nth-child(4n) {
-  background-color: rgb(0, 68, 255);
-}
-
-.swiper-slide:nth-child(5n) {
-  background-color: rgb(35, 99, 19);
-}
-
-.swiper-slide:nth-child(6n) {
-  background-color: rgb(218, 12, 218);
-}
-
-.swiper-slide:nth-child(7n) {
-  background-color: rgb(54, 94, 77);
-} 
-
-.ck-workspace-drawer-container {
+.drawer-container {
   position: absolute;
-  padding-top: 56px;
   left: 0;
   right: 0;
   bottom: 0;
+  top: 0;
   overflow: auto;
-
-  &.modal-view {
-    // Styles for when the component is inside a modal
-    position: relative; // Reset to default
-    height: 100%; // Take up full height of parent (dialog content)
-    overflow: auto;
-
-    mat-sidenav-content {
-      height: 100%;
-    }
-  }
-
-  @media (min-width: breakpoint('sm', 'min')) {
-    padding-top: 64px;
-  }
+  height: calc(100vh);
 }
 
 .subheader-button {
@@ -114,34 +51,149 @@
   text-align: left !important;
 }
 
-.ck-workspace-drawer-container {
-  mat-sidenav {
-    width: 30%;
-    height: 100%;
+mat-sidenav {
+  height: 100%; /*  Fill the container */
+
+  /* Use media queries for responsive width */
+  width: 90%; /* Default to 90% for mobile */
+
+  @media (max-width: 599px) {
+     width: 100%;
   }
-  
-  mat-sidenav-content {
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  
-    min-height: 90vh;
-    overflow: hidden;
+
+  @media (min-width: 600px) { /* 'sm' breakpoint and up */
+    width: 30%;  /* 30% on desktop */
   }
 }
 
+mat-sidenav-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+
+    padding-top: 64px;
+
+      @media (max-width: 599px) {
+        padding-top: 56px;
+    }
+
+}
+
+
 .workflow-create-post{
-  margin: 0; 
-  padding: 0; 
-  line-height: inherit; 
-  height: inherit;
-  margin: 20px;
+  background-color: #6c63ff;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+.task-view {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.task-title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.task-prompt {
+    font-size: 18px;
+    font-weight: normal;
+    text-align: center;
+    color: gray;
+}
+
+.task-requirements {
+    ul {
+        list-style-position: inside;
+        padding-left: 0;
+        text-align: center;
+        font-weight: bold;
+
+    }
+}
+
+.progress-bars {
+    width: 100%;
+    max-width: 600px;
+
+    > div {
+      margin-bottom: 10px;
+    }
+
+    > div:last-child { // Target the *last* div child
+      margin-bottom: 40px; // Add margin ONLY to the last one
+    }
+}
+
+.view-toggle-buttons{
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.swiper-container {
+  width: 60%;
+  max-width: 600px; /*  Keep the max-width  */
+  // ADD THIS:
+  margin-left: auto;  
+  margin-right: auto;
+  position: relative;
+}
+
+.create-post-fab {
+  position: absolute !important;   // Position absolutely within the container
+  bottom: 100px;    
+  right: 40px;     
+  z-index: 10;       // Ensure it's above the cards
   background-color: #6c63ff;
 }
 
-.create-post-button-container{
+
+::ng-deep .mat-toolbar-single-row button[mat-icon-button] {
+  z-index: 3;
+}
+
+// Target the app-html-post component *inside* the Swiper slides.
+::ng-deep .swiper-slide app-html-post {
+  width: 100%;       // Make sure it takes the full width of its container.
+  max-width: 100%;  // Prevent it from exceeding the container.
+  box-sizing: border-box; // Include padding and border in the width calculation.
+}
+
+.refresh-button-container {
+  width: 100%;
   display: flex;
-  justify-content: flex-end;
-  margin-right: 20px;
+  margin-top: 1rem;
+  align-items: center; // Vertical alignment
+  justify-content: space-between; // Key for positioning
+}
+
+.group-info-and-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 3rem; 
+  gap: 1rem;
+    .group-info {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+      .group-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      .group-members {
+          list-style-position: inside;
+          padding-left: 0;
+      }
+  }
 }

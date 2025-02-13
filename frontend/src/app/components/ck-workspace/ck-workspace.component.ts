@@ -6,6 +6,7 @@ import {
   OnInit,
   ViewChild,
   ViewEncapsulation,
+  HostListener,
 } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,15 +30,18 @@ import { WorkflowService } from 'src/app/services/workflow.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
 import { SwiperComponent } from 'swiper/angular';
-import SwiperCore, { EffectCards } from 'swiper';
+import SwiperCore, {
+  EffectCards,
+  SwiperOptions,
+  Navigation,
+  Pagination,
+} from 'swiper'; // Import EffectCards
 import { HTMLPost } from '../html-post/html-post.component';
 import { Group } from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
 import Converters from 'src/app/utils/converters';
 import { PostService } from 'src/app/services/post.service';
 import {
-  NEEDS_ATTENTION_TAG,
-  POST_TAGGED_BORDER_THICKNESS,
   STUDENT_POST_COLOR,
   TEACHER_POST_COLOR,
   SocketEvent,
@@ -50,8 +54,8 @@ import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { GroupTaskService } from 'src/app/services/groupTask.service';
 
-// install Swiper modules
-SwiperCore.use([EffectCards]);
+// install Swiper modules.
+SwiperCore.use([EffectCards, Navigation, Pagination]);
 
 @Component({
   selector: 'app-ck-workspace',
@@ -99,6 +103,16 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
   viewType = ViewType.WORKSPACE;
   isTeacher: boolean = false;
+  isSidenavOpen: boolean = true; // Control the sidenav's open/closed state
+  showExpandIcon: boolean = false;
+
+  // Swiper configuration for responsiveness and card effect
+  swiperConfig: SwiperOptions = {
+    effect: 'cards', // Use the cards effect
+    grabCursor: true,
+    navigation: true, // Keep navigation
+    pagination: { clickable: true }, // Keep pagination
+  };
 
   constructor(
     public userService: UserService,
@@ -121,6 +135,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.embedded = true;
       }
     });
+    this.updateSidenavState(); // Set initial sidenav state based on screen size.
   }
 
   async ngOnInit(): Promise<void> {
@@ -145,6 +160,31 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         await this.loadWorkspaceData();
         this.socketService.connect(this.user.userID, this.boardID);
        });
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    this.updateSidenavState();
+  }
+
+  updateSidenavState() {
+    const wideWidth = window.innerWidth > 768;
+    this.isSidenavOpen = wideWidth; // Or whatever breakpoint you prefer
+    this.showExpandIcon = !wideWidth;
+
+    // Force open on mobile, on initial load/refresh ONLY
+    if (!wideWidth) {
+      // If it's a mobile screen
+      this.isSidenavOpen = true; // Set it to open
+      this.showExpandIcon = false;
+    }
+  }
+
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;
+    if (window.innerWidth <= 768) {
+      this.showExpandIcon = !this.isSidenavOpen;
     }
   }
 
@@ -196,6 +236,24 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     return true;
   }
 
+  async refreshWorkspace() {
+    this.loading = true;
+
+    // Clear existing data
+    this.inactiveGroupTasks = [];
+    this.activeGroupTasks = [];
+    this.completeGroupTasks = [];
+    this.runningGroupTask = null;
+    this.posts = [];
+    this.submittedPosts = [];
+    this.members = [];
+
+    // Reload workspace data
+    await this.loadWorkspaceData(); // Re-fetches and populates tasks.
+
+    this.loading = false;
+  }
+
   async begin(expandedGroupTask: ExpandedGroupTask): Promise<void> {
     const groupTask = expandedGroupTask.groupTask;
     groupTask.status = GroupTaskStatus.ACTIVE;
@@ -208,6 +266,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
     this.activeGroupTasks.push(expandedGroupTask);
     this.view(expandedGroupTask);
+
+    // Close sidenav on mobile
+    if (window.innerWidth <= 768) {
+      this.isSidenavOpen = false;
+      this.showExpandIcon = true;
+    }
   }
 
   async view(groupTask: ExpandedGroupTask): Promise<void> {
@@ -245,6 +309,13 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.members = await this.userService.getMultipleByIds(
       groupTask.group.members
     );
+
+    // Close sidenav on mobile
+    if (window.innerWidth <= 768) {
+      this.isSidenavOpen = false;
+      this.showExpandIcon = true;
+    }
+
     this.loading = false;
     // Show submitted posts by default in generative task workflow
     if (this.runningGroupTask.workflow.type === TaskWorkflowType.GENERATION) {

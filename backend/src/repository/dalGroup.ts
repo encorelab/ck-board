@@ -1,4 +1,6 @@
 import Group, { GroupModel } from '../models/Group';
+import { Role } from '../models/User';
+import dalUser from './dalUser';
 
 export const getById = async (id: string) => {
   try {
@@ -45,6 +47,15 @@ export const getByProjectUser = async (projectID: string, userID: string) => {
     return group;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getAllStudentsGroup = async (projectID: string) => {
+  try {
+      const group = await Group.findOne({ projectID, name: "All Students", isDefault: true });
+      return group;
+  } catch (err) {
+      throw new Error(JSON.stringify(err, null, ' '));
   }
 };
 
@@ -116,6 +127,7 @@ const dalGroup = {
   remove,
   removeUser,
   update,
+  getAllStudentsGroup,
 };
 
 export default dalGroup;

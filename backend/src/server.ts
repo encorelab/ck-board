@@ -23,6 +23,7 @@ import { isAuthenticated } from './utils/auth';
 import RedisClient from './utils/redis';
 import aiRouter from './api/ai';
 import chatHistoryRouter from './api/chatHistory';
+import groupTasks from './api/groupTasks';
 dotenv.config();
 
 const port = process.env.PORT || 8001;
@@ -58,6 +59,7 @@ app.use('/api/projects', isAuthenticated, projects);
 app.use('/api/boards', isAuthenticated, boards);
 app.use('/api/buckets', isAuthenticated, buckets);
 app.use('/api/workflows', isAuthenticated, workflows);
+app.use('/api/groupTasks', isAuthenticated, groupTasks);
 app.use('/api/posts', isAuthenticated, posts);
 app.use('/api/upvotes', isAuthenticated, upvotes);
 app.use('/api/comments', isAuthenticated, comments);

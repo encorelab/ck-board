@@ -279,26 +279,9 @@
             >
           </mat-form-field>
         </div>
-        <div>
-          <mat-radio-group [(ngModel)]="assignmentType">
-            <mat-radio-button
-              style="margin-top: 20px; margin-bottom: 20px"
-              [checked]="true"
-              [value]="AssignmentType.GROUP"
-              >Group Work (assigned to each group)</mat-radio-button
-            >
-            <mat-radio-button
-              style="margin-top: 20px; margin-bottom: 20px"
-              [checked]="false"
-              [value]="AssignmentType.INDIVIDUAL"
-              >Individual Work (assigned to each member)</mat-radio-button
-            >
-          </mat-radio-group>
-        </div>
         <section>
           <div style="display: flex; flex-direction: row; gap: 10px">
             <mat-form-field
-              *ngIf="assignmentType === AssignmentType.GROUP"
               appearance="fill"
               style="font-size: 14px !important"
             >
@@ -317,28 +300,6 @@
               </mat-select>
               <mat-error *ngIf="groupsFormControl.hasError('required')"
                 >At least one group required!</mat-error
-              >
-            </mat-form-field>
-            <mat-form-field
-              *ngIf="assignmentType === AssignmentType.INDIVIDUAL"
-              appearance="fill"
-              style="font-size: 14px !important"
-            >
-              <mat-label>Assigned Members</mat-label>
-              <mat-select
-                [(ngModel)]="assignedIndividual"
-                [formControl]="groupsFormControl"
-                [errorStateMatcher]="matcher"
-                single
-              >
-                <mat-option
-                  *ngFor="let option of groupOptions"
-                  [value]="option"
-                  >{{ option.name }}</mat-option
-                >
-              </mat-select>
-              <mat-error *ngIf="groupsFormControl.hasError('required')"
-                >One group required!</mat-error
               >
             </mat-form-field>
           </div>
@@ -406,26 +367,9 @@
             >
           </mat-form-field>
         </div>
-        <div>
-          <mat-radio-group [(ngModel)]="assignmentType">
-            <mat-radio-button
-              style="margin-top: 20px; margin-bottom: 20px"
-              [checked]="true"
-              [value]="AssignmentType.GROUP"
-              >Group Work (assigned to each group)</mat-radio-button
-            >
-            <mat-radio-button
-              style="margin-top: 20px; margin-bottom: 20px"
-              [checked]="false"
-              [value]="AssignmentType.INDIVIDUAL"
-              >Individual Work (assigned to each member)</mat-radio-button
-            >
-          </mat-radio-group>
-        </div>
         <section>
           <div style="display: flex; flex-direction: row; gap: 10px">
             <mat-form-field
-              *ngIf="assignmentType === AssignmentType.GROUP"
               appearance="fill"
               style="font-size: 14px !important"
             >
@@ -444,28 +388,6 @@
               </mat-select>
               <mat-error *ngIf="groupsFormControl.hasError('required')"
                 >At least one group required!</mat-error
-              >
-            </mat-form-field>
-            <mat-form-field
-              *ngIf="assignmentType === AssignmentType.INDIVIDUAL"
-              appearance="fill"
-              style="font-size: 14px !important"
-            >
-              <mat-label>Assigned Members</mat-label>
-              <mat-select
-                [(ngModel)]="assignedIndividual"
-                [formControl]="groupsFormControl"
-                [errorStateMatcher]="matcher"
-                single
-              >
-                <mat-option
-                  *ngFor="let option of groupOptions"
-                  [value]="option"
-                  >{{ option.name }}</mat-option
-                >
-              </mat-select>
-              <mat-error *ngIf="groupsFormControl.hasError('required')"
-                >One group required!</mat-error
               >
             </mat-form-field>
           </div>
@@ -665,25 +587,25 @@
         </mat-expansion-panel>
       </mat-accordion>
     </mat-tab>
-    <mat-tab label="AI Assistant">
-      <div class="ai-assistant-container">
+    <mat-tab label="AI Assistant"> 
+      <div class="ai-assistant-container"> 
         <div class="chat-feed" #scrollableDiv>
-          <div *ngFor="let message of chatHistory">
+          <div *ngFor="let message of chatHistory"> 
             <div *ngIf="message.role === 'user'" class="user-message">
-              <mat-card class="message-card user-card">
+              <mat-card class="message-card user-card"> 
                 <h3 class="message-label">User:</h3>
                 <div [innerHTML]="message.content"></div>
               </mat-card>
             </div>
             <div *ngIf="message.role === 'assistant'" class="ai-message">
-              <mat-card class="message-card ai-card">
+              <mat-card class="message-card ai-card"> 
                 <h3 class="message-label">Assistant:</h3>
                 <div [innerHTML]="message.content"></div>
               </mat-card>
             </div>
           </div>
           <div *ngIf="isWaitingForAIResponse" class="waiting-message">
-            <mat-spinner diameter="30"></mat-spinner>
+            <mat-spinner diameter="30"></mat-spinner> 
             <p>{{ waitingMessage }}</p>
           </div>
         </div>
@@ -692,33 +614,15 @@
   </mat-tab-group>
 </div>
 <div mat-dialog-actions>
-  <mat-form-field
-    appearance="outline"
-    style="width: 100%"
-    *ngIf="selected.value === 3"
-  >
+  <mat-form-field appearance="outline" style="width: 100%" *ngIf="selected.value === 3">
     <mat-label>Ask the AI Assistant</mat-label>
-    <input matInput [(ngModel)]="aiPrompt" (keyup.enter)="askAI()" #aiInput />
+    <input matInput [(ngModel)]="aiPrompt" (keyup.enter)="askAI()" #aiInput /> 
   </mat-form-field>
-  <div style="display: flex; gap: 10px">
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="askAI()"
-      *ngIf="selected.value === 3"
-    >
-      Send
-    </button>
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="downloadChatHistory()"
-      *ngIf="selected.value === 3"
-    >
-      Download Chat History
-    </button>
+  <div style="display: flex; gap: 10px;"> 
+    <button mat-raised-button color="primary" (click)="askAI()" *ngIf="selected.value === 3">Send</button>
+    <button mat-raised-button color="primary" (click)="downloadChatHistory()" *ngIf="selected.value === 3">Download Chat History</button>
   </div>
-
+  
   <button mat-button (click)="onNoClick()">Close</button>
   <button
     mat-button

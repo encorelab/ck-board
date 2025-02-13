@@ -37,7 +37,6 @@ interface ChatMessage {
   content: string;
 }
 
-// Have to add Idea Service to store the idea buckets values, canvas used and conversations on view
 @Component({
   selector: 'app-ck-ideas',
   templateUrl: './ck-ideas.component.html',
@@ -47,10 +46,9 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
 
-  boardID: string;
-  projectID: string;
+  boardID: string | undefined;
+  projectID: string | undefined;
 
-  canvasHTMLPosts: any[] = [];
   ideaBuckets: any[] = [];
   boards: any[] = [];
   user: AuthUser;
@@ -62,22 +60,28 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   isTeacher: boolean = false;
   canvasUsed: boolean = false; //determines if the conversation involving canvas is used
 
-  maxConversationsOnView = 4;
-  conversationsOnView: any[] = []; //stores the buckets and canvas that are being used for conversations with AI at the moment
   viewType = ViewType.IDEAS;
 
   groupEventToHandler: Map<SocketEvent, Function>;
   unsubListeners: Subscription[] = [];
 
+  // AI Chat (Right Pane) Variables
   aiPrompt = '';
   aiResponse = '';
   isWaitingForAIResponse = false;
   isProcessingAIRequest = false;
   waitingMessage = 'Waiting for AI Response...';
-
   chatHistory: ChatMessage[] = [];
-
   aiResponseListener: Subscription | undefined;
+
+  // Idea Agent (Left Pane) Variables
+  ideaAgentResponse = '';
+  isWaitingForIdeaAgent = false;
+  waitingIdeaMessage = 'Waiting for AI Response...';
+  private readonly ideaAgentPrompt =
+    'Summarize the following context into concise key ideas:'; // Hardcoded prompt base
+  selectedContexts: any[] = []; // To store selected buckets/canvas
+  ideaAgentResponseListener: Subscription | undefined;
 
   constructor(
     public postService: PostService,
@@ -103,25 +107,28 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
-    await this.configureBoard();
-    await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-      if (buckets) {
-        for (const bucket of buckets) {
-          if (bucket.addedToView) {
-            this.conversationsOnView.push(bucket);
-            this.loadBucketPosts(bucket);
-          } else {
-            this.ideaBuckets.push(bucket);
-          }
+    const { boardID, projectID, board } = await this.configureBoard(); // Destructure board as well
+    this.boardID = boardID;
+    this.projectID = projectID;
+    this.board = board; // Assign the returned board
+
+    if (this.boardID && this.projectID) {
+        await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
+            if (buckets) {
+                this.ideaBuckets = buckets;
+            }
+        });
+        this.socketService.connect(this.user.userID, this.boardID);
+
+        if (this.board) {  // This check is now more reliable
+            this.selectedContexts.push(this.board);
         }
-      }
-    });
-    if (this.board && this.canvasUsed) {
-      this.conversationsOnView.push(this.board);
-      this.loadCanvasPosts();
+        this.refreshIdeaAgent();
+    } else {
+        console.error("Failed to configure board!");
+        this.router.navigate(['/error']);
     }
-    this.socketService.connect(this.user.userID, this.boardID);
-  }
+}
 
   initGroupEventsListener() {
     for (const [k, v] of this.groupEventToHandler) {
@@ -130,63 +137,34 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     }
   }
 
-  async configureBoard(): Promise<void> {
+  async configureBoard(): Promise<{ boardID?: string; projectID?: string; board?: Board }> { // Return board
     const map = this.activatedRoute.snapshot.paramMap;
     if (map.has('boardID') && map.has('projectID')) {
-      this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-      this.projectID =
-        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-      const board = await this.boardService.get(this.boardID);
-      if (board) {
-        this.board = board;
-        if (
-          !this.isTeacher &&
-          board.viewSettings &&
-          !board.viewSettings.allowIdeas
-        ) {
-          this.router.navigateByUrl(
-            `project/${this.projectID}/board/${
-              this.boardID
-            }/${board.defaultView?.toLowerCase()}`
-          );
+        const boardID = map.get('boardID') ?? undefined;
+        const projectID = map.get('projectID') ?? undefined;
+
+        if (boardID && projectID) {
+            const board = await this.boardService.get(boardID);
+            if (board) {
+                // No longer directly assigning to this.board here
+                if (!this.isTeacher && board.viewSettings && !board.viewSettings.allowIdeas) {
+                    this.router.navigateByUrl(
+                      `project/<span class="math-inline">\{projectID\}/board/</span>{boardID}/${board.defaultView?.toLowerCase()}`
+                    );
+                }
+                 this.projectService.get(projectID).then((project) => { //moved here
+                    this.project = project;
+                });
+                return { boardID, projectID, board }; // Return the board object
+            } else {
+                return { boardID, projectID, board: undefined }; // Explicitly return undefined
+            }
         }
-      } else {
-        this.board = undefined;
-      }
-
-      this.projectService.get(this.projectID).then((project) => {
-        this.project = project;
-      });
     }
-  }
+    return { board: undefined }; // Return undefined board
+}
 
-  async loadBucketPosts(bucket: any) {
-    if (!bucket.htmlPosts) {
-      bucket.loading = true;
-      bucket.htmlPosts = await this.converters.toHTMLPosts(bucket.posts);
-      bucket.loading = false;
-    }
-  }
 
-  async loadCanvasPosts() {
-    console.log('in the load function');
-    console.log('canvas used ', this.canvasUsed);
-    console.log('canvas html posts: ', this.canvasHTMLPosts);
-    console.log('conversations on view: ', this.conversationsOnView);
-    console.log('buckets: ', this.ideaBuckets);
-
-    if (!this.canvasHTMLPosts) {
-      console.log('no html posts');
-      this.postService.getAllByBoard(this.boardID).then((data) => {
-        data.forEach(async (post) => {
-          if (post.type == PostType.BOARD) {
-            this.canvasHTMLPosts.push(this.converters.toHTMLPost(post));
-            console.log('added post here');
-          }
-        });
-      });
-    }
-  }
   copyEmbedCode() {
     const url = window.location.href + '?embedded=true';
     navigator.clipboard.writeText(url);
@@ -199,38 +177,26 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(url);
   }
 
-  addBucketConversation(bucket: any, index: number) {
-    if (bucket && index >= 0 && index < this.ideaBuckets.length) {
-      this.ideaBuckets.splice(index, 1);
-      this.conversationsOnView.push(bucket);
-    }
-  }
+  // --- Context Selection ---
 
-  addCanvasConversation() {
-    if (!this.canvasUsed) {
-      this.canvasUsed = true;
-      this.conversationsOnView.push(this.board);
-      this.loadCanvasPosts();
-    }
-  }
-
-  removeConversationFromView(index: number, bucket?: any) {
-    if (bucket) {
-      this.ideaBuckets.push(bucket);
-      this.conversationsOnView.splice(index, 1);
+  toggleContext(item: any): void {
+    if (this.isSelected(item)) {
+      this.selectedContexts = this.selectedContexts.filter((i) => i !== item);
     } else {
-      this.canvasUsed = false;
-      this.conversationsOnView.splice(index, 1);
+      this.selectedContexts.push(item);
+    }
+    // Refresh the idea agent whenever context changes
+    this.refreshIdeaAgent();
+    if (item.name == this.board?.name) {
+      this.canvasUsed = !this.canvasUsed;
     }
   }
 
-  removeCanvasFromView(index: number) {
-    if (this.canvasUsed) {
-      this.canvasUsed = false;
-      this.conversationsOnView.splice(index, 1);
-    }
+  isSelected(item: any): boolean {
+    return this.selectedContexts.some((i) => i === item);
   }
 
+  // --- AI Chat (Right Pane) Methods ---
   startWaitingForAIResponse() {
     this.isWaitingForAIResponse = true;
     this.waitingMessage = 'Waiting for AI response...';
@@ -259,10 +225,13 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
 
     // 1. Fetch all posts for the current board
     this.fetchBoardPosts().then((posts) => {
-      const prompt = this.aiPrompt;
+      const currentPrompt = this.aiPrompt;
       this.aiPrompt = ''; // Clear the prompt field
 
-      this.chatHistory.push({ role: 'user', content: prompt });
+      // Construct the complete prompt including chat history
+      const fullPromptHistory = this.constructPromptWithHistory(currentPrompt);
+
+      this.chatHistory.push({ role: 'user', content: currentPrompt });
 
       // Wait for the change detection to run and render the new message
       this.changeDetectorRef.detectChanges();
@@ -271,8 +240,9 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
       // 2. Send data and prompt to the backend via WebSocket
       this.socketService.emit(SocketEvent.AI_MESSAGE, {
         posts,
-        prompt,
-        boardId: this.board?.boardID,
+        currentPrompt: currentPrompt,
+        fullPromptHistory: fullPromptHistory,
+        boardId: this.board?.boardID ?? '',
         userId: this.user.userID,
       });
 
@@ -340,6 +310,33 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     this.isProcessingAIRequest = false;
   }
 
+  // Helper function to construct the prompt with chat history
+  constructPromptWithHistory(currentPrompt: string): string {
+    let fullPrompt = '';
+
+    // Add each message from the chat history to the prompt
+    this.chatHistory.forEach((message) => {
+      fullPrompt += `${message.role}: ${message.content}\n`;
+    });
+
+    // Add the current prompt at the end
+    fullPrompt += `user: ${currentPrompt}`;
+
+    return fullPrompt;
+  }
+
+  async fetchBoardPosts() {
+    try {
+      // Fetch posts for the current board
+      const posts = await this.postService.getAllByBoard(this.boardID);
+      return posts;
+    } catch (error) {
+      console.error('Error fetching board posts:', error);
+      // Handle the error, e.g., show an error message to the user
+      return []; // Return an empty array in case of an error
+    }
+  }
+
   downloadChatHistory() {
     const data = {
       boardId: this.board?.boardID,
@@ -348,6 +345,7 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
 
     this.http
       .post('chat-history', data, {
+        //  Make sure your backend endpoint is correct
         responseType: 'blob',
       })
       .subscribe(
@@ -363,24 +361,14 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
       );
   }
 
-  async fetchBoardPosts() {
-    try {
-      // Fetch posts for the current board
-      const posts = await this.postService.getAllByBoard(this.board?.boardID);
-      return posts;
-    } catch (error) {
-      console.error('Error fetching board posts:', error);
-      // Handle the error, e.g., show an error message to the user
-      return []; // Return an empty array in case of an error
-    }
-  }
-
   scrollToBottom(): void {
-    const scrollableElement = this.scrollableDiv.nativeElement;
-    scrollableElement.scrollTo({
-      top: scrollableElement.scrollHeight,
-      behavior: 'smooth', // Add smooth scrolling behavior
-    });
+    if (this.scrollableDiv) {
+      const scrollableElement = this.scrollableDiv.nativeElement;
+      scrollableElement.scrollTo({
+        top: scrollableElement.scrollHeight,
+        behavior: 'smooth', // Add smooth scrolling behavior
+      });
+    }
   }
 
   markdownToHtml(markdown: string): string {
@@ -477,21 +465,111 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     this.router.navigate(['login']);
   }
 
-  async ngOnDestroy() {
-    this.unsubListeners.forEach((s) => s.unsubscribe());
-    this.socketService.disconnect(this.user.userID, this.boardID);
+  // --- Idea Agent (Left Pane) Methods ---
+
+  startWaitingForIdeaAgent() {
+    this.isWaitingForIdeaAgent = true;
+    this.waitingIdeaMessage = 'Waiting for AI response...';
   }
 
-  private _openDialog(
-    component: ComponentType<unknown>,
-    data: any,
-    width = '700px'
-  ) {
-    this.dialog.open(component, {
-      maxWidth: 1280,
-      width: width,
-      autoFocus: false,
-      data: data,
+  updateWaitingForIdeaAgent(message: string) {
+    this.isWaitingForIdeaAgent = true;
+    this.waitingIdeaMessage = message;
+  }
+  stopWaitingForIdeaAgent() {
+    this.isWaitingForIdeaAgent = false;
+    this.waitingIdeaMessage = '';
+  }
+  refreshIdeaAgent() {
+    if (this.isWaitingForIdeaAgent) {
+      return; // Prevent concurrent requests
+    }
+
+    this.startWaitingForIdeaAgent();
+    this.ideaAgentResponse = ''; // Clear previous response
+
+    // Prepare context data (same logic as in askAI, but for the idea agent)
+    const posts = this.selectedContexts.flatMap((context) => {
+      if (context.posts) {
+        return context.posts;
+      } else if (context.postIDs) {
+        return context.postIDs.map((id: string) => {
+          return { postID: id };
+        }); //just need the IDs to keep consistent with post structure
+      }
     });
+
+    // Construct the full prompt
+    const fullPrompt = `${this.ideaAgentPrompt} ${JSON.stringify(posts)}`;
+
+    // Emit to a *different* socket event for the Idea Agent
+    this.socketService.emit(SocketEvent.AI_IDEA_MESSAGE, {
+      // Use a different event!
+      posts,
+      prompt: fullPrompt, // Send the full prompt
+      boardId: this.board?.boardID,
+      userId: this.user.userID,
+    });
+
+    // Listen for the Idea Agent's specific response event
+    this.ideaAgentResponseListener = this.socketService.listen(
+      SocketEvent.AI_IDEA_RESPONSE, // Different listener!
+      (data: any) => {
+        try {
+          switch (data.status) {
+            case 'Received': {
+              this.updateWaitingForIdeaAgent('Received message...');
+              break;
+            }
+            case 'Processing': {
+              this.updateWaitingForIdeaAgent(data.response);
+              break;
+            }
+            case 'Completed': {
+              const dataResponse = data.response;
+              this.ideaAgentResponse = this.markdownToHtml(dataResponse || '');
+              this.stopWaitingForIdeaAgent();
+              break;
+            }
+            case 'Error': {
+              console.error('AI request error:', data.errorMessage);
+              this.ideaAgentResponse = data.errorMessage;
+              this.stopWaitingForIdeaAgent();
+              break;
+            }
+            default: {
+              console.warn('Unknown status:', data.status);
+            }
+          }
+          if (data.status === 'Completed' || data.status === 'Error') {
+            if (this.ideaAgentResponseListener) {
+              this.ideaAgentResponseListener.unsubscribe();
+            }
+          }
+          this.changeDetectorRef.detectChanges(); //important
+        } catch (error) {
+          this.ideaAgentResponse =
+            'An error occurred. Please refresh your browser and try again.\n\n' +
+            error;
+          this.stopWaitingForIdeaAgent();
+          if (this.ideaAgentResponseListener) {
+            this.ideaAgentResponseListener.unsubscribe();
+          }
+        }
+      }
+    );
+  }
+
+  async ngOnDestroy() {
+    this.unsubListeners.forEach((s) => s.unsubscribe());
+    if (this.boardID) { // Check for undefined
+        this.socketService.disconnect(this.user.userID, this.boardID);
+    }
+    if (this.aiResponseListener) {
+      this.aiResponseListener.unsubscribe();
+    }
+    if (this.ideaAgentResponseListener) {
+      this.ideaAgentResponseListener.unsubscribe();
+    }
   }
 }

@@ -21,7 +21,7 @@
   </button>
   <span style="flex: 1 1 auto"></span>
   <app-view-navigation
-    [boardID]="boardID"
+    [boardID]="boardID ?? ''"
     [currentView]="viewType"
   ></app-view-navigation>
   <app-toolbar-menu
@@ -31,103 +31,89 @@
     [project]="project"
   ></app-toolbar-menu>
 </app-toolbar>
-<div class="container d-flex align-items-center justify-content-center">
-  <div class="heading">
-    <h1 mat-title style="margin: 0"><span>CK Ideas</span></h1>
-    <span style="flex: 1 1 auto"></span>
-    <div
-      *ngIf="
-        user.role === Role.TEACHER &&
-        conversationsOnView.length >= 0 &&
-        conversationsOnView.length < maxConversationsOnView
-      "
-    >
-      <button
-        mat-icon-button
-        matTooltip="Add conversation to view"
-        [matMenuTriggerFor]="conversationsMenu"
-        [hidden]="conversationsOnView.length >= maxConversationsOnView"
-      >
-        <mat-icon class="material-icons-outlined">add</mat-icon>
+
+<div class="context-bar">
+  <span class="context-label">Context: </span>
+  <span *ngFor="let item of selectedContexts; let last = last">
+    {{ item.name }}{{ !last ? ', ' : '' }}
+  </span>
+  <span style="flex: 1 1 auto"></span> <button
+    mat-icon-button
+    matTooltip="Add context"
+    [matMenuTriggerFor]="contextMenu"
+  >
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+
+<div class="main-container">
+  <div class="left-pane">
+    <h2>AI Summary</h2>
+    <div class="ai-summary-content">
+      <div *ngIf="ideaAgentResponse" [innerHTML]="ideaAgentResponse"></div>
+      <div *ngIf="isWaitingForIdeaAgent" class="waiting-message">
+          <mat-spinner diameter="30"></mat-spinner>
+          <p>{{ waitingIdeaMessage }}</p>
+        </div>
+    </div>
+     <button mat-raised-button color="primary" (click)="refreshIdeaAgent()" [disabled]="isWaitingForIdeaAgent">
+        Refresh
+      </button>
+  </div>
+
+  <div class="right-pane">
+    <h2>AI Chat</h2>
+    <div class="chat-feed" #scrollableDiv>
+      <div *ngFor="let message of chatHistory">
+        <div *ngIf="message.role === 'user'" class="user-message">
+          <mat-card class="message-card user-card">
+            <h3 class="message-label">User:</h3>
+            <div [innerHTML]="message.content"></div>
+          </mat-card>
+        </div>
+        <div *ngIf="message.role === 'assistant'" class="ai-message">
+          <mat-card class="message-card ai-card">
+            <h3 class="message-label">Assistant:</h3>
+            <div [innerHTML]="message.content"></div>
+          </mat-card>
+        </div>
+      </div>
+      <div *ngIf="isWaitingForAIResponse" class="waiting-message">
+        <mat-spinner diameter="30"></mat-spinner>
+        <p>{{ waitingMessage }}</p>
+      </div>
+    </div>
+    <mat-form-field appearance="outline" style="width: 100%">
+      <mat-label>Ask the AI Assistant</mat-label>
+      <input
+        matInput
+        [(ngModel)]="aiPrompt"
+        (keyup.enter)="askAI()"
+        #aiInput
+      />
+    </mat-form-field>
+    <div style="display: flex; gap: 10px">
+      <button mat-raised-button color="primary" (click)="askAI()">
+        Send
+      </button>
+      <button mat-raised-button color="primary" (click)="downloadChatHistory()">
+        Download Chat History
       </button>
     </div>
   </div>
-  <div class="buckets" cdkDropListGroup>
-    <h3
-      *ngIf="conversationsOnView.length === 0"
-      style="color: grey; text-align: center"
-    >
-      Add a conversation to start
-    </h3>
-
-    <div
-      class="ai-idea-container"
-      *ngFor="let conversation of conversationsOnView; let idx = index"
-    >
-      <div class="header">
-        <h3>{{ conversation.name }}</h3>
-        <button
-          *ngIf="user.role === Role.TEACHER"
-          mat-icon-button
-          (click)="removeConversationFromView(idx, conversation)"
-        >
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      <div class="chat-feed" #scrollableDiv>
-        <div *ngFor="let message of chatHistory">
-          <div *ngIf="message.role === 'user'" class="user-message">
-            <mat-card class="message-card user-card">
-              <h3 class="message-label">User:</h3>
-              <div [innerHTML]="message.content"></div>
-            </mat-card>
-          </div>
-          <div *ngIf="message.role === 'assistant'" class="ai-message">
-            <mat-card class="message-card ai-card">
-              <h3 class="message-label">Assistant:</h3>
-              <div [innerHTML]="message.content"></div>
-            </mat-card>
-          </div>
-        </div>
-        <div *ngIf="isWaitingForAIResponse" class="waiting-message">
-          <mat-spinner diameter="30"></mat-spinner>
-          <p>{{ waitingMessage }}</p>
-        </div>
-      </div>
-      <mat-form-field appearance="outline" style="width: 100%">
-        <mat-label>Ask the AI Assistant</mat-label>
-        <input
-          matInput
-          [(ngModel)]="aiPrompt"
-          (keyup.enter)="askAI()"
-          #aiInput
-        />
-      </mat-form-field>
-      <div style="display: flex; gap: 10px">
-        <button mat-raised-button color="primary" (click)="askAI()">
-          Send
-        </button>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="downloadChatHistory()"
-        >
-          Download Chat History
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
-<mat-menu #conversationsMenu="matMenu">
+
+<mat-menu #contextMenu="matMenu">
   <button
     mat-menu-item
-    *ngFor="let bucket of ideaBuckets; let idx = index"
-    [value]="bucket"
-    (click)="addBucketConversation(bucket, idx)"
+    *ngFor="let bucket of ideaBuckets"
+    (click)="toggleContext(bucket)"
   >
-    BUCKET: {{ bucket.name }}
+    <span>BUCKET: {{ bucket.name }}</span>
+    <mat-icon *ngIf="isSelected(bucket)">check</mat-icon>
   </button>
-  <button mat-menu-item *ngIf="!canvasUsed" (click)="addCanvasConversation()">
-    CANVAS: {{ board?.name }}
+  <button mat-menu-item *ngIf="!canvasUsed" (click)="toggleContext(board)">
+    <span>CANVAS: {{ board?.name }}</span>
+    <mat-icon *ngIf="isSelected(board)">check</mat-icon>
   </button>
 </mat-menu>

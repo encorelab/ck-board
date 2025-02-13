@@ -149,7 +149,7 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
                 // No longer directly assigning to this.board here
                 if (!this.isTeacher && board.viewSettings && !board.viewSettings.allowIdeas) {
                     this.router.navigateByUrl(
-                      `project/<span class="math-inline">\{projectID\}/board/</span>{boardID}/${board.defaultView?.toLowerCase()}`
+                      `project/<span class="math-inline">{projectID}/board/</span>{boardID}/${board.defaultView?.toLowerCase()}`
                     );
                 }
                  this.projectService.get(projectID).then((project) => { //moved here
@@ -244,52 +244,57 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
         fullPromptHistory: fullPromptHistory,
         boardId: this.board?.boardID ?? '',
         userId: this.user.userID,
+        type: 'teacher_agent',
       });
 
       // 3. Listen for WebSocket events
+      if (this.aiResponseListener) {
+        this.aiResponseListener.unsubscribe();
+      }
       this.aiResponseListener = this.socketService.listen(
         SocketEvent.AI_RESPONSE,
         (data: any) => {
           try {
-            switch (data.status) {
-              case 'Received': {
-                this.updateWaitingForAIResponse('Received message...');
-                break;
+            if (data.type === 'teacher_agent') {
+              switch (data.status) {
+                case 'Received': {
+                  this.updateWaitingForAIResponse('Received message...');
+                  break;
+                }
+                case 'Processing': {
+                  this.updateWaitingForAIResponse(data.response);
+                  break;
+                }
+                case 'Completed': {
+                  const dataResponse = data.response;
+                  this.aiResponse = this.markdownToHtml(dataResponse || '');
+                  this.chatHistory.push({
+                    role: 'assistant',
+                    content: this.aiResponse,
+                  });
+                  this.stopWaitingForAIResponse();
+                  break;
+                }
+                case 'Error': {
+                  console.error('AI request error:', data.errorMessage);
+                  this.chatHistory.push({
+                    role: 'assistant',
+                    content: data.errorMessage,
+                  });
+                  this.stopWaitingForAIResponse();
+                  break;
+                }
+                default: {
+                  console.warn('Unknown status:', data.status);
+                }
               }
-              case 'Processing': {
-                this.updateWaitingForAIResponse(data.response);
-                break;
-              }
-              case 'Completed': {
-                const dataResponse = data.response;
-                this.aiResponse = this.markdownToHtml(dataResponse || '');
-                this.chatHistory.push({
-                  role: 'assistant',
-                  content: this.aiResponse,
-                });
-                this.stopWaitingForAIResponse();
-                break;
-              }
-              case 'Error': {
-                console.error('AI request error:', data.errorMessage);
-                this.chatHistory.push({
-                  role: 'assistant',
-                  content: data.errorMessage,
-                });
-                this.stopWaitingForAIResponse();
-                break;
-              }
-              default: {
-                console.warn('Unknown status:', data.status);
+
+              if (data.status === 'Completed' || data.status === 'Error') {
+                if (this.aiResponseListener) {
+                  this.aiResponseListener.unsubscribe();
+                }
               }
             }
-
-            if (data.status === 'Completed' || data.status === 'Error') {
-              if (this.aiResponseListener) {
-                this.aiResponseListener.unsubscribe();
-              }
-            }
-
             this.changeDetectorRef.detectChanges();
             this.scrollToBottom();
           } catch (error) {

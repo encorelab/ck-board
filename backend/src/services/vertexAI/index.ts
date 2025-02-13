@@ -357,22 +357,25 @@ async function sendMessage(
   posts: any[],
   currentPrompt: string,
   fullPromptHistory: string,
-  socket: socketIO.Socket
+  socket: socketIO.Socket,
+  type: 'teacher_agent' | 'idea_agent'
 ): Promise<void> {
   try {
     // Send an initial acknowledgment
-    socket.emit(SocketEvent.AI_RESPONSE, { status: 'Received' });
+    socket.emit(SocketEvent.AI_RESPONSE, { status: 'Received', type: "teacher_agent" });
 
     const userId = socket.data.userId;
     const boardId = socket.data.boardId;
 
-    // Save user prompt
-    await dalChatMessage.save({
-      userId: userId,
-      boardId: boardId,
-      role: 'user',
-      content: currentPrompt,
-    });
+    // Save user prompt *only* for teacher_assistant (chat)
+    if (type === 'teacher_agent') {
+      await dalChatMessage.save({
+        userId: userId,
+        boardId: boardId,
+        role: 'user',
+        content: currentPrompt,
+      });
+    }
 
     // 1. Fetch Upvote Counts and Create Map
     const upvoteMap = await fetchUpvoteCounts(posts);
@@ -409,6 +412,7 @@ async function sendMessage(
           socket.emit(SocketEvent.AI_RESPONSE, {
             status: 'Error',
             errorMessage: 'No response stream received from the language model',
+            type: "teacher_agent",
           });
           return;
         }
@@ -425,6 +429,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Processing',
               response: partialResponse,
+              type: "teacher_agent",
             });
           }
 
@@ -449,6 +454,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Completed',
               response: finalResponse.response,
+              type: "teacher_agent"
             });
 
             // Save AI response
@@ -463,6 +469,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Error',
               errorMessage: errorMessage,
+              type: "teacher_agent"
             });
           }
 
@@ -537,6 +544,7 @@ async function sendMessage(
     socket.emit(SocketEvent.AI_RESPONSE, {
       status: 'Error',
       errorMessage: errorMessage,
+      type: "teacher_agent"
     });
   }
 }

@@ -27,6 +27,7 @@ import activitiesRouter from './api/activities';
 import resourcesRouter from './api/resources';
 import teacherTaskRouter from './api/teacherTasks'
 import aiAgentRoutes from './api/aiAgents';
+import groupTasks from './api/groupTasks';
 
 dotenv.config();
 
@@ -63,6 +64,7 @@ app.use('/api/projects', isAuthenticated, projects);
 app.use('/api/boards', isAuthenticated, boards);
 app.use('/api/buckets', isAuthenticated, buckets);
 app.use('/api/workflows', isAuthenticated, workflows);
+app.use('/api/groupTasks', isAuthenticated, groupTasks);
 app.use('/api/posts', isAuthenticated, posts);
 app.use('/api/upvotes', isAuthenticated, upvotes);
 app.use('/api/comments', isAuthenticated, comments);

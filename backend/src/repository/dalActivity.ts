@@ -7,7 +7,7 @@ const dalActivity = {
       const newActivity = new Activity(activity);
       return await newActivity.save();
     } catch (error) {
-      // Handle the error appropriately (e.g., log it, throw a custom error)
+      console.error("Error creating an activity:", error);
       throw error; 
     }
   },

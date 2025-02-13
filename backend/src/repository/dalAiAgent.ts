@@ -7,6 +7,7 @@ const dalAiAgent = {
       const newAgent = new AiAgent(agentData);
       return await newAgent.save();
     } catch (error) {
+      console.error("Error creating AI Agent:", error);
       throw error; // Or handle more specifically
     }
   },
@@ -15,6 +16,7 @@ const dalAiAgent = {
     try {
       return await AiAgent.find({ activityID });
     } catch (error) {
+      console.error("Error getting AI Agent by activity ID:", error);
       throw error;
     }
   },
@@ -23,6 +25,7 @@ const dalAiAgent = {
     try {
       return await AiAgent.findOneAndUpdate({ aiAgentID }, agentData, { new: true });
     } catch (error) {
+      console.error("Error updating AI Agent:", error);
       throw error;
     }
   },
@@ -31,6 +34,7 @@ const dalAiAgent = {
     try {
       return await AiAgent.findOneAndDelete({ aiAgentID });
     } catch (error) {
+      console.error("Error removing AI Agent by activity ID:", error);
       throw error;
     }
   },

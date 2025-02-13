@@ -12,15 +12,6 @@
     >
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <span *ngIf="board">CK Monitor - {{ this.board.name }}</span>
-    <button
-      mat-icon-button
-      *ngIf="user.role === Role.TEACHER"
-      (click)="copyEmbedCode()"
-      matTooltip="Copy embeddable URL"
-    >
-      <mat-icon>file_copy</mat-icon>
-    </button>
     <span style="flex: 1 1 auto"></span>
     <app-view-navigation
       [boardID]="board.boardID"
@@ -422,12 +413,9 @@
                   </th>
                   <td mat-cell *matCellDef="let group">
                     <button
-                      *ngIf="
-                        runningTaskGroupStatus !== GroupTaskStatus.INACTIVE
-                      "
                       mat-icon-button
                       (click)="
-                        runningTaskGroupStatus === GroupTaskStatus.COMPLETE
+                        group.groupTaskStatus === GroupTaskStatus.COMPLETE
                           ? activateGroupTask(group)
                           : completeGroupTask(group)
                       "
@@ -435,7 +423,7 @@
                       <mat-icon
                         matTooltip="Re-activate Task"
                         *ngIf="
-                          runningTaskGroupStatus === GroupTaskStatus.COMPLETE
+                          group.groupTaskStatus === GroupTaskStatus.COMPLETE
                         "
                       >
                         play_circle_outline
@@ -443,7 +431,8 @@
                       <mat-icon
                         matTooltip="Cancel Task"
                         *ngIf="
-                          runningTaskGroupStatus === GroupTaskStatus.ACTIVE
+                          group.groupTaskStatus === GroupTaskStatus.ACTIVE ||
+                          group.groupTaskStatus === GroupTaskStatus.INACTIVE
                         "
                       >
                         cancel
@@ -492,12 +481,9 @@
                   </th>
                   <td mat-cell *matCellDef="let member">
                     <button
-                      *ngIf="
-                        runningTaskGroupStatus !== GroupTaskStatus.INACTIVE
-                      "
                       mat-icon-button
                       (click)="
-                        runningTaskGroupStatus === GroupTaskStatus.COMPLETE
+                        member.groupTaskStatus === GroupTaskStatus.COMPLETE
                           ? activateGroupTask(member)
                           : completeGroupTask(member)
                       "
@@ -505,7 +491,7 @@
                       <mat-icon
                         matTooltip="Re-activate Task"
                         *ngIf="
-                          runningTaskGroupStatus === GroupTaskStatus.COMPLETE
+                          member.groupTaskStatus === GroupTaskStatus.COMPLETE
                         "
                       >
                         play_circle_outline
@@ -513,7 +499,8 @@
                       <mat-icon
                         matTooltip="Cancel Task"
                         *ngIf="
-                          runningTaskGroupStatus === GroupTaskStatus.ACTIVE
+                          member.groupTaskStatus === GroupTaskStatus.ACTIVE ||
+                          member.groupTaskStatus === GroupTaskStatus.INACTIVE
                         "
                       >
                         cancel

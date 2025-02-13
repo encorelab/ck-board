@@ -69,7 +69,7 @@ export class GroupTask {
   groupID: string;
   workflowID: string;
   posts: string[];
-  progress: Map<string, TaskAction[]>;
+  progress: Map<string, TaskAction[]> | Record<string, TaskAction[]>;
   status: GroupTaskStatus;
   userID?: string;
 }

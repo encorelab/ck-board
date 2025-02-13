@@ -541,14 +541,14 @@
                   selected
                   *ngIf="
                     workflow.requiredActions &&
-                    workflow.type != taskWorkflowType.GENERATION
+                    workflow.type !== taskWorkflowType.GENERATION
                   "
                   >Peer Review</mat-chip
                 >
                 <mat-chip
                   color="primary"
                   selected
-                  *ngIf="workflow.type == taskWorkflowType.GENERATION"
+                  *ngIf="workflow.type === taskWorkflowType.GENERATION"
                   >Generation</mat-chip
                 >
               </mat-chip-list>
@@ -644,7 +644,7 @@
               </mat-chip>
             </h4>
           </div>
-          <div *ngIf="workflow.type == taskWorkflowType.GENERATION">
+          <div *ngIf="workflow.type === taskWorkflowType.GENERATION">
             <h4>
               Required Actions:
               <mat-chip

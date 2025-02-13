@@ -25,6 +25,18 @@ export const shuffle = (array) => {
   }
 };
 
+export const distribute = (items, n) => {
+  if (n == 0) return [];
+
+  const split: [][] = [];
+  for (let i = 0; i < items.length; i += n) {
+    const chunk = items.slice(i, i + n);
+    split.push(chunk);
+  }
+
+  return split;
+};
+
 export const numDigits = (x: number) => {
   return ((Math.log((x ^ (x >> 31)) - (x >> 31)) * Math.LOG10E) | 0) + 1;
 };

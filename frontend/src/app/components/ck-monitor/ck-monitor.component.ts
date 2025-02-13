@@ -468,12 +468,16 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       _group.groupTaskID
     );
     await this.updateWorkflowData(this.board.boardID, this.project.projectID);
-    this.runningTaskTableData.data = this.runningTaskTableData.data.filter(
-      (data) => data.groupTaskID != _group.groupTaskID
-    );
-    if (!this.runningTaskTableData.data.length) {
-      this.runningTask = null;
-    }
+    const updatedData = this.runningTaskTableData.data.map((data) => {
+      if (data.groupTaskID === _group.groupTaskID) {
+        return {
+          ...data,
+          groupTaskStatus: GroupTaskStatus.ACTIVE,
+        };
+      }
+      return data;
+    });
+    this.runningTaskTableData.data = updatedData;
   }
 
   async completeGroupTask(_group: MonitorData) {
@@ -482,10 +486,20 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       _group.groupTaskID
     );
     await this.updateWorkflowData(this.board.boardID, this.project.projectID);
-    this.runningTaskTableData.data = this.runningTaskTableData.data.filter(
-      (data) => data.groupTaskID != _group.groupTaskID
+    const updatedData = this.runningTaskTableData.data.map((data) => {
+      if (data.groupTaskID === _group.groupTaskID) {
+        return {
+          ...data,
+          groupTaskStatus: GroupTaskStatus.COMPLETE,
+        };
+      }
+      return data;
+    });
+    this.runningTaskTableData.data = updatedData;
+    const allTasksComplete = updatedData.every(
+      (data) => data.groupTaskStatus === GroupTaskStatus.COMPLETE
     );
-    if (!this.runningTaskTableData.data.length) {
+    if (allTasksComplete) {
       this.runningTask = null;
     }
   }

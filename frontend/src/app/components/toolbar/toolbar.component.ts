@@ -2,6 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthUser } from 'src/app/models/user';
 import { UserService } from 'src/app/services/user.service';
+import { Board, BoardScope } from 'src/app/models/board'; // Import Board and BoardScope
+import { Project } from 'src/app/models/project';       // Import Project
+
 
 @Component({
   selector: 'app-toolbar',
@@ -17,6 +20,11 @@ export class ToolbarComponent implements OnInit {
 
   @Input()
   showSignOut = false;
+
+  @Input() board?: Board; // Make board optional
+  @Input() project?: Project; // Make project optional
+  BoardScope: typeof BoardScope = BoardScope; //for comparing enum in the template
+
 
   constructor(private userService: UserService, private router: Router) {}
 

@@ -1,5 +1,5 @@
 import { ComponentType } from '@angular/cdk/portal';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core'; // Import Output and EventEmitter
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { Board, BoardScope } from 'src/app/models/board';
@@ -18,16 +18,17 @@ import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component'
   styleUrls: ['./toolbar-menu.component.scss'],
 })
 export class ToolbarMenuComponent implements OnInit {
-  user: AuthUser;
+  @Input() board: Board;
+  @Input() project: Project;
+  @Input() user: AuthUser; // Correctly receive the user
 
-  @Input()
-  board: Board;
+  @Output() copyEmbedCodeClick = new EventEmitter<void>(); // Output event
+  @Output() copyPersonalEmbedCodeClick = new EventEmitter<void>(); // Output event
 
-  @Input()
-  project: Project;
 
   Role: typeof Role = Role;
   BoardScope: typeof BoardScope = BoardScope;
+  showMenu: boolean = false;
 
   constructor(
     private userService: UserService,
@@ -110,6 +111,28 @@ export class ToolbarMenuComponent implements OnInit {
       '95vw'
     );
   }
+
+  copyEmbedCode() {
+    if (this.board && this.project) {
+        const url = window.location.origin + `/project/${this.project.projectID}/board/${this.board.boardID}` + '?embedded=true';
+        navigator.clipboard.writeText(url);
+    } else {
+        console.warn("Board or Project is not defined. Cannot copy embed code.");
+    }
+
+}
+
+copyPersonalEmbedCode() {
+    if (this.board && this.project) {
+      const url =
+        window.location.origin +
+        `/project/${this.project.projectID}/my-personal-board?embedded=true`;
+      navigator.clipboard.writeText(url);
+    }
+    else{
+        console.warn("Board or Project is not defined. Cannot copy personal embed code.");
+    }
+}
 
   signOut(): void {
     this.userService.logout();

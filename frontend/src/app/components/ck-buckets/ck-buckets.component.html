@@ -6,20 +6,8 @@
   >
     <mat-icon>arrow_back</mat-icon>
   </button>
-  <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
-  <button
-    mat-icon-button
-    *ngIf="user.role === Role.TEACHER"
-    (click)="
-      board?.scope === BoardScope.PROJECT_SHARED
-        ? copyEmbedCode()
-        : copyPersonalEmbedCode()
-    "
-    matTooltip="Copy embeddable URL"
-  >
-    <mat-icon>file_copy</mat-icon>
-  </button>
   <span style="flex: 1 1 auto"></span>
+
   <app-view-navigation
     [boardID]="boardID"
     [currentView]="viewType"
@@ -29,12 +17,18 @@
     navbarMenu
     [board]="board"
     [project]="project"
+    (copyEmbedCodeClick)="copyEmbedCode()"
+    (copyPersonalEmbedCodeClick)="copyPersonalEmbedCode()"
   ></app-toolbar-menu>
 </app-toolbar>
+
 <div class="container d-flex align-items-center justify-content-center">
   <div class="heading">
     <h1 mat-title style="margin: 0"><span>CK Buckets</span></h1>
-    <span style="flex: 1 1 auto"></span>
+     <span style="flex: 1 1 auto"></span>
+     <button mat-icon-button (click)="refreshBuckets()" matTooltip="Refresh Buckets">
+        <mat-icon>refresh</mat-icon>
+    </button>
     <div
       *ngIf="
         user.role === Role.TEACHER &&
@@ -51,6 +45,7 @@
         <mat-icon class="material-icons-outlined">add</mat-icon>
       </button>
     </div>
+
   </div>
   <div class="buckets" cdkDropListGroup>
     <h3

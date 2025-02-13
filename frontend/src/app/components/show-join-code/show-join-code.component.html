@@ -1,6 +1,7 @@
 <h1 mat-dialog-title>Student Join Code</h1>
 <div mat-dialog-content class="dialog-content">
-  <p class="join-code">{{ data.joinCode }}</p>
+  <p class="server-url">{{ getServerUrl() }}</p> 
+  <div class="join-code">{{ data.joinCode }}</div>
 </div>
 <div mat-dialog-actions align="start">
   <button mat-button (click)="close()">Close</button>

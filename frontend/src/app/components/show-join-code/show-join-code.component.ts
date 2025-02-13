@@ -14,6 +14,12 @@ export class ShowJoinCodeComponent {
   ) {}
 
   close(): void {
-     this.dialogRef.close();
+    this.dialogRef.close();
+  }
+
+  getServerUrl(): string {
+    const currentUrl = window.location.href;
+    const url = new URL(currentUrl); 
+    return url.origin;
   }
 }

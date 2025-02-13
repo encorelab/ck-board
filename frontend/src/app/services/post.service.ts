@@ -47,6 +47,18 @@ export class PostService {
       .then((posts) => posts ?? []); // Default to an empty array
   }
 
+  getAllByBoardNO(boardID: string, type?: PostType): Promise<Post[]> {
+    let params = new HttpParams();
+    if (type) {
+      params = params.append('type', type);
+    }
+
+    return this.http
+      .get<Post[]>('posts/boards/' + boardID, { params })
+      .toPromise()
+      .then((posts) => posts ?? []); // Default to an empty array
+  }
+
   getAllByBucket(bucketID: string, opts?: Options): Promise<any> {
     let params = new HttpParams();
     if (opts) {

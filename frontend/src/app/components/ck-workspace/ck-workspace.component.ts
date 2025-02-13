@@ -13,6 +13,7 @@ import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
+  AssignmentType,
   ExpandedGroupTask,
   GroupTask,
   GroupTaskStatus,
@@ -249,7 +250,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.runningGroupTask = groupTask;
     this.runningGroupTask.groupTask = await this.groupTaskService.getGroupTask(
       this.runningGroupTask.group.groupID,
-      this.runningGroupTask.workflow.workflowID
+      this.runningGroupTask.workflow.workflowID,
+      this.user.userID
     );
     this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
     this.averageGroupProgress = await this._calcAverageProgress(
@@ -417,6 +419,14 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
   }
 
+  hasMultipleRequirements(runningGroupTask: ExpandedGroupTask): boolean {
+    if (runningGroupTask.workflow.requiredActions.length > 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   numberOfPosts(runningGroupTask: ExpandedGroupTask): number | undefined {
     return runningGroupTask.workflow.requiredActions.find(
       (a) => a.type == TaskActionType.CREATE_POST
@@ -435,9 +445,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       tagRequired: this.hasTagRequirement(this.runningGroupTask!),
       onComplete: async (post: Post) => {
         if (this.runningGroupTask) {
-          post.type = PostType.WORKFLOW;
           const destinationType =
             PostType[this.runningGroupTask?.workflow.destinations[0].type];
+          post.type = destinationType;
           if (destinationType === PostType.BUCKET) {
             post.boardID = this.board.boardID;
           } else {
@@ -781,9 +791,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         'expanded'
       );
 
-    const totalProgress = tasks.reduce(
-      (partialSum) => partialSum + this._calcGroupProgress(task),
-      0
+    console.log(tasks);
+
+    let totalProgress = 0;
+
+    tasks.forEach(
+      (task) => (totalProgress = totalProgress + this._calcGroupProgress(task))
     );
     return totalProgress / tasks.length;
   }

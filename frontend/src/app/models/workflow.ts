@@ -29,6 +29,11 @@ export enum WorkflowType {
   GENERATION = 'GENERATION',
 }
 
+export enum AssignmentType {
+  GROUP = 'GROUP',
+  INDIVIDUAL = 'INDIVIDUAL',
+}
+
 export enum TaskWorkflowType {
   PEER_REVIEW = 'PEER_REVIEW',
   GENERATION = 'GENERATION',
@@ -64,14 +69,16 @@ export class GroupTask {
   groupID: string;
   workflowID: string;
   posts: string[];
-  progress: Map<string, TaskAction[]>;
+  progress: Map<string, TaskAction[]> | Record<string, TaskAction[]>;
   status: GroupTaskStatus;
+  userID?: string;
 }
 
 export class ExpandedGroupTask {
   groupTask: GroupTask;
   workflow: TaskWorkflow;
   group: Group;
+  assignmentType: AssignmentType;
 }
 
 export class Workflow {
@@ -94,7 +101,9 @@ export class TaskWorkflow extends Workflow {
   prompt: string;
   requiredActions: TaskAction[];
   assignedGroups: string[];
+  assignedIndividual?: Group;
   type?: TaskWorkflowType;
+  assignmentType: AssignmentType;
 }
 
 const workflows = {

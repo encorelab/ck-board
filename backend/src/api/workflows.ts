@@ -218,21 +218,30 @@ router.get('/task/group/:id', async (req, res) => {
  */
 
 /**
- * Get a workflow's group task for one group.
+ * Get a workflow's group task for one group and user.
  */
-router.get('/task/:workflowID/groupTask/group/:groupID', async (req, res) => {
-  const { workflowID, groupID } = req.params;
-  const representation = req.query.representation as string;
+router.get(
+  '/task/:workflowID/groupTask/group/:groupID/user/:userID',
+  async (req, res) => {
+    const { workflowID, groupID, userID } = req.params;
+    const representation = req.query.representation as string;
 
-  const groupTask = await dalGroupTask.getByWorkflowGroup(workflowID, groupID);
-  if (!groupTask) return res.status(404).end('No group task found.');
+    const groupTask = await dalGroupTask.getByWorkflowGroup(
+      workflowID,
+      groupID,
+      userID
+    );
+    if (!groupTask) return res.status(404).end('No group task found.');
 
-  if (representation == 'expanded') {
-    return res.status(200).json(await dalGroupTask.expandGroupTask(groupTask));
+    if (representation == 'expanded') {
+      return res
+        .status(200)
+        .json(await dalGroupTask.expandGroupTask(groupTask));
+    }
+
+    res.status(200).json(groupTask);
   }
-
-  res.status(200).json(groupTask);
-});
+);
 
 /**
  * Get all groups tasks for a workflow.
@@ -347,9 +356,16 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
 
   try {
     // Remove post from group task
-    const updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, [
-      post,
-    ]);
+    let updatedGroupTask;
+    if (groupTask.userID) {
+      updatedGroupTask = await dalGroupTask.removePosts(
+        groupTaskID,
+        [post],
+        groupTask.userID
+      );
+    } else {
+      updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, [post]);
+    }
 
     // Copy post to destination and make source post of type "LIST"
     const destination = workflow.destinations[0];

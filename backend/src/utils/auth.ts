@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { sign, verify } from 'jsonwebtoken';
-import { Role, UserModel } from '../models/User';
+import { UserModel, Role } from '../models/User';
 import { v4 as uuidv4 } from 'uuid';
 import hmacSHA256 from 'crypto-js/hmac-sha256';
 import dalUser from '../repository/dalUser';
@@ -11,6 +10,7 @@ import { ProjectModel } from '../models/Project';
 import { NotFoundError } from '../errors/client.errors';
 import { addUserToProject } from './project.helpers';
 import { ApplicationError } from '../errors/base.errors';
+import { sign, verify, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken'; 
 
 export interface Token {
   email: string;
@@ -50,15 +50,27 @@ export const isAuthenticated = async (
 ) => {
   try {
     if (!req.headers.authorization) {
-      return res.status(400).end('No authorization header found!');
+      return res.status(401).json({ message: 'Authorization header is missing' });
     }
 
     const token = req.headers.authorization.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ message: 'Bearer token not found' });
+    
+    }
     res.locals.user = verify(token, getJWTSecret()) as Token;
 
     next();
-  } catch (e) {
-    return res.status(403).end('Unable to authenticate!');
+  } catch (error) {
+    if (error instanceof TokenExpiredError) {
+      return res.status(401).json({ message: 'Token expired' });
+    } else if (error instanceof JsonWebTokenError) {
+      return res.status(401).json({ message: 'Invalid token' });
+    } else {
+      console.error('Error in isAuthenticated middleware:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
   }
 };
 
@@ -224,7 +236,7 @@ export const signInUserWithSso = async (
 
 export const generateSessionToken = (userModel: UserModel): any => {
   const user = userToToken(userModel);
-  const token = sign(user, getJWTSecret(), { expiresIn: '2h' });
+  const token = sign(user, getJWTSecret(), { expiresIn: '4h' });
   const expiresAt = addHours(2);
   return { token, user, expiresAt };
 };

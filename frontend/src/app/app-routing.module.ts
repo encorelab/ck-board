@@ -15,11 +15,16 @@ import { AuthGuard } from './guards/auth.guard';
 import { BoardGuard } from './guards/board.guard';
 import { ProjectGuard } from './guards/project.guard';
 import { SsoGuard } from './guards/sso.guard';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+
 
 const routes: Routes = [
   { path: '', canActivate: [SsoGuard], component: LoginComponent },
   { path: 'login', canActivate: [SsoGuard], component: LoginComponent },
   { path: 'register', canActivate: [SsoGuard], component: RegisterComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   {
     path: 'sso/login/:sso/:sig',
     component: SsoLoginComponent,

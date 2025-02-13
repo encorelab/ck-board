@@ -19,10 +19,19 @@ export class GroupTaskService {
     public http: HttpClient
   ) {}
 
-  getGroupTask(groupID: string, workflowID: string): Promise<GroupTask> {
+  getGroupTask(
+    groupID: string,
+    workflowID: string,
+    userID: string
+  ): Promise<GroupTask> {
     return this.http
       .get<GroupTask>(
-        'workflows/task/' + workflowID + '/groupTask/group/' + groupID
+        'workflows/task/' +
+          workflowID +
+          '/groupTask/group/' +
+          groupID +
+          '/user/' +
+          userID
       )
       .toPromise()
       .then((groupTask) => groupTask ?? ({} as GroupTask)); // Default to an empty object

@@ -14,6 +14,9 @@ export class GroupModel {
 
   @prop({ required: true })
   public name!: string;
+
+  @prop({ default: false })
+  public isDefault?: boolean;
 }
 
 export default getModelForClass(GroupModel);

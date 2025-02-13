@@ -3,7 +3,7 @@ import { ComponentType } from '@angular/cdk/portal';
 import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { SocketEvent } from 'src/app/utils/constants';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, HostListener } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,6 +19,7 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { HtmlPostComponent } from '../html-post/html-post.component';
 
 @Component({
   selector: 'app-ck-buckets',
@@ -154,6 +155,24 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
       this.buckets.push(bucket);
       this.bucketsOnView.splice(index, 1);
       this.bucketService.update(bucket.bucketID, { addedToView: false });
+    }
+  }
+
+  async refreshBuckets() {
+    //Set all the buckets to loading
+    for(let i = 0; i < this.bucketsOnView.length; i++){
+        this.bucketsOnView[i].loading = true;
+    }
+
+    // Refetch posts for each displayed bucket.
+    for (const bucket of this.bucketsOnView) {
+        const currentBucket = await this.bucketService.get(bucket.bucketID); // get bucket from the service
+        if(currentBucket){
+            bucket.posts = currentBucket.posts; // update the posts
+            bucket.htmlPosts = await this.converters.toHTMLPosts(bucket.posts); // reconvert
+        }
+        bucket.loading = false;
+
     }
   }
 

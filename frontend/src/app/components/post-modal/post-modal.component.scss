@@ -1,3 +1,7 @@
+// post-modal.component.scss
+
+// --- General Styles ---
+
 .avatar {
   background-image: url('https://www.mtsolar.us/wp-content/uploads/2020/04/avatar-placeholder.png');
   background-size: cover;
@@ -5,7 +9,7 @@
 
 .comment-area {
   overflow-y: auto;
-  min-height: 110px;
+  min-height: 50px;
 }
 
 .comment-box {
@@ -16,10 +20,10 @@
 }
 
 .comment-delete {
-    position: absolute; 
-    right: 0; 
-    top: 5.5px;
-    display: none;
+  position: absolute;
+  right: 0;
+  top: 5.5px;
+  display: none;
 }
 
 .comment-toggler {
@@ -32,7 +36,7 @@
 }
 
 .comment:hover .comment-delete {
-    display: block;
+  display: block;
 }
 
 .add-comment {
@@ -66,4 +70,59 @@
 
 ::ng-deep .mat-form-field-underline {
   display: none;
+}
+
+// --- Fullscreen Dialog Styles (Applied via the 'fullscreen-dialog' class) ---
+
+// Target the overlay pane directly when it has the fullscreen-dialog class
+.cdk-overlay-pane.fullscreen-dialog {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  min-width: 0 !important;
+  display: flex;
+  flex-direction: column;
+
+  .mat-dialog-container {
+    border-radius: 0 !important;
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden; // Important! Prevent double scrollbars
+  }
+
+  .mat-icon {
+    height: 32px !important;
+    width: 32px !important;
+    font-size: 32px !important;
+  }
+
+  .mat-card-actions {
+    margin-bottom: 0em !important;
+  }
+
+  .add-comment {
+    margin-bottom: 0em !important;
+  }
+
+  .header-container {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: white;
+    padding: 8px;
+  }
+}
+
+.details {
+  box-shadow: none !important;
+  padding: 0 !important;
+
+  .mat-card-content {
+    max-height: 300px; // Set the max height for the content
+    overflow-y: auto;  // Enable scrolling
+    padding: 0px; // Remove default padding
+  }
 }

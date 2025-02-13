@@ -48,6 +48,7 @@ export class HtmlPostComponent implements OnInit {
   @Input() disableDownload: boolean = false;
   @Input() onCommentEvent: Function;
   @Input() onTagEvent: Function;
+  @Input() onDeleteEvent: Function;
   @Output() movePostToBoardEvent = new EventEmitter<string>();
 
   exists = true;
@@ -88,6 +89,7 @@ export class HtmlPostComponent implements OnInit {
           commentPress: commentPress,
           onCommentEvent: this.onCommentEvent,
           onTagEvent: this.onTagEvent,
+          onDeleteEvent: this.onDeleteEvent,
         },
       })
       .afterClosed()

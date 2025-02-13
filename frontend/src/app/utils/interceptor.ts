@@ -26,7 +26,7 @@ export class APIInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
     const timeoutValue = Number(req.headers.get('timeout') || DEFAULT_TIMEOUT);
-
+    
     const apiReq = req.clone({
       url: `${environment.ckboardDomain}/api/${req.url}`,
       setHeaders: {

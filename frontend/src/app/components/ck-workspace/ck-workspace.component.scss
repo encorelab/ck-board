@@ -43,6 +43,7 @@
   bottom: 0;
   top: 0;
   overflow: auto;
+  height: calc(100vh);
 }
 
 .subheader-button {
@@ -51,7 +52,7 @@
 }
 
 mat-sidenav {
-  height: 100%; /* Keep this for vertical fill */
+  height: 100%; /*  Fill the container */
 
   /* Use media queries for responsive width */
   width: 90%; /* Default to 90% for mobile */
@@ -148,7 +149,7 @@ mat-sidenav-content {
 
 .create-post-fab {
   position: absolute !important;   // Position absolutely within the container
-  bottom: 60px;    
+  bottom: 100px;    
   right: 40px;     
   z-index: 10;       // Ensure it's above the cards
   background-color: #6c63ff;

@@ -1,6 +1,7 @@
-<app-toolbar *ngIf="user" [user]="user">
+<app-toolbar *ngIf="user && board && !isModalView" [user]="user">
   <button
     mat-icon-button
+    *ngIf="projectID"
     routerLink="{{ '/project/' + projectID }}"
     matTooltip="Return to Project Dashboard"
   >
@@ -9,6 +10,7 @@
   <span style="flex: 1 1 auto"></span>
 
   <app-view-navigation
+    *ngIf="boardID"
     [boardID]="boardID"
     [currentView]="viewType"
   ></app-view-navigation>

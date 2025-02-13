@@ -1,7 +1,12 @@
 @import './../../../../node_modules/swiper/swiper.min.css';
 
+.spinner {
+  margin: 70px auto;
+  background: transparent;
+}
+
 .toolbar {
-  width: 100%; 
+  width: 100%;
   position: fixed;
   top: 0;
   left: 0;
@@ -21,12 +26,12 @@
 
 .section-title {
   padding: 10px 15px;
-  margin: 0px !important; 
+  margin: 0px !important;
 }
 
 .no-workflow-select {
-  position: absolute; 
-  top: 30%; 
+  position: absolute;
+  top: 30%;
   left: 40%;
 }
 
@@ -34,7 +39,7 @@
   width: 380px;
   height: 100%;
 
-  margin: 20% 10%;
+  margin: 150px 70px 0px 50px;
   text-align: center;
 }
 
@@ -83,14 +88,22 @@
 
 .swiper-slide:nth-child(7n) {
   background-color: rgb(54, 94, 77);
-} 
+}
 
-.drawer-container {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.ck-monitor-drawer-container {
   overflow: auto;
+  display: flex !important;
+
+  &.modal-view {
+    // Styles for when the component is inside a modal
+    position: relative; 
+    height: 100%; 
+
+    mat-sidenav-content {
+      height: 100%;
+      margin-left: 0 !important;
+    }
+  }
 
   @media (min-width: breakpoint('sm', 'min')) {
     padding-top: 64px;
@@ -98,9 +111,9 @@
 }
 
 .feature-buttons {
-  display: flex; 
-  flex-direction: column; 
-  padding: 20px; 
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
   row-gap: 10px;
 }
 
@@ -114,19 +127,24 @@
   margin-left: 10px !important;
 }
 
-mat-sidenav {
-  width: 30%;
-  height: 100%;
-}
-
-mat-sidenav-content {
-  padding-top: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-
-  min-height: 90vh;
-  overflow: hidden;
+.ck-monitor-drawer-container {
+  mat-sidenav {
+    width: 30%;
+    height: 100%;
+  }
+  
+  mat-sidenav-content {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  
+    min-height: 90vh;
+    overflow: hidden;
+    height: 100%;
+    flex-grow: 1;
+    margin-left: 0 !important;
+  }
 }
 
 .table {
@@ -136,7 +154,7 @@ mat-sidenav-content {
 .graph-toggle {
   position: absolute;
   z-index: 99;
-  
+
   padding: 20px;
   width: 130px;
 }
@@ -176,4 +194,19 @@ mat-sidenav-content {
 .todoItemRow:hover {
   cursor: pointer;
   background: #f5f5f5;
+}
+
+.workflow-create-post{
+  margin: 0;
+  padding: 0;
+  line-height: inherit;
+  height: inherit;
+  margin: 20px;
+  background-color: #6c63ff;
+}
+
+.create-post-button-container{
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 20px;
 }

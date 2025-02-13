@@ -1,7 +1,7 @@
 <div>
   <app-toolbar
     class="toolbar"
-    *ngIf="user && project && board && !embedded"
+    *ngIf="user && project && board && !embedded && !isModalView"
     [user]="user"
     [embedded]="embedded"
   >
@@ -24,10 +24,11 @@
     ></app-toolbar-menu>
   </app-toolbar>
   <mat-sidenav-container
-    class="drawer-container"
+    class="drawer-container ck-monitor-drawer-container"
+    [class.modal-view]="isModalView"
     [ngStyle]="{
-      'padding-top': !embedded ? '56px' : '0px',
-      'padding-bottom': embedded ? '64px' : '0px'
+      'padding-top': !embedded && !isModalView ? '64px' : '0px',
+      'padding-bottom': embedded && !isModalView ? '64px' : '0px'
     }"
   >
     <mat-sidenav
@@ -35,8 +36,7 @@
       mode="side"
       opened
       [fixedInViewport]="!embedded ? true : false"
-      [fixedTopGap]="64"
-      style="position: fixed"
+      style="position: relative"
       [ngStyle]="(!embedded && { 'padding-bottom': '64px' }) || null"
       *ngIf="!studentView"
     >

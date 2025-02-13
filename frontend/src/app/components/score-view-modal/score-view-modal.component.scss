@@ -1,0 +1,25 @@
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+
+  .dialog-title {
+    margin-bottom: 0;
+  }
+}
+
+.mat-dialog-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-content {
+  height: 100%;
+  overflow: scroll;
+}
+
+.close-button {
+  cursor: pointer;
+}

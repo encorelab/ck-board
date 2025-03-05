@@ -1,3 +1,4 @@
+// frontend/src/app/components/ck-ideas/ck-ideas.component.ts
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ComponentType } from '@angular/cdk/portal';
 import { SocketService } from 'src/app/services/socket.service';
@@ -166,11 +167,11 @@ but keep names of authors confidential.
       });
       this.socketService.connect(this.user.userID, this.boardID);
 
-      if (this.board) {
-        this.selectedContexts.push(this.board);
-        this.canvasUsed = true;
-      }
-      this.refreshIdeaAgent();
+      // Default to "None" context and show prompt.  AND disable the button.
+      this.ideaAgentResponse = '** Select CONTEXT using "+" button (top right) **';
+      this.isWaitingForIdeaAgent = false; 
+      this.selectedContexts = ['None'];
+
     } else {
       console.error('Failed to configure board!');
       this.router.navigate(['/error']);
@@ -234,20 +235,37 @@ but keep names of authors confidential.
   // --- Context Selection ---
 
   toggleContext(item: any): void {
-    if (this.isSelected(item)) {
-      this.selectedContexts = this.selectedContexts.filter((i) => i !== item);
-    } else {
-      this.selectedContexts.push(item);
-    }
-    // Refresh the idea agent whenever context changes
-    this.refreshIdeaAgent();
-    if (item.name == this.board?.name) {
-      this.canvasUsed = !this.canvasUsed;
-    }
+      // Remove 'None' context if it exists and a new context is added
+      if (item !== 'None' && this.selectedContexts.includes('None')) {
+          this.selectedContexts = this.selectedContexts.filter(i => i !== 'None');
+      }
+
+      if (item === 'None') {  // Handle 'None' selection
+          this.selectedContexts = ['None'];
+          this.canvasUsed = false; // Assuming 'None' means no canvas
+          this.ideaAgentResponse = 'Please select a context using the plus button in the top right.'; // Reset prompt
+
+      } else if (this.isSelected(item)) { //Existing logic
+          this.selectedContexts = this.selectedContexts.filter((i) => i !== item);
+      } else {
+          this.selectedContexts.push(item);
+            if(item === this.board) { //If canvas is added.
+              this.canvasUsed = true;
+            }
+      }
+
+        // Disable refresh button if only 'None' is selected
+        this.isWaitingForIdeaAgent = this.selectedContexts.length === 1 && this.selectedContexts[0] === 'None';
+
+      // Refresh the idea agent whenever context changes, unless 'None' selected
+      if (!(this.selectedContexts.length === 1 && this.selectedContexts[0] === 'None')) {
+          this.refreshIdeaAgent();
+      }
+
   }
 
   isSelected(item: any): boolean {
-    return this.selectedContexts.some((i) => i === item);
+      return this.selectedContexts.some((i) => i === item);
   }
 
   // --- AI Chat (Right Pane) Methods ---
@@ -313,7 +331,7 @@ but keep names of authors confidential.
               if (data.type === 'teacher_agent') {
                 switch (data.status) {
                   case 'Received': {
-                    this.updateWaitingForAIResponse('Received message...');
+                    this.updateWaitingForAIResponse('Receiving message...');
                     break;
                   }
                   case 'Processing': {
@@ -564,16 +582,16 @@ but keep names of authors confidential.
   async fetchPostsForIdeaAgent(canvasUsed: boolean, bucketIDs: string[]): Promise<any[]> {
     try {
       let allPosts: any[] = [];
-  
+
       if (canvasUsed) {
         const canvasPosts = await this.postService.getAllByBoard(this.boardID);
         allPosts = allPosts.concat(canvasPosts.filter(post => post.type === PostType.BOARD));
       }
-  
+
       if (bucketIDs.length > 0) {
         const bucketPostsPromises = bucketIDs.map(bucketID => this.postService.getAllByBucket(bucketID));
         const bucketPostsArrays = await Promise.all(bucketPostsPromises);
-  
+
         // Extract posts from each bucket response and add to allPosts, avoiding duplicates
         bucketPostsArrays.forEach(bucketResponse => {
           if (bucketResponse && bucketResponse.posts && Array.isArray(bucketResponse.posts)) {
@@ -586,9 +604,9 @@ but keep names of authors confidential.
           }
         });
       }
-  
+
       return allPosts;
-  
+
     } catch (error) {
       console.error('Error fetching posts for Idea Agent:', error);
       this.openSnackBar('Failed to fetch posts for the Idea Agent. Please try again.');
@@ -629,13 +647,13 @@ but keep names of authors confidential.
 
       // Listen for AI_RESPONSE, but check the type
       this.ideaAgentResponseListener = this.socketService.listen(
-        SocketEvent.AI_RESPONSE, 
+        SocketEvent.AI_RESPONSE,
         (data: any) => {
           try {
             if (data.type === 'idea_agent') {
               switch (data.status) {
                 case 'Received': {
-                  this.updateWaitingForIdeaAgent('Received message...');
+                  this.updateWaitingForIdeaAgent('Receiving message...');
                   break;
                 }
                 case 'Processing': {
@@ -648,7 +666,7 @@ but keep names of authors confidential.
                     dataResponse || ''
                   );
                   this.stopWaitingForIdeaAgent();
-                  this.isWaitingForIdeaAgent = false; 
+                  this.isWaitingForIdeaAgent = false;
                   break;
                 }
                 case 'Error': {
@@ -683,7 +701,7 @@ but keep names of authors confidential.
       );
     } catch (error) {
       this.stopWaitingForIdeaAgent();
-      this.isWaitingForIdeaAgent = false; 
+      this.isWaitingForIdeaAgent = false;
       if (this.ideaAgentResponseListener) {
         this.ideaAgentResponseListener.unsubscribe();
       }

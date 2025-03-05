@@ -1,10 +1,12 @@
+// frontend/src/app/components/ck-ideas/ck-ideas.component.scss
+
 // Define some color variables (adjust these to match your app's theme)
-$toolbar-color: #3a34b3; 
+$toolbar-color: #3a34b3;
 $primary-color: #673ab7; // Example: Deep Purple (Material Design primary)
 $accent-color: #ffc107;  // Example: Amber (Material Design accent)
 $background-color: #f5f5f5; // Light gray background
 $card-background: #ffffff;  // White card background
-$heading-background: lighten($toolbar-color,15%);
+$heading-background: lighten($toolbar-color, 15%);
 
 .context-bar {
   display: flex;
@@ -21,52 +23,85 @@ $heading-background: lighten($toolbar-color,15%);
 
 .main-container {
   display: flex;
-  height: calc(100vh - 64px - 42px);
-  background-color: $background-color; // Use variable
+  height: calc(100vh - 64px - 62px - 40px); // Initial height
+  background-color: $background-color;
 
-  .left-pane,
-  .right-pane {
-    flex: 1;
+  .left-pane {
+    flex: 2; // Grow twice as much as the right pane
     padding: 20px;
-    overflow-y: auto;
     border-right: 1px solid #ccc;
-    background-color: $card-background;  // White background for the "card"
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); // Material Design shadow (adjust as needed)
-    margin: 10px; // Add margin to separate the cards
-    border-radius: 4px; // Rounded corners
+    background-color: $card-background;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 10px;
+    border-radius: 4px;
+  }
 
+  .right-pane {
+    flex: 1; // Grow at the default rate
+    padding: 20px;
+    border-right: none; // No border on the last child
+    background-color: $card-background;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 10px;
+    border-radius: 4px;
+  
     &:last-child {
       border-right: none;
     }
-
-      h2 {
-        margin-top: 0;
-        margin-bottom: 1rem;
-        background-color: $heading-background; // Use variable
-        color: white;
-        padding: 10px;
-        border-radius: 4px; // Consistent rounded corners
-      }
   }
 
   .left-pane {
-      .ai-summary-content{
-        min-height: 100px;
-        margin-bottom: 1rem;
-      }
+    height: calc(100vh - 64px - 62px - 60px); // Fixed height for the entire left pane
+
+    .ai-summary-header {
+      display: flex;
+      align-items: center;
+      background-color: $heading-background;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      position: sticky;  // Make the header sticky
+      top: 0;          // Stick to the top
+      z-index: 2;      // Ensure it's above the content
+      // Add a subtle shadow to separate header from content when scrolling
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
+      h2 {
+        margin-bottom: 0;
+      }
+
+
+    .ai-summary-content {
+      min-height: 100px;
+      padding-top: 1rem;
+      overflow-y: auto; // Enable scrolling for the content
+      height: calc(100% - 100px); // remaining height after the header.  52px is a good approx.
+    }
+  }
 
   .right-pane {
-      display: flex;
-      flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 64px - 62px - 60px); // Subtract toolbar, context bar, and margins
+    overflow-y: auto; // Add scroll to the overall right pane
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      background-color: $heading-background;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+    }
   }
 }
-
 .chat-feed {
     overflow-y: auto;
-    height: calc(100% - 140px); /*IMPORTANT TO ADJUST*/
+    height: calc(100% - 140px);
     margin-bottom: 1rem;
 }
+
 .waiting-message {
   display: flex;
   flex-direction: column;
@@ -74,38 +109,29 @@ $heading-background: lighten($toolbar-color,15%);
   margin-top: 20px;
 }
 
-// Message styles (keep these)
-.user-message {
-  text-align: right;
-  margin-bottom: 10px;
-}
-.message-label {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-.message-card {
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
-.user-card {
-  background-color: #d1c4e9;
-  text-align: right;
-}
-.ai-card {
-  background-color: #e0e0e0;
-  text-align: left;
-}
-
-.spinner {
-    margin: 70px auto;
-    background: transparent;
-}
-.heading { //Not currently in use
-    display: flex;
-    align-items: center;
+.user-message, .ai-message {
     margin-bottom: 10px;
 }
+.message-label {
+    font-weight: bold;
+}
+
+.message-card {
+    padding: 10px;
+    border-radius: 4px;
+}
+.user-card {
+    background-color: #d1c4e9;
+}
+
+.ai-card {
+    background-color: #e0e0e0;
+}
+.spinner {
+  margin: 70px auto;
+  background: transparent;
+}
+
 .right-pane > div:last-child {
     padding-bottom: 20px;
 }

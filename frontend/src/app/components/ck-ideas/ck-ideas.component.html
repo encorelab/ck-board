@@ -36,30 +36,36 @@
 <div class="context-bar">
   <span class="context-label">Context: </span>
   <span *ngFor="let item of selectedContexts; let last = last">
-    {{ item.name }}{{ !last ? ',&nbsp;' : '' }}
+      {{ item === 'None' ? 'None' : (item.name ? item.name : '') }}{{ !last ? ',&nbsp;' : '' }}
   </span>
-  <span style="flex: 1 1 auto"></span> <button
-    mat-icon-button
-    matTooltip="Add context"
-    [matMenuTriggerFor]="contextMenu"
-  >
-    <mat-icon>add</mat-icon>
+  <span style="flex: 1 1 auto"></span>
+  <button mat-icon-button matTooltip="Add context" [matMenuTriggerFor]="contextMenu">
+      <mat-icon>add</mat-icon>
   </button>
 </div>
 
 <div class="main-container">
   <div class="left-pane">
-    <h2>AI Summary</h2>
+    <div class="ai-summary-header">
+      <h2>AI Summary</h2>
+      <span style="flex: 1 1 auto"></span>
+      <button
+        mat-icon-button
+        color="primary"
+        (click)="refreshIdeaAgent()"
+        [disabled]="isWaitingForIdeaAgent"
+        matTooltip="Refresh AI Summary"
+      >
+        <mat-icon style="color: white;">refresh</mat-icon>
+      </button>
+    </div>
     <div class="ai-summary-content">
       <div *ngIf="ideaAgentResponse" [innerHTML]="ideaAgentResponse"></div>
       <div *ngIf="isWaitingForIdeaAgent" class="waiting-message">
-          <mat-spinner diameter="30"></mat-spinner>
-          <p>{{ waitingIdeaMessage }}</p>
-        </div>
+        <mat-spinner diameter="30"></mat-spinner>
+        <p>{{ waitingIdeaMessage }}</p>
+      </div>
     </div>
-     <button mat-raised-button color="primary" (click)="refreshIdeaAgent()" [disabled]="isWaitingForIdeaAgent">
-        Refresh
-      </button>
   </div>
 
   <div class="right-pane">

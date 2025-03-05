@@ -36,7 +36,7 @@
 <div class="context-bar">
   <span class="context-label">Context: </span>
   <span *ngFor="let item of selectedContexts; let last = last">
-    {{ item.name }}{{ !last ? ', ' : '' }}
+    {{ item.name }}{{ !last ? ',&nbsp;' : '' }}
   </span>
   <span style="flex: 1 1 auto"></span> <button
     mat-icon-button

@@ -412,7 +412,7 @@ async function sendMessage(
           socket.emit(SocketEvent.AI_RESPONSE, {
             status: 'Error',
             errorMessage: 'No response stream received from the language model',
-            type: "teacher_agent",
+            type: type,
           });
           return;
         }
@@ -429,7 +429,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Processing',
               response: partialResponse,
-              type: "teacher_agent",
+              type: type,
             });
           }
 
@@ -454,7 +454,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Completed',
               response: finalResponse.response,
-              type: "teacher_agent"
+              type: type
             });
 
             // Save AI response
@@ -469,7 +469,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Error',
               errorMessage: errorMessage,
-              type: "teacher_agent"
+              type: type
             });
           }
 
@@ -544,7 +544,7 @@ async function sendMessage(
     socket.emit(SocketEvent.AI_RESPONSE, {
       status: 'Error',
       errorMessage: errorMessage,
-      type: "teacher_agent"
+      type: type
     });
   }
 }
@@ -905,7 +905,7 @@ async function constructAndSendMessage(
     postsAsKeyValuePairs + // Concatenate variables here
     `\nHere are the buckets:\n` +
     JSON.stringify(bucketsToSend, null, 2) +
-    `\nUser prompt: ${prompt}`;
+    `\nUser prompt:\n\n${prompt}`;
 
   try {
     const result = await generativeModel.generateContentStream(message);

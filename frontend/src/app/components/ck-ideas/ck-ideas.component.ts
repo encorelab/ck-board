@@ -20,6 +20,7 @@ import { AuthUser, Role } from 'src/app/models/user';
 import { BoardService } from 'src/app/services/board.service';
 import { BucketService } from 'src/app/services/bucket.service';
 import { CommentService } from 'src/app/services/comment.service';
+import Post, { PostType } from 'src/app/models/post';
 import { PostService } from 'src/app/services/post.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
@@ -27,7 +28,6 @@ import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
 import { CanvasService } from 'src/app/services/canvas.service';
-import Post, { PostType } from 'src/app/models/post';
 import { HttpClient } from '@angular/common/http';
 import { saveAs } from 'file-saver';
 import { SnackbarService } from 'src/app/services/snackbar.service';
@@ -58,7 +58,7 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   ViewType: typeof ViewType = ViewType;
   BoardScope: typeof BoardScope = BoardScope;
   isTeacher: boolean = false;
-  canvasUsed: boolean = false; //determines if the conversation involving canvas is used
+  canvasUsed: boolean = false;
 
   viewType = ViewType.IDEAS;
 
@@ -78,8 +78,54 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   ideaAgentResponse = '';
   isWaitingForIdeaAgent = false;
   waitingIdeaMessage = 'Waiting for AI Response...';
-  private readonly ideaAgentPrompt =
-    'Summarize the following context into concise key ideas:'; // Hardcoded prompt base
+  private readonly ideaAgentPrompt = `
+You are a helpful assistant for teachers. You will be provided with a set of student posts related to a lecture topic.
+Your task is to analyze these posts and provide a concise summary that will be useful for the teacher during a lecture.
+Focus on identifying key insights, common themes, potential misconceptions, and highlighting the most insightful contributions,
+but keep names of authors confidential.
+
+**Here's the format you should follow (use Markdown for formatting):**
+
+**Total Posts:** [total # of posts] | **Unique Contributors:** [total # of unique authors] | **Avg Posts Per Contributor:** [average number of posts per unique author]
+\n\n
+**Summary:**
+\n\n
+[Provide a concise summary of the main points, ideas, and arguments presented in the student posts.  Aim for 3-5 sentences.]
+\n\n
+---
+\n\n
+**Themes:**
+\n\n
+[Identify 3-5 major themes or recurring ideas that emerge from the posts.  List them clearly, separated by '|'. Use bolding. Examples:
+  Collaboration | Peer Feedback | Time Management | Misunderstanding of X | Application to Y
+]
+\n\n
+---
+\n\n
+**Top Upvoted Post:**
+\n
+- **Title:** [Title of the post with the most upvotes]
+- **Synopsis:** [Briefly (1-2 sentences) describe the content of the top-upvoted post. Explain *why* it might have received the most upvotes.]
+\n\n
+---
+\n\n
+**Potential Misconceptions:**
+\n
+[If any posts suggest misunderstandings or incorrect assumptions, list them here.  Format each as:
+- **Title:** [Title of the post]
+- **Synopsis:** [Briefly explain the potential misconception.  Be constructive and suggest how the teacher might address it.]
+]\n\n
+(If no clear misconceptions, write "**No significant misconceptions identified.**")
+\n\n
+---
+\n\n
+**Additional Notes (Optional):**
+\n\n
+[Include any other relevant observations that might be useful to the teacher. For example, if a particular post sparked a lot of discussion (comments), or if there's a significant divergence of opinion. Use paragraphs as needed.]
+\n\n
+---
+(P.S. Use single quotes when quoting any text)
+`;
   selectedContexts: any[] = []; // To store selected buckets/canvas
   ideaAgentResponseListener: Subscription | undefined;
 
@@ -113,22 +159,23 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     this.board = board; // Assign the returned board
 
     if (this.boardID && this.projectID) {
-        await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-            if (buckets) {
-                this.ideaBuckets = buckets;
-            }
-        });
-        this.socketService.connect(this.user.userID, this.boardID);
-
-        if (this.board) {  // This check is now more reliable
-            this.selectedContexts.push(this.board);
+      await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
+        if (buckets) {
+          this.ideaBuckets = buckets;
         }
-        this.refreshIdeaAgent();
+      });
+      this.socketService.connect(this.user.userID, this.boardID);
+
+      if (this.board) {
+        this.selectedContexts.push(this.board);
+        this.canvasUsed = true;
+      }
+      this.refreshIdeaAgent();
     } else {
-        console.error("Failed to configure board!");
-        this.router.navigate(['/error']);
+      console.error('Failed to configure board!');
+      this.router.navigate(['/error']);
     }
-}
+  }
 
   initGroupEventsListener() {
     for (const [k, v] of this.groupEventToHandler) {
@@ -137,33 +184,40 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     }
   }
 
-  async configureBoard(): Promise<{ boardID?: string; projectID?: string; board?: Board }> { // Return board
+  async configureBoard(): Promise<{
+    boardID?: string;
+    projectID?: string;
+    board?: Board;
+  }> {
+    // Return board
     const map = this.activatedRoute.snapshot.paramMap;
     if (map.has('boardID') && map.has('projectID')) {
-        const boardID = map.get('boardID') ?? undefined;
-        const projectID = map.get('projectID') ?? undefined;
+      const boardID = map.get('boardID') ?? undefined;
+      const projectID = map.get('projectID') ?? undefined;
 
-        if (boardID && projectID) {
-            const board = await this.boardService.get(boardID);
-            if (board) {
-                // No longer directly assigning to this.board here
-                if (!this.isTeacher && board.viewSettings && !board.viewSettings.allowIdeas) {
-                    this.router.navigateByUrl(
-                      `project/<span class="math-inline">{projectID}/board/</span>{boardID}/${board.defaultView?.toLowerCase()}`
-                    );
-                }
-                 this.projectService.get(projectID).then((project) => { //moved here
-                    this.project = project;
-                });
-                return { boardID, projectID, board }; // Return the board object
-            } else {
-                return { boardID, projectID, board: undefined }; // Explicitly return undefined
-            }
+      if (boardID && projectID) {
+        const board = await this.boardService.get(boardID);
+        if (board) {
+          if (
+            !this.isTeacher &&
+            board.viewSettings &&
+            !board.viewSettings.allowIdeas
+          ) {
+            this.router.navigateByUrl(
+              `project/<span class="math-inline">{projectID}/board/</span>{boardID}/${board.defaultView?.toLowerCase()}`
+            );
+          }
+          this.projectService.get(projectID).then((project) => {
+            this.project = project;
+          });
+          return { boardID, projectID, board }; // Return the board object
+        } else {
+          return { boardID, projectID, board: undefined }; // Explicitly return undefined
         }
+      }
     }
     return { board: undefined }; // Return undefined board
-}
-
+  }
 
   copyEmbedCode() {
     const url = window.location.href + '?embedded=true';
@@ -215,7 +269,6 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
 
   askAI() {
     if (this.isProcessingAIRequest) {
-      // Check the flag
       return;
     }
     this.isProcessingAIRequest = true;
@@ -224,95 +277,111 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     this.aiResponse = '';
 
     // 1. Fetch all posts for the current board
-    this.fetchBoardPosts().then((posts) => {
-      const currentPrompt = this.aiPrompt;
-      this.aiPrompt = ''; // Clear the prompt field
+    this.fetchBoardPosts()
+      .then((posts) => {
+        const currentPrompt = this.aiPrompt;
+        this.aiPrompt = ''; // Clear the prompt field
 
-      // Construct the complete prompt including chat history
-      const fullPromptHistory = this.constructPromptWithHistory(currentPrompt);
+        // Construct the complete prompt including chat history
+        const fullPromptHistory =
+          this.constructPromptWithHistory(currentPrompt);
 
-      this.chatHistory.push({ role: 'user', content: currentPrompt });
+        this.chatHistory.push({ role: 'user', content: currentPrompt });
 
-      // Wait for the change detection to run and render the new message
-      this.changeDetectorRef.detectChanges();
-      this.scrollToBottom();
+        // Wait for the change detection to run and render the new message
+        this.changeDetectorRef.detectChanges();
+        this.scrollToBottom();
 
-      // 2. Send data and prompt to the backend via WebSocket
-      this.socketService.emit(SocketEvent.AI_MESSAGE, {
-        posts,
-        currentPrompt: currentPrompt,
-        fullPromptHistory: fullPromptHistory,
-        boardId: this.board?.boardID ?? '',
-        userId: this.user.userID,
-        type: 'teacher_agent',
-      });
+        // 2. Send data and prompt to the backend via WebSocket
+        this.socketService.emit(SocketEvent.AI_MESSAGE, {
+          posts,
+          currentPrompt: currentPrompt,
+          fullPromptHistory: fullPromptHistory,
+          boardId: this.board?.boardID ?? '',
+          userId: this.user.userID,
+          type: 'teacher_agent',
+        });
 
-      // 3. Listen for WebSocket events
-      if (this.aiResponseListener) {
-        this.aiResponseListener.unsubscribe();
-      }
-      this.aiResponseListener = this.socketService.listen(
-        SocketEvent.AI_RESPONSE,
-        (data: any) => {
-          try {
-            if (data.type === 'teacher_agent') {
-              switch (data.status) {
-                case 'Received': {
-                  this.updateWaitingForAIResponse('Received message...');
-                  break;
+        // 3. Listen for WebSocket events
+        if (this.aiResponseListener) {
+          this.aiResponseListener.unsubscribe();
+        }
+        this.aiResponseListener = this.socketService.listen(
+          SocketEvent.AI_RESPONSE,
+          (data: any) => {
+            try {
+              if (data.type === 'teacher_agent') {
+                switch (data.status) {
+                  case 'Received': {
+                    this.updateWaitingForAIResponse('Received message...');
+                    break;
+                  }
+                  case 'Processing': {
+                    this.updateWaitingForAIResponse(data.response);
+                    break;
+                  }
+                  case 'Completed': {
+                    const dataResponse = data.response;
+                    this.aiResponse = this.markdownToHtml(dataResponse || '');
+                    this.chatHistory.push({
+                      role: 'assistant',
+                      content: this.aiResponse,
+                    });
+                    this.stopWaitingForAIResponse();
+                    this.isProcessingAIRequest = false; // Corrected placement
+                    break;
+                  }
+                  case 'Error': {
+                    console.error('AI request error:', data.errorMessage);
+                    this.chatHistory.push({
+                      role: 'assistant',
+                      content: data.errorMessage,
+                    });
+                    this.stopWaitingForAIResponse();
+                    this.isProcessingAIRequest = false; // Corrected placement
+                    break;
+                  }
+                  default: {
+                    console.warn('Unknown status:', data.status);
+                  }
                 }
-                case 'Processing': {
-                  this.updateWaitingForAIResponse(data.response);
-                  break;
-                }
-                case 'Completed': {
-                  const dataResponse = data.response;
-                  this.aiResponse = this.markdownToHtml(dataResponse || '');
-                  this.chatHistory.push({
-                    role: 'assistant',
-                    content: this.aiResponse,
-                  });
-                  this.stopWaitingForAIResponse();
-                  break;
-                }
-                case 'Error': {
-                  console.error('AI request error:', data.errorMessage);
-                  this.chatHistory.push({
-                    role: 'assistant',
-                    content: data.errorMessage,
-                  });
-                  this.stopWaitingForAIResponse();
-                  break;
-                }
-                default: {
-                  console.warn('Unknown status:', data.status);
+
+                if (data.status === 'Completed' || data.status === 'Error') {
+                  if (this.aiResponseListener) {
+                    this.aiResponseListener.unsubscribe();
+                  }
                 }
               }
-
-              if (data.status === 'Completed' || data.status === 'Error') {
-                if (this.aiResponseListener) {
-                  this.aiResponseListener.unsubscribe();
-                }
+              this.changeDetectorRef.detectChanges();
+              this.scrollToBottom();
+            } catch (error) {
+              this.chatHistory.push({
+                role: 'assistant',
+                content:
+                  'An error occurred. Please refresh your browser and try again.\n\n' +
+                  error,
+              });
+              this.stopWaitingForAIResponse();
+              this.isProcessingAIRequest = false; //Add this for safety
+              if (this.aiResponseListener) {
+                this.aiResponseListener.unsubscribe();
               }
-            }
-            this.changeDetectorRef.detectChanges();
-            this.scrollToBottom();
-          } catch (error) {
-            this.chatHistory.push({
-              role: 'assistant',
-              content:
-                'An error occurred. Please refresh your browser and try again.\n\n' +
-                error,
-            });
-            this.stopWaitingForAIResponse();
-            if (this.aiResponseListener) {
-              this.aiResponseListener.unsubscribe();
             }
           }
+        );
+      })
+      .catch((error) => {
+        // Handle fetchBoardPosts errors
+        console.error('Error fetching posts for AI:', error);
+        this.openSnackBar(
+          'Failed to fetch posts for the AI. Please try again.'
+        );
+        this.stopWaitingForAIResponse();
+        this.isProcessingAIRequest = false;
+        if (this.aiResponseListener) {
+          this.aiResponseListener.unsubscribe();
         }
-      );
-    });
-    this.isProcessingAIRequest = false;
+      });
   }
 
   // Helper function to construct the prompt with chat history
@@ -337,8 +406,8 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
       return posts;
     } catch (error) {
       console.error('Error fetching board posts:', error);
-      // Handle the error, e.g., show an error message to the user
-      return []; // Return an empty array in case of an error
+      // Handle the error - propagate it
+      throw error; // Re-throw the error to be caught in askAI()
     }
   }
 
@@ -350,7 +419,6 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
 
     this.http
       .post('chat-history', data, {
-        //  Make sure your backend endpoint is correct
         responseType: 'blob',
       })
       .subscribe(
@@ -485,90 +553,147 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     this.isWaitingForIdeaAgent = false;
     this.waitingIdeaMessage = '';
   }
-  refreshIdeaAgent() {
+
+  // New helper function to get selected bucket IDs
+  getSelectedBucketIds(): string[] {
+    return this.selectedContexts
+      .filter((context) => context.bucketID) // Filter for buckets (assuming buckets have a bucketID property)
+      .map((bucket) => bucket.bucketID);
+  }
+
+  async fetchPostsForIdeaAgent(canvasUsed: boolean, bucketIDs: string[]): Promise<any[]> {
+    try {
+      let allPosts: any[] = [];
+  
+      if (canvasUsed) {
+        const canvasPosts = await this.postService.getAllByBoard(this.boardID);
+        allPosts = allPosts.concat(canvasPosts.filter(post => post.type === PostType.BOARD));
+      }
+  
+      if (bucketIDs.length > 0) {
+        const bucketPostsPromises = bucketIDs.map(bucketID => this.postService.getAllByBucket(bucketID));
+        const bucketPostsArrays = await Promise.all(bucketPostsPromises);
+  
+        // Extract posts from each bucket response and add to allPosts, avoiding duplicates
+        bucketPostsArrays.forEach(bucketResponse => {
+          if (bucketResponse && bucketResponse.posts && Array.isArray(bucketResponse.posts)) {
+            bucketResponse.posts.forEach((post: any) => {
+              // Check for duplicates using postID before adding
+              if (!allPosts.some(existingPost => existingPost.postID === post.postID)) {
+                allPosts.push(post);
+              }
+            });
+          }
+        });
+      }
+  
+      return allPosts;
+  
+    } catch (error) {
+      console.error('Error fetching posts for Idea Agent:', error);
+      this.openSnackBar('Failed to fetch posts for the Idea Agent. Please try again.');
+      throw error;
+    }
+  }
+
+  async refreshIdeaAgent() {
     if (this.isWaitingForIdeaAgent) {
-      return; // Prevent concurrent requests
+      return;
     }
 
     this.startWaitingForIdeaAgent();
     this.ideaAgentResponse = ''; // Clear previous response
 
-    // Prepare context data (same logic as in askAI, but for the idea agent)
-    const posts = this.selectedContexts.flatMap((context) => {
-      if (context.posts) {
-        return context.posts;
-      } else if (context.postIDs) {
-        return context.postIDs.map((id: string) => {
-          return { postID: id };
-        }); //just need the IDs to keep consistent with post structure
+    try {
+      const bucketIDs = this.getSelectedBucketIds();
+
+      const posts = await this.fetchPostsForIdeaAgent(
+        this.canvasUsed,
+        bucketIDs
+      );
+
+      const fullPrompt = `${this.ideaAgentPrompt}`;
+
+      // Emit to AI_MESSAGE with type: 'idea_agent'
+      if (this.ideaAgentResponseListener) {
+        this.ideaAgentResponseListener.unsubscribe();
       }
-    });
+      this.socketService.emit(SocketEvent.AI_MESSAGE, {
+        posts,
+        currentPrompt: fullPrompt,
+        fullPromptHistory: fullPrompt,
+        boardId: this.board?.boardID,
+        userId: this.user.userID,
+        type: 'idea_agent',
+      });
 
-    // Construct the full prompt
-    const fullPrompt = `${this.ideaAgentPrompt} ${JSON.stringify(posts)}`;
-
-    // Emit to a *different* socket event for the Idea Agent
-    this.socketService.emit(SocketEvent.AI_IDEA_MESSAGE, {
-      // Use a different event!
-      posts,
-      prompt: fullPrompt, // Send the full prompt
-      boardId: this.board?.boardID,
-      userId: this.user.userID,
-    });
-
-    // Listen for the Idea Agent's specific response event
-    this.ideaAgentResponseListener = this.socketService.listen(
-      SocketEvent.AI_IDEA_RESPONSE, // Different listener!
-      (data: any) => {
-        try {
-          switch (data.status) {
-            case 'Received': {
-              this.updateWaitingForIdeaAgent('Received message...');
-              break;
+      // Listen for AI_RESPONSE, but check the type
+      this.ideaAgentResponseListener = this.socketService.listen(
+        SocketEvent.AI_RESPONSE, 
+        (data: any) => {
+          try {
+            if (data.type === 'idea_agent') {
+              switch (data.status) {
+                case 'Received': {
+                  this.updateWaitingForIdeaAgent('Received message...');
+                  break;
+                }
+                case 'Processing': {
+                  this.updateWaitingForIdeaAgent(data.response);
+                  break;
+                }
+                case 'Completed': {
+                  const dataResponse = data.response;
+                  this.ideaAgentResponse = this.markdownToHtml(
+                    dataResponse || ''
+                  );
+                  this.stopWaitingForIdeaAgent();
+                  this.isWaitingForIdeaAgent = false; 
+                  break;
+                }
+                case 'Error': {
+                  console.error('AI request error:', data.errorMessage);
+                  this.ideaAgentResponse = data.errorMessage;
+                  this.stopWaitingForIdeaAgent();
+                  this.isWaitingForIdeaAgent = false;
+                  break;
+                }
+                default: {
+                  console.warn('Unknown status:', data.status);
+                }
+              }
+              if (data.status === 'Completed' || data.status === 'Error') {
+                if (this.ideaAgentResponseListener) {
+                  this.ideaAgentResponseListener.unsubscribe();
+                }
+              }
             }
-            case 'Processing': {
-              this.updateWaitingForIdeaAgent(data.response);
-              break;
-            }
-            case 'Completed': {
-              const dataResponse = data.response;
-              this.ideaAgentResponse = this.markdownToHtml(dataResponse || '');
-              this.stopWaitingForIdeaAgent();
-              break;
-            }
-            case 'Error': {
-              console.error('AI request error:', data.errorMessage);
-              this.ideaAgentResponse = data.errorMessage;
-              this.stopWaitingForIdeaAgent();
-              break;
-            }
-            default: {
-              console.warn('Unknown status:', data.status);
-            }
-          }
-          if (data.status === 'Completed' || data.status === 'Error') {
+            this.changeDetectorRef.detectChanges();
+          } catch (error) {
+            this.ideaAgentResponse =
+              'An error occurred. Please refresh your browser and try again.\n\n' +
+              error;
+            this.stopWaitingForIdeaAgent();
+            this.isWaitingForIdeaAgent = false;
             if (this.ideaAgentResponseListener) {
               this.ideaAgentResponseListener.unsubscribe();
             }
           }
-          this.changeDetectorRef.detectChanges(); //important
-        } catch (error) {
-          this.ideaAgentResponse =
-            'An error occurred. Please refresh your browser and try again.\n\n' +
-            error;
-          this.stopWaitingForIdeaAgent();
-          if (this.ideaAgentResponseListener) {
-            this.ideaAgentResponseListener.unsubscribe();
-          }
         }
+      );
+    } catch (error) {
+      this.stopWaitingForIdeaAgent();
+      this.isWaitingForIdeaAgent = false; 
+      if (this.ideaAgentResponseListener) {
+        this.ideaAgentResponseListener.unsubscribe();
       }
-    );
+    }
   }
 
   async ngOnDestroy() {
     this.unsubListeners.forEach((s) => s.unsubscribe());
-    if (this.boardID) { // Check for undefined
-        this.socketService.disconnect(this.user.userID, this.boardID);
+    if (this.boardID) {
+      this.socketService.disconnect(this.user.userID, this.boardID);
     }
     if (this.aiResponseListener) {
       this.aiResponseListener.unsubscribe();

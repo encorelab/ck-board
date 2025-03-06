@@ -127,8 +127,7 @@
 </div>
 
 <mat-menu #contextMenu="matMenu">
-  <button mat-menu-item *ngIf="!canvasUsed" (click)="toggleContext(board)">
-    <span>CANVAS: {{ board?.name }}</span>
+  <button mat-menu-item (click)="toggleContext(board)">  <span>CANVAS: {{ board?.name }}</span>
     <mat-icon *ngIf="isSelected(board)">check</mat-icon>
   </button>
   <button

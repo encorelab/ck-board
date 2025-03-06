@@ -14,6 +14,9 @@ export class ProjectModel {
   @prop({ required: true })
   public projectID!: string;
 
+  @prop({ required: true, default: false })
+  public isScoreRun!: boolean;
+
   @prop({ required: true })
   public teacherIDs!: string[];
 

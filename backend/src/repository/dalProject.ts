@@ -4,6 +4,9 @@ import mongoose from 'mongoose';
 import dalBoard from './dalBoard';
 import dalLearnerModel from './dalLearnerModel';
 import { Role } from '../models/User';
+import dalGroup from './dalGroup';
+import dalUser from './dalUser';
+import { addUserToWorkflows } from '../utils/project.helpers';
 
 export const getById = async (id: string) => {
   try {
@@ -40,7 +43,40 @@ export const addStudent = async (code: string, userID: string) => {
   if (!project) {
     throw new UnauthorizedError('Invalid Join Code!');
   }
-  await project.updateOne({ $push: { members: userID } });
+
+  // 1. Check if the user is already a member.  Prevent duplicates.
+  if (project.members.includes(userID)) {
+    return project; // Or throw an error, as appropriate.
+  }
+
+  // 2.  Get User and Check Role.
+  const user = await dalUser.findByUserID(userID);
+  if (!user) {
+    throw new Error(`User with ID ${userID} not found.`);
+  }
+  if (user.role !== Role.STUDENT) {
+    throw new Error('Invalid Permissions');
+  }
+
+  // 3. Add to project
+  project.members.push(userID);
+  await project.save();
+
+  // 4. Find/Create "All Students" group
+  let allStudentsGroup = await dalGroup.getAllStudentsGroup(project.projectID);
+  if (!allStudentsGroup) {
+    allStudentsGroup = await dalGroup.create({
+      groupID: 'all-students-' + project.projectID,
+      projectID: project.projectID,
+      members: [],
+      name: 'All Students',
+      isDefault: true,
+    });
+  }
+
+  // 5. Add to "All Students" group and call a function to the user to existing workflows
+  await dalGroup.addUser(allStudentsGroup.groupID, [userID]);
+  await addUserToWorkflows(allStudentsGroup.groupID, userID);
 
   return project;
 };

@@ -2,9 +2,11 @@ import { ComponentType } from '@angular/cdk/overlay';
 import {
   Component,
   OnDestroy,
+  Input,
   OnInit,
   ViewChild,
   ViewEncapsulation,
+  HostListener,
 } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +14,7 @@ import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import {
+  AssignmentType,
   ExpandedGroupTask,
   GroupTask,
   GroupTaskStatus,
@@ -27,15 +30,18 @@ import { WorkflowService } from 'src/app/services/workflow.service';
 import { BucketsModalComponent } from '../buckets-modal/buckets-modal.component';
 import { ListModalComponent } from '../list-modal/list-modal.component';
 import { SwiperComponent } from 'swiper/angular';
-import SwiperCore, { EffectCards } from 'swiper';
+import SwiperCore, {
+  EffectCards,
+  SwiperOptions,
+  Navigation,
+  Pagination,
+} from 'swiper'; // Import EffectCards
 import { HTMLPost } from '../html-post/html-post.component';
 import { Group } from 'src/app/models/group';
 import { GroupService } from 'src/app/services/group.service';
 import Converters from 'src/app/utils/converters';
 import { PostService } from 'src/app/services/post.service';
 import {
-  NEEDS_ATTENTION_TAG,
-  POST_TAGGED_BORDER_THICKNESS,
   STUDENT_POST_COLOR,
   TEACHER_POST_COLOR,
   SocketEvent,
@@ -48,8 +54,8 @@ import Post, { DisplayAttributes, PostType } from 'src/app/models/post';
 import { CanvasService } from 'src/app/services/canvas.service';
 import { GroupTaskService } from 'src/app/services/groupTask.service';
 
-// install Swiper modules
-SwiperCore.use([EffectCards]);
+// install Swiper modules.
+SwiperCore.use([EffectCards, Navigation, Pagination]);
 
 @Component({
   selector: 'app-ck-workspace',
@@ -59,6 +65,11 @@ SwiperCore.use([EffectCards]);
 })
 export class CkWorkspaceComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
+
+  @Input() isModalView = false;
+  @Input() projectID: string; 
+  @Input() boardID: string;  
+  @Input() embedded: boolean = false;
 
   loading = false;
 
@@ -90,9 +101,18 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   TaskActionType: typeof TaskActionType = TaskActionType;
   TaskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
-  embedded: boolean = false; // If standalone board embed
   viewType = ViewType.WORKSPACE;
   isTeacher: boolean = false;
+  isSidenavOpen: boolean = true; // Control the sidenav's open/closed state
+  showExpandIcon: boolean = false;
+
+  // Swiper configuration for responsiveness and card effect
+  swiperConfig: SwiperOptions = {
+    effect: 'cards', // Use the cards effect
+    grabCursor: true,
+    navigation: true, // Keep navigation
+    pagination: { clickable: true }, // Keep pagination
+  };
 
   constructor(
     public userService: UserService,
@@ -115,44 +135,94 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.embedded = true;
       }
     });
+    this.updateSidenavState(); // Set initial sidenav state based on screen size.
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
-    this.loadWorkspaceData();
+    // Prioritize Input properties.  If they are provided, use them.
+    if (this.projectID && this.boardID) {
+        await this.loadWorkspaceData(); // Load with Input IDs
+        this.socketService.connect(this.user.userID, this.boardID); //Moved to after board loaded
+    } else {
+      // Fallback to ActivatedRoute ONLY if inputs are not provided.
+       this.activatedRoute.paramMap.subscribe(async params => {
+        this.boardID = params.get('boardID')!;
+        this.projectID = params.get('projectID')!;
+
+        if (!this.boardID || !this.projectID) {
+          console.error("Missing boardID or projectID in route parameters");
+          this.router.navigate(['/error']); // Redirect to an error page
+          return; // Stop execution
+        }
+
+        await this.loadWorkspaceData();
+        this.socketService.connect(this.user.userID, this.boardID);
+       });
+    }
   }
 
-  async loadWorkspaceData(): Promise<boolean> {
-    const map = this.activatedRoute.snapshot.paramMap;
-    let boardID: string, projectID: string;
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    this.updateSidenavState();
+  }
 
-    if (map.has('boardID') && map.has('projectID')) {
-      boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-      projectID = this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-    } else {
-      return this.router.navigate(['error']);
+  updateSidenavState() {
+    const wideWidth = window.innerWidth > 768;
+    this.isSidenavOpen = wideWidth; // Or whatever breakpoint you prefer
+    this.showExpandIcon = !wideWidth;
+
+    // Force open on mobile, on initial load/refresh ONLY
+    if (!wideWidth) {
+      // If it's a mobile screen
+      this.isSidenavOpen = true; // Set it to open
+      this.showExpandIcon = false;
+    }
+  }
+
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;
+    if (window.innerWidth <= 768) {
+      this.showExpandIcon = !this.isSidenavOpen;
+    }
+  }
+
+
+  async loadWorkspaceData(): Promise<boolean> {
+    // No longer need to get from route since we prioritize inputs
+    if (!this.boardID || !this.projectID) {
+        console.error("boardId or projectId is null");
+        return false;
     }
 
-    const fetchedBoard = await this.boardService.get(boardID);
+    const fetchedBoard = await this.boardService.get(this.boardID);
     if (!fetchedBoard) {
+      console.error("board not found")
       this.router.navigate(['error']);
-      return false; // or true depending on your flow
+      return false;
     }
     this.board = fetchedBoard;
-    this.project = await this.projectService.get(projectID);
-    this.group = await this.groupService.getByProjectUser(
-      projectID,
-      this.user.userID
-    );
+    this.project = await this.projectService.get(this.projectID);
+    //get group may return undefined.
+    try {
+        this.group = await this.groupService.getByProjectUser(
+          this.projectID,
+          this.user.userID
+        );
+    }
+    catch (error: any)
+    {
+        console.error("Could not fetch group");
+    }
 
     if (!this.isTeacher && !this.board.viewSettings?.allowWorkspace) {
       this.router.navigateByUrl(
-        `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
+        `project/<span class="math-inline">{this.projectID}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
       );
     }
 
-    const tasks = await this.workflowService.getGroupTasks(boardID, 'expanded');
+    const tasks = await this.workflowService.getGroupTasks(this.boardID, 'expanded');
     tasks.forEach((t) => {
       if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
         this.inactiveGroupTasks.push(t);
@@ -162,8 +232,26 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.completeGroupTasks.push(t);
       }
     });
-    this.socketService.connect(this.user.userID, this.board.boardID);
+
     return true;
+  }
+
+  async refreshWorkspace() {
+    this.loading = true;
+
+    // Clear existing data
+    this.inactiveGroupTasks = [];
+    this.activeGroupTasks = [];
+    this.completeGroupTasks = [];
+    this.runningGroupTask = null;
+    this.posts = [];
+    this.submittedPosts = [];
+    this.members = [];
+
+    // Reload workspace data
+    await this.loadWorkspaceData(); // Re-fetches and populates tasks.
+
+    this.loading = false;
   }
 
   async begin(expandedGroupTask: ExpandedGroupTask): Promise<void> {
@@ -178,6 +266,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
     this.activeGroupTasks.push(expandedGroupTask);
     this.view(expandedGroupTask);
+
+    // Close sidenav on mobile
+    if (window.innerWidth <= 768) {
+      this.isSidenavOpen = false;
+      this.showExpandIcon = true;
+    }
   }
 
   async view(groupTask: ExpandedGroupTask): Promise<void> {
@@ -185,7 +279,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.runningGroupTask = groupTask;
     this.runningGroupTask.groupTask = await this.groupTaskService.getGroupTask(
       this.runningGroupTask.group.groupID,
-      this.runningGroupTask.workflow.workflowID
+      this.runningGroupTask.workflow.workflowID,
+      this.user.userID
     );
     this.currentGroupProgress = this._calcGroupProgress(this.runningGroupTask);
     this.averageGroupProgress = await this._calcAverageProgress(
@@ -214,6 +309,13 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     this.members = await this.userService.getMultipleByIds(
       groupTask.group.members
     );
+
+    // Close sidenav on mobile
+    if (window.innerWidth <= 768) {
+      this.isSidenavOpen = false;
+      this.showExpandIcon = true;
+    }
+
     this.loading = false;
     // Show submitted posts by default in generative task workflow
     if (this.runningGroupTask.workflow.type === TaskWorkflowType.GENERATION) {
@@ -346,6 +448,14 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     );
   }
 
+  hasMultipleRequirements(runningGroupTask: ExpandedGroupTask): boolean {
+    if (runningGroupTask.workflow.requiredActions.length > 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   numberOfPosts(runningGroupTask: ExpandedGroupTask): number | undefined {
     return runningGroupTask.workflow.requiredActions.find(
       (a) => a.type == TaskActionType.CREATE_POST
@@ -364,9 +474,9 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
       tagRequired: this.hasTagRequirement(this.runningGroupTask!),
       onComplete: async (post: Post) => {
         if (this.runningGroupTask) {
-          post.type = PostType.WORKFLOW;
           const destinationType =
             PostType[this.runningGroupTask?.workflow.destinations[0].type];
+          post.type = destinationType;
           if (destinationType === PostType.BUCKET) {
             post.boardID = this.board.boardID;
           } else {
@@ -710,9 +820,12 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         'expanded'
       );
 
-    const totalProgress = tasks.reduce(
-      (partialSum) => partialSum + this._calcGroupProgress(task),
-      0
+    console.log(tasks);
+
+    let totalProgress = 0;
+
+    tasks.forEach(
+      (task) => (totalProgress = totalProgress + this._calcGroupProgress(task))
     );
     return totalProgress / tasks.length;
   }

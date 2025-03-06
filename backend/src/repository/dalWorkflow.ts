@@ -35,6 +35,17 @@ export const getAllByBoardId = async (id: string) => {
   }
 };
 
+export const getAllByGroupId = async (id: string) => {
+  try {
+    const workflows = await TaskWorkflow.find({
+      'assignedIndividual.groupID': id,
+    });
+    return workflows;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 export const getByBoardId = async (
   type: WorkflowType,
   boardID: string,
@@ -134,6 +145,7 @@ const dalWorkflow = {
   updateTask,
   remove,
   removeByBoard,
+  getAllByGroupId,
 };
 
 export default dalWorkflow;

@@ -1,11 +1,15 @@
-import Post from './post';
+// src/app/models/bucket.ts
+import Post from './post'; 
 
 export default class Bucket {
-  bucketID: string;
-  boardID: string;
+  public bucketID: string;
+  public boardID: string;
+  public name: string;
+  public posts: string[];
+  public addedToView: boolean = false;
 
-  name: string;
-  posts: string[];
-
-  addedToView: boolean = false;
+  // Add a constructor for easier object creation
+  constructor(data: Partial<Bucket>) {
+    Object.assign(this, data);
+  }
 }

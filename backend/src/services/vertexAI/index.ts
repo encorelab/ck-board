@@ -855,12 +855,12 @@ async function performDatabaseOperations(
 
 async function constructAndSendMessage(
   postsWithBucketIds: any[],
-  bucketsToSend: any[],
+  bucketData: any[],
   prompt: string
 ): Promise<any> {
-  const postsAsKeyValuePairs = postsToKeyValuePairs(postsWithBucketIds);
+  const postData = postsToKeyValuePairs(postsWithBucketIds);
 
-  const message =
+  const promptTemplate =
     `
     Please provide your response in the following JSON format, including the 
     "response" key and optionally any of the following keys: "create_bucket", 
@@ -902,13 +902,13 @@ async function constructAndSendMessage(
     **Remember:** As this is a json response, use single quotes or escape characters when quoting text and wrap the entire response in json markdown.
 
     Here are the posts from the project:` +
-    postsAsKeyValuePairs + // Concatenate variables here
+    postData + 
     `\nHere are the buckets:\n` +
-    JSON.stringify(bucketsToSend, null, 2) +
+    JSON.stringify(bucketData, null, 2) +
     `\nUser prompt:\n\n${prompt}`;
 
   try {
-    const result = await generativeModel.generateContentStream(message);
+    const result = await generativeModel.generateContentStream(promptTemplate);
     return result;
   } catch (error) {
     console.error('Error in generateContentStream:', error);

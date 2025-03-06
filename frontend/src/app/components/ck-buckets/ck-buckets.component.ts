@@ -3,7 +3,7 @@ import { ComponentType } from '@angular/cdk/portal';
 import { SocketService } from 'src/app/services/socket.service';
 import { Subscription } from 'rxjs';
 import { SocketEvent } from 'src/app/utils/constants';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, HostListener, Input } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,6 +19,7 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { HtmlPostComponent } from '../html-post/html-post.component';
 
 @Component({
   selector: 'app-ck-buckets',
@@ -28,8 +29,10 @@ import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-wo
 export class CkBucketsComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  boardID: string;
-  projectID: string;
+  @Input() isModalView = false;
+  @Input() projectID: string; 
+  @Input() boardID: string;  
+  @Input() embedded: boolean = false;
 
   buckets: any[] = [];
   user: AuthUser;
@@ -67,19 +70,28 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
-    await this.configureBoard();
-    await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-      if (buckets) {
-        for (const bucket of buckets) {
-          if (bucket.addedToView) {
-            this.bucketsOnView.push(bucket);
-            this.loadBucketPosts(bucket);
-          } else {
-            this.buckets.push(bucket);
-          }
+    // Prioritize Input properties.  If they are provided, use them.
+    if (this.boardID && this.projectID) {
+      // We got the IDs from the inputs, proceed as normal.
+      await this.configureBoard();  // Load board data
+      this.loadBuckets();          // Load buckets
+
+    } else {
+      // Fallback to ActivatedRoute *only* if inputs are not provided.
+      this.activatedRoute.paramMap.subscribe(async params => { // Use paramMap (Observable)
+        this.boardID = params.get('boardID')!; //use of ! operator
+        this.projectID = params.get('projectID')!; //use of ! operator
+
+        if (!this.boardID || !this.projectID) {
+          console.error("Missing boardID or projectID in route parameters");
+          this.router.navigate(['/error']); // Redirect to an error page, or handle appropriately
+          return; // IMPORTANT: Stop execution
         }
-      }
-    });
+
+        await this.configureBoard(); // Load board data
+        this.loadBuckets();          // Load buckets
+      });
+    }
     this.socketService.connect(this.user.userID, this.boardID);
   }
 
@@ -87,6 +99,21 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
     for (const [k, v] of this.groupEventToHandler) {
       const unsub = this.socketService.listen(k, v);
       this.unsubListeners.push(unsub);
+    }
+  }
+
+  async loadBuckets() {
+    if(!this.boardID) return;
+    const buckets = await this.bucketService.getAllByBoard(this.boardID);
+    if(buckets) {
+        for (const bucket of buckets) {
+            if (bucket.addedToView) {
+                this.bucketsOnView.push(bucket);
+                this.loadBucketPosts(bucket);
+            } else {
+                this.buckets.push(bucket);
+            }
+        }
     }
   }
 
@@ -154,6 +181,24 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
       this.buckets.push(bucket);
       this.bucketsOnView.splice(index, 1);
       this.bucketService.update(bucket.bucketID, { addedToView: false });
+    }
+  }
+
+  async refreshBuckets() {
+    //Set all the buckets to loading
+    for(let i = 0; i < this.bucketsOnView.length; i++){
+        this.bucketsOnView[i].loading = true;
+    }
+
+    // Refetch posts for each displayed bucket.
+    for (const bucket of this.bucketsOnView) {
+        const currentBucket = await this.bucketService.get(bucket.bucketID); // get bucket from the service
+        if(currentBucket){
+            bucket.posts = currentBucket.posts; // update the posts
+            bucket.htmlPosts = await this.converters.toHTMLPosts(bucket.posts); // reconvert
+        }
+        bucket.loading = false;
+
     }
   }
 

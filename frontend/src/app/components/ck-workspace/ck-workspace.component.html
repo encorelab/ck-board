@@ -1,7 +1,7 @@
 <div>
   <app-toolbar
     class="toolbar"
-    *ngIf="user && project && board && !embedded"
+    *ngIf="user && project && board && !embedded && !isModalView"
     [user]="user"
     style="width: 100%"
   >
@@ -11,15 +11,6 @@
       matTooltip="Return to Project Dashboard"
     >
       <mat-icon>arrow_back</mat-icon>
-    </button>
-    <span *ngIf="board">CK Workspace - {{ this.board.name }}</span>
-    <button
-      mat-icon-button
-      *ngIf="user.role === Role.TEACHER"
-      (click)="copyEmbedCode()"
-      matTooltip="Copy embeddable URL"
-    >
-      <mat-icon>file_copy</mat-icon>
     </button>
     <span style="flex: 1 1 auto"></span>
     <app-view-navigation
@@ -32,33 +23,48 @@
       [project]="project"
     ></app-toolbar-menu>
   </app-toolbar>
-  <mat-sidenav-container class="drawer-container">
+  <mat-sidenav-container class="drawer-container ck-workspace-drawer-container" [class.modal-view]="isModalView">
     <mat-sidenav
       #drawer
       mode="side"
-      opened
+      [opened]="isSidenavOpen"
       [fixedInViewport]="!embedded ? true : false"
-      [fixedTopGap]="64"
-      style="position: fixed"
+      [fixedTopGap]="(user && project && board && !embedded && !isModalView) ? 64 : 0"
+      style="position: absolute"
       [ngStyle]="(!embedded && { 'padding-bottom': '64px' }) || null"
     >
+    <button *ngIf="!showExpandIcon" mat-icon-button (click)="toggleSidenav()" style="position: absolute; top: 5px; right: 5px; z-index: 2;">
+        <mat-icon>{{ isSidenavOpen ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+      </button>
+
       <mat-list *ngIf="activeGroupTasks">
         <button
           class="subheader-button"
           mat-button
-          (click)="showInactive = !showInactive"
+          (click)="showActive = !showActive"
         >
-          Pending Tasks ({{ inactiveGroupTasks.length }})
-          <mat-icon>{{
-            showInactive ? 'expand_less' : 'expand_more'
-          }}</mat-icon>
+          Active Tasks ({{
+            activeGroupTasks.length + inactiveGroupTasks.length
+          }})
+          <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <ng-container *ngIf="showInactive">
+        <ng-container *ngIf="showActive">
           <mat-list-item *ngFor="let task of inactiveGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p matLine class="list-task-prompt">
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
+            >
               {{ task.group.name }}: {{ task.workflow.prompt }}
+            </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual: {{ task.workflow.prompt }}
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -70,24 +76,37 @@
               Begin Task
             </button>
           </mat-list-item>
-        </ng-container>
-        <mat-divider></mat-divider>
-        <button
-          class="subheader-button"
-          mat-button
-          (click)="showActive = !showActive"
-        >
-          Active Tasks ({{ activeGroupTasks.length }})
-          <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
-        </button>
-        <ng-container *ngIf="showActive">
           <mat-list-item *ngFor="let task of activeGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p matLine class="list-task-prompt">
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
+            >
               {{ task.group.name }}: {{ task.workflow.prompt }}
             </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual: {{ task.workflow.prompt }}
+            </p>
             <span style="flex: 1 1 auto"></span>
+            <button
+              *ngIf="
+                runningGroupTask &&
+                runningGroupTask.groupTask.groupTaskID ===
+                  task.groupTask.groupTaskID
+              "
+              mat-raised-button
+              color="primary"
+              style="margin-left: 10px; min-width: unset"
+              (click)="close()"
+            >
+              Hide Task
+            </button>
             <button
               *ngIf="
                 (runningGroupTask &&
@@ -101,19 +120,6 @@
               (click)="view(task)"
             >
               Resume Task
-            </button>
-            <button
-              *ngIf="
-                runningGroupTask &&
-                runningGroupTask.groupTask.groupTaskID ===
-                  task.groupTask.groupTaskID
-              "
-              mat-raised-button
-              color="primary"
-              style="margin-left: 10px; min-width: unset"
-              (click)="close()"
-            >
-              Hide Task
             </button>
           </mat-list-item>
         </ng-container>
@@ -132,8 +138,19 @@
           <mat-list-item *ngFor="let task of completeGroupTasks">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ task.workflow.name }}</h3>
-            <p matLine class="list-task-prompt">
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'GROUP' || !task.assignmentType"
+            >
               {{ task.group.name }}: {{ task.workflow.prompt }}
+            </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="task.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual: {{ task.workflow.prompt }}
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -167,25 +184,24 @@
         </ng-container>
         <mat-divider></mat-divider>
       </mat-list>
-      <!-- </div> -->
     </mat-sidenav>
+
     <mat-sidenav-content>
-      <div *ngIf="!loading && runningGroupTask">
-        <h1>
-          {{ runningGroupTask.group.name }}:
-          {{ runningGroupTask.workflow.name }}
-        </h1>
-        <h2 style="font-weight: bold">
-          {{ runningGroupTask.workflow.prompt }}
-        </h2>
-        <section>
-          <ul
-            style="
-              list-style-position: inside;
-              padding-left: 30px;
-              font-weight: bold;
-            "
-          >
+       <div class="refresh-button-container" >
+        <button *ngIf="!isSidenavOpen" mat-icon-button (click)="toggleSidenav()" class="expand-sidenav-button" matTooltip="Expand Task List">
+          <mat-icon>{{ isSidenavOpen ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+        </button>
+        <span style="flex: 1 1 auto"></span>
+        <button mat-icon-button (click)="refreshWorkspace()" matTooltip="Refresh Workspace">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+      <div *ngIf="!loading && runningGroupTask" class="task-view">
+        <h1 class="task-title">{{ runningGroupTask.workflow.name }}</h1>
+        <h2 class="task-prompt">{{ runningGroupTask.workflow.prompt }}</h2>
+
+        <section class="task-requirements">
+          <ul>
             <li *ngIf="hasCommentRequirement(runningGroupTask)">
               Comment on each post at least once!
             </li>
@@ -197,239 +213,124 @@
             </li>
           </ul>
         </section>
+        <div class="progress-bars">
+          <div>
+            <label
+                class="example-margin"
+                *ngIf="
+                  runningGroupTask.assignmentType === 'GROUP' ||
+                  !runningGroupTask.assignmentType
+                "
+                >Your Group's Progress</label
+              >
+              <label
+                class="example-margin"
+                *ngIf="runningGroupTask.assignmentType === 'INDIVIDUAL'"
+                >Your Progress</label
+              > 
+            <mat-progress-bar mode="determinate" [value]="currentGroupProgress"></mat-progress-bar>
+          </div>
+          <div>
+            <label
+                class="example-margin"
+                *ngIf="
+                  runningGroupTask.assignmentType === 'GROUP' ||
+                  !runningGroupTask.assignmentType
+                "
+                >Avg. Group's Progress</label
+              >
+              <label
+                class="example-margin"
+                *ngIf="runningGroupTask.assignmentType === 'INDIVIDUAL'"
+                >Avg. Member's Progress</label
+              >
+            <mat-progress-bar mode="determinate" [value]="averageGroupProgress" color="accent"></mat-progress-bar>
+          </div>
+        </div>
       </div>
-      <div class="heading no-workflow-select" *ngIf="!runningGroupTask">
+
+
+      <div class="no-task-selected" *ngIf="!runningGroupTask && !loading">
         No task selected!
       </div>
+
       <mat-spinner class="spinner" *ngIf="loading"></mat-spinner>
+
       <div
         *ngIf="!loading"
-        style="display: flex; flex-direction: row; position: relative"
+        class="swiper-container"
       >
-        <div
-          class="heading no-posts"
-          *ngIf="
-            runningGroupTask &&
-            runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION &&
-            (!posts || posts.length === 0)
-          "
-        >
+        <div *ngIf="runningGroupTask && !showSubmittedPosts && posts && posts.length > 0">
+          <swiper [config]="swiperConfig">
+            <ng-template swiperSlide *ngFor="let htmlPost of posts">
+                <app-html-post
+                  [post]="htmlPost"
+                  [disableDownload]="true"
+                  [onCommentEvent]="onCommentEvent"
+                  [onTagEvent]="onTagEvent"
+                  [onDeleteEvent]="onDeleteEvent"
+                ></app-html-post>
+            </ng-template>
+          </swiper>
+        </div>
+
+        <div *ngIf="runningGroupTask && showSubmittedPosts && submittedPosts && submittedPosts.length > 0">
+          <swiper [config]="swiperConfig">
+            <ng-template swiperSlide *ngFor="let htmlPost of submittedPosts">
+                <app-html-post
+                  [post]="htmlPost"
+                  [disableDownload]="true"
+                  [onDeleteEvent]="onDeleteEvent"
+                ></app-html-post>
+            </ng-template>
+          </swiper>
+        </div>
+
+        <div *ngIf="runningGroupTask && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION && (!posts || posts.length === 0) && !showSubmittedPosts" class="no-posts-message">
           No posts to review!
         </div>
-
-        <div
-          class="heading no-posts"
-          *ngIf="
-            runningGroupTask &&
-            runningGroupTask.workflow.type === TaskWorkflowType.GENERATION &&
-            !showSubmittedPosts &&
-            (!posts || posts.length === 0)
-          "
-        >
+        <div *ngIf="runningGroupTask && runningGroupTask.workflow.type === TaskWorkflowType.GENERATION && (!posts || posts.length === 0) && !showSubmittedPosts" class="no-posts-message">
           Create a Post!
         </div>
-
-        <div
-          class="heading no-posts"
+        <div *ngIf="runningGroupTask && showSubmittedPosts && (!submittedPosts || submittedPosts.length === 0)" class="no-posts-message">
+          No {{runningGroupTask.workflow.type === TaskWorkflowType.GENERATION ? 'submitted' : 'reviewed' }} posts!
+        </div>
+      </div>
+      <div
           *ngIf="
             runningGroupTask &&
             runningGroupTask.workflow.type === TaskWorkflowType.GENERATION &&
-            showSubmittedPosts &&
-            (!submittedPosts || submittedPosts.length === 0)
+            !createMorePosts(runningGroupTask) &&
+            runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE
           "
         >
-          No submitted posts!
-        </div>
-
-        <div
-          class="heading no-posts"
-          *ngIf="
-            runningGroupTask &&
-            runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION &&
-            showSubmittedPosts &&
-            (!submittedPosts || submittedPosts.length === 0)
-          "
-        >
-          No reviewed posts!
-        </div>
-        <!-- Draft post slider -->
-        <swiper
-          [effect]="'cards'"
-          [grabCursor]="true"
-          class="mySwiper"
-          *ngIf="
-            runningGroupTask && !showSubmittedPosts && posts && posts.length > 0
-          "
-        >
-          <ng-template swiperSlide *ngFor="let htmlPost of posts">
-            <div
-              *ngIf="htmlPost"
-              (click)="$event.stopPropagation()"
-              style="display: flex; flex-direction: column; gap: 10px"
-            >
-              <app-html-post
-                (click)="$event.stopPropagation()"
-                [post]="htmlPost"
-                [disableDownload]="true"
-                [onCommentEvent]="onCommentEvent"
-                [onTagEvent]="onTagEvent"
-                [onDeleteEvent]="onDeleteEvent"
-                style="width: 360px; height: 100%"
-              >
-              </app-html-post>
-              <div style="display: flex; flex-direction: row">
-                <button
-                  (click)="swiper.swiperRef.slidePrev()"
-                  mat-raised-button
-                  color="accent"
-                  style="width: 45%; margin: 0px 5px"
-                >
-                  Previous
-                </button>
-                <button
-                  (click)="swiper.swiperRef.slideNext()"
-                  mat-raised-button
-                  color="accent"
-                  style="width: 45%; margin: 0px 5px"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </ng-template>
-        </swiper>
-        <!-- Submitted Post Slider -->
-        <swiper
-          [effect]="'cards'"
-          [grabCursor]="true"
-          class="mySwiper"
-          *ngIf="
-            runningGroupTask &&
-            showSubmittedPosts &&
-            submittedPosts &&
-            submittedPosts.length > 0
-          "
-        >
-          <ng-template swiperSlide *ngFor="let htmlPost of submittedPosts">
-            <div
-              (click)="$event.stopPropagation()"
-              style="display: flex; flex-direction: column; gap: 10px"
-            >
-              <app-html-post
-                (click)="$event.stopPropagation()"
-                [post]="htmlPost"
-                [disableDownload]="true"
-                [onDeleteEvent]="onDeleteEvent"
-                style="width: 360px; height: 100%"
-              >
-              </app-html-post>
-              <div style="display: flex; flex-direction: row">
-                <button
-                  (click)="swiper.swiperRef.slidePrev()"
-                  mat-raised-button
-                  color="accent"
-                  style="width: 45%; margin: 0px 5px"
-                >
-                  Previous
-                </button>
-                <button
-                  (click)="swiper.swiperRef.slideNext()"
-                  mat-raised-button
-                  color="accent"
-                  style="width: 45%; margin: 0px 5px"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </ng-template>
-        </swiper>
-        <div class="create-post-button-container">
           <button
-            *ngIf="
-              !loading &&
-              runningGroupTask &&
-              runningGroupTask.workflow.type === TaskWorkflowType.GENERATION &&
-              !createMorePosts(runningGroupTask) &&
-              runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE
-            "
-            class="workflow-create-post"
             mat-fab
-            style="position: absolute; bottom: 0"
             color="accent"
             matTooltip="Create Post"
             (click)="addPost()"
+            class="create-post-fab"
           >
             <mat-icon>add</mat-icon>
           </button>
         </div>
-        <div *ngIf="runningGroupTask">
-          <mat-card
-            class="example-card"
-            style="width: 350px; margin: 10px auto"
-          >
-            <div style="margin-bottom: 10px">
-              <label class="example-margin">Your Group's Progress</label>
-              <mat-progress-bar
-                mode="determinate"
-                [value]="currentGroupProgress"
-              ></mat-progress-bar>
-            </div>
-            <div>
-              <label class="example-margin">Avg. Group's Progress</label>
-              <mat-progress-bar
-                mode="determinate"
-                [value]="averageGroupProgress"
-                color="accent"
-              ></mat-progress-bar>
-            </div>
-            <section>
-              <h4 style="font-weight: bold; margin-top: 16px">
-                Group Members:
-              </h4>
-              <ul
-                style="
-                  list-style-position: inside;
-                  padding-left: 0;
-                  font-weight: bold;
-                "
+        <div class="group-info-and-buttons-container" *ngIf="runningGroupTask">
+          <div class="group-info">
+            <h4 class="group-name">Group: {{ runningGroupTask.group.name }}</h4>
+            <ul class="group-members">
+              <li *ngFor="let member of members">{{ member.username }}</li>
+            </ul>
+          </div>
+          <div class="view-toggle-buttons" *ngIf="runningGroupTask && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION">
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="toggleSubmittedPosts()"
               >
-                <li *ngFor="let member of members">{{ member.username }}</li>
-              </ul>
-            </section>
-          </mat-card>
+              {{ showSubmittedPosts ? 'View Drafts' : 'View Completed' }}
+            </button>
+          </div>
         </div>
-      </div>
-      <button
-        *ngIf="
-          !loading &&
-          runningGroupTask &&
-          runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE &&
-          runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION &&
-          !showSubmittedPosts
-        "
-        mat-raised-button
-        color="primary"
-        style="margin: 16px 10px; min-width: unset"
-        (click)="toggleSubmittedPosts()"
-      >
-        View Completed
-      </button>
-      <button
-        *ngIf="
-          !loading &&
-          runningGroupTask &&
-          runningGroupTask.groupTask.status !== GroupTaskStatus.COMPLETE &&
-          runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION &&
-          showSubmittedPosts
-        "
-        mat-raised-button
-        color="primary"
-        style="margin: 16px 10px; min-width: unset"
-        (click)="toggleSubmittedPosts()"
-      >
-        View Drafts
-      </button>
     </mat-sidenav-content>
   </mat-sidenav-container>
 </div>

@@ -12,6 +12,7 @@ import { AddProjectModalComponent } from '../add-project-modal/add-project-modal
 import { JoinProjectModalComponent } from '../join-project-modal/join-project-modal.component';
 import { ProjectConfigurationModalComponent } from '../project-configuration-modal/project-configuration-modal.component';
 import { ConfirmModalComponent } from '../confirm-modal/confirm-modal.component';
+import { AddScoreRunModalComponent } from '../add-score-run-modal/add-score-run-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -72,7 +73,7 @@ export class DashboardComponent implements OnInit {
 
   openCreateBoardDialog() {
     this.dialog.open(AddBoardModalComponent, {
-      width: '700px',
+      width: '900px',
       data: {
         user: this.user,
         createBoard: this.createBoard,
@@ -83,7 +84,17 @@ export class DashboardComponent implements OnInit {
 
   openCreateProjectDialog() {
     this.dialog.open(AddProjectModalComponent, {
-      width: '700px',
+      width: '900px',
+      data: {
+        user: this.user,
+        createProject: this.createProject,
+      },
+    });
+  }
+
+  openCreateScoreRunDialog() {
+    this.dialog.open(AddScoreRunModalComponent, {
+      width: '900px',
       data: {
         user: this.user,
         createProject: this.createProject,

@@ -58,8 +58,10 @@ router.post('/login', async (req, res) => {
 router.post('/register', async (req, res) => {
   const body = req.body;
 
-  const exists = await dalUser.findByUsername(body.username);
-  if (exists) return res.sendStatus(400);
+  const exists = await dalUser.findByEmail(body.email);
+  if (exists) {
+    return res.status(400).send({message: 'Email already in use.'});
+  }
 
   const savedUser = await dalUser.create(body);
 

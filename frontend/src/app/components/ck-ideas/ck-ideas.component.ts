@@ -147,9 +147,6 @@ but keep names of authors confidential.  Consider the provided topic context whe
   ideaAgentResponseListener: Subscription | undefined;
   topicContext: FormControl = new FormControl('');
 
-  // Add dragDisabled flag
-  dragDisabled: boolean = true;
-
   constructor(
     public postService: PostService,
     public boardService: BoardService,

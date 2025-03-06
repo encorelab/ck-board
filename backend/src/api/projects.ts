@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
   }
 
   // Set isScoreRun to false if not provided
-  project.isScoreRun = project.isScoreRun || false; 
+  project.isScoreRun = project.isScoreRun || false;
 
   let savedProject = await dalProject.create(project);
   if (project.personalBoardSetting.enabled) {
@@ -48,19 +48,21 @@ router.post('/', async (req, res) => {
       defaultView: ViewType.CANVAS,
       viewSettings: getAllViewsAllowed(),
     });
-    savedProject = await savedProject.updateOne({ boards: [personalBoard.boardID] });
+    await savedProject.updateOne({
+      boards: [personalBoard.boardID],
+    });
 
     // --- Create default shared board ---
     const communityBoardID = new mongo.ObjectId().toString();
     const communityBoard = await dalBoard.create({
-      projectID: savedProject.projectID, // Use the saved project's ID
+      projectID: project.projectID,
       boardID: communityBoardID,
-      ownerID: user.userID, 
+      ownerID: user.userID,
       name: 'Demo Community Board', // Or any default name you prefer
       scope: BoardScope.PROJECT_SHARED,
       task: undefined,
       permissions: getDefaultBoardPermissions(),
-      bgImage: undefined, 
+      bgImage: undefined,
       type: BoardType.BRAINSTORMING, // Or another default type
       tags: getDefaultBoardTags(communityBoardID),
       initialZoom: 100,
@@ -70,7 +72,9 @@ router.post('/', async (req, res) => {
       viewSettings: getAllViewsAllowed(),
     });
     // Add the board to the project's boards array
-    savedProject = await savedProject.updateOne({ $push: { boards: communityBoard.boardID } }); 
+    savedProject = await savedProject.updateOne({
+      $push: { boards: communityBoard.boardID },
+    });
   }
 
   res.status(200).json(savedProject);

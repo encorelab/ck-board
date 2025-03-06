@@ -6,6 +6,7 @@ import dalLearnerModel from './dalLearnerModel';
 import { Role } from '../models/User';
 import dalGroup from './dalGroup';
 import dalUser from './dalUser';
+import { addUserToWorkflows } from '../utils/project.helpers';
 
 export const getById = async (id: string) => {
   try {
@@ -40,21 +41,21 @@ export const getByJoinCode = async (code: string, role: Role) => {
 export const addStudent = async (code: string, userID: string) => {
   const project = await Project.findOne({ studentJoinCode: code });
   if (!project) {
-      throw new UnauthorizedError('Invalid Join Code!');
+    throw new UnauthorizedError('Invalid Join Code!');
   }
 
   // 1. Check if the user is already a member.  Prevent duplicates.
   if (project.members.includes(userID)) {
-      return project; // Or throw an error, as appropriate.
+    return project; // Or throw an error, as appropriate.
   }
 
-   // 2.  Get User and Check Role.
+  // 2.  Get User and Check Role.
   const user = await dalUser.findByUserID(userID);
   if (!user) {
-      throw new Error(`User with ID ${userID} not found.`);
+    throw new Error(`User with ID ${userID} not found.`);
   }
-  if(user.role !== Role.STUDENT){
-      throw new Error('Invalid Permissions');
+  if (user.role !== Role.STUDENT) {
+    throw new Error('Invalid Permissions');
   }
 
   // 3. Add to project
@@ -64,17 +65,18 @@ export const addStudent = async (code: string, userID: string) => {
   // 4. Find/Create "All Students" group
   let allStudentsGroup = await dalGroup.getAllStudentsGroup(project.projectID);
   if (!allStudentsGroup) {
-      allStudentsGroup = await dalGroup.create({
-          groupID: "all-students-" + project.projectID,
-          projectID: project.projectID,
-          members: [],
-          name: "All Students",
-          isDefault: true,
-      });
+    allStudentsGroup = await dalGroup.create({
+      groupID: 'all-students-' + project.projectID,
+      projectID: project.projectID,
+      members: [],
+      name: 'All Students',
+      isDefault: true,
+    });
   }
 
-  // 5. Add to "All Students" group
+  // 5. Add to "All Students" group and call a function to the user to existing workflows
   await dalGroup.addUser(allStudentsGroup.groupID, [userID]);
+  await addUserToWorkflows(allStudentsGroup.groupID, userID);
 
   return project;
 };

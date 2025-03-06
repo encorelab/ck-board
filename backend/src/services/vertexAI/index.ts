@@ -357,22 +357,25 @@ async function sendMessage(
   posts: any[],
   currentPrompt: string,
   fullPromptHistory: string,
-  socket: socketIO.Socket
+  socket: socketIO.Socket,
+  type: 'teacher_agent' | 'idea_agent'
 ): Promise<void> {
   try {
     // Send an initial acknowledgment
-    socket.emit(SocketEvent.AI_RESPONSE, { status: 'Received' });
+    socket.emit(SocketEvent.AI_RESPONSE, { status: 'Received', type: type });
 
     const userId = socket.data.userId;
     const boardId = socket.data.boardId;
 
-    // Save user prompt
-    await dalChatMessage.save({
-      userId: userId,
-      boardId: boardId,
-      role: 'user',
-      content: currentPrompt,
-    });
+    // Save user prompt *only* for teacher_assistant (chat)
+    if (type === 'teacher_agent') {
+      await dalChatMessage.save({
+        userId: userId,
+        boardId: boardId,
+        role: 'user',
+        content: currentPrompt,
+      });
+    }
 
     // 1. Fetch Upvote Counts and Create Map
     const upvoteMap = await fetchUpvoteCounts(posts);
@@ -408,7 +411,9 @@ async function sendMessage(
           console.error('Stream is undefined');
           socket.emit(SocketEvent.AI_RESPONSE, {
             status: 'Error',
-            errorMessage: 'No response stream received from the language model',
+            errorMessage:
+              'No response stream received from the language model.\n\nThe AI may have exhausted its input prompt size limit or calls per minute. Please reduce the number of posts and/or try again in a minute.',
+            type: type,
           });
           return;
         }
@@ -425,6 +430,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Processing',
               response: partialResponse,
+              type: type,
             });
           }
 
@@ -449,6 +455,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Completed',
               response: finalResponse.response,
+              type: type,
             });
 
             // Save AI response
@@ -463,6 +470,7 @@ async function sendMessage(
             socket.emit(SocketEvent.AI_RESPONSE, {
               status: 'Error',
               errorMessage: errorMessage,
+              type: type,
             });
           }
 
@@ -537,6 +545,7 @@ async function sendMessage(
     socket.emit(SocketEvent.AI_RESPONSE, {
       status: 'Error',
       errorMessage: errorMessage,
+      type: type,
     });
   }
 }
@@ -863,7 +872,7 @@ async function constructAndSendMessage(
     list of objects, where each object represents an action to be performed.
 
     {
-      "response": "Your response here<END>",
+      "response": "Your response to the user here<END>",
       "create_bucket": [{"name": "bucket_name"}], 
       "add_post_to_bucket": [
         {
@@ -891,20 +900,70 @@ async function constructAndSendMessage(
       ]
     }
 
-    Remember to use json markdown to wrap this entire response.
+    **Remember:** As this is a json response, use single quotes or escape characters when quoting text and wrap the entire response in json markdown.
 
     Here are the posts from the project:` +
-    postData + 
+    postData +
     `\nHere are the buckets:\n` +
     JSON.stringify(bucketData, null, 2) +
-    `\nUser prompt: ${prompt}`;
+    `\nUser prompt:\n\n${prompt}`;
 
   try {
     const result = await generativeModel.generateContentStream(promptTemplate);
     return result;
   } catch (error) {
     console.error('Error in generateContentStream:', error);
-    throw error;
+
+    // --- Error Handling ---
+    let errorMessage = 'An unexpected error occurred.';
+    let errorCode = 500; // Default to Internal Server Error
+
+    let errorString = '';
+    if (error instanceof Error) {
+      errorString = error.message;
+    } else if (typeof error === 'string') {
+      errorString = error;
+    } else {
+      errorString = String(error); // Fallback for other types
+    }
+
+    // Attempt to parse the Vertex AI error
+    const parsedError = parseVertexAIError(errorString);
+    if (parsedError.code) {
+      errorCode = parsedError.code;
+    }
+    if (parsedError.message) {
+      errorMessage = parsedError.message;
+    }
+    // Specific error message refinements based on the error code
+    if (errorCode === 400) {
+      errorMessage =
+        'The request was invalid. This could be due to a malformed request, or attempting to access a model that is restricted or unavailable to you.';
+    } else if (errorCode === 429) {
+      errorMessage =
+        'Resource exhausted or quota limit reached. Please try again later.';
+    } else if (errorCode === 500) {
+      errorMessage =
+        'Error: UNKNOWN / INTERNAL. Server error due to overload or dependency failure.  ';
+    } else if (
+      errorCode === 413 ||
+      errorMessage.toLowerCase().includes('token')
+    ) {
+      errorMessage =
+        'The request was too large. Reduce the context provided to the AI agent.';
+    }
+
+    // Construct an error response object in the expected format.
+    const errorResponse = {
+      status: 'Error',
+      errorMessage: errorMessage,
+      type: 'error', // Will be overwritten in sendMessage
+      code: errorCode,
+      originalError: errorString,
+    };
+
+    // Return the error response, *instead* of throwing.
+    return errorResponse;
   }
 }
 

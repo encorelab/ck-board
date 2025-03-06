@@ -28,7 +28,7 @@ export class PostService {
   }
 
   getAllByBoard(
-    boardID: string,
+    boardID: string | undefined,
     opts?: Options,
     type?: PostType
   ): Promise<Post[]> {

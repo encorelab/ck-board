@@ -1,3 +1,4 @@
+// ck-buckets.component.ts
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ComponentType } from '@angular/cdk/portal';
 import { SocketService } from 'src/app/services/socket.service';
@@ -30,8 +31,8 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   @Input() isModalView = false;
-  @Input() projectID: string; 
-  @Input() boardID: string;  
+  @Input() projectID: string;
+  @Input() boardID: string;
   @Input() embedded: boolean = false;
 
   buckets: any[] = [];
@@ -49,6 +50,8 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
 
   groupEventToHandler: Map<SocketEvent, Function>;
   unsubListeners: Subscription[] = [];
+
+  dragDisabled: boolean = true;
 
   constructor(
     public postService: PostService,

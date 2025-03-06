@@ -28,7 +28,7 @@ $heading-background: lighten($toolbar-color, 15%);
 
   .topic-context-field {
     margin: 0px !important; //Remove all margin
-    padding: 0px 0px 0px 20px !important;
+    padding: 0px 20px 0px 0px !important;
     width: 50%; // Adjust width as needed
 
     // Target the textarea *inside* the topic-context-field

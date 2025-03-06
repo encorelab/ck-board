@@ -309,8 +309,8 @@ but keep names of authors confidential.  Consider the provided topic context whe
     this.startWaitingForAIResponse();
     this.aiResponse = '';
 
-    // 1. Fetch all posts for the current board
-    this.fetchBoardPosts()
+    // 1. Fetch all posts for the specified canvas and bucket contexts
+    this.fetchPostsForIdeaAgent(this.canvasUsed, this.getSelectedBucketIds())
       .then((posts) => {
         const currentPrompt = this.aiPrompt;
         this.aiPrompt = ''; // Clear the prompt field

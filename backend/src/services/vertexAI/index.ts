@@ -411,7 +411,7 @@ async function sendMessage(
           console.error('Stream is undefined');
           socket.emit(SocketEvent.AI_RESPONSE, {
             status: 'Error',
-            errorMessage: 'No response stream received from the language model',
+            errorMessage: 'No response stream received from the language model.\n\nThe AI may have exhausted its input prompt size limit or calls per minute. Please reduce the number of posts and/or try again in a minute.',
             type: type,
           });
           return;
@@ -912,7 +912,53 @@ async function constructAndSendMessage(
     return result;
   } catch (error) {
     console.error('Error in generateContentStream:', error);
-    throw error;
+    
+    // --- Error Handling ---
+    let errorMessage = 'An unexpected error occurred.';
+    let errorCode = 500; // Default to Internal Server Error
+
+    let errorString = '';
+    if (error instanceof Error) {
+        errorString = error.message;
+    } else if (typeof error === 'string') {
+        errorString = error;
+    } else {
+        errorString = String(error); // Fallback for other types
+    }
+
+
+    // Attempt to parse the Vertex AI error
+    const parsedError = parseVertexAIError(errorString);
+    if (parsedError.code) {
+      errorCode = parsedError.code;
+    }
+    if (parsedError.message) {
+      errorMessage = parsedError.message;
+    }
+    // Specific error message refinements based on the error code
+     if (errorCode === 400) {
+      errorMessage = "The request was invalid. This could be due to a malformed request, or attempting to access a model that is restricted or unavailable to you.";
+    } else if (errorCode === 429) {
+      errorMessage = "Resource exhausted or quota limit reached. Please try again later.";
+    } else if (errorCode === 500) {
+            errorMessage =
+        'Error: UNKNOWN / INTERNAL. Server error due to overload or dependency failure.  ';
+    } else if(errorCode === 413 || errorMessage.toLowerCase().includes("token")){
+        errorMessage = "The request was too large. Reduce the context provided to the AI agent.";
+    }
+
+
+    // Construct an error response object in the expected format.
+    const errorResponse = {
+      status: 'Error',
+      errorMessage: errorMessage,
+      type: 'error', // Will be overwritten in sendMessage
+      code: errorCode,
+      originalError: errorString,
+    };
+
+    // Return the error response, *instead* of throwing.
+    return errorResponse;
   }
 }
 

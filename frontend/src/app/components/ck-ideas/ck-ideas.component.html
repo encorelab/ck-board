@@ -12,15 +12,15 @@
 </app-toolbar>
 
 <div class="context-bar">
+  <mat-form-field appearance="outline" class="topic-context-field">
+    <mat-label>Topic Context</mat-label>
+    <textarea matInput [formControl]="topicContext" rows="1"></textarea>
+</mat-form-field>
+
   <span class="context-label">Source:&nbsp;</span>
   <span *ngFor="let item of selectedContexts; let last = last">
       {{ item === 'None' ? 'None' : (item.name ? item.name : '') }}{{ !last ? ',&nbsp;' : '' }}
   </span>
-
-  <mat-form-field appearance="outline" class="topic-context-field">
-      <mat-label>Topic Context</mat-label>
-      <textarea matInput [formControl]="topicContext" rows="1"></textarea>
-  </mat-form-field>
 
   <span style="flex: 1 1 auto"></span>
   <button mat-icon-button matTooltip="Add context" [matMenuTriggerFor]="contextMenu" class="add-context-button">

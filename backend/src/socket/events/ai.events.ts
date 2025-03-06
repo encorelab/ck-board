@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { SocketEvent } from '../../constants';
-import { sendMessage } from '../../services/vertexAI';
+import { sendMessage } from '../../services/vertexAI'; // Import the unified function
 import { SocketPayload } from '../types/event.types'; // Import the type for SocketPayload
 
 // Define a type for the AI message data
@@ -10,6 +10,7 @@ interface AiMessageData {
   fullPromptHistory: string;
   boardId: string;
   userId: string;
+  type: 'teacher_agent' | 'idea_agent'; // Add the type field
 }
 
 class AiMessage {
@@ -23,6 +24,7 @@ class AiMessage {
     fullPromptHistory: string;
     boardId: string;
     userId: string;
+    type: 'teacher_agent' | 'idea_agent';
   }> {
     const {
       posts,
@@ -30,7 +32,9 @@ class AiMessage {
       fullPromptHistory: fullPromptHistory,
       boardId,
       userId,
+      type,
     } = data.eventData;
+
     // ... any necessary data processing or validation ...
     return {
       posts,
@@ -38,6 +42,7 @@ class AiMessage {
       fullPromptHistory: fullPromptHistory,
       boardId,
       userId,
+      type,
     };
   }
 
@@ -50,12 +55,13 @@ class AiMessage {
       fullPromptHistory: string;
       boardId: string;
       userId: string;
+      type: 'teacher_agent' | 'idea_agent';
     }
   ): Promise<void> {
-    const { posts, currentPrompt, fullPromptHistory, boardId, userId } = result;
+    const { posts, currentPrompt, fullPromptHistory, boardId, userId, type } = result;
     socket.data.boardId = boardId;
     socket.data.userId = userId;
-    sendMessage(posts, currentPrompt, fullPromptHistory, socket);
+    sendMessage(posts, currentPrompt, fullPromptHistory, socket, type);
   }
 }
 

@@ -1,3 +1,4 @@
+<!-- register.component.html -->
 <div class="wrapper">
   <div class="container">
     <div class="form-image-wrapper">
@@ -84,7 +85,10 @@
               >Password is required (12-30 characters)</mat-hint
             >
           </mat-form-field>
-          <p *ngIf="invalidCredentials" class="invalid-pass">
+          <p *ngIf="emailExists" class="invalid-pass">
+            Email already in use.
+          </p>
+          <p *ngIf="invalidCredentials && !emailExists" class="invalid-pass">
             Unable to register account!
           </p>
         </div>

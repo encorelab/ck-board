@@ -1,0 +1,153 @@
+<app-toolbar *ngIf="user" [user]="user">
+  <button
+    mat-icon-button
+    routerLink="{{ '/project/' + projectID }}"
+    matTooltip="Return to Project Dashboard"
+  >
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
+  <button
+    mat-icon-button
+    *ngIf="user.role === Role.TEACHER"
+    (click)="
+      board?.scope === BoardScope.PROJECT_SHARED
+        ? copyEmbedCode()
+        : copyPersonalEmbedCode()
+    "
+    matTooltip="Copy embeddable URL"
+  >
+    <mat-icon>file_copy</mat-icon>
+  </button>
+  <span style="flex: 1 1 auto"></span>
+  <app-view-navigation
+    *ngIf="boardID"
+    [boardID]="boardID"
+    [currentView]="viewType"
+  ></app-view-navigation>
+  <app-toolbar-menu
+    *ngIf="board"
+    navbarMenu
+    [board]="board"
+    [project]="project"
+  ></app-toolbar-menu>
+</app-toolbar>
+
+<div class="context-bar">
+  <mat-form-field appearance="outline" class="topic-context-field">
+    <mat-label>Topic Context</mat-label>
+    <textarea matInput [formControl]="topicContext" rows="1"></textarea>
+  </mat-form-field>
+
+  <span class="context-label">Source:&nbsp;</span>
+  <span *ngFor="let item of selectedContexts; let last = last">
+    {{ item === 'None' ? 'None' : item.name ? item.name : ''
+    }}{{ !last ? ',&nbsp;' : '' }}
+  </span>
+
+  <span style="flex: 1 1 auto"></span>
+  <button
+    mat-icon-button
+    matTooltip="Add context"
+    [matMenuTriggerFor]="contextMenu"
+    class="add-context-button"
+  >
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+
+<div class="main-container">
+  <div class="left-pane">
+    <div class="ai-summary-header">
+      <h2>AI Summary</h2>
+        <span *ngIf="isWaitingForIdeaAgent && !newSummaryAvailable" class="waiting-indicator">{{ waitingIdeaMessage }}</span>
+      <span style="flex: 1 1 auto"></span>
+      <mat-slide-toggle [(ngModel)]="showRawResponse" color="primary">
+        Raw JSON
+      </mat-slide-toggle>
+      <button
+        mat-icon-button
+        color="primary"
+        (click)="refreshIdeaAgent()"
+        [disabled]="isWaitingForIdeaAgent && !newSummaryAvailable"
+        matTooltip="Refresh AI Summary"
+      >
+        <mat-icon style="color: white">refresh</mat-icon>
+      </button>
+    </div>
+        <button
+            *ngIf="newSummaryAvailable"
+            mat-raised-button
+            color="accent"
+            (click)="displayNewSummary()"
+            class="new-summary-button"
+        >
+            New Summary Available
+        </button>
+    <div class="ai-summary-content">
+      <div
+        *ngIf="!showRawResponse && ideaAgentFormattedResponse"
+        [innerHTML]="ideaAgentFormattedResponse"
+      ></div>
+      <pre
+        *ngIf="showRawResponse && ideaAgentRawResponse"
+        style="white-space: pre-wrap"
+        >{{ ideaAgentRawResponse }}</pre
+      >
+
+    </div>
+  </div>
+
+  <div class="right-pane">
+    <h2>AI Chat</h2>
+    <div class="chat-feed" #scrollableDiv>
+      <div *ngFor="let message of chatHistory">
+        <div *ngIf="message.role === 'user'" class="user-message">
+          <mat-card class="message-card user-card">
+            <h3 class="message-label">User:</h3>
+            <div [innerHTML]="message.content"></div>
+          </mat-card>
+        </div>
+        <div *ngIf="message.role === 'assistant'" class="ai-message">
+          <mat-card class="message-card ai-card">
+            <h3 class="message-label">Assistant:</h3>
+            <div [innerHTML]="message.content"></div>
+          </mat-card>
+        </div>
+      </div>
+      <div *ngIf="isWaitingForAIResponse" class="waiting-message">
+        <mat-spinner diameter="30"></mat-spinner>
+        <p>{{ waitingMessage }}</p>
+      </div>
+    </div>
+    <mat-form-field appearance="outline" style="width: 100%">
+      <mat-label>Ask the AI Assistant</mat-label>
+      <input matInput [(ngModel)]="aiPrompt" (keyup.enter)="askAI()" #aiInput />
+    </mat-form-field>
+    <div style="display: flex; gap: 10px">
+      <button mat-raised-button color="primary" (click)="askAI()">Send</button>
+      <button mat-raised-button color="primary" (click)="downloadChatHistory()">
+        Download Chat History
+      </button>
+    </div>
+  </div>
+</div>
+
+<mat-menu #contextMenu="matMenu">
+  <button mat-menu-item (click)="toggleContext(board)">
+    <span>CANVAS: {{ board?.name }}</span>
+    <mat-icon *ngIf="isSelected(board)">check</mat-icon>
+  </button>
+  <button
+    mat-menu-item
+    *ngFor="let bucket of ideaBuckets"
+    (click)="toggleContext(bucket)"
+  >
+    <span>BUCKET: {{ bucket.name }}</span>
+    <mat-icon *ngIf="isSelected(bucket)">check</mat-icon>
+  </button>
+  <button mat-menu-item (click)="toggleContext('None')">
+    <span>None</span>
+    <mat-icon *ngIf="isSelected('None')">check</mat-icon>
+  </button>
+</mat-menu>

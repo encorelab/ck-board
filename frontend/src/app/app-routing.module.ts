@@ -17,6 +17,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { BoardGuard } from './guards/board.guard';
 import { ProjectGuard } from './guards/project.guard';
 import { SsoGuard } from './guards/sso.guard';
+import { CkIdeasComponent } from './components/ck-ideas/ck-ideas.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
@@ -69,6 +70,11 @@ const routes: Routes = [
   {
     path: 'project/:projectID/board/:boardID/monitor',
     component: CkMonitorComponent,
+    canActivate: [AuthGuard, ProjectGuard, BoardGuard],
+  },
+  {
+    path: 'project/:projectID/board/:boardID/ideas',
+    component: CkIdeasComponent,
     canActivate: [AuthGuard, ProjectGuard, BoardGuard],
   },
   {

@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http'; // Import HttpErrorResponse
 import User, { AuthUser, TokenResponse } from '../models/user';
 import { lastValueFrom } from 'rxjs';
 
@@ -33,17 +33,24 @@ export class UserService {
   }
 
   async register(user: User): Promise<boolean> {
-    return this.http
-      .post<TokenResponse>('auth/register', user)
-      .toPromise()
-      .then((result) => {
-        if (result) {
-          localStorage.setItem('user', JSON.stringify(result.user));
-          localStorage.setItem('access_token', result.token);
-          localStorage.setItem('expires_at', result.expiresAt);
-        }
-        return true;
-      });
+    try {
+      const result = await this.http
+        .post<TokenResponse>('auth/register', user)
+        .toPromise();
+  
+      if (result) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+        localStorage.setItem('access_token', result.token);
+        localStorage.setItem('expires_at', result.expiresAt);
+      }
+      return true;
+    } catch (error: any) {
+      if (error.error && error.error.message) {
+        throw new Error(error.error.message);
+      } else {
+        throw new Error('Something bad happened; please try again later.');
+      }
+    }
   }
 
   async login(email: string, password: string): Promise<boolean> {
@@ -65,18 +72,20 @@ export class UserService {
 
   async requestPasswordReset(email: string): Promise<boolean> {
     return this.http
-    .post<{ success: boolean }>('auth/forgot-password', { email }) // Expect a success: boolean response
-    .toPromise()
-    .then((result) => {
+      .post<{ success: boolean }>('auth/forgot-password', { email }) // Expect a success: boolean response
+      .toPromise()
+      .then((result) => {
         if (result) {
-          console.log("password reset requested");
+          console.log('password reset requested');
         }
         return true;
       });
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    await lastValueFrom(this.http.post('auth/reset-password', { token, newPassword }));
+    await lastValueFrom(
+      this.http.post('auth/reset-password', { token, newPassword })
+    );
   }
 
   async isSsoEnabled(): Promise<boolean> {

@@ -58,8 +58,10 @@ router.post('/login', async (req, res) => {
 router.post('/register', async (req, res) => {
   const body = req.body;
 
-  const exists = await dalUser.findByUsername(body.username);
-  if (exists) return res.sendStatus(400);
+  const exists = await dalUser.findByEmail(body.email);
+  if (exists) {
+    return res.status(400).send({message: 'Email already in use.'});
+  }
 
   const savedUser = await dalUser.create(body);
 
@@ -104,7 +106,11 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     // 5. Send an email to the user with a link containing the token
-    const resetLink = `${process.env.CKBOARD_SERVER_ADDRESS}/reset-password?token=${resetToken}`;
+    const resetLink = `${
+      process.env.CKBOARD_SERVER_ADDRESS!.startsWith('http')
+        ? ''
+        : 'https://'
+    }${process.env.CKBOARD_SERVER_ADDRESS!}/reset-password?token=${resetToken}`;
 
     try {
       await generateEmail(email, 'Password Reset Request', resetLink);

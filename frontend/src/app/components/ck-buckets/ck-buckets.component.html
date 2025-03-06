@@ -27,9 +27,13 @@
 <div class="container d-flex align-items-center justify-content-center">
   <div class="heading">
     <h1 mat-title style="margin: 0"><span>CK Buckets</span></h1>
-     <span style="flex: 1 1 auto"></span>
-     <button mat-icon-button (click)="refreshBuckets()" matTooltip="Refresh Buckets">
-        <mat-icon>refresh</mat-icon>
+    <span style="flex: 1 1 auto"></span>
+    <button
+      mat-icon-button
+      (click)="refreshBuckets()"
+      matTooltip="Refresh Buckets"
+    >
+      <mat-icon>refresh</mat-icon>
     </button>
     <div
       *ngIf="
@@ -47,7 +51,6 @@
         <mat-icon class="material-icons-outlined">add</mat-icon>
       </button>
     </div>
-
   </div>
   <div class="buckets" cdkDropListGroup>
     <h3
@@ -62,6 +65,7 @@
       *ngFor="let bucket of bucketsOnView; let idx = index"
       cdkDropList
       [cdkDropListData]="bucket.htmlPosts"
+      [cdkDropListDisabled]="dragDisabled"
       (cdkDropListDropped)="dragDropPostInBucket($event)"
       [attr.data-bucket]="bucket.bucketID"
       cdkDropListSortingDisabled
@@ -89,6 +93,7 @@
             <app-html-post
               [post]="post"
               cdkDrag
+              [cdkDragDisabled]="dragDisabled"
               style="width: 100%"
             ></app-html-post>
           </div>

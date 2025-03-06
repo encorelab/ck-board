@@ -20,11 +20,13 @@ export class ForgotPasswordComponent {
         this.invalidCredentials = false;
         this.message =
           'If an account with that email exists, a password reset link has been sent.';
+        this.email = '';
       })
       .catch((error) => {
         this.invalidCredentials = true;
         this.message = 'An error occurred. Please try again later.';
         console.error(error);
+        this.email = '';
       });
   }
 }

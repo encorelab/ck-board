@@ -95,11 +95,25 @@ export const create = async (project: ProjectModel) => {
   try {
     const savedProject = await Project.create(project);
     await dalLearnerModel.createDefaultModels(project.projectID);
+
+    // Create "All Students" group after project creation
+    let allStudentsGroup = await dalGroup.getAllStudentsGroup(savedProject.projectID);
+    if (!allStudentsGroup) {
+      await dalGroup.create({
+        groupID: 'all-students-' + savedProject.projectID,
+        projectID: savedProject.projectID,
+        members: [], // Initially empty, students are added when they join
+        name: 'All Students',
+        isDefault: true,
+      });
+    }
+
     return savedProject;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
 };
+
 
 export const update = async (id: string, project: Partial<ProjectModel>) => {
   try {

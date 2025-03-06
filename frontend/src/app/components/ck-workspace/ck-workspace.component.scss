@@ -1,5 +1,5 @@
 @import './../../../../node_modules/swiper/swiper.min.css';
-@import './../../../../node_modules/swiper/swiper-bundle.min.css'; // Import Swiper styles.
+@import './../../../../node_modules/swiper/swiper-bundle.min.css';
 
 .spinner {
   margin: 70px auto;
@@ -42,8 +42,8 @@
   right: 0;
   bottom: 0;
   top: 0;
-  overflow: auto;
-  height: calc(100vh);
+  overflow: none;
+  min-height: calc(100vh);
 }
 
 .subheader-button {
@@ -71,7 +71,7 @@ mat-sidenav-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: hidden;
+    overflow-y: auto;
 
     padding-top: 64px;
 
@@ -129,7 +129,7 @@ mat-sidenav-content {
     }
 
     > div:last-child { // Target the *last* div child
-      margin-bottom: 40px; // Add margin ONLY to the last one
+      margin-bottom: 40px; 
     }
 }
 
@@ -141,7 +141,6 @@ mat-sidenav-content {
 .swiper-container {
   width: 60%;
   max-width: 600px; /*  Keep the max-width  */
-  // ADD THIS:
   margin-left: auto;  
   margin-right: auto;
   position: relative;

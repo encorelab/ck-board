@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
-import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle'
+import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
@@ -35,7 +35,6 @@ import { HttpClient } from '@angular/common/http';
 import { saveAs } from 'file-saver';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { FormControl } from '@angular/forms';
-
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -181,10 +180,10 @@ but keep names of authors confidential.  Consider the provided topic context whe
       this.socketService.connect(this.user.userID, this.boardID);
 
       // Default to "None" context and show prompt.  AND disable the button.
-      this.ideaAgentFormattedResponse = '** Select post SOURCE using "+" button (top right) **';
-      this.isWaitingForIdeaAgent = false; 
+      this.ideaAgentFormattedResponse =
+        '** Select post SOURCE using "+" button (top right) **';
+      this.isWaitingForIdeaAgent = false;
       this.selectedContexts = ['None'];
-
     } else {
       console.error('Failed to configure board!');
       this.router.navigate(['/error']);
@@ -248,39 +247,47 @@ but keep names of authors confidential.  Consider the provided topic context whe
   // --- Context Selection ---
 
   toggleContext(item: any): void {
-      // Remove 'None' context if it exists and a new context is added
-      if (item !== 'None' && this.selectedContexts.includes('None')) {
-          this.selectedContexts = this.selectedContexts.filter(i => i !== 'None');
+    // Remove 'None' context if it exists and a new context is added
+    if (item !== 'None' && this.selectedContexts.includes('None')) {
+      this.selectedContexts = this.selectedContexts.filter((i) => i !== 'None');
+    }
+
+    if (item === 'None') {
+      // Handle 'None' selection
+      this.selectedContexts = ['None'];
+      this.canvasUsed = false; // Assuming 'None' means no canvas
+      this.ideaAgentFormattedResponse =
+        'Please select a context using the plus button in the top right.'; // Reset prompt
+      this.ideaAgentRawResponse = null; // Also clear raw response
+      this.showRawResponse = false;
+    } else if (this.isSelected(item)) {
+      //Existing logic
+      this.selectedContexts = this.selectedContexts.filter((i) => i !== item);
+    } else {
+      this.selectedContexts.push(item);
+      if (item === this.board) {
+        //If canvas is added.
+        this.canvasUsed = true;
       }
+    }
 
-      if (item === 'None') {  // Handle 'None' selection
-          this.selectedContexts = ['None'];
-          this.canvasUsed = false; // Assuming 'None' means no canvas
-          this.ideaAgentFormattedResponse = 'Please select a context using the plus button in the top right.'; // Reset prompt
-          this.ideaAgentRawResponse = null; // Also clear raw response
-          this.showRawResponse = false;
+    // Disable refresh button if only 'None' is selected
+    this.isWaitingForIdeaAgent =
+      this.selectedContexts.length === 1 && this.selectedContexts[0] === 'None';
 
-      } else if (this.isSelected(item)) { //Existing logic
-          this.selectedContexts = this.selectedContexts.filter((i) => i !== item);
-      } else {
-          this.selectedContexts.push(item);
-            if(item === this.board) { //If canvas is added.
-              this.canvasUsed = true;
-            }
-      }
-
-        // Disable refresh button if only 'None' is selected
-        this.isWaitingForIdeaAgent = this.selectedContexts.length === 1 && this.selectedContexts[0] === 'None';
-
-      // Refresh the idea agent whenever context changes, unless 'None' selected
-      if (!(this.selectedContexts.length === 1 && this.selectedContexts[0] === 'None')) {
-          this.refreshIdeaAgent();
-      }
-
+    // Refresh the idea agent whenever context changes, unless 'None' selected
+    if (
+      !(
+        this.selectedContexts.length === 1 &&
+        this.selectedContexts[0] === 'None'
+      )
+    ) {
+      this.refreshIdeaAgent();
+    }
   }
 
   isSelected(item: any): boolean {
-      return this.selectedContexts.some((i) => i === item);
+    return this.selectedContexts.some((i) => i === item);
   }
 
   // --- AI Chat (Right Pane) Methods ---
@@ -594,25 +601,40 @@ but keep names of authors confidential.  Consider the provided topic context whe
       .map((bucket) => bucket.bucketID);
   }
 
-  async fetchPostsForIdeaAgent(canvasUsed: boolean, bucketIDs: string[]): Promise<any[]> {
+  async fetchPostsForIdeaAgent(
+    canvasUsed: boolean,
+    bucketIDs: string[]
+  ): Promise<any[]> {
     try {
       let allPosts: any[] = [];
 
       if (canvasUsed) {
         const canvasPosts = await this.postService.getAllByBoard(this.boardID);
-        allPosts = allPosts.concat(canvasPosts.filter(post => post.type === PostType.BOARD));
+        allPosts = allPosts.concat(
+          canvasPosts.filter((post) => post.type === PostType.BOARD)
+        );
       }
 
       if (bucketIDs.length > 0) {
-        const bucketPostsPromises = bucketIDs.map(bucketID => this.postService.getAllByBucket(bucketID));
+        const bucketPostsPromises = bucketIDs.map((bucketID) =>
+          this.postService.getAllByBucket(bucketID)
+        );
         const bucketPostsArrays = await Promise.all(bucketPostsPromises);
 
         // Extract posts from each bucket response and add to allPosts, avoiding duplicates
-        bucketPostsArrays.forEach(bucketResponse => {
-          if (bucketResponse && bucketResponse.posts && Array.isArray(bucketResponse.posts)) {
+        bucketPostsArrays.forEach((bucketResponse) => {
+          if (
+            bucketResponse &&
+            bucketResponse.posts &&
+            Array.isArray(bucketResponse.posts)
+          ) {
             bucketResponse.posts.forEach((post: any) => {
               // Check for duplicates using postID before adding
-              if (!allPosts.some(existingPost => existingPost.postID === post.postID)) {
+              if (
+                !allPosts.some(
+                  (existingPost) => existingPost.postID === post.postID
+                )
+              ) {
                 allPosts.push(post);
               }
             });
@@ -621,110 +643,117 @@ but keep names of authors confidential.  Consider the provided topic context whe
       }
 
       return allPosts;
-
     } catch (error) {
       console.error('Error fetching posts for Idea Agent:', error);
-      this.openSnackBar('Failed to fetch posts for the Idea Agent. Please try again.');
+      this.openSnackBar(
+        'Failed to fetch posts for the Idea Agent. Please try again.'
+      );
       throw error;
     }
   }
 
-    async refreshIdeaAgent() {
-        if (this.isWaitingForIdeaAgent) {
-            return;
-        }
+  async refreshIdeaAgent() {
+    if (this.isWaitingForIdeaAgent) {
+      return;
+    }
 
-        this.startWaitingForIdeaAgent();
-      this.ideaAgentRawResponse = null; 
-      this.ideaAgentFormattedResponse = null;
+    this.startWaitingForIdeaAgent();
+    this.ideaAgentRawResponse = null;
+    this.ideaAgentFormattedResponse = null;
 
-        try {
-            const bucketIDs = this.getSelectedBucketIds();
+    try {
+      const bucketIDs = this.getSelectedBucketIds();
 
-            const posts = await this.fetchPostsForIdeaAgent(
-                this.canvasUsed,
-                bucketIDs
-            );
+      const posts = await this.fetchPostsForIdeaAgent(
+        this.canvasUsed,
+        bucketIDs
+      );
 
-            const topicContextValue = this.topicContext.value;
-            const fullPrompt = `${this.ideaAgentPrompt}\n\nHere is the Topic Context:\n${topicContextValue ? topicContextValue : 'N/A'}\n`;
+      const topicContextValue = this.topicContext.value;
+      const fullPrompt = `${
+        this.ideaAgentPrompt
+      }\n\nHere is the Topic Context:\n${
+        topicContextValue ? topicContextValue : 'N/A'
+      }\n`;
 
-            // Emit to AI_MESSAGE with type: 'idea_agent'
-            if (this.ideaAgentResponseListener) {
-                this.ideaAgentResponseListener.unsubscribe();
-            }
-            this.socketService.emit(SocketEvent.AI_MESSAGE, {
-                posts,
-                currentPrompt: fullPrompt,
-                fullPromptHistory: fullPrompt, // Even though it's for the idea agent, keep the naming consistent
-                boardId: this.board?.boardID,
-                userId: this.user.userID,
-                type: 'idea_agent',
-            });
+      // Emit to AI_MESSAGE with type: 'idea_agent'
+      if (this.ideaAgentResponseListener) {
+        this.ideaAgentResponseListener.unsubscribe();
+      }
+      this.socketService.emit(SocketEvent.AI_MESSAGE, {
+        posts,
+        currentPrompt: fullPrompt,
+        fullPromptHistory: fullPrompt, // Even though it's for the idea agent, keep the naming consistent
+        boardId: this.board?.boardID,
+        userId: this.user.userID,
+        type: 'idea_agent',
+      });
 
-            // Listen for AI_RESPONSE, but check the type
-            this.ideaAgentResponseListener = this.socketService.listen(
-                SocketEvent.AI_RESPONSE,
-                (data: any) => {
-                    try {
-                        if (data.type === 'idea_agent') {
-                            switch (data.status) {
-                                case 'Received': {
-                                    this.updateWaitingForIdeaAgent('Receiving message...');
-                                    break;
-                                }
-                                case 'Processing': {
-                                    this.updateWaitingForIdeaAgent(data.response);
-                                    break;
-                                }
-                                case 'Completed': {
-                                    const dataResponse = data.response;
-                                  this.ideaAgentRawResponse = dataResponse; // Store raw response
-                                  this.ideaAgentFormattedResponse = this.markdownToHtml(dataResponse || ''); // And formatted
-                                    this.stopWaitingForIdeaAgent();
-                                    this.isWaitingForIdeaAgent = false;
-                                    break;
-                                }
-                                case 'Error': {
-                                    console.error('AI request error:', data.errorMessage);
-                                  this.ideaAgentRawResponse = data.errorMessage; // Store raw error
-                                  this.ideaAgentFormattedResponse = data.errorMessage;
-                                    this.stopWaitingForIdeaAgent();
-                                    this.isWaitingForIdeaAgent = false;
-                                    break;
-                                }
-                                default: {
-                                    console.warn('Unknown status:', data.status);
-                                }
-                            }
-                            if (data.status === 'Completed' || data.status === 'Error') {
-                                if (this.ideaAgentResponseListener) {
-                                    this.ideaAgentResponseListener.unsubscribe();
-                                }
-                            }
-                        }
-                        this.changeDetectorRef.detectChanges(); // Important!
-                    } catch (error) {
-                      this.ideaAgentRawResponse = "An error occurred";
-                      this.ideaAgentFormattedResponse =
-                          'An error occurred. Please refresh your browser and try again.\n\n' +
-                          error;
-                        this.stopWaitingForIdeaAgent();
-                        this.isWaitingForIdeaAgent = false;
-                        if (this.ideaAgentResponseListener) {
-                            this.ideaAgentResponseListener.unsubscribe();
-                        }
-                    }
+      // Listen for AI_RESPONSE, but check the type
+      this.ideaAgentResponseListener = this.socketService.listen(
+        SocketEvent.AI_RESPONSE,
+        (data: any) => {
+          try {
+            if (data.type === 'idea_agent') {
+              switch (data.status) {
+                case 'Received': {
+                  this.updateWaitingForIdeaAgent('Receiving message...');
+                  break;
                 }
-            );
-        } catch (error) {
+                case 'Processing': {
+                  this.updateWaitingForIdeaAgent(data.response);
+                  break;
+                }
+                case 'Completed': {
+                  const dataResponse = data.response;
+                  this.ideaAgentRawResponse = dataResponse; // Store raw response
+                  this.ideaAgentFormattedResponse = this.markdownToHtml(
+                    dataResponse || ''
+                  ); // And formatted
+                  this.stopWaitingForIdeaAgent();
+                  this.isWaitingForIdeaAgent = false;
+                  break;
+                }
+                case 'Error': {
+                  console.error('AI request error:', data.errorMessage);
+                  this.ideaAgentRawResponse = data.errorMessage; // Store raw error
+                  this.ideaAgentFormattedResponse = data.errorMessage;
+                  this.stopWaitingForIdeaAgent();
+                  this.isWaitingForIdeaAgent = false;
+                  break;
+                }
+                default: {
+                  console.warn('Unknown status:', data.status);
+                }
+              }
+              if (data.status === 'Completed' || data.status === 'Error') {
+                if (this.ideaAgentResponseListener) {
+                  this.ideaAgentResponseListener.unsubscribe();
+                }
+              }
+            }
+            this.changeDetectorRef.detectChanges(); // Important!
+          } catch (error) {
+            this.ideaAgentRawResponse = 'An error occurred';
+            this.ideaAgentFormattedResponse =
+              'An error occurred. Please refresh your browser and try again.\n\n' +
+              error;
             this.stopWaitingForIdeaAgent();
             this.isWaitingForIdeaAgent = false;
             if (this.ideaAgentResponseListener) {
-                this.ideaAgentResponseListener.unsubscribe();
+              this.ideaAgentResponseListener.unsubscribe();
             }
+          }
         }
+      );
+    } catch (error) {
+      this.stopWaitingForIdeaAgent();
+      this.isWaitingForIdeaAgent = false;
+      if (this.ideaAgentResponseListener) {
+        this.ideaAgentResponseListener.unsubscribe();
+      }
     }
+  }
   async ngOnDestroy() {
     this.unsubListeners.forEach((s) => s.unsubscribe());
     if (this.boardID) {

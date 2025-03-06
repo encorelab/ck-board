@@ -106,7 +106,11 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     // 5. Send an email to the user with a link containing the token
-    const resetLink = `${process.env.CKBOARD_SERVER_ADDRESS}/reset-password?token=${resetToken}`;
+    const resetLink = `${
+      process.env.CKBOARD_SERVER_ADDRESS!.startsWith('http')
+        ? ''
+        : 'https://'
+    }${process.env.CKBOARD_SERVER_ADDRESS!}/reset-password?token=${resetToken}`;
 
     try {
       await generateEmail(email, 'Password Reset Request', resetLink);

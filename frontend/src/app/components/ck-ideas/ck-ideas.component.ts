@@ -1,4 +1,5 @@
 // frontend/src/app/components/ck-ideas/ck-ideas.component.ts
+
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ComponentType } from '@angular/cdk/portal';
 import { SocketService } from 'src/app/services/socket.service';
@@ -14,6 +15,7 @@ import {
 } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
+import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle'
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
@@ -32,6 +34,8 @@ import { CanvasService } from 'src/app/services/canvas.service';
 import { HttpClient } from '@angular/common/http';
 import { saveAs } from 'file-saver';
 import { SnackbarService } from 'src/app/services/snackbar.service';
+import { FormControl } from '@angular/forms';
+
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -76,16 +80,19 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   aiResponseListener: Subscription | undefined;
 
   // Idea Agent (Left Pane) Variables
-  ideaAgentResponse = '';
+  ideaAgentRawResponse: any | null = null; // Store the raw JSON response
+  ideaAgentFormattedResponse: string | null = null; // Store the HTML formatted response
+  showRawResponse: boolean = false; // Control which version is displayed
   isWaitingForIdeaAgent = false;
   waitingIdeaMessage = 'Waiting for AI Response...';
   private readonly ideaAgentPrompt = `
-You are a helpful assistant for teachers. You will be provided with a set of student posts related to a lecture topic.
-Your task is to analyze these posts and provide a concise summary that will be useful for the teacher during a lecture.
-Focus on identifying key insights, common themes, potential misconceptions, and highlighting the most insightful contributions,
-but keep names of authors confidential.
+You are a helpful assistant for teachers. You will be provided with a set of student posts related to a lecture topic, which may or may not be provided to you.
+Your task is to analyze these posts and provide a concise summary that will be useful for the teacher during a lecture. If a "Topic Context" is provided, key aspects 
+of your summary such as overall assessment of quality, exemplar posts, and misconceptions should be assessed in terms of the "Context Topic" domain or success criteria. 
+Focus on identifying key insights, common themes, potential misconceptions, and highlighting the most insightful contributions, 
+but keep names of authors confidential.  Consider the provided topic context when analyzing the posts and drawing your conclusions.
 
-**Here's the format you should follow (use Markdown for formatting):**
+**Here's the format you should follow for your text response (use Markdown for formatting):**
 
 **Total Posts:** [total # of posts] | **Unique Contributors:** [total # of unique authors] | **Avg Posts Per Contributor:** [average number of posts per unique author]
 \n\n
@@ -103,7 +110,13 @@ but keep names of authors confidential.
 \n\n
 ---
 \n\n
-**Top Upvoted Post:**
+**Overall assessment of quality:**
+\n
+[Briefly state your assessment of quality, accounting for the Context Topic (if provided)]
+\n\n
+---
+\n\n
+**Exemplar Posts:**
 \n
 - **Title:** [Title of the post with the most upvotes]
 - **Synopsis:** [Briefly (1-2 sentences) describe the content of the top-upvoted post. Explain *why* it might have received the most upvotes.]
@@ -125,10 +138,10 @@ but keep names of authors confidential.
 [Include any other relevant observations that might be useful to the teacher. For example, if a particular post sparked a lot of discussion (comments), or if there's a significant divergence of opinion. Use paragraphs as needed.]
 \n\n
 ---
-(P.S. Use single quotes when quoting any text)
 `;
   selectedContexts: any[] = []; // To store selected buckets/canvas
   ideaAgentResponseListener: Subscription | undefined;
+  topicContext: FormControl = new FormControl('');
 
   constructor(
     public postService: PostService,
@@ -154,10 +167,10 @@ but keep names of authors confidential.
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
-    const { boardID, projectID, board } = await this.configureBoard(); // Destructure board as well
+    const { boardID, projectID, board } = await this.configureBoard();
     this.boardID = boardID;
     this.projectID = projectID;
-    this.board = board; // Assign the returned board
+    this.board = board;
 
     if (this.boardID && this.projectID) {
       await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
@@ -168,7 +181,7 @@ but keep names of authors confidential.
       this.socketService.connect(this.user.userID, this.boardID);
 
       // Default to "None" context and show prompt.  AND disable the button.
-      this.ideaAgentResponse = '** Select CONTEXT using "+" button (top right) **';
+      this.ideaAgentFormattedResponse = '** Select post SOURCE using "+" button (top right) **';
       this.isWaitingForIdeaAgent = false; 
       this.selectedContexts = ['None'];
 
@@ -243,7 +256,9 @@ but keep names of authors confidential.
       if (item === 'None') {  // Handle 'None' selection
           this.selectedContexts = ['None'];
           this.canvasUsed = false; // Assuming 'None' means no canvas
-          this.ideaAgentResponse = 'Please select a context using the plus button in the top right.'; // Reset prompt
+          this.ideaAgentFormattedResponse = 'Please select a context using the plus button in the top right.'; // Reset prompt
+          this.ideaAgentRawResponse = null; // Also clear raw response
+          this.showRawResponse = false;
 
       } else if (this.isSelected(item)) { //Existing logic
           this.selectedContexts = this.selectedContexts.filter((i) => i !== item);
@@ -346,7 +361,7 @@ but keep names of authors confidential.
                       content: this.aiResponse,
                     });
                     this.stopWaitingForAIResponse();
-                    this.isProcessingAIRequest = false; // Corrected placement
+                    this.isProcessingAIRequest = false;
                     break;
                   }
                   case 'Error': {
@@ -356,7 +371,7 @@ but keep names of authors confidential.
                       content: data.errorMessage,
                     });
                     this.stopWaitingForAIResponse();
-                    this.isProcessingAIRequest = false; // Corrected placement
+                    this.isProcessingAIRequest = false;
                     break;
                   }
                   default: {
@@ -614,100 +629,102 @@ but keep names of authors confidential.
     }
   }
 
-  async refreshIdeaAgent() {
-    if (this.isWaitingForIdeaAgent) {
-      return;
-    }
+    async refreshIdeaAgent() {
+        if (this.isWaitingForIdeaAgent) {
+            return;
+        }
 
-    this.startWaitingForIdeaAgent();
-    this.ideaAgentResponse = ''; // Clear previous response
+        this.startWaitingForIdeaAgent();
+      this.ideaAgentRawResponse = null; 
+      this.ideaAgentFormattedResponse = null;
 
-    try {
-      const bucketIDs = this.getSelectedBucketIds();
+        try {
+            const bucketIDs = this.getSelectedBucketIds();
 
-      const posts = await this.fetchPostsForIdeaAgent(
-        this.canvasUsed,
-        bucketIDs
-      );
+            const posts = await this.fetchPostsForIdeaAgent(
+                this.canvasUsed,
+                bucketIDs
+            );
 
-      const fullPrompt = `${this.ideaAgentPrompt}`;
+            const topicContextValue = this.topicContext.value;
+            const fullPrompt = `${this.ideaAgentPrompt}\n\nHere is the Topic Context:\n${topicContextValue ? topicContextValue : 'N/A'}\n`;
 
-      // Emit to AI_MESSAGE with type: 'idea_agent'
-      if (this.ideaAgentResponseListener) {
-        this.ideaAgentResponseListener.unsubscribe();
-      }
-      this.socketService.emit(SocketEvent.AI_MESSAGE, {
-        posts,
-        currentPrompt: fullPrompt,
-        fullPromptHistory: fullPrompt,
-        boardId: this.board?.boardID,
-        userId: this.user.userID,
-        type: 'idea_agent',
-      });
-
-      // Listen for AI_RESPONSE, but check the type
-      this.ideaAgentResponseListener = this.socketService.listen(
-        SocketEvent.AI_RESPONSE,
-        (data: any) => {
-          try {
-            if (data.type === 'idea_agent') {
-              switch (data.status) {
-                case 'Received': {
-                  this.updateWaitingForIdeaAgent('Receiving message...');
-                  break;
-                }
-                case 'Processing': {
-                  this.updateWaitingForIdeaAgent(data.response);
-                  break;
-                }
-                case 'Completed': {
-                  const dataResponse = data.response;
-                  this.ideaAgentResponse = this.markdownToHtml(
-                    dataResponse || ''
-                  );
-                  this.stopWaitingForIdeaAgent();
-                  this.isWaitingForIdeaAgent = false;
-                  break;
-                }
-                case 'Error': {
-                  console.error('AI request error:', data.errorMessage);
-                  this.ideaAgentResponse = data.errorMessage;
-                  this.stopWaitingForIdeaAgent();
-                  this.isWaitingForIdeaAgent = false;
-                  break;
-                }
-                default: {
-                  console.warn('Unknown status:', data.status);
-                }
-              }
-              if (data.status === 'Completed' || data.status === 'Error') {
-                if (this.ideaAgentResponseListener) {
-                  this.ideaAgentResponseListener.unsubscribe();
-                }
-              }
+            // Emit to AI_MESSAGE with type: 'idea_agent'
+            if (this.ideaAgentResponseListener) {
+                this.ideaAgentResponseListener.unsubscribe();
             }
-            this.changeDetectorRef.detectChanges();
-          } catch (error) {
-            this.ideaAgentResponse =
-              'An error occurred. Please refresh your browser and try again.\n\n' +
-              error;
+            this.socketService.emit(SocketEvent.AI_MESSAGE, {
+                posts,
+                currentPrompt: fullPrompt,
+                fullPromptHistory: fullPrompt, // Even though it's for the idea agent, keep the naming consistent
+                boardId: this.board?.boardID,
+                userId: this.user.userID,
+                type: 'idea_agent',
+            });
+
+            // Listen for AI_RESPONSE, but check the type
+            this.ideaAgentResponseListener = this.socketService.listen(
+                SocketEvent.AI_RESPONSE,
+                (data: any) => {
+                    try {
+                        if (data.type === 'idea_agent') {
+                            switch (data.status) {
+                                case 'Received': {
+                                    this.updateWaitingForIdeaAgent('Receiving message...');
+                                    break;
+                                }
+                                case 'Processing': {
+                                    this.updateWaitingForIdeaAgent(data.response);
+                                    break;
+                                }
+                                case 'Completed': {
+                                    const dataResponse = data.response;
+                                  this.ideaAgentRawResponse = dataResponse; // Store raw response
+                                  this.ideaAgentFormattedResponse = this.markdownToHtml(dataResponse || ''); // And formatted
+                                    this.stopWaitingForIdeaAgent();
+                                    this.isWaitingForIdeaAgent = false;
+                                    break;
+                                }
+                                case 'Error': {
+                                    console.error('AI request error:', data.errorMessage);
+                                  this.ideaAgentRawResponse = data.errorMessage; // Store raw error
+                                  this.ideaAgentFormattedResponse = data.errorMessage;
+                                    this.stopWaitingForIdeaAgent();
+                                    this.isWaitingForIdeaAgent = false;
+                                    break;
+                                }
+                                default: {
+                                    console.warn('Unknown status:', data.status);
+                                }
+                            }
+                            if (data.status === 'Completed' || data.status === 'Error') {
+                                if (this.ideaAgentResponseListener) {
+                                    this.ideaAgentResponseListener.unsubscribe();
+                                }
+                            }
+                        }
+                        this.changeDetectorRef.detectChanges(); // Important!
+                    } catch (error) {
+                      this.ideaAgentRawResponse = "An error occurred";
+                      this.ideaAgentFormattedResponse =
+                          'An error occurred. Please refresh your browser and try again.\n\n' +
+                          error;
+                        this.stopWaitingForIdeaAgent();
+                        this.isWaitingForIdeaAgent = false;
+                        if (this.ideaAgentResponseListener) {
+                            this.ideaAgentResponseListener.unsubscribe();
+                        }
+                    }
+                }
+            );
+        } catch (error) {
             this.stopWaitingForIdeaAgent();
             this.isWaitingForIdeaAgent = false;
             if (this.ideaAgentResponseListener) {
-              this.ideaAgentResponseListener.unsubscribe();
+                this.ideaAgentResponseListener.unsubscribe();
             }
-          }
         }
-      );
-    } catch (error) {
-      this.stopWaitingForIdeaAgent();
-      this.isWaitingForIdeaAgent = false;
-      if (this.ideaAgentResponseListener) {
-        this.ideaAgentResponseListener.unsubscribe();
-      }
     }
-  }
-
   async ngOnDestroy() {
     this.unsubListeners.forEach((s) => s.unsubscribe());
     if (this.boardID) {

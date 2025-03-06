@@ -3,27 +3,44 @@
 // Define some color variables (adjust these to match your app's theme)
 $toolbar-color: #3a34b3;
 $primary-color: #673ab7; // Example: Deep Purple (Material Design primary)
-$accent-color: #ffc107;  // Example: Amber (Material Design accent)
+$accent-color: #ffc107; // Example: Amber (Material Design accent)
 $background-color: #f5f5f5; // Light gray background
-$card-background: #ffffff;  // White card background
+$card-background: #ffffff; // White card background
 $heading-background: lighten($toolbar-color, 15%);
+
+.mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+::ng-deep .context-bar .topic-context-field .mat-form-field-wrapper {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 
 .context-bar {
   display: flex;
-  align-items: center;
-  padding: 10px;
+  align-items: center; /* Vertically center items */
+  padding: 8px;
+  background-color: #f0f0f0;
   border-bottom: 1px solid #ccc;
-  background-color: $background-color; // Use variable
 
-  .context-label {
-    font-weight: bold;
-    margin-right: 10px;
+  .topic-context-field {
+    margin: 0px !important; //Remove all margin
+    padding: 0px 0px 0px 20px !important;
+    width: 50%; // Adjust width as needed
+
+    // Target the textarea *inside* the topic-context-field
+    textarea {
+      resize: none; /* Disable resizing */
+    }
   }
 }
 
 .main-container {
   display: flex;
-  height: calc(100vh - 64px - 62px - 40px); // Initial height
+  height: calc(100vh - 64px - 70px - 40px); // Initial height
   background-color: $background-color;
 
   .left-pane {
@@ -44,14 +61,16 @@ $heading-background: lighten($toolbar-color, 15%);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     margin: 10px;
     border-radius: 4px;
-  
+
     &:last-child {
       border-right: none;
     }
   }
 
   .left-pane {
-    height: calc(100vh - 64px - 62px - 60px); // Fixed height for the entire left pane
+    height: calc(
+      100vh - 64px - 70px - 60px
+    ); // Fixed height for the entire left pane
 
     .ai-summary-header {
       display: flex;
@@ -61,29 +80,32 @@ $heading-background: lighten($toolbar-color, 15%);
       padding: 10px;
       border-radius: 4px;
       margin-bottom: 1rem;
-      position: sticky;  // Make the header sticky
-      top: 0;          // Stick to the top
-      z-index: 2;      // Ensure it's above the content
+      position: sticky; // Make the header sticky
+      top: 0; // Stick to the top
+      z-index: 2; // Ensure it's above the content
       // Add a subtle shadow to separate header from content when scrolling
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
-      h2 {
-        margin-bottom: 0;
-      }
-
+    h2 {
+      margin-bottom: 0;
+    }
 
     .ai-summary-content {
       min-height: 100px;
       padding-top: 1rem;
       overflow-y: auto; // Enable scrolling for the content
-      height: calc(100% - 100px); // remaining height after the header.  52px is a good approx.
+      height: calc(
+        100% - 100px
+      ); // remaining height after the header.  52px is a good approx.
     }
   }
 
   .right-pane {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 64px - 62px - 60px); // Subtract toolbar, context bar, and margins
+    height: calc(
+      100vh - 64px - 70px - 60px
+    ); // Subtract toolbar, context bar, and margins
     overflow-y: auto; // Add scroll to the overall right pane
 
     h2 {
@@ -97,9 +119,9 @@ $heading-background: lighten($toolbar-color, 15%);
   }
 }
 .chat-feed {
-    overflow-y: auto;
-    height: calc(100% - 140px);
-    margin-bottom: 1rem;
+  overflow-y: auto;
+  height: calc(100% - 140px);
+  margin-bottom: 1rem;
 }
 
 .waiting-message {
@@ -109,23 +131,24 @@ $heading-background: lighten($toolbar-color, 15%);
   margin-top: 20px;
 }
 
-.user-message, .ai-message {
-    margin-bottom: 10px;
+.user-message,
+.ai-message {
+  margin-bottom: 10px;
 }
 .message-label {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .message-card {
-    padding: 10px;
-    border-radius: 4px;
+  padding: 10px;
+  border-radius: 4px;
 }
 .user-card {
-    background-color: #d1c4e9;
+  background-color: #d1c4e9;
 }
 
 .ai-card {
-    background-color: #e0e0e0;
+  background-color: #e0e0e0;
 }
 .spinner {
   margin: 70px auto;
@@ -133,5 +156,42 @@ $heading-background: lighten($toolbar-color, 15%);
 }
 
 .right-pane > div:last-child {
-    padding-bottom: 20px;
+  padding-bottom: 20px;
+}
+
+.topic-context-field {
+  // Remove *all* margin and padding from the mat-form-field itself.
+  margin: 0 !important;
+  padding: 0 !important;
+
+  // Target the wrapper, and be *more specific* to override Material's styles.
+  &.mat-form-field-appearance-outline .mat-form-field-wrapper {
+    margin: 0 !important;
+    padding: 0 !important; // Remove padding as well, just in case.
+  }
+
+  // Target other internal elements (these might not be strictly necessary
+  // anymore, but they're good to keep for robustness).
+  .mdc-notched-outline__notch {
+    margin-bottom: 0px !important;
+  }
+  .mat-mdc-form-field-subscript-wrapper {
+    padding-bottom: 0px !important;
+    margin-bottom: 0px !important;
+  }
+  .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+    padding-bottom: 0px !important;
+  }
+  .mat-mdc-form-field-flex {
+    padding-bottom: 0px !important;
+  }
+}
+
+.add-context-button {
+  background-color: #3a34b3;
+  color: white; /* Ensure the icon is visible on the purple background */
+
+  .mat-icon {
+    color: white;
+  }
 }

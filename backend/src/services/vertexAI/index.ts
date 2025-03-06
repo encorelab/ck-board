@@ -362,7 +362,7 @@ async function sendMessage(
 ): Promise<void> {
   try {
     // Send an initial acknowledgment
-    socket.emit(SocketEvent.AI_RESPONSE, { status: 'Received', type: "teacher_agent" });
+    socket.emit(SocketEvent.AI_RESPONSE, { status: 'Received', type: type });
 
     const userId = socket.data.userId;
     const boardId = socket.data.boardId;
@@ -871,7 +871,7 @@ async function constructAndSendMessage(
     list of objects, where each object represents an action to be performed.
 
     {
-      "response": "Your response here<END>",
+      "response": "Your response to the user here<END>",
       "create_bucket": [{"name": "bucket_name"}], 
       "add_post_to_bucket": [
         {
@@ -899,7 +899,7 @@ async function constructAndSendMessage(
       ]
     }
 
-    Remember to use json markdown to wrap this entire response.
+    **Remember:** As this is a json response, use single quotes or escape characters when quoting text and wrap the entire response in json markdown.
 
     Here are the posts from the project:` +
     postsAsKeyValuePairs + // Concatenate variables here

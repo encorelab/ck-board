@@ -60,6 +60,7 @@
   <div class="left-pane">
     <div class="ai-summary-header">
       <h2>AI Summary</h2>
+        <span *ngIf="isWaitingForIdeaAgent && !newSummaryAvailable" class="waiting-indicator">{{ waitingIdeaMessage }}</span>
       <span style="flex: 1 1 auto"></span>
       <mat-slide-toggle [(ngModel)]="showRawResponse" color="primary">
         Raw JSON
@@ -68,12 +69,21 @@
         mat-icon-button
         color="primary"
         (click)="refreshIdeaAgent()"
-        [disabled]="isWaitingForIdeaAgent"
+        [disabled]="isWaitingForIdeaAgent && !newSummaryAvailable"
         matTooltip="Refresh AI Summary"
       >
         <mat-icon style="color: white">refresh</mat-icon>
       </button>
     </div>
+        <button
+            *ngIf="newSummaryAvailable"
+            mat-raised-button
+            color="accent"
+            (click)="displayNewSummary()"
+            class="new-summary-button"
+        >
+            New Summary Available
+        </button>
     <div class="ai-summary-content">
       <div
         *ngIf="!showRawResponse && ideaAgentFormattedResponse"
@@ -84,10 +94,7 @@
         style="white-space: pre-wrap"
         >{{ ideaAgentRawResponse }}</pre
       >
-      <div *ngIf="isWaitingForIdeaAgent" class="waiting-message">
-        <mat-spinner diameter="30"></mat-spinner>
-        <p>{{ waitingIdeaMessage }}</p>
-      </div>
+
     </div>
   </div>
 
@@ -127,7 +134,8 @@
 </div>
 
 <mat-menu #contextMenu="matMenu">
-  <button mat-menu-item (click)="toggleContext(board)">  <span>CANVAS: {{ board?.name }}</span>
+  <button mat-menu-item (click)="toggleContext(board)">
+    <span>CANVAS: {{ board?.name }}</span>
     <mat-icon *ngIf="isSelected(board)">check</mat-icon>
   </button>
   <button

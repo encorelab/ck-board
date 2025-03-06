@@ -81,6 +81,11 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   // Idea Agent (Left Pane) Variables
   ideaAgentRawResponse: any | null = null; // Store the raw JSON response
   ideaAgentFormattedResponse: string | null = null; // Store the HTML formatted response
+  //Add pending variables
+  pendingIdeaAgentRawResponse: any | null = null;
+  pendingIdeaAgentFormattedResponse: string | null = null;
+  newSummaryAvailable: boolean = false;
+
   showRawResponse: boolean = false; // Control which version is displayed
   isWaitingForIdeaAgent = false;
   waitingIdeaMessage = 'Waiting for AI Response...';
@@ -188,6 +193,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
       console.error('Failed to configure board!');
       this.router.navigate(['/error']);
     }
+    this.waitingIdeaMessage = ''; //Initially blank
   }
 
   initGroupEventsListener() {
@@ -357,7 +363,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
                     break;
                   }
                   case 'Processing': {
-                    this.updateWaitingForAIResponse(data.response);
+                    this.updateWaitingForAIResponse('Processing message...');
                     break;
                   }
                   case 'Completed': {
@@ -652,14 +658,29 @@ but keep names of authors confidential.  Consider the provided topic context whe
     }
   }
 
+  displayNewSummary() {
+    this.ideaAgentRawResponse = this.pendingIdeaAgentRawResponse;
+    this.ideaAgentFormattedResponse = this.pendingIdeaAgentFormattedResponse;
+    this.newSummaryAvailable = false;
+    this.pendingIdeaAgentRawResponse = null;
+    this.pendingIdeaAgentFormattedResponse = null;
+  }
+
   async refreshIdeaAgent() {
     if (this.isWaitingForIdeaAgent) {
       return;
     }
 
+    // If a new summary is available, reset and start a new request
+    if (this.newSummaryAvailable) {
+      this.newSummaryAvailable = false;
+      this.pendingIdeaAgentRawResponse = null;
+      this.pendingIdeaAgentFormattedResponse = null;
+    }
+
     this.startWaitingForIdeaAgent();
-    this.ideaAgentRawResponse = null;
-    this.ideaAgentFormattedResponse = null;
+    // this.ideaAgentRawResponse = null; // Don't clear immediately
+    // this.ideaAgentFormattedResponse = null; // Don't clear immediately
 
     try {
       const bucketIDs = this.getSelectedBucketIds();
@@ -697,29 +718,40 @@ but keep names of authors confidential.  Consider the provided topic context whe
             if (data.type === 'idea_agent') {
               switch (data.status) {
                 case 'Received': {
-                  this.updateWaitingForIdeaAgent('Receiving message...');
+                  this.waitingIdeaMessage = 'Receiving message...';
+                  this.changeDetectorRef.detectChanges(); // Force update
+
                   break;
                 }
                 case 'Processing': {
-                  this.updateWaitingForIdeaAgent(data.response);
+                  this.waitingIdeaMessage = 'Processing message...';
+                  this.changeDetectorRef.detectChanges(); // Force update
                   break;
                 }
                 case 'Completed': {
                   const dataResponse = data.response;
-                  this.ideaAgentRawResponse = dataResponse; // Store raw response
-                  this.ideaAgentFormattedResponse = this.markdownToHtml(
+                  // Store in pending variables
+                  this.pendingIdeaAgentRawResponse = dataResponse;
+                  this.pendingIdeaAgentFormattedResponse = this.markdownToHtml(
                     dataResponse || ''
-                  ); // And formatted
+                  );
+                  this.newSummaryAvailable = true; // Set flag
                   this.stopWaitingForIdeaAgent();
                   this.isWaitingForIdeaAgent = false;
+                  this.changeDetectorRef.detectChanges(); // Force update
+
                   break;
                 }
                 case 'Error': {
                   console.error('AI request error:', data.errorMessage);
-                  this.ideaAgentRawResponse = data.errorMessage; // Store raw error
-                  this.ideaAgentFormattedResponse = data.errorMessage;
+                  // Store in pending, even on error
+                  this.pendingIdeaAgentRawResponse = data.errorMessage;
+                  this.pendingIdeaAgentFormattedResponse = data.errorMessage;
+                  this.newSummaryAvailable = true; // Allow user to see error
                   this.stopWaitingForIdeaAgent();
                   this.isWaitingForIdeaAgent = false;
+                  this.changeDetectorRef.detectChanges(); // Force update
+
                   break;
                 }
                 default: {
@@ -732,7 +764,6 @@ but keep names of authors confidential.  Consider the provided topic context whe
                 }
               }
             }
-            this.changeDetectorRef.detectChanges(); // Important!
           } catch (error) {
             this.ideaAgentRawResponse = 'An error occurred';
             this.ideaAgentFormattedResponse =

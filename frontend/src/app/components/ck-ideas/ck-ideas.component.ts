@@ -147,6 +147,9 @@ but keep names of authors confidential.  Consider the provided topic context whe
   ideaAgentResponseListener: Subscription | undefined;
   topicContext: FormControl = new FormControl('');
 
+  // Add dragDisabled flag
+  dragDisabled: boolean = true;
+
   constructor(
     public postService: PostService,
     public boardService: BoardService,
@@ -189,11 +192,22 @@ but keep names of authors confidential.  Consider the provided topic context whe
         '** Select post SOURCE using "+" button (top right) **';
       this.isWaitingForIdeaAgent = false;
       this.selectedContexts = ['None'];
+
+      // Load topic context from local storage
+      const storedContext = localStorage.getItem('topicContext');
+      if (storedContext) {
+        this.topicContext.setValue(storedContext);
+      }
     } else {
       console.error('Failed to configure board!');
       this.router.navigate(['/error']);
     }
     this.waitingIdeaMessage = ''; //Initially blank
+
+    //Listen to topic context changes
+    this.topicContext.valueChanges.subscribe((value) => {
+      localStorage.setItem('topicContext', value);
+    })
   }
 
   initGroupEventsListener() {
@@ -691,9 +705,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
       );
 
       const topicContextValue = this.topicContext.value;
-      const fullPrompt = `${
-        this.ideaAgentPrompt
-      }\n\nHere is the Topic Context:\n${
+      const fullPrompt = `${this.ideaAgentPrompt}\n\nHere is the Topic Context:\n${
         topicContextValue ? topicContextValue : 'N/A'
       }\n`;
 
@@ -730,12 +742,22 @@ but keep names of authors confidential.  Consider the provided topic context whe
                 }
                 case 'Completed': {
                   const dataResponse = data.response;
-                  // Store in pending variables
-                  this.pendingIdeaAgentRawResponse = dataResponse;
-                  this.pendingIdeaAgentFormattedResponse = this.markdownToHtml(
-                    dataResponse || ''
-                  );
-                  this.newSummaryAvailable = true; // Set flag
+
+                  // Check if current response is empty
+                  if (!this.ideaAgentRawResponse) {
+                      // Populate directly if empty
+                      this.ideaAgentRawResponse = dataResponse;
+                      this.ideaAgentFormattedResponse = this.markdownToHtml(dataResponse || '');
+                      this.newSummaryAvailable = false;
+
+                  } else {
+                      // Store in pending variables
+                    this.pendingIdeaAgentRawResponse = dataResponse;
+                    this.pendingIdeaAgentFormattedResponse = this.markdownToHtml(
+                      dataResponse || ''
+                    );
+                    this.newSummaryAvailable = true; // Set flag
+                  }
                   this.stopWaitingForIdeaAgent();
                   this.isWaitingForIdeaAgent = false;
                   this.changeDetectorRef.detectChanges(); // Force update
@@ -744,7 +766,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
                 }
                 case 'Error': {
                   console.error('AI request error:', data.errorMessage);
-                  // Store in pending, even on error
+                    // Store in pending, even on error
                   this.pendingIdeaAgentRawResponse = data.errorMessage;
                   this.pendingIdeaAgentFormattedResponse = data.errorMessage;
                   this.newSummaryAvailable = true; // Allow user to see error
@@ -785,6 +807,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
       }
     }
   }
+  
   async ngOnDestroy() {
     this.unsubListeners.forEach((s) => s.unsubscribe());
     if (this.boardID) {

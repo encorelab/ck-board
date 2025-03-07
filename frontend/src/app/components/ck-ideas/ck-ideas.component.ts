@@ -89,54 +89,6 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   showRawResponse: boolean = false; // Control which version is displayed
   isWaitingForIdeaAgent = false;
   waitingIdeaMessage = 'Waiting for AI Response...';
-  private readonly ideaAgentPrompt = `
-You are a helpful assistant for teachers. You will be provided with a set of student posts related to a lecture topic, which may or may not be provided to you.
-Your task is to analyze these posts and provide a concise summary that will be useful for the teacher during a lecture. If a "Topic Context" is provided, key aspects 
-of your summary such as overall assessment of quality, exemplar posts, and misconceptions should be assessed in terms of the "Context Topic" domain or success criteria. 
-Focus on identifying key insights, common themes, potential misconceptions, and highlighting the most insightful contributions, 
-but keep names of authors confidential.  Consider the provided topic context when analyzing the posts and drawing your conclusions.
-
-**Here's the format you should follow for your text response (use Markdown for formatting):**
-
-**Total Posts:** [total # of posts] | **Unique Contributors:** [total # of unique authors] | **Avg Posts Per Contributor:** [average number of posts per unique author]
-\n\n
-**Summary:**
-\n\n
-[Provide a concise summary of the main points, ideas, and arguments presented in the student posts.  Aim for 3-5 sentences.]
-
-\n\n
-**Themes:**
-\n\n
-[Identify 3-5 major themes or recurring ideas that emerge from the posts.  List them clearly, separated by '|'. Use bolding. Examples:
-  Collaboration | Peer Feedback | Time Management | Misunderstanding of X | Application to Y
-]
-
-\n\n
-**Overall assessment of quality:**
-\n
-[Briefly state your assessment of quality, accounting for the Context Topic (if provided)]
-
-\n\n
-**Exemplar Posts:**
-\n
-- **Title:** [Title of the post with the most upvotes]
-- **Synopsis:** [Briefly (1-2 sentences) describe the content of the top-upvoted post. Explain *why* it might have received the most upvotes.]
-
-\n\n
-**Potential Misconceptions:**
-\n
-[If any posts suggest misunderstandings or incorrect assumptions, list them here.  Format each as:
-- **Title:** [Title of the post]
-- **Synopsis:** [Briefly explain the potential misconception.  Be constructive and suggest how the teacher might address it.]
-]\n\n
-(If no clear misconceptions, write "**No significant misconceptions identified.**")
-
-\n\n
-**Additional Notes (Optional):**
-\n\n
-[Include any other relevant observations that might be useful to the teacher. For example, if a particular post sparked a lot of discussion (comments), or if there's a significant divergence of opinion. Use paragraphs as needed.]
-\n
-`;
   selectedContexts: any[] = []; // To store selected buckets/canvas
   ideaAgentResponseListener: Subscription | undefined;
   topicContext: FormControl = new FormControl('');
@@ -180,7 +132,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
 
       // Default to "None" context and show prompt.  AND disable the button.
       this.ideaAgentFormattedResponse =
-        '** Select post SOURCE using "+" button (top right) **';
+        '<ol><li>Consider adding a <b>Topic Context</b> <em>(above)</em> to improve relevance of summary</li><li>Select post <b>Source</b> using "+" button <em>(top right)</em></li><li>To regenerate, click the <b>refresh</b> button <em>(in this AI Summary heading)</em></li><li>(If needed) If you get a model error, please refresh the summary or page</li></ol>';
       this.isWaitingForIdeaAgent = false;
       this.selectedContexts = ['None'];
 
@@ -198,7 +150,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
     //Listen to topic context changes
     this.topicContext.valueChanges.subscribe((value) => {
       localStorage.setItem('topicContext', value);
-    })
+    });
   }
 
   initGroupEventsListener() {
@@ -696,7 +648,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
       );
 
       const topicContextValue = this.topicContext.value;
-      const fullPrompt = `${this.ideaAgentPrompt}\n\nHere is the Topic Context:\n${
+      const contextPrompt = `${
         topicContextValue ? topicContextValue : 'N/A'
       }\n`;
 
@@ -706,8 +658,8 @@ but keep names of authors confidential.  Consider the provided topic context whe
       }
       this.socketService.emit(SocketEvent.AI_MESSAGE, {
         posts,
-        currentPrompt: fullPrompt,
-        fullPromptHistory: fullPrompt, // Even though it's for the idea agent, keep the naming consistent
+        currentPrompt: contextPrompt,
+        fullPromptHistory: contextPrompt, // Even though it's for the idea agent, keep the naming consistent
         boardId: this.board?.boardID,
         userId: this.user.userID,
         type: 'idea_agent',
@@ -736,17 +688,17 @@ but keep names of authors confidential.  Consider the provided topic context whe
 
                   // Check if current response is empty
                   if (!this.ideaAgentRawResponse) {
-                      // Populate directly if empty
-                      this.ideaAgentRawResponse = dataResponse;
-                      this.ideaAgentFormattedResponse = this.markdownToHtml(dataResponse || '');
-                      this.newSummaryAvailable = false;
-
-                  } else {
-                      // Store in pending variables
-                    this.pendingIdeaAgentRawResponse = dataResponse;
-                    this.pendingIdeaAgentFormattedResponse = this.markdownToHtml(
+                    // Populate directly if empty
+                    this.ideaAgentRawResponse = dataResponse;
+                    this.ideaAgentFormattedResponse = this.markdownToHtml(
                       dataResponse || ''
                     );
+                    this.newSummaryAvailable = false;
+                  } else {
+                    // Store in pending variables
+                    this.pendingIdeaAgentRawResponse = dataResponse;
+                    this.pendingIdeaAgentFormattedResponse =
+                      this.markdownToHtml(dataResponse || '');
                     this.newSummaryAvailable = true; // Set flag
                   }
                   this.stopWaitingForIdeaAgent();
@@ -757,7 +709,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
                 }
                 case 'Error': {
                   console.error('AI request error:', data.errorMessage);
-                    // Store in pending, even on error
+                  // Store in pending, even on error
                   this.pendingIdeaAgentRawResponse = data.errorMessage;
                   this.pendingIdeaAgentFormattedResponse = data.errorMessage;
                   this.newSummaryAvailable = true; // Allow user to see error
@@ -798,7 +750,7 @@ but keep names of authors confidential.  Consider the provided topic context whe
       }
     }
   }
-  
+
   async ngOnDestroy() {
     this.unsubListeners.forEach((s) => s.unsubscribe());
     if (this.boardID) {

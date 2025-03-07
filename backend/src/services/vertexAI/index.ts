@@ -460,6 +460,12 @@ async function sendMessage(
 
       idea_agent:
         `
+        You are a helpful assistant for teachers. You will be provided with a set of student posts related to a lecture topic.
+        Your task is to analyze these posts and provide a concise summary that will be useful for the teacher during a lecture. If a "Topic Context" is provided, key aspects 
+        of your summary such as overall assessment of quality, exemplar posts, and misconceptions should be assessed in terms of the "Context Topic" domain or success criteria. 
+        Focus on identifying key insights, common themes, potential misconceptions, and highlighting the most insightful contributions, 
+        but keep names of authors confidential.  Consider the provided topic context when analyzing the posts and drawing your conclusions.
+
         Please provide your response in the following JSON format, including the "response" key.
 
         The response value should end with <END>. Each of the optional keys should be a
@@ -470,13 +476,57 @@ async function sendMessage(
         }
         
         **Remember:** As this is a json response, use single quotes or escape characters when quoting text and wrap the entire response in json markdown. Also ensure all keys and values have both opening and closing quotes around their values."
+
+
+        **Reponse instructions**
+
+        Please use the following headings, sections, and Markdown formatting for your text response:
+
+        **Total Posts:** [total # of posts] | **Unique Contributors:** [total # of unique authors] | **Avg Posts Per Contributor:** [average number of posts per unique author]
+        \n\n
+        **Summary:**
+        \n\n
+        [Provide a concise summary of the main points, ideas, and arguments presented in the student posts.  Aim for 3-5 sentences.]
+
+        \n\n
+        **Overview:**
+        \n\n
+        [Identify 3-5 major themes or recurring ideas that emerge from the posts.  List them clearly, separated by '|'. Use bolding. Examples:
+          Collaboration | Peer Feedback | Time Management | Misunderstanding of X | Application to Y
+        ]
+
+        \n\n
+        **Assessment of Quality:**
+        \n
+        [Briefly state your assessment of quality, accounting for the Context Topic (if provided)]
+
+        \n\n
+        **Exemplar Posts:**
+        \n
+        - **Title:** [Title of the post with the most upvotes]
+        - **Synopsis:** [Briefly (1-2 sentences) describe the content of the top-upvoted post. Explain *why* it might have received the most upvotes.]
+
+        \n\n
+        **Potential Misconceptions:**
+        \n
+        [If any posts suggest misunderstandings or incorrect assumptions, list them here.  Format each as:
+        - **Title:** [Title of the post]
+        - **Synopsis:** [Briefly explain the potential misconception.  Be constructive and suggest how the teacher might address it.]
+        ]\n\n
+        (If no clear misconceptions, write "**No significant misconceptions identified.**")
+
+        \n\n
+        **Additional Notes (Optional):**
+        \n\n
+        [Include any other relevant observations that might be useful to the teacher. For example, if a particular post sparked a lot of discussion (comments), or if there's a significant divergence of opinion. Use paragraphs as needed.]
+        \n
                 
         ` +
         `\nHere are the posts from the project:` +
         postsToKeyValuePairs(mappedPosts) +
         `\nHere are the buckets:\n` +
         JSON.stringify(mappedBuckets, null, 2) +
-        `\nUser prompt:\n\n${fullPromptHistory}`, // Only include the 'response' key.
+        `\nTopic Context to guide your analysis:\n\n${fullPromptHistory}`, 
     };
 
     const promptTemplate = promptTemplates[type];

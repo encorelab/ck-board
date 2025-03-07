@@ -103,29 +103,25 @@ but keep names of authors confidential.  Consider the provided topic context whe
 **Summary:**
 \n\n
 [Provide a concise summary of the main points, ideas, and arguments presented in the student posts.  Aim for 3-5 sentences.]
-\n\n
----
+
 \n\n
 **Themes:**
 \n\n
 [Identify 3-5 major themes or recurring ideas that emerge from the posts.  List them clearly, separated by '|'. Use bolding. Examples:
   Collaboration | Peer Feedback | Time Management | Misunderstanding of X | Application to Y
 ]
-\n\n
----
+
 \n\n
 **Overall assessment of quality:**
 \n
 [Briefly state your assessment of quality, accounting for the Context Topic (if provided)]
-\n\n
----
+
 \n\n
 **Exemplar Posts:**
 \n
 - **Title:** [Title of the post with the most upvotes]
 - **Synopsis:** [Briefly (1-2 sentences) describe the content of the top-upvoted post. Explain *why* it might have received the most upvotes.]
-\n\n
----
+
 \n\n
 **Potential Misconceptions:**
 \n
@@ -134,14 +130,12 @@ but keep names of authors confidential.  Consider the provided topic context whe
 - **Synopsis:** [Briefly explain the potential misconception.  Be constructive and suggest how the teacher might address it.]
 ]\n\n
 (If no clear misconceptions, write "**No significant misconceptions identified.**")
-\n\n
----
+
 \n\n
 **Additional Notes (Optional):**
 \n\n
 [Include any other relevant observations that might be useful to the teacher. For example, if a particular post sparked a lot of discussion (comments), or if there's a significant divergence of opinion. Use paragraphs as needed.]
-\n\n
----
+\n
 `;
   selectedContexts: any[] = []; // To store selected buckets/canvas
   ideaAgentResponseListener: Subscription | undefined;

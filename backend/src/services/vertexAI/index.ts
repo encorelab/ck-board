@@ -187,21 +187,29 @@ function parseVertexAIError(errorString: string): ErrorInfo {
   }
 }
 
-function isValidJSON(jsonObject: any): boolean {
+function isValidJSON(
+  jsonObject: any,
+  type: 'teacher_agent' | 'idea_agent'
+): boolean {
   try {
     if (!jsonObject.response) {
       return false;
     }
 
-    const allowedKeys = [
-      'response',
-      'create_bucket',
-      'add_post_to_bucket',
-      'remove_post_from_bucket',
-      'add_to_canvas',
-      'remove_from_canvas',
-      'create_bucket_and_add_posts',
-    ];
+    const allowedKeys =
+      type === 'teacher_agent'
+        ? [
+            // teacher_agent allows more actions
+            'response',
+            'create_bucket',
+            'add_post_to_bucket',
+            'remove_post_from_bucket',
+            'add_to_canvas',
+            'remove_from_canvas',
+            'create_bucket_and_add_posts',
+          ]
+        : ['response'];
+
     for (const key in jsonObject) {
       if (!allowedKeys.includes(key)) {
         return false;
@@ -401,116 +409,237 @@ async function sendMessage(
     const mappedBuckets = replaceIds(bucketsToSend, postMap, bucketMap);
 
     // 6. Construct and Send Message to LLM (streaming)
-    constructAndSendMessage(mappedPosts, mappedBuckets, fullPromptHistory).then(
-      (result) => {
-        // Use .then() to handle the Promise
-        const stream = result.stream;
+    // Define prompt templates for each type
+    const promptTemplates = {
+      teacher_agent:
+        `
+        Please provide your response in the following JSON format, including the
+        "response" key and optionally any of the following keys: "create_bucket",
+        "create_bucket_and_add_posts", "add_post_to_bucket", "remove_post_from_bucket",
+        "remove_from_canvas", "add_to_canvas".
 
-        if (stream === undefined) {
-          // Handle the case where the stream is undefined
-          console.error('Stream is undefined');
-          socket.emit(SocketEvent.AI_RESPONSE, {
-            status: 'Error',
-            errorMessage:
-              'No response stream received from the language model.\n\nThe AI may have exhausted its input prompt size limit or calls per minute. Please reduce the number of posts and/or try again in a minute.',
-            type: type,
-          });
-          return;
+        The response value should end with <END>. Each of the optional keys should be a
+        list of objects, where each object represents an action to be performed.
+
+        {
+          "response": "Your response to the user here<END>",
+          "create_bucket": [{"name": "bucket_name"}],
+          "add_post_to_bucket": [
+            {
+              "postID": "post_id_1",
+              "bucketID": "bucket_id_1"
+            },
+            {
+              "postID": "post_id_2",
+              "bucketID": "bucket_id_2"
+            }
+          ],
+          "remove_post_from_bucket": [
+            {
+              "postID": "post_id_3",
+              "bucketID": "bucket_id_3"
+            }
+          ],
+          "add_to_canvas": [{"postID": "post_id_4"}, {"postID": "post_id_5"}],
+          "remove_from_canvas": [{"postID": "post_id_6"}],
+          "create_bucket_and_add_posts": [
+            {
+              "name": "new_bucket_name",
+              "postIDs": ["post_id_7", "post_id_8"]
+            }
+          ]
         }
 
-        // Process the response stream (using for await...of)
-        let partialResponse = '';
-        let finalResponse: AIResponse = { response: '' };
+        **Remember:** As this is a json response, use single quotes or escape characters when quoting text and wrap the entire response in json markdown. Also ensure all keys and values have both opening and closing quotes around their values."
 
-        (async () => {
-          // Async IIFE
-          for await (const item of stream) {
-            partialResponse += item.candidates[0].content.parts[0].text;
+        Here are the posts from the project:` +
+        postsToKeyValuePairs(mappedPosts) +
+        `\nHere are the buckets:\n` +
+        JSON.stringify(mappedBuckets, null, 2) +
+        `\nUser prompt:\n\n${fullPromptHistory}`,
 
-            socket.emit(SocketEvent.AI_RESPONSE, {
-              status: 'Processing',
-              response: partialResponse,
-              type: type,
-            });
-          }
+      idea_agent:
+        `
+        You are a helpful assistant for teachers. You will be provided with a set of student posts related to a lecture topic.
+        Your task is to analyze these posts and provide a concise summary that will be useful for the teacher during a lecture. If a "Topic Context" is provided, key aspects 
+        of your summary such as overall assessment of quality, exemplar posts, and misconceptions should be assessed in terms of the "Context Topic" domain or success criteria. 
+        Focus on identifying key insights, common themes, potential misconceptions, and highlighting the most insightful contributions, 
+        but keep names of authors confidential.  Consider the provided topic context when analyzing the posts and drawing your conclusions.
 
-          let isValid;
-          const noJsonResponse = removeJsonMarkdown(partialResponse);
+        Please provide your response in the following JSON format, including the "response" key.
 
-          try {
-            const parsedResponse = parseJsonResponse(noJsonResponse);
+        The response value should end with <END>. Each of the optional keys should be a
+        list of objects, where each object represents an action to be performed.
 
-            if (isValidJSON(parsedResponse)) {
-              finalResponse = parsedResponse;
-              isValid = true;
-            } else {
-              isValid = false;
-            }
-          } catch (error) {
-            console.error('Error parsing JSON:', error);
+        {
+            "response": "Your response to the user here<END>",
+        }
+        
+        **Remember:** As this is a json response, use single quotes or escape characters when quoting text and wrap the entire response in json markdown. Also ensure all keys and values have both opening and closing quotes around their values."
+
+
+        **Reponse instructions**
+
+        Please use the following headings, sections, and Markdown formatting for your text response:
+
+        **Total Posts:** [total # of posts] | **Unique Contributors:** [total # of unique authors] | **Avg Posts Per Contributor:** [average number of posts per unique author]
+        \n\n
+        **Summary:**
+        \n\n
+        [Provide a concise summary of the main points, ideas, and arguments presented in the student posts.  Aim for 3-5 sentences.]
+
+        \n\n
+        **Overview:**
+        \n\n
+        [Identify 3-5 major themes or recurring ideas that emerge from the posts.  List them clearly, separated by '|'. Use bolding. Examples:
+          Collaboration | Peer Feedback | Time Management | Misunderstanding of X | Application to Y
+        ]
+
+        \n\n
+        **Assessment of Quality:**
+        \n
+        [Briefly state your assessment of quality, accounting for the Context Topic (if provided)]
+
+        \n\n
+        **Exemplar Posts:**
+        \n
+        - **Title:** [Title of the post with the most upvotes]
+        - **Synopsis:** [Briefly (1-2 sentences) describe the content of the top-upvoted post. Explain *why* it might have received the most upvotes.]
+
+        \n\n
+        **Potential Misconceptions:**
+        \n
+        [If any posts suggest misunderstandings or incorrect assumptions, list them here.  Format each as:
+        - **Title:** [Title of the post]
+        - **Synopsis:** [Briefly explain the potential misconception.  Be constructive and suggest how the teacher might address it.]
+        ]\n\n
+        (If no clear misconceptions, write "**No significant misconceptions identified.**")
+
+        \n\n
+        **Additional Notes (Optional):**
+        \n\n
+        [Include any other relevant observations that might be useful to the teacher. For example, if a particular post sparked a lot of discussion (comments), or if there's a significant divergence of opinion. Use paragraphs as needed.]
+        \n
+                
+        ` +
+        `\nHere are the posts from the project:` +
+        postsToKeyValuePairs(mappedPosts) +
+        `\nHere are the buckets:\n` +
+        JSON.stringify(mappedBuckets, null, 2) +
+        `\nTopic Context to guide your analysis:\n\n${fullPromptHistory}`, 
+    };
+
+    const promptTemplate = promptTemplates[type];
+
+    constructAndSendMessage(promptTemplate).then((result) => {
+      // Use .then() to handle the Promise
+      const stream = result.stream;
+
+      if (stream === undefined) {
+        // Handle the case where the stream is undefined
+        console.error('Stream is undefined');
+        socket.emit(SocketEvent.AI_RESPONSE, {
+          status: 'Error',
+          errorMessage:
+            'No response stream received from the language model.\n\nThe AI may have exhausted its input prompt size limit or calls per minute. Please reduce the number of posts and/or try again in a minute.',
+          type: type,
+        });
+        return;
+      }
+
+      // Process the response stream (using for await...of)
+      let partialResponse = '';
+      let finalResponse: AIResponse = { response: '' };
+
+      (async () => {
+        // Async IIFE
+        for await (const item of stream) {
+          partialResponse += item.candidates[0].content.parts[0].text;
+
+          socket.emit(SocketEvent.AI_RESPONSE, {
+            status: 'Processing',
+            response: partialResponse,
+            type: type,
+          });
+        }
+
+        let isValid;
+        const noJsonResponse = removeJsonMarkdown(partialResponse);
+
+        try {
+          const parsedResponse = parseJsonResponse(noJsonResponse);
+
+          if (isValidJSON(parsedResponse, type)) {
+            finalResponse = parsedResponse;
+            isValid = true;
+          } else {
             isValid = false;
           }
+        } catch (error) {
+          console.error('Error parsing JSON:', error);
+          isValid = false;
+        }
 
-          if (isValid) {
-            socket.emit(SocketEvent.AI_RESPONSE, {
-              status: 'Completed',
-              response: finalResponse.response,
-              type: type,
-            });
+        if (isValid) {
+          socket.emit(SocketEvent.AI_RESPONSE, {
+            status: 'Completed',
+            response: finalResponse.response,
+            type: type,
+          });
 
-            // Save AI response
-            await dalChatMessage.save({
-              userId: userId,
-              boardId: boardId,
-              role: 'assistant',
-              content: removeEnd(finalResponse.response),
-            });
-          } else {
-            const errorMessage = `Completed with invalid formatting: ${partialResponse}`;
-            socket.emit(SocketEvent.AI_RESPONSE, {
-              status: 'Error',
-              errorMessage: errorMessage,
-              type: type,
-            });
-          }
+          // Save AI response
+          await dalChatMessage.save({
+            userId: userId,
+            boardId: boardId,
+            role: 'assistant',
+            content: removeEnd(finalResponse.response),
+          });
+        } else {
+          const errorMessage = `An error occurred during response generation. Please try again.`;
+          socket.emit(SocketEvent.AI_RESPONSE, {
+            status: 'Error',
+            errorMessage: errorMessage,
+            type: type,
+          });
+        }
 
-          try {
-            // Restore original IDs before performing database operations
-            const restoredResponse = {
-              ...finalResponse,
-              remove_from_canvas: restoreIdsFromCanvas(
-                finalResponse.remove_from_canvas,
-                postMap
-              ),
-              add_to_canvas: restoreIdsFromCanvas(
-                finalResponse.add_to_canvas,
-                postMap
-              ),
-              remove_post_from_bucket: restoreIdsFromBucket(
-                finalResponse.remove_post_from_bucket,
-                postMap,
-                bucketMap
-              ),
-              add_post_to_bucket: restoreIdsFromBucket(
-                finalResponse.add_post_to_bucket,
-                postMap,
-                bucketMap
-              ),
-              create_bucket_and_add_posts: restoreIdsCreateBucketAndAddPosts(
-                finalResponse.create_bucket_and_add_posts,
-                postMap,
-                bucketMap
-              ),
-              // ... restore IDs for other keys as needed
-            };
-
+        try {
+          // Restore original IDs before performing database operations
+          const restoredResponse = {
+            ...finalResponse,
+            remove_from_canvas: restoreIdsFromCanvas(
+              finalResponse.remove_from_canvas,
+              postMap
+            ),
+            add_to_canvas: restoreIdsFromCanvas(
+              finalResponse.add_to_canvas,
+              postMap
+            ),
+            remove_post_from_bucket: restoreIdsFromBucket(
+              finalResponse.remove_post_from_bucket,
+              postMap,
+              bucketMap
+            ),
+            add_post_to_bucket: restoreIdsFromBucket(
+              finalResponse.add_post_to_bucket,
+              postMap,
+              bucketMap
+            ),
+            create_bucket_and_add_posts: restoreIdsCreateBucketAndAddPosts(
+              finalResponse.create_bucket_and_add_posts,
+              postMap,
+              bucketMap
+            ),
+            // ... restore IDs for other keys as needed
+          };
+          if (type === 'teacher_agent') {
             performDatabaseOperations(restoredResponse, posts, socket);
-          } catch (dbError) {
-            console.error('Error performing database operations:', dbError);
           }
-        })();
-      }
-    );
+        } catch (dbError) {
+          console.error('Error performing database operations:', dbError);
+        }
+      })();
+    });
   } catch (error: any) {
     console.error('Error sending message:', error);
 
@@ -855,61 +984,10 @@ async function performDatabaseOperations(
 }
 
 async function constructAndSendMessage(
-  postsWithBucketIds: any[],
-  bucketData: any[],
-  prompt: string
+  prompt: string // The user's prompt
 ): Promise<any> {
-  const postData = postsToKeyValuePairs(postsWithBucketIds);
-
-  const promptTemplate =
-    `
-    Please provide your response in the following JSON format, including the 
-    "response" key and optionally any of the following keys: "create_bucket", 
-    "create_bucket_and_add_posts", "add_post_to_bucket", "remove_post_from_bucket", 
-    "remove_from_canvas", "add_to_canvas".
-
-    The response value should end with <END>. Each of the optional keys should be a 
-    list of objects, where each object represents an action to be performed.
-
-    {
-      "response": "Your response to the user here<END>",
-      "create_bucket": [{"name": "bucket_name"}], 
-      "add_post_to_bucket": [
-        {
-          "postID": "post_id_1",
-          "bucketID": "bucket_id_1"
-        },
-        {
-          "postID": "post_id_2",
-          "bucketID": "bucket_id_2"
-        }
-      ],
-      "remove_post_from_bucket": [
-        {
-          "postID": "post_id_3",
-          "bucketID": "bucket_id_3"
-        }
-      ],
-      "add_to_canvas": [{"postID": "post_id_4"}, {"postID": "post_id_5"}],
-      "remove_from_canvas": [{"postID": "post_id_6"}],
-      "create_bucket_and_add_posts": [
-        {
-          "name": "new_bucket_name",
-          "postIDs": ["post_id_7", "post_id_8"] 
-        }
-      ]
-    }
-
-    **Remember:** As this is a json response, use single quotes or escape characters when quoting text and wrap the entire response in json markdown.
-
-    Here are the posts from the project:` +
-    postData +
-    `\nHere are the buckets:\n` +
-    JSON.stringify(bucketData, null, 2) +
-    `\nUser prompt:\n\n${prompt}`;
-
   try {
-    const result = await generativeModel.generateContentStream(promptTemplate);
+    const result = await generativeModel.generateContentStream(prompt);
     return result;
   } catch (error) {
     console.error('Error in generateContentStream:', error);
@@ -962,7 +1040,6 @@ async function constructAndSendMessage(
       originalError: errorString,
     };
 
-    // Return the error response, *instead* of throwing.
     return errorResponse;
   }
 }

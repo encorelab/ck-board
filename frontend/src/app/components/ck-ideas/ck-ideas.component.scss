@@ -85,9 +85,19 @@ $heading-background: lighten($toolbar-color, 15%);
       // Add a subtle shadow to separate header from content when scrolling
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
+
     h2 {
       margin-bottom: 0;
-      margin-right: 20px;
+      margin-right: 40px;
+    }
+
+    button[mat-icon-button][disabled] { // Target disabled mat-icon-buttons
+      opacity: 0.4; // Adjust as needed (0.0 = fully transparent, 1.0 = fully opaque)
+      cursor: not-allowed; // Change the cursor to indicate it's not clickable
+      // You can optionally also remove the hover effect:
+      &:hover {
+         background-color: transparent !important;
+      }
     }
 
     .ai-summary-content {

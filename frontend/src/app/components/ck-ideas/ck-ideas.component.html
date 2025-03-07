@@ -60,7 +60,20 @@
   <div class="left-pane">
     <div class="ai-summary-header">
       <h2>AI Summary</h2>
-        <span *ngIf="isWaitingForIdeaAgent && !newSummaryAvailable" class="waiting-indicator">{{ waitingIdeaMessage }}</span>
+      <button
+      *ngIf="newSummaryAvailable"
+      mat-raised-button
+      color="primary"
+      (click)="displayNewSummary()"
+      class="new-summary-button"
+    >
+      New Summary Available
+    </button>
+      <span
+        *ngIf="isWaitingForIdeaAgent && !newSummaryAvailable"
+        class="waiting-indicator"
+        >{{ waitingIdeaMessage }}</span
+      >
       <span style="flex: 1 1 auto"></span>
       <mat-slide-toggle [(ngModel)]="showRawResponse" color="primary">
         Raw JSON
@@ -75,15 +88,6 @@
         <mat-icon style="color: white">refresh</mat-icon>
       </button>
     </div>
-        <button
-            *ngIf="newSummaryAvailable"
-            mat-raised-button
-            color="accent"
-            (click)="displayNewSummary()"
-            class="new-summary-button"
-        >
-            New Summary Available
-        </button>
     <div class="ai-summary-content">
       <div
         *ngIf="!showRawResponse && ideaAgentFormattedResponse"
@@ -94,7 +98,6 @@
         style="white-space: pre-wrap"
         >{{ ideaAgentRawResponse }}</pre
       >
-
     </div>
   </div>
 

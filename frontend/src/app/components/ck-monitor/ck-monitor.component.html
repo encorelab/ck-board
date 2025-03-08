@@ -45,6 +45,71 @@
         <button
           class="subheader-button"
           mat-button
+          (click)="showPending = !showPending"
+        >
+          Pending Tasks ({{ pendingTaskWorkflows.length }})
+          <mat-icon>{{ showPending ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+        <ng-container *ngIf="showPending">
+          <mat-list-item *ngFor="let workflow of pendingTaskWorkflows">
+            <mat-icon matListIcon>timeline</mat-icon>
+            <h3 matLine>{{ workflow.name }}</h3>
+            <p matLine class="list-task-prompt">{{ workflow.prompt }}</p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="
+                workflow.assignmentType === 'GROUP' || !workflow.assignmentType
+              "
+            >
+              Groups:
+              <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
+                <span *ngIf="group.groupStatus === GroupTaskStatus.INACTIVE">
+                  {{ group.groupName }}&nbsp;
+                </span>
+              </span>
+            </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="workflow.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual
+            </p>
+            <span style="flex: 1 1 auto"></span>
+            <button
+              *ngIf="
+                (runningTask &&
+                  (runningTask.workflowID !== workflow.workflowID ||
+                    runningTaskGroupStatus !== GroupTaskStatus.INACTIVE)) ||
+                !runningTask
+              "
+              mat-raised-button
+              color="primary"
+              class="sidebar-button"
+              (click)="view(workflow, GroupTaskStatus.INACTIVE)"
+            >
+              Monitor Task
+            </button>
+            <button
+              *ngIf="
+                runningTask &&
+                runningTask.workflowID === workflow.workflowID &&
+                runningTaskGroupStatus === GroupTaskStatus.INACTIVE
+              "
+              mat-raised-button
+              color="primary"
+              class="sidebar-button"
+              (click)="close()"
+            >
+              Hide Task
+            </button>
+          </mat-list-item>
+        </ng-container>
+        <mat-divider></mat-divider>
+        <button
+          class="subheader-button"
+          mat-button
           (click)="showActive = !showActive"
         >
           Active Tasks ({{ activeTaskWorkflows.length }})
@@ -107,6 +172,7 @@
           </mat-list-item>
         </ng-container>
         <mat-divider></mat-divider>
+
         <button
           class="subheader-button"
           mat-button
@@ -122,7 +188,7 @@
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ workflow.name }}</h3>
             <p matLine class="list-task-prompt">{{ workflow.prompt }}</p>
-            <p matLine class="list-task-prompt">
+            <p matLine="list-task-prompt">
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.COMPLETE">

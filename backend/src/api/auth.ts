@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
 
   const user = userToToken(foundUser);
   const token = sign(user, getJWTSecret(), { expiresIn: '5h' });
-  const expiresAt = addHours(2);
+  const expiresAt = addHours(5);
 
   res.status(200).send({ token, user, expiresAt });
 });
@@ -67,7 +67,7 @@ router.post('/register', async (req, res) => {
 
   const user = userToToken(savedUser);
   const token = sign(user, getJWTSecret(), { expiresIn: '5h' });
-  const expiresAt = addHours(2);
+  const expiresAt = addHours(5);
 
   res.status(200).send({ token, user, expiresAt });
 });

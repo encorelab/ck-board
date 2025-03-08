@@ -1,3 +1,4 @@
+// ck-monitor.component.ts
 import { ComponentType } from '@angular/cdk/overlay';
 import {
   Component,
@@ -99,8 +100,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   }
 
   @Input() isModalView = false;
-  @Input() projectID: string; 
-  @Input() boardID: string;  
+  @Input() projectID: string;
+  @Input() boardID: string;
   @Input() embedded: boolean = false;
 
   user: AuthUser;
@@ -109,12 +110,12 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   project: Project;
   board: Board;
 
-  showInactive = false;
+  showPending = false;
   showActive = false;
   showCompleted = false;
 
   taskWorkflows: TaskWorkflow[] = [];
-  inactiveTaskWorkflows: TaskWorkflow[] = [];
+  pendingTaskWorkflows: TaskWorkflow[] = [];
   activeTaskWorkflows: TaskWorkflow[] = [];
   completeTaskWorkflows: TaskWorkflow[] = [];
 
@@ -229,36 +230,35 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     // Prioritize Input properties.  If they are provided, use them.
     if (this.projectID && this.boardID) {
       await this.loadWorkspaceData(); // Load with Input IDs
-        this.socketService.connect(this.user.userID, this.boardID); // Moved after to ensure boardID is ready
-
+      this.socketService.connect(this.user.userID, this.boardID);
     } else {
-        // Fallback to ActivatedRoute *ONLY* if inputs are not provided.
-        this.activatedRoute.paramMap.subscribe(async params => {
-            this.boardID = params.get('boardID')!;
-            this.projectID = params.get('projectID')!;
+      // Fallback to ActivatedRoute *ONLY* if inputs are not provided.
+      this.activatedRoute.paramMap.subscribe(async (params) => {
+        this.boardID = params.get('boardID')!;
+        this.projectID = params.get('projectID')!;
 
-            if (!this.boardID || !this.projectID) {
-                console.error("Missing boardID or projectID in route parameters");
-                this.router.navigate(['/error']); // Redirect to an error page
-                return; // Stop execution
-              }
+        if (!this.boardID || !this.projectID) {
+          console.error('Missing boardID or projectID in route parameters');
+          this.router.navigate(['/error']); // Redirect to an error page
+          return; // Stop execution
+        }
 
-            await this.loadWorkspaceData();
-            this.socketService.connect(this.user.userID, this.boardID); // Moved after
-        });
+        await this.loadWorkspaceData();
+        this.socketService.connect(this.user.userID, this.boardID); // Moved after
+      });
     }
   }
 
   async loadWorkspaceData(): Promise<boolean> {
     // No longer need to get from route since we prioritize inputs
     if (!this.boardID || !this.projectID) {
-        console.error("boardId or projectId is null");
-        return false;
+      console.error('boardId or projectId is null');
+      return false;
     }
 
     const fetchedBoard = await this.boardService.get(this.boardID);
     if (!fetchedBoard) {
-      console.error("board not found")
+      console.error('board not found');
       this.router.navigate(['error']);
       return false;
     }
@@ -266,29 +266,30 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.project = await this.projectService.get(this.projectID);
     //get group may return undefined.
     try {
-        this.group = await this.groupService.getByProjectUser( 
-          this.projectID,
-          this.user.userID
-        );
-    }
-    catch (error: any)
-    {
-        console.error("Could not fetch group");
+      this.group = await this.groupService.getByProjectUser(
+        this.projectID,
+        this.user.userID
+      );
+    } catch (error: any) {
+      console.error('Could not fetch group');
     }
 
     if (!this.isTeacher && !this.board.viewSettings?.allowMonitor) {
-        this.router.navigateByUrl(
-          `project/${this.projectID}/board/${this.boardID}/${this.board.defaultView?.toLowerCase()}`
-        );
-      }
+      this.router.navigateByUrl(
+        `project/${this.projectID}/board/${
+          this.boardID
+        }/${this.board.defaultView?.toLowerCase()}`
+      );
+    }
 
-    if (!this.studentView) await this.updateWorkflowData(this.boardID, this.projectID);
+    if (!this.studentView)
+      await this.updateWorkflowData(this.boardID, this.projectID);
 
     return true;
   }
 
   async updateWorkflowData(boardID, projectID) {
-    const inactiveTaskWorkflows: TaskWorkflow[] = [];
+    const pendingTaskWorkflows: TaskWorkflow[] = [];
     const completeTaskWorkflows: TaskWorkflow[] = [];
     const activeTaskWorkflows: TaskWorkflow[] = [];
 
@@ -347,10 +348,14 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
           )
           .map((group) => group.group.name)
       );
-      let activeCount = 0,
+      let pendingCount = 0,
+        activeCount = 0,
         completedCount = 0;
 
       for (let i = 0; groupTasks && i < groupTasks.length; i++) {
+        pendingCount += Number(
+          groupTasks[i].groupTask.status == GroupTaskStatus.INACTIVE
+        );
         activeCount += Number(
           groupTasks[i].groupTask.status == GroupTaskStatus.ACTIVE
         );
@@ -361,11 +366,13 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
       if (completedCount === groupTasks.length) {
         completeTaskWorkflows.push(this.taskWorkflows[i]);
-      } else {
+      } else if (activeCount > 0) {
         activeTaskWorkflows.push(this.taskWorkflows[i]);
+      } else {
+        pendingTaskWorkflows.push(this.taskWorkflows[i]);
       }
     }
-    this.inactiveTaskWorkflows = inactiveTaskWorkflows;
+    this.pendingTaskWorkflows = pendingTaskWorkflows;
     this.completeTaskWorkflows = completeTaskWorkflows;
     this.activeTaskWorkflows = activeTaskWorkflows;
     this.loading = false;

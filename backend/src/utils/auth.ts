@@ -225,6 +225,6 @@ export const signInUserWithSso = async (
 export const generateSessionToken = (userModel: UserModel): any => {
   const user = userToToken(userModel);
   const token = sign(user, getJWTSecret(), { expiresIn: '5h' });
-  const expiresAt = addHours(2);
+  const expiresAt = addHours(5);
   return { token, user, expiresAt };
 };

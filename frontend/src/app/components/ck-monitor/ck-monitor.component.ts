@@ -1,4 +1,3 @@
-// ck-monitor.component.ts
 import { ComponentType } from '@angular/cdk/overlay';
 import {
   Component,
@@ -75,6 +74,8 @@ interface GroupName {
   groupStatus: GroupTaskStatus;
 }
 
+
+
 class TodoItemDisplay {
   name: string;
   goal: string;
@@ -119,6 +120,10 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   activeTaskWorkflows: TaskWorkflow[] = [];
   completeTaskWorkflows: TaskWorkflow[] = [];
 
+  // New map for Pending Task data
+  pendingTaskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<TaskWorkflow, ExpandedGroupTask[]>();
+
+
   taskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<
     TaskWorkflow,
     ExpandedGroupTask[]
@@ -142,6 +147,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   runningTask: TaskWorkflow | null;
   runningTaskGroupStatus: GroupTaskStatus | null;
   runningTaskTableData: MatTableDataSource<MonitorData>;
+
   currentGroupProgress: number;
   averageGroupProgress: number;
   maxGroupProgress: number;
@@ -276,9 +282,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     if (!this.isTeacher && !this.board.viewSettings?.allowMonitor) {
       this.router.navigateByUrl(
-        `project/${this.projectID}/board/${
-          this.boardID
-        }/${this.board.defaultView?.toLowerCase()}`
+        `project/<span class="math-inline">\{this\.projectID\}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
       );
     }
 
@@ -289,7 +293,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   }
 
   async updateWorkflowData(boardID, projectID) {
-    const pendingTaskWorkflows: TaskWorkflow[] = [];
+    const pendingTaskWorkflows: TaskWorkflow[] = []; 
     const completeTaskWorkflows: TaskWorkflow[] = [];
     const activeTaskWorkflows: TaskWorkflow[] = [];
 
@@ -315,6 +319,14 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.taskWorkflows = this.taskWorkflows.filter(
       (workflow) => workflow.active === true
     );
+
+    // Reset maps for new data
+    this.pendingTaskWorkflowGroupMap = new Map<TaskWorkflow, ExpandedGroupTask[]>();
+
+    this.taskWorkflowGroupMap = new Map<TaskWorkflow, ExpandedGroupTask[]>();
+    this.taskWorkflowNameMap = new Map<TaskWorkflow, GroupName[]>();
+
+
 
     for (let i = 0; i < this.taskWorkflows.length; i++) {
       const groupTasks = await this.workflowService.getGroupTasksByWorkflow(
@@ -348,6 +360,19 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
           )
           .map((group) => group.group.name)
       );
+
+
+      // Separate logic for Pending tasks and update pendingTaskWorkflows
+      const pendingGroupTasks = groupTasks.filter(gt => gt.groupTask.status === GroupTaskStatus.INACTIVE);
+      if (pendingGroupTasks.length > 0) {
+        this.pendingTaskWorkflowGroupMap.set(this.taskWorkflows[i], pendingGroupTasks);
+         // Only add to pendingTaskWorkflows if there are pending groups
+          if (!pendingTaskWorkflows.includes(this.taskWorkflows[i])) {
+            pendingTaskWorkflows.push(this.taskWorkflows[i]); // Add only if not already present
+          }
+            }
+
+
       let pendingCount = 0,
         activeCount = 0,
         completedCount = 0;
@@ -368,8 +393,6 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         completeTaskWorkflows.push(this.taskWorkflows[i]);
       } else if (activeCount > 0) {
         activeTaskWorkflows.push(this.taskWorkflows[i]);
-      } else {
-        pendingTaskWorkflows.push(this.taskWorkflows[i]);
       }
     }
     this.pendingTaskWorkflows = pendingTaskWorkflows;
@@ -414,6 +437,42 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.updateTodoItemDataSource();
     this.todoDeadlineRange.reset();
   }
+
+  // New method to calculate pending/total for a workflow
+  getPendingTotal(workflow: TaskWorkflow): string {
+    const pendingGroupTasks = this.pendingTaskWorkflowGroupMap.get(workflow) || [];
+    let pendingCount = 0;
+    let totalCount = 0;
+
+    for (const groupTask of pendingGroupTasks) {
+      if (groupTask.assignmentType === 'GROUP' || !groupTask.assignmentType) {
+        for (const memberId of groupTask.group.members) {
+          totalCount++;
+          if (groupTask.groupTask.status === GroupTaskStatus.INACTIVE) {
+            pendingCount++;
+          }
+        }
+      } else { // Individual assignment
+        totalCount++;
+        if (groupTask.groupTask.status === GroupTaskStatus.INACTIVE) {
+            pendingCount++;
+        }
+      }
+    }
+      if(totalCount == 0 && this.taskWorkflowGroupMap.has(workflow)){
+
+        const expandedGroupTasks = this.taskWorkflowGroupMap.get(workflow);
+        expandedGroupTasks?.forEach(groupTask => {
+          if (groupTask.assignmentType === 'GROUP' || !groupTask.assignmentType) {
+            totalCount += groupTask.group.members.length;
+          } else {
+            totalCount += 1;
+          }
+        })
+      }
+    return `${pendingCount}/${totalCount}`;
+  }
+
 
   filterTodosByDeadline(start: Date, end: Date): void {
     if (!start || !end) return;

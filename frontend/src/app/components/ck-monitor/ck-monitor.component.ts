@@ -282,7 +282,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
     if (!this.isTeacher && !this.board.viewSettings?.allowMonitor) {
       this.router.navigateByUrl(
-        `project/<span class="math-inline">\{this\.projectID\}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
+        `project/<span class="math-inline">{this.projectID}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
       );
     }
 

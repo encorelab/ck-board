@@ -112,7 +112,6 @@ export async function addUserToProject(
 export const addUserToWorkflows = async (groupID: string, userID: string) => {
   console.log('in the helper function');
   const workflows = await dalWorkflow.getAllByGroupId(groupID);
-  console.log(workflows);
 
   for (const workflow of workflows) {
     if (!workflow.active) {

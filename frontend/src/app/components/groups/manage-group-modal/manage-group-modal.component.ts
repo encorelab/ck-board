@@ -163,16 +163,12 @@ export class ManageGroupModalComponent implements OnInit {
       (member) => !originalGroup.members.includes(member)
     );
 
-    console.log(removedMembers);
-    console.log(addedMembers);
     const workflows = await this.workflowService.getWorkflowsByGroup(
       group.groupID
     );
-    console.log(workflows);
     for (const member of addedMembers) {
       for (const workflow of workflows) {
-        if (!workflow.active) return;
-        console.log('here2', workflow);
+        if (!workflow.active) continue;
         let taskExists = true;
         try {
           const groupTask =
@@ -186,9 +182,7 @@ export class ManageGroupModalComponent implements OnInit {
           taskExists = false;
         }
         if (!taskExists) {
-          console.log('here5');
           const source = workflow.source;
-          console.log(source);
           const assignedIndividual = workflow.assignedIndividual;
           let posts: string[] = [];
           const progress: Map<string, TaskAction[]> = new Map<
@@ -240,7 +234,6 @@ export class ManageGroupModalComponent implements OnInit {
               progress.set(post, actions);
             });
           }
-          console.log(progress);
           const newGroupTask: GroupTask = {
             groupTaskID: generateUniqueID(),
             groupID: group.groupID,
@@ -256,7 +249,6 @@ export class ManageGroupModalComponent implements OnInit {
             userID: member,
             status: GroupTaskStatus.INACTIVE,
           };
-          console.log(newGroupTask);
           await this.groupTaskService.createGroupTask(newGroupTask);
         }
       }

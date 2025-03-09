@@ -74,8 +74,6 @@ interface GroupName {
   groupStatus: GroupTaskStatus;
 }
 
-
-
 class TodoItemDisplay {
   name: string;
   goal: string;
@@ -121,8 +119,10 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   completeTaskWorkflows: TaskWorkflow[] = [];
 
   // New map for Pending Task data
-  pendingTaskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<TaskWorkflow, ExpandedGroupTask[]>();
-
+  pendingTaskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<
+    TaskWorkflow,
+    ExpandedGroupTask[]
+  >();
 
   taskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<
     TaskWorkflow,
@@ -250,7 +250,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         }
 
         await this.loadWorkspaceData();
-        this.socketService.connect(this.user.userID, this.boardID); // Moved after
+        this.socketService.connect(this.user.userID, this.boardID);
       });
     }
   }
@@ -293,7 +293,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   }
 
   async updateWorkflowData(boardID, projectID) {
-    const pendingTaskWorkflows: TaskWorkflow[] = []; 
+    const pendingTaskWorkflows: TaskWorkflow[] = [];
     const completeTaskWorkflows: TaskWorkflow[] = [];
     const activeTaskWorkflows: TaskWorkflow[] = [];
 
@@ -321,80 +321,65 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     );
 
     // Reset maps for new data
-    this.pendingTaskWorkflowGroupMap = new Map<TaskWorkflow, ExpandedGroupTask[]>();
-
+    this.pendingTaskWorkflowGroupMap = new Map<
+      TaskWorkflow,
+      ExpandedGroupTask[]
+    >();
     this.taskWorkflowGroupMap = new Map<TaskWorkflow, ExpandedGroupTask[]>();
     this.taskWorkflowNameMap = new Map<TaskWorkflow, GroupName[]>();
-
-
+    this.taskWorkflowGroupNameMap = new Map<TaskWorkflow, string[]>(); //Probably not needed anymore
+    this.taskWorkflowCompleteGroupNameMap = new Map<TaskWorkflow, string[]>(); //Probably not needed anymore.
 
     for (let i = 0; i < this.taskWorkflows.length; i++) {
+      const workflow = this.taskWorkflows[i];
       const groupTasks = await this.workflowService.getGroupTasksByWorkflow(
-        this.taskWorkflows[i].workflowID,
+        workflow.workflowID,
         'expanded'
       );
       groupTasks.sort((a, b) =>
         this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
       );
+
+      this.taskWorkflowGroupMap.set(workflow, groupTasks);
+
+      // Create a map entry for *every* workflow, but we'll filter *later* in the HTML.
       this.taskWorkflowNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks.map((group) => {
-          return {
-            groupName: group.group.name,
-            groupStatus: group.groupTask.status,
-          };
-        })
-      );
-      this.taskWorkflowGroupMap.set(this.taskWorkflows[i], groupTasks);
-      this.taskWorkflowGroupNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks
-          .filter((group) => group.groupTask.status != GroupTaskStatus.COMPLETE)
-          .map((group) => group.group.name)
-      );
-      this.taskWorkflowCompleteGroupNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks
-          .filter(
-            (group) => group.groupTask.status === GroupTaskStatus.COMPLETE
-          )
-          .map((group) => group.group.name)
+        workflow,
+        groupTasks.map((gt) => ({
+          groupName: gt.group.name,
+          groupStatus: gt.groupTask.status,
+        }))
       );
 
+      const pendingGroupTasks = groupTasks.filter(
+        (gt) => gt.groupTask.status === GroupTaskStatus.INACTIVE
+      );
+      const activeGroupTasks = groupTasks.filter(
+        (gt) => gt.groupTask.status === GroupTaskStatus.ACTIVE
+      );
+      const completedGroupTasks = groupTasks.filter(
+        (gt) => gt.groupTask.status === GroupTaskStatus.COMPLETE
+      );
 
-      // Separate logic for Pending tasks and update pendingTaskWorkflows
-      const pendingGroupTasks = groupTasks.filter(gt => gt.groupTask.status === GroupTaskStatus.INACTIVE);
       if (pendingGroupTasks.length > 0) {
-        this.pendingTaskWorkflowGroupMap.set(this.taskWorkflows[i], pendingGroupTasks);
-         // Only add to pendingTaskWorkflows if there are pending groups
-          if (!pendingTaskWorkflows.includes(this.taskWorkflows[i])) {
-            pendingTaskWorkflows.push(this.taskWorkflows[i]); // Add only if not already present
-          }
-            }
-
-
-      let pendingCount = 0,
-        activeCount = 0,
-        completedCount = 0;
-
-      for (let i = 0; groupTasks && i < groupTasks.length; i++) {
-        pendingCount += Number(
-          groupTasks[i].groupTask.status == GroupTaskStatus.INACTIVE
-        );
-        activeCount += Number(
-          groupTasks[i].groupTask.status == GroupTaskStatus.ACTIVE
-        );
-        completedCount += Number(
-          groupTasks[i].groupTask.status == GroupTaskStatus.COMPLETE
-        );
+        this.pendingTaskWorkflowGroupMap.set(workflow, pendingGroupTasks);
+        if (!pendingTaskWorkflows.includes(workflow)) {
+          pendingTaskWorkflows.push(workflow);
+        }
       }
 
-      if (completedCount === groupTasks.length) {
-        completeTaskWorkflows.push(this.taskWorkflows[i]);
-      } else if (activeCount > 0) {
-        activeTaskWorkflows.push(this.taskWorkflows[i]);
+      if (activeGroupTasks.length > 0) {
+        if (!activeTaskWorkflows.includes(workflow)) {
+          activeTaskWorkflows.push(workflow);
+        }
+      }
+      if (completedGroupTasks.length > 0) {
+        if (!completeTaskWorkflows.includes(workflow)) {
+          completeTaskWorkflows.push(workflow);
+        }
       }
     }
+
     this.pendingTaskWorkflows = pendingTaskWorkflows;
     this.completeTaskWorkflows = completeTaskWorkflows;
     this.activeTaskWorkflows = activeTaskWorkflows;
@@ -440,7 +425,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
 
   // New method to calculate pending/total for a workflow
   getPendingTotal(workflow: TaskWorkflow): string {
-    const pendingGroupTasks = this.pendingTaskWorkflowGroupMap.get(workflow) || [];
+    const pendingGroupTasks =
+      this.pendingTaskWorkflowGroupMap.get(workflow) || [];
     let pendingCount = 0;
     let totalCount = 0;
 
@@ -452,27 +438,26 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
             pendingCount++;
           }
         }
-      } else { // Individual assignment
+      } else {
+        // Individual assignment
         totalCount++;
         if (groupTask.groupTask.status === GroupTaskStatus.INACTIVE) {
-            pendingCount++;
+          pendingCount++;
         }
       }
     }
-      if(totalCount == 0 && this.taskWorkflowGroupMap.has(workflow)){
-
-        const expandedGroupTasks = this.taskWorkflowGroupMap.get(workflow);
-        expandedGroupTasks?.forEach(groupTask => {
-          if (groupTask.assignmentType === 'GROUP' || !groupTask.assignmentType) {
-            totalCount += groupTask.group.members.length;
-          } else {
-            totalCount += 1;
-          }
-        })
-      }
+    if (totalCount == 0 && this.taskWorkflowGroupMap.has(workflow)) {
+      const expandedGroupTasks = this.taskWorkflowGroupMap.get(workflow);
+      expandedGroupTasks?.forEach((groupTask) => {
+        if (groupTask.assignmentType === 'GROUP' || !groupTask.assignmentType) {
+          totalCount += groupTask.group.members.length;
+        } else {
+          totalCount += 1;
+        }
+      });
+    }
     return `${pendingCount}/${totalCount}`;
   }
-
 
   filterTodosByDeadline(start: Date, end: Date): void {
     if (!start || !end) return;
@@ -514,8 +499,14 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   ): Promise<void> {
     const groupTasks = this.taskWorkflowGroupMap.get(workflow);
     const groupTasksTableFormat: MonitorData[] = [];
+
     if (groupTasks) {
       for (let i = 0; i < groupTasks.length; i++) {
+        // *** FILTER HERE, based on the requested status ***
+        if (groupTasks[i].groupTask.status !== status) {
+          continue; // Skip this groupTask if it doesn't match the desired status
+        }
+
         const groupMembers: string[] = [];
         if (
           groupTasks[i].assignmentType === 'GROUP' ||

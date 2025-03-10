@@ -225,7 +225,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
        });
     }
 
-    this.loadWorkspaceData();
     this.initGroupEventsListener();
     this.initEventBusListeners();
   }

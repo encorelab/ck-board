@@ -35,6 +35,7 @@ import {
   TaskWorkflow,
   WorkflowType,
   TaskWorkflowType,
+  AssignmentType,
 } from 'src/app/models/workflow';
 import { SocketService } from 'src/app/services/socket.service';
 import { PostService } from 'src/app/services/post.service';
@@ -95,6 +96,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   WorkflowType: typeof WorkflowType = WorkflowType;
   taskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
   workflowType: WorkflowType = WorkflowType.GENERATION;
+  AssignmentType: typeof AssignmentType = AssignmentType;
+  assignmentType: AssignmentType = AssignmentType.GROUP;
   sourceOptions: (Bucket | Board)[] = [];
   destOptions: (Bucket | Board)[] = [];
 
@@ -112,6 +115,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   taskDestination: Board | Bucket;
   prompt: string;
   assignedGroups: Group[] = [];
+  assignedIndividual: Group;
   commentsRequired = false;
   tagsRequired = false;
   postGeneration = 1;
@@ -845,6 +849,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       requiredActions: actions,
       assignedGroups: this.assignedGroups.map((g) => g.groupID),
       type: this.taskWorkflowType.PEER_REVIEW,
+      assignmentType: this.assignmentType,
+      assignedIndividual: this.assignedIndividual,
     };
 
     return workflow;
@@ -881,6 +887,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       requiredActions: actions,
       assignedGroups: this.assignedGroups.map((g) => g.groupID),
       type: this.taskWorkflowType.GENERATION,
+      assignmentType: this.assignmentType,
+      assignedIndividual: this.assignedIndividual,
     };
 
     return workflow;

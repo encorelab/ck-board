@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import {
   MatLegacyDialog as MatDialog,
@@ -64,7 +64,7 @@ export class PostModalData {
   templateUrl: './post-modal.component.html',
   styleUrls: ['./post-modal.component.scss'],
 })
-export class PostModalComponent {
+export class PostModalComponent implements OnInit, OnDestroy {
   tags: Tag[] = [];
   tagOptions: Tag[] = [];
 
@@ -113,6 +113,9 @@ export class PostModalComponent {
 
   expandedUpvotesView = false;
   expandedUpvotes: any[] = [];
+
+  isMobile: boolean = false;
+  private resizeListener: () => void;
 
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
@@ -197,12 +200,34 @@ export class PostModalComponent {
     this.showAuthorName =
       (isStudent && data.board.permissions.showAuthorNameStudent) ||
       (isTeacher && data.board.permissions.showAuthorNameTeacher);
+
+    this.checkIfMobile(); // Check on initialization
+    this.resizeListener = () => this.checkIfMobile(); // Create the listener
+    window.addEventListener('resize', this.resizeListener);
   }
 
   ngOnInit(): void {
     this.projectService.get(this.data.board.projectID).then((project) => {
       this.project = project;
     });
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('resize', this.resizeListener); // Remove the listener
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkIfMobile();
+  }
+
+  checkIfMobile() {
+      this.isMobile = window.innerWidth <= 600;
+      if (this.isMobile) {
+          this.dialogRef.addPanelClass('fullscreen-dialog');
+      } else {
+          this.dialogRef.removePanelClass('fullscreen-dialog');
+      }
   }
 
   close(): void {

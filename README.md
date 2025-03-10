@@ -50,6 +50,10 @@ STATIC_FILES_PATH=[for dev, use "./../../frontend/dist/ck-board"; for production
 CKBOARD_SERVER_ADDRESS=[For dev, use "http://localhost:4201"; for production, use server URL, e.g., "https://ck-board.oise.utoronto.ca"]
 GOOGLE_APPLICATION_CREDENTIALS="./secrets/keyfile.json"
 GOOGLE_CLOUD_PROJECT=[Google Cloud Project ID]
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_EMAIL=[gmail password]
+SMTP_PASSWORD=[gmail 'app' password (generated at https://myaccount.google.com/apppasswords)]
 ```
 
 **1. `GOOGLE_APPLICATION_CREDENTIALS`**

@@ -44,6 +44,16 @@ export class GroupService {
       .then((groups) => groups ?? []); // Default to an empty array
   }
 
+  async getMultipleBy(groupIDs: string[]): Promise<Group[]> {
+    try {
+      const groups = await this.http.post<Group[]>('groups/multiple', { groupIDs }).toPromise();
+      return groups ?? []; // Default to an empty array if null or undefined
+    } catch (error) {
+      console.error("Error fetching multiple groups:", error);
+      return []; // Return an empty array in case of an error
+    }
+  }
+
   create(group: Group): Promise<Group> {
     return this.http
       .post<Group>('groups/', group)

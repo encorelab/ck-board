@@ -148,6 +148,10 @@ export class ProjectDashboardComponent implements OnInit {
     ]);
   }
 
+  navigateToScoreAuthoring() {
+    this.router.navigate(['/score-authoring', this.project.projectID]);
+  }
+
   async handleEditBoard(board: Board) {
     const boardID: string = board.boardID;
     this.dialog.open(ConfigurationModalComponent, {

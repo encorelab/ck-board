@@ -52,6 +52,8 @@ export enum SocketEvent {
 
   AI_MESSAGE = 'AI_MESSAGE', // Event for sending AI message
   AI_RESPONSE = 'AI_RESPONSE', // Event for receiving AI response
+
+  RESOURCES_UPDATE = 'RESOURCES_UPDATE',
 }
 
 export const STUDENT_POST_COLOR = '#FFF7C0';

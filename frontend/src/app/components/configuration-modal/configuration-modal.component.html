@@ -1,10 +1,10 @@
-<h1 mat-dialog-title>Board Configuration</h1>
+<h1 mat-dialog-title>Activity Space Configuration</h1>
 <div mat-dialog-content>
   <mat-tab-group dynamicHeight animationDuration="0ms">
     <mat-tab label="Board">
       <div class="board-name-form">
         <mat-form-field appearance="outline" style="width: 100%">
-          <mat-label>Board Name</mat-label>
+          <mat-label>Activity Space Name</mat-label>
           <input
             matInput
             [(ngModel)]="boardName"
@@ -12,7 +12,7 @@
             required
           />
           <mat-error *ngIf="boardNameInput.invalid">
-            Board Name is required.
+            Activity Space Name is required.
           </mat-error>
         </mat-form-field>
       </div>
@@ -23,7 +23,7 @@
       </p>
       <p>
         <mat-checkbox [(ngModel)]="permissions.showSnackBarStudent"
-          >Display task description when board is opened
+          >Display task description when canvas is opened
         </mat-checkbox>
       </p>
       <h2 class="section-title">Voting</h2>
@@ -111,8 +111,8 @@
           >
         </p>
       </ng-container>
-
-      <h2 class="section-title">Board</h2>
+      
+      <h2 class="section-title">Canvas</h2>
       <div>
         <mat-label style="font-weight: bold"
           >Initial Zoom: {{ initialZoom }}%</mat-label
@@ -195,7 +195,7 @@
           >
           <span style="width: 100%; text-align: center; font-size: smaller">
             Copy Configuration to all Personal
-            {{ isTeacherPersonalBoard ? 'Teacher' : 'Student' }} Boards
+            {{ isTeacherPersonalBoard ? 'Teacher' : 'Student' }} Activity Spaces
           </span>
         </mat-chip>
         <mat-chip
@@ -209,7 +209,7 @@
           <mat-icon class="chip-icon" style="width: 0px; overflow: initial"
             >clear_all</mat-icon
           >
-          <span style="width: 100%; text-align: center"> Clear Board </span>
+          <span style="width: 100%; text-align: center"> Clear Canvas </span>
         </mat-chip>
         <mat-chip
           class="config-button"
@@ -222,7 +222,7 @@
           <mat-icon class="chip-icon" style="width: 0px; overflow: initial"
             >delete</mat-icon
           >
-          <span style="width: 100%; text-align: center"> Delete Board </span>
+          <span style="width: 100%; text-align: center"> Delete Canvas </span>
         </mat-chip>
       </div>
     </mat-tab>

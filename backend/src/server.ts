@@ -23,14 +23,16 @@ import { isAuthenticated } from './utils/auth';
 import RedisClient from './utils/redis';
 import aiRouter from './api/ai';
 import chatHistoryRouter from './api/chatHistory'; 
+import activitiesRouter from './api/activities';
+import resourcesRouter from './api/resources';
+import teacherTaskRouter from './api/teacherTasks'
+import aiAgentRoutes from './api/aiAgents';
+import groupTasks from './api/groupTasks';
+
 dotenv.config();
 
 const port = process.env.PORT || 8001;
-const dbUsername = process.env.DB_USER;
-const dbPassword = process.env.DB_PASSWORD;
-const dbUrl = process.env.DB_URL;
-const dbName = process.env.DB_NAME;
-const dbURI = `mongodb+srv://${dbUsername}:${dbPassword}@${dbUrl}.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+const dbURI = `${process.env.MONGO_URI}`;
 
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = (process.env.REDIS_PORT || 6379) as number;
@@ -45,20 +47,24 @@ app.use(express.static(staticFilesPath));
 
 const server = http.createServer(app);
 
-const redis = new RedisClient({
+RedisClient.init({
   host: redisHost,
   port: redisPort,
   password: redisPassword,
+  tls: {
+    minVersion: 'TLSv1.3',
+  },
 });
 
 const socket = Socket.Instance;
 
-socket.init(server, redis);
+socket.init(server, RedisClient);
 
 app.use('/api/projects', isAuthenticated, projects);
 app.use('/api/boards', isAuthenticated, boards);
 app.use('/api/buckets', isAuthenticated, buckets);
 app.use('/api/workflows', isAuthenticated, workflows);
+app.use('/api/groupTasks', isAuthenticated, groupTasks);
 app.use('/api/posts', isAuthenticated, posts);
 app.use('/api/upvotes', isAuthenticated, upvotes);
 app.use('/api/comments', isAuthenticated, comments);
@@ -69,15 +75,26 @@ app.use('/api/trace', isAuthenticated, trace);
 app.use('/api/todoItems', isAuthenticated, todoItems);
 app.use('/api/learner', isAuthenticated, learner);
 app.use('/api/ai', isAuthenticated, aiRouter);
+app.use('/api/ai-agents', aiAgentRoutes);
 app.use('/api/chat-history', chatHistoryRouter);
+app.use('/api/activities', activitiesRouter);
+app.use('/api/resources', resourcesRouter);
+app.use('/api/teacher-tasks', teacherTaskRouter);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(staticFilesPath, 'index.html'));
 });
 
 const shutdown = async () => {
-  await redis.disconnect();
-  process.exit(0);
+  console.log('Shutting down server...');
+  try {
+    await RedisClient.disconnect(); // Ensure Redis clients are closed
+    console.log('Redis disconnected.');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    process.exit(1);
+  }
 };
 
 // Handle termination signals

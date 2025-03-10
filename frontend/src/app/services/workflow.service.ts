@@ -134,12 +134,20 @@ export class WorkflowService {
   async getGroupTaskByWorkflowGroup<T extends GroupTaskEntity>(
     groupID: string,
     workflowID: string,
+    userID: string,
     representation: T
   ): Promise<GroupTaskType<T>[]> {
     const result = await this.http
       .get<GroupTaskType<T>[]>(
-        `workflows/task/${workflowID}/groupTask/group/${groupID}?representation=${representation}`
+        `workflows/task/${workflowID}/groupTask/group/${groupID}/user/${userID}?representation=${representation}`
       )
+      .toPromise();
+    return result ?? [];
+  }
+
+  async getWorkflowsByGroup(groupID: string): Promise<TaskWorkflow[]> {
+    const result = await this.http
+      .get<TaskWorkflow[]>(`workflows/task/group/${groupID}`)
       .toPromise();
     return result ?? [];
   }

@@ -1,7 +1,7 @@
 <div>
   <app-toolbar
     class="toolbar"
-    *ngIf="user && project && board && !embedded"
+    *ngIf="user && project && board && !embedded && !isModalView"
     [user]="user"
     [embedded]="embedded"
   >
@@ -11,15 +11,6 @@
       matTooltip="Return to Project Dashboard"
     >
       <mat-icon>arrow_back</mat-icon>
-    </button>
-    <span *ngIf="board">CK Monitor - {{ this.board.name }}</span>
-    <button
-      mat-icon-button
-      *ngIf="user.role === Role.TEACHER"
-      (click)="copyEmbedCode()"
-      matTooltip="Copy embeddable URL"
-    >
-      <mat-icon>file_copy</mat-icon>
     </button>
     <span style="flex: 1 1 auto"></span>
     <app-view-navigation
@@ -33,10 +24,11 @@
     ></app-toolbar-menu>
   </app-toolbar>
   <mat-sidenav-container
-    class="drawer-container"
+    class="drawer-container ck-monitor-drawer-container"
+    [class.modal-view]="isModalView"
     [ngStyle]="{
-      'padding-top': !embedded ? '56px' : '0px',
-      'padding-bottom': embedded ? '64px' : '0px'
+      'padding-top': !embedded && !isModalView ? '64px' : '0px',
+      'padding-bottom': embedded && !isModalView ? '64px' : '0px'
     }"
   >
     <mat-sidenav
@@ -44,35 +36,45 @@
       mode="side"
       opened
       [fixedInViewport]="!embedded ? true : false"
-      [fixedTopGap]="64"
-      style="position: fixed"
+      style="position: relative"
       [ngStyle]="(!embedded && { 'padding-bottom': '64px' }) || null"
       *ngIf="!studentView"
     >
-      <h2 class="section-title">All Tasks</h2>
+      <h2 class="section-title">All Workflows</h2>
       <mat-list>
         <button
           class="subheader-button"
           mat-button
-          (click)="showInactive = !showInactive"
+          (click)="showPending = !showPending"
         >
-          Pending Tasks ({{ inactiveTaskWorkflows.length }})
-          <mat-icon>{{
-            showInactive ? 'expand_less' : 'expand_more'
-          }}</mat-icon>
+          Pending Tasks ({{ pendingTaskWorkflows.length }})
+          <mat-icon>{{ showPending ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <ng-container *ngIf="showInactive">
-          <mat-list-item *ngFor="let workflow of inactiveTaskWorkflows">
+        <ng-container *ngIf="showPending">
+          <mat-list-item *ngFor="let workflow of pendingTaskWorkflows">
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ workflow.name }}</h3>
             <p matLine class="list-task-prompt">{{ workflow.prompt }}</p>
-            <p matLine class="list-task-prompt">
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="
+                workflow.assignmentType === 'GROUP' || !workflow.assignmentType
+              "
+            >
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.INACTIVE">
                   {{ group.groupName }}&nbsp;
                 </span>
               </span>
+            </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="workflow.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -118,13 +120,26 @@
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ workflow.name }}</h3>
             <p matLine class="list-task-prompt">{{ workflow.prompt }}</p>
-            <p matLine class="list-task-prompt">
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="
+                workflow.assignmentType === 'GROUP' || !workflow.assignmentType
+              "
+            >
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.ACTIVE">
                   {{ group.groupName }}&nbsp;
                 </span>
               </span>
+            </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="workflow.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
@@ -157,6 +172,7 @@
           </mat-list-item>
         </ng-container>
         <mat-divider></mat-divider>
+
         <button
           class="subheader-button"
           mat-button
@@ -172,7 +188,7 @@
             <mat-icon matListIcon>timeline</mat-icon>
             <h3 matLine>{{ workflow.name }}</h3>
             <p matLine class="list-task-prompt">{{ workflow.prompt }}</p>
-            <p matLine class="list-task-prompt">
+            <p matLine="list-task-prompt">
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.COMPLETE">
@@ -424,6 +440,10 @@
             <mat-card-title>Task Progress</mat-card-title>
             <div class="mat-elevation-z3 table_style">
               <table
+                *ngIf="
+                  runningTask.assignmentType === 'GROUP' ||
+                  !runningTask.assignmentType
+                "
                 mat-table
                 [dataSource]="runningTaskTableData"
                 class="table"
@@ -459,12 +479,9 @@
                   </th>
                   <td mat-cell *matCellDef="let group">
                     <button
-                      *ngIf="
-                        runningTaskGroupStatus !== GroupTaskStatus.INACTIVE
-                      "
                       mat-icon-button
                       (click)="
-                        runningTaskGroupStatus === GroupTaskStatus.COMPLETE
+                        group.groupTaskStatus === GroupTaskStatus.COMPLETE
                           ? activateGroupTask(group)
                           : completeGroupTask(group)
                       "
@@ -472,7 +489,7 @@
                       <mat-icon
                         matTooltip="Re-activate Task"
                         *ngIf="
-                          runningTaskGroupStatus === GroupTaskStatus.COMPLETE
+                          group.groupTaskStatus === GroupTaskStatus.COMPLETE
                         "
                       >
                         play_circle_outline
@@ -480,7 +497,8 @@
                       <mat-icon
                         matTooltip="Cancel Task"
                         *ngIf="
-                          runningTaskGroupStatus === GroupTaskStatus.ACTIVE
+                          group.groupTaskStatus === GroupTaskStatus.ACTIVE ||
+                          group.groupTaskStatus === GroupTaskStatus.INACTIVE
                         "
                       >
                         cancel
@@ -491,6 +509,80 @@
 
                 <tr mat-header-row *matHeaderRowDef="displayColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayColumns"></tr>
+              </table>
+              <table
+                *ngIf="runningTask.assignmentType === 'INDIVIDUAL'"
+                mat-table
+                [dataSource]="runningTaskTableData"
+                class="table"
+              >
+                <ng-container matColumnDef="member-name">
+                  <th mat-header-cell *matHeaderCellDef>Member Name</th>
+                  <td mat-cell *matCellDef="let member">
+                    {{ member.groupMembers[0] }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="group-name">
+                  <th mat-header-cell *matHeaderCellDef>Group Name</th>
+                  <td mat-cell *matCellDef="let member">
+                    {{ member.groupName }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="progress">
+                  <th mat-header-cell *matHeaderCellDef>Progress</th>
+                  <td mat-cell *matCellDef="let member">
+                    {{ member.progress }} %
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="action">
+                  <th mat-header-cell *matHeaderCellDef>
+                    {{
+                      runningTaskGroupStatus === GroupTaskStatus.INACTIVE
+                        ? ''
+                        : 'Action'
+                    }}
+                  </th>
+                  <td mat-cell *matCellDef="let member">
+                    <button
+                      mat-icon-button
+                      (click)="
+                        member.groupTaskStatus === GroupTaskStatus.COMPLETE
+                          ? activateGroupTask(member)
+                          : completeGroupTask(member)
+                      "
+                    >
+                      <mat-icon
+                        matTooltip="Re-activate Task"
+                        *ngIf="
+                          member.groupTaskStatus === GroupTaskStatus.COMPLETE
+                        "
+                      >
+                        play_circle_outline
+                      </mat-icon>
+                      <mat-icon
+                        matTooltip="Cancel Task"
+                        *ngIf="
+                          member.groupTaskStatus === GroupTaskStatus.ACTIVE ||
+                          member.groupTaskStatus === GroupTaskStatus.INACTIVE
+                        "
+                      >
+                        cancel
+                      </mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr
+                  mat-header-row
+                  *matHeaderRowDef="displayColumnsIndividual"
+                ></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: displayColumnsIndividual"
+                ></tr>
               </table>
             </div>
           </mat-card>

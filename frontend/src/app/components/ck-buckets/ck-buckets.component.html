@@ -1,26 +1,16 @@
-<app-toolbar *ngIf="user" [user]="user">
+<app-toolbar *ngIf="user && board && !isModalView" [user]="user">
   <button
     mat-icon-button
+    *ngIf="projectID"
     routerLink="{{ '/project/' + projectID }}"
     matTooltip="Return to Project Dashboard"
   >
     <mat-icon>arrow_back</mat-icon>
   </button>
-  <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
-  <button
-    mat-icon-button
-    *ngIf="user.role === Role.TEACHER"
-    (click)="
-      board?.scope === BoardScope.PROJECT_SHARED
-        ? copyEmbedCode()
-        : copyPersonalEmbedCode()
-    "
-    matTooltip="Copy embeddable URL"
-  >
-    <mat-icon>file_copy</mat-icon>
-  </button>
   <span style="flex: 1 1 auto"></span>
+
   <app-view-navigation
+    *ngIf="boardID"
     [boardID]="boardID"
     [currentView]="viewType"
   ></app-view-navigation>
@@ -29,12 +19,22 @@
     navbarMenu
     [board]="board"
     [project]="project"
+    (copyEmbedCodeClick)="copyEmbedCode()"
+    (copyPersonalEmbedCodeClick)="copyPersonalEmbedCode()"
   ></app-toolbar-menu>
 </app-toolbar>
+
 <div class="container d-flex align-items-center justify-content-center">
   <div class="heading">
     <h1 mat-title style="margin: 0"><span>CK Buckets</span></h1>
     <span style="flex: 1 1 auto"></span>
+    <button
+      mat-icon-button
+      (click)="refreshBuckets()"
+      matTooltip="Refresh Buckets"
+    >
+      <mat-icon>refresh</mat-icon>
+    </button>
     <div
       *ngIf="
         user.role === Role.TEACHER &&
@@ -65,6 +65,7 @@
       *ngFor="let bucket of bucketsOnView; let idx = index"
       cdkDropList
       [cdkDropListData]="bucket.htmlPosts"
+      [cdkDropListDisabled]="dragDisabled"
       (cdkDropListDropped)="dragDropPostInBucket($event)"
       [attr.data-bucket]="bucket.bucketID"
       cdkDropListSortingDisabled
@@ -93,6 +94,7 @@
               [post]="post"
               [currentView]="viewType"
               cdkDrag
+              [cdkDragDisabled]="dragDisabled"
               style="width: 100%"
             ></app-html-post>
           </div>

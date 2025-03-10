@@ -2,6 +2,7 @@ import { ComponentType } from '@angular/cdk/overlay';
 import {
   Component,
   OnDestroy,
+  Input,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -17,6 +18,7 @@ import {
   TaskWorkflow,
   GroupTaskStatus,
   TaskWorkflowType,
+  Workflow,
 } from 'src/app/models/workflow';
 import { BoardService } from 'src/app/services/board.service';
 import { ProjectService } from 'src/app/services/project.service';
@@ -96,20 +98,31 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     this.todoDataSource.sort = sort;
   }
 
+  @Input() isModalView = false;
+  @Input() projectID: string;
+  @Input() boardID: string;
+  @Input() embedded: boolean = false;
+
   user: AuthUser;
   group: Group;
 
   project: Project;
   board: Board;
 
-  showInactive = false;
+  showPending = false;
   showActive = false;
   showCompleted = false;
 
   taskWorkflows: TaskWorkflow[] = [];
-  inactiveTaskWorkflows: TaskWorkflow[] = [];
+  pendingTaskWorkflows: TaskWorkflow[] = [];
   activeTaskWorkflows: TaskWorkflow[] = [];
   completeTaskWorkflows: TaskWorkflow[] = [];
+
+  // New map for Pending Task data
+  pendingTaskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<
+    TaskWorkflow,
+    ExpandedGroupTask[]
+  >();
 
   taskWorkflowGroupMap: Map<TaskWorkflow, ExpandedGroupTask[]> = new Map<
     TaskWorkflow,
@@ -134,6 +147,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   runningTask: TaskWorkflow | null;
   runningTaskGroupStatus: GroupTaskStatus | null;
   runningTaskTableData: MatTableDataSource<MonitorData>;
+
   currentGroupProgress: number;
   averageGroupProgress: number;
   maxGroupProgress: number;
@@ -167,8 +181,13 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   GroupTaskStatus: typeof GroupTaskStatus = GroupTaskStatus;
 
   displayColumns: string[] = ['group-name', 'members', 'progress', 'action'];
+  displayColumnsIndividual: string[] = [
+    'member-name',
+    'group-name',
+    'progress',
+    'action',
+  ];
   loading: boolean = true;
-  embedded: boolean = false;
 
   showModels = false;
 
@@ -213,43 +232,68 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       this.studentView = true;
       this.loading = false;
     }
-    await this.loadWorkspaceData();
-    if (this.studentView) this.showModels = true;
+
+    // Prioritize Input properties.  If they are provided, use them.
+    if (this.projectID && this.boardID) {
+      await this.loadWorkspaceData(); // Load with Input IDs
+      this.socketService.connect(this.user.userID, this.boardID);
+    } else {
+      // Fallback to ActivatedRoute *ONLY* if inputs are not provided.
+      this.activatedRoute.paramMap.subscribe(async (params) => {
+        this.boardID = params.get('boardID')!;
+        this.projectID = params.get('projectID')!;
+
+        if (!this.boardID || !this.projectID) {
+          console.error('Missing boardID or projectID in route parameters');
+          this.router.navigate(['/error']); // Redirect to an error page
+          return; // Stop execution
+        }
+
+        await this.loadWorkspaceData();
+        this.socketService.connect(this.user.userID, this.boardID);
+      });
+    }
   }
 
   async loadWorkspaceData(): Promise<boolean> {
-    const map = this.activatedRoute.snapshot.paramMap;
-    let boardID: string, projectID: string;
-
-    if (map.has('boardID') && map.has('projectID')) {
-      boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-      projectID = this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-    } else {
-      return this.router.navigate(['error']);
+    // No longer need to get from route since we prioritize inputs
+    if (!this.boardID || !this.projectID) {
+      console.error('boardId or projectId is null');
+      return false;
     }
 
-    const fetchedBoard = await this.boardService.get(boardID);
+    const fetchedBoard = await this.boardService.get(this.boardID);
     if (!fetchedBoard) {
+      console.error('board not found');
       this.router.navigate(['error']);
-      return false; // or true depending on your flow
+      return false;
     }
     this.board = fetchedBoard;
-
-    this.project = await this.projectService.get(projectID);
+    this.project = await this.projectService.get(this.projectID);
+    //get group may return undefined.
+    try {
+      this.group = await this.groupService.getByProjectUser(
+        this.projectID,
+        this.user.userID
+      );
+    } catch (error: any) {
+      console.error('Could not fetch group');
+    }
 
     if (!this.isTeacher && !this.board.viewSettings?.allowMonitor) {
       this.router.navigateByUrl(
-        `project/${projectID}/board/${boardID}/${this.board.defaultView?.toLowerCase()}`
+        `project/<span class="math-inline">{this.projectID}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
       );
     }
 
-    if (!this.studentView) await this.updateWorkflowData(boardID, projectID);
-    this.socketService.connect(this.user.userID, this.board.boardID);
+    if (!this.studentView)
+      await this.updateWorkflowData(this.boardID, this.projectID);
+
     return true;
   }
 
   async updateWorkflowData(boardID, projectID) {
-    const inactiveTaskWorkflows: TaskWorkflow[] = [];
+    const pendingTaskWorkflows: TaskWorkflow[] = [];
     const completeTaskWorkflows: TaskWorkflow[] = [];
     const activeTaskWorkflows: TaskWorkflow[] = [];
 
@@ -270,61 +314,80 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       this.user.userID
     );
 
-    this.taskWorkflows = await this.workflowService.getActiveTasks(boardID);
+    const workflows = await this.workflowService.getAll(this.board.boardID);
+    this.taskWorkflows = workflows.filter(this._isTaskWorkflow);
+    this.taskWorkflows = this.taskWorkflows.filter(
+      (workflow) => workflow.active === true
+    );
+
+    // Reset maps for new data
+    this.pendingTaskWorkflowGroupMap = new Map<
+      TaskWorkflow,
+      ExpandedGroupTask[]
+    >();
+    this.taskWorkflowGroupMap = new Map<TaskWorkflow, ExpandedGroupTask[]>();
+    this.taskWorkflowNameMap = new Map<TaskWorkflow, GroupName[]>();
+    this.taskWorkflowGroupNameMap = new Map<TaskWorkflow, string[]>(); //Probably not needed anymore
+    this.taskWorkflowCompleteGroupNameMap = new Map<TaskWorkflow, string[]>(); //Probably not needed anymore.
 
     for (let i = 0; i < this.taskWorkflows.length; i++) {
+      const workflow = this.taskWorkflows[i];
       const groupTasks = await this.workflowService.getGroupTasksByWorkflow(
-        this.taskWorkflows[i].workflowID,
+        workflow.workflowID,
         'expanded'
       );
       groupTasks.sort((a, b) =>
         this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
       );
-      this.taskWorkflowNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks.map((group) => {
-          return {
-            groupName: group.group.name,
-            groupStatus: group.groupTask.status,
-          };
-        })
-      );
-      this.taskWorkflowGroupMap.set(this.taskWorkflows[i], groupTasks);
-      this.taskWorkflowGroupNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks
-          .filter((group) => group.groupTask.status != GroupTaskStatus.COMPLETE)
-          .map((group) => group.group.name)
-      );
-      this.taskWorkflowCompleteGroupNameMap.set(
-        this.taskWorkflows[i],
-        groupTasks
-          .filter(
-            (group) => group.groupTask.status === GroupTaskStatus.COMPLETE
-          )
-          .map((group) => group.group.name)
-      );
-      let activeCount = 0,
-        completedCount = 0;
 
-      for (let i = 0; groupTasks && i < groupTasks.length; i++) {
-        activeCount += Number(
-          groupTasks[i].groupTask.status == GroupTaskStatus.ACTIVE
-        );
-        completedCount += Number(
-          groupTasks[i].groupTask.status == GroupTaskStatus.COMPLETE
-        );
+      this.taskWorkflowGroupMap.set(workflow, groupTasks);
+
+      // Create a map entry for *every* workflow, but we'll filter *later* in the HTML.
+      this.taskWorkflowNameMap.set(
+        workflow,
+        groupTasks.map((gt) => ({
+          groupName: gt.group.name,
+          groupStatus: gt.groupTask.status,
+        }))
+      );
+
+      const pendingGroupTasks = groupTasks.filter(
+        (gt) => gt.groupTask.status === GroupTaskStatus.INACTIVE
+      );
+      const activeGroupTasks = groupTasks.filter(
+        (gt) => gt.groupTask.status === GroupTaskStatus.ACTIVE
+      );
+      const completedGroupTasks = groupTasks.filter(
+        (gt) => gt.groupTask.status === GroupTaskStatus.COMPLETE
+      );
+
+      if (pendingGroupTasks.length > 0) {
+        this.pendingTaskWorkflowGroupMap.set(workflow, pendingGroupTasks);
+        if (!pendingTaskWorkflows.includes(workflow)) {
+          pendingTaskWorkflows.push(workflow);
+        }
       }
 
-      if (activeCount + completedCount != groupTasks.length)
-        inactiveTaskWorkflows.push(this.taskWorkflows[i]);
-      if (completedCount) completeTaskWorkflows.push(this.taskWorkflows[i]);
-      if (activeCount) activeTaskWorkflows.push(this.taskWorkflows[i]);
+      if (activeGroupTasks.length > 0) {
+        if (!activeTaskWorkflows.includes(workflow)) {
+          activeTaskWorkflows.push(workflow);
+        }
+      }
+      if (completedGroupTasks.length > 0) {
+        if (!completeTaskWorkflows.includes(workflow)) {
+          completeTaskWorkflows.push(workflow);
+        }
+      }
     }
-    this.inactiveTaskWorkflows = inactiveTaskWorkflows;
+
+    this.pendingTaskWorkflows = pendingTaskWorkflows;
     this.completeTaskWorkflows = completeTaskWorkflows;
     this.activeTaskWorkflows = activeTaskWorkflows;
     this.loading = false;
+  }
+
+  _isTaskWorkflow(workflow: Workflow): workflow is TaskWorkflow {
+    return (workflow as TaskWorkflow).requiredActions !== undefined;
   }
 
   async updateTodoItemDataSource(): Promise<void> {
@@ -358,6 +421,42 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   clearTodoFilter(): void {
     this.updateTodoItemDataSource();
     this.todoDeadlineRange.reset();
+  }
+
+  // New method to calculate pending/total for a workflow
+  getPendingTotal(workflow: TaskWorkflow): string {
+    const pendingGroupTasks =
+      this.pendingTaskWorkflowGroupMap.get(workflow) || [];
+    let pendingCount = 0;
+    let totalCount = 0;
+
+    for (const groupTask of pendingGroupTasks) {
+      if (groupTask.assignmentType === 'GROUP' || !groupTask.assignmentType) {
+        for (const memberId of groupTask.group.members) {
+          totalCount++;
+          if (groupTask.groupTask.status === GroupTaskStatus.INACTIVE) {
+            pendingCount++;
+          }
+        }
+      } else {
+        // Individual assignment
+        totalCount++;
+        if (groupTask.groupTask.status === GroupTaskStatus.INACTIVE) {
+          pendingCount++;
+        }
+      }
+    }
+    if (totalCount == 0 && this.taskWorkflowGroupMap.has(workflow)) {
+      const expandedGroupTasks = this.taskWorkflowGroupMap.get(workflow);
+      expandedGroupTasks?.forEach((groupTask) => {
+        if (groupTask.assignmentType === 'GROUP' || !groupTask.assignmentType) {
+          totalCount += groupTask.group.members.length;
+        } else {
+          totalCount += 1;
+        }
+      });
+    }
+    return `${pendingCount}/${totalCount}`;
   }
 
   filterTodosByDeadline(start: Date, end: Date): void {
@@ -400,10 +499,19 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
   ): Promise<void> {
     const groupTasks = this.taskWorkflowGroupMap.get(workflow);
     const groupTasksTableFormat: MonitorData[] = [];
+
     if (groupTasks) {
       for (let i = 0; i < groupTasks.length; i++) {
-        if (groupTasks[i].groupTask.status == status) {
-          const groupMembers: string[] = [];
+        // *** FILTER HERE, based on the requested status ***
+        if (groupTasks[i].groupTask.status !== status) {
+          continue; // Skip this groupTask if it doesn't match the desired status
+        }
+
+        const groupMembers: string[] = [];
+        if (
+          groupTasks[i].assignmentType === 'GROUP' ||
+          !groupTasks[i].assignmentType
+        ) {
           for (let j = 0; j < groupTasks[i].group.members.length; j++) {
             groupMembers.push(
               (
@@ -417,6 +525,19 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
             groupName: groupTasks[i].group.name,
             progress: this._calcGroupProgress(groupTasks[i]).toFixed(2),
             groupMembers: groupMembers,
+            groupTaskID: groupTasks[i].groupTask.groupTaskID,
+            workflowID: groupTasks[i].workflow.workflowID,
+            taskWorkflow: groupTasks[i].workflow,
+            groupTaskStatus: groupTasks[i].groupTask.status,
+          });
+        } else {
+          const user = await this.userService.getOneById(
+            groupTasks[i].groupTask.userID!
+          );
+          groupTasksTableFormat.push({
+            groupName: groupTasks[i].group.name,
+            progress: this._calcGroupProgress(groupTasks[i]).toFixed(2),
+            groupMembers: [user.username],
             groupTaskID: groupTasks[i].groupTask.groupTaskID,
             workflowID: groupTasks[i].workflow.workflowID,
             taskWorkflow: groupTasks[i].workflow,
@@ -436,12 +557,16 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       _group.groupTaskID
     );
     await this.updateWorkflowData(this.board.boardID, this.project.projectID);
-    this.runningTaskTableData.data = this.runningTaskTableData.data.filter(
-      (data) => data.groupTaskID != _group.groupTaskID
-    );
-    if (!this.runningTaskTableData.data.length) {
-      this.runningTask = null;
-    }
+    const updatedData = this.runningTaskTableData.data.map((data) => {
+      if (data.groupTaskID === _group.groupTaskID) {
+        return {
+          ...data,
+          groupTaskStatus: GroupTaskStatus.ACTIVE,
+        };
+      }
+      return data;
+    });
+    this.runningTaskTableData.data = updatedData;
   }
 
   async completeGroupTask(_group: MonitorData) {
@@ -450,10 +575,20 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       _group.groupTaskID
     );
     await this.updateWorkflowData(this.board.boardID, this.project.projectID);
-    this.runningTaskTableData.data = this.runningTaskTableData.data.filter(
-      (data) => data.groupTaskID != _group.groupTaskID
+    const updatedData = this.runningTaskTableData.data.map((data) => {
+      if (data.groupTaskID === _group.groupTaskID) {
+        return {
+          ...data,
+          groupTaskStatus: GroupTaskStatus.COMPLETE,
+        };
+      }
+      return data;
+    });
+    this.runningTaskTableData.data = updatedData;
+    const allTasksComplete = updatedData.every(
+      (data) => data.groupTaskStatus === GroupTaskStatus.COMPLETE
     );
-    if (!this.runningTaskTableData.data.length) {
+    if (allTasksComplete) {
       this.runningTask = null;
     }
   }

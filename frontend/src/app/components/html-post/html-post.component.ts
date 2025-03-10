@@ -82,7 +82,8 @@ export class HtmlPostComponent implements OnInit {
   openPostDialog(commentPress = false) {
     this.dialog
       .open(PostModalComponent, {
-        minWidth: '700px',
+        minWidth: '370px',
+        maxHeight: '100vh',
         width: 'auto',
         data: {
           user: this.user,

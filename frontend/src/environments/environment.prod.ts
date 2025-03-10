@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://ck-board.oise.utoronto.ca/api',
-  socketUrl: 'https://ck-board.oise.utoronto.ca',
-  ckboardDomain: 'https://ck-board.oise.utoronto.ca',
+  apiUrl: 'https://score.encorelab.org/api',
+  socketUrl: 'https://score.encorelab.org',
+  ckboardDomain: 'https://score.encorelab.org',
 };

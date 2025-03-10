@@ -1,0 +1,24 @@
+<h1 mat-dialog-title>Select Workflow</h1>
+<div mat-dialog-content>
+  <mat-form-field appearance="outline" style="width: 100%">
+    <mat-label>Workflow</mat-label>
+    <mat-select [(ngModel)]="selectedWorkflowId" [disabled]="workflows.length === 0" required>
+      <mat-option *ngFor="let workflow of workflows" [value]="workflow.workflowID">
+        {{ workflow.name }}
+      </mat-option>
+    </mat-select>
+    <mat-error *ngIf="workflows.length > 0 && !selectedWorkflowId">Workflow is required</mat-error>
+  </mat-form-field>
+
+  <ng-container *ngIf="workflows.length === 0">
+    <p>No workflows available. Please create a workflow before activating one.</p>
+    <button mat-raised-button color="primary" (click)="openCreateWorkflowModal()" #createWorkflowButton>
+      Create Workflow
+    </button>
+  </ng-container>
+</div>
+
+<div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()" #cancelButton>Cancel</button>
+    <button mat-button (click)="onSelect()" [disabled]="!selectedWorkflowId" *ngIf="workflows.length > 0">Select</button>
+</div>

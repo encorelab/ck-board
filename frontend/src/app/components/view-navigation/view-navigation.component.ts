@@ -75,6 +75,13 @@ export class ViewNavigationComponent implements OnInit {
         allowed:
           this.isTeacher || (this.board.viewSettings?.allowMonitor ?? false),
       },
+      {
+        viewType: ViewType.IDEAS,
+        urlPath: 'ideas',
+        icon: 'lightbulb',
+        displayName: 'CK Ideas',
+        allowed: this.isTeacher,
+      },
     ];
   }
 }

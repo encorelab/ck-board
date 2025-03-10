@@ -37,6 +37,7 @@ export enum AssignmentType {
 export enum TaskWorkflowType {
   PEER_REVIEW = 'PEER_REVIEW',
   GENERATION = 'GENERATION',
+  DISTRIBUTION = 'DISTRIBUTION'
 }
 
 export enum TaskActionType {

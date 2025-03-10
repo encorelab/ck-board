@@ -631,7 +631,7 @@
               </h4>
             </div>
           </div>
-          <div *ngIf="workflow.requiredActions">
+          <div *ngIf="workflow.requiredActions && workflow.type !== taskWorkflowType.GENERATION">
             <h4>
               Required Actions:
               <mat-chip
@@ -657,6 +657,39 @@
               </mat-chip>
             </h4>
           </div>
+
+          <div *ngIf="workflow.type !== taskWorkflowType.DISTRIBUTION">
+            <h4>
+              Assignment Type:
+              <mat-chip color="accent" selected style="margin: 0 5px">
+                {{ workflow.assignmentType === AssignmentType.GROUP ? 'Small Group' : 'Individuals' }}
+              </mat-chip>
+            </h4>
+          </div>
+          
+          <div *ngIf="workflow.assignmentType === AssignmentType.GROUP && workflow.type !== taskWorkflowType.DISTRIBUTION">
+              <h4>
+                Assigned Groups:
+                  <mat-chip color="accent" selected style="margin: 0 5px" *ngFor="let groupID of workflow.assignedGroups">
+                    {{getGroupName(groupID)}}
+                  </mat-chip>
+              </h4>
+          </div>
+  
+            <div *ngIf="workflow.assignmentType === AssignmentType.INDIVIDUAL && workflow.type !== taskWorkflowType.DISTRIBUTION">
+              <h4>
+                Assigned Individual:
+                  <mat-chip color="accent" selected style="margin: 0 5px">
+                      {{workflow.assignedIndividual.name}}
+                  </mat-chip>
+              </h4>
+          </div>
+
+          <div *ngIf="workflow.prompt && workflow.type !== taskWorkflowType.DISTRIBUTION">
+            <h4>Prompt:</h4>
+            <p>{{ workflow.prompt }}</p>
+          </div>
+
           <div *ngIf="workflow.removeFromSource">
             <mat-chip color="warn" selected>
               Remove From Source Enabled

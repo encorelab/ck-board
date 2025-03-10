@@ -152,6 +152,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   // Store the socket listener
   aiResponseListener: Subscription | undefined;
 
+  groupMap: Map<string, string> = new Map();
+
   @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
   @ViewChild('aiInput') aiInput: ElementRef;
 
@@ -178,12 +180,16 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Initialization
-    this.board = this.data.board; // Load the current board from the passed data
-    this.tags = this.data.board.tags; // Load tags associated with the board
-    this.loadGroups(); // Load groups associated with the project
-    this.upvoteLimit = this.data.board.upvoteLimit; // Load the upvote limit for the board
-    this.loadBucketsBoards(); // Load buckets and boards for source/destination options
-    this.loadWorkflows(); // Load existing workflows for the board
+    this.board = this.data.board;
+    this.tags = this.data.board.tags;
+    this.loadGroups().then(() => {
+      this.groupOptions.forEach((group) => {
+        this.groupMap.set(group.groupID, group.name);
+      });
+    });
+    this.upvoteLimit = this.data.board.upvoteLimit;
+    this.loadBucketsBoards();
+    this.loadWorkflows();
     this.user = this.userService.user!;
 
     // Set the selected tab index if provided
@@ -932,6 +938,10 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       id: this.board.boardID,
       name: 'CK Workspace',
     };
+  }
+
+  getGroupName(groupID: string): string {
+    return this.groupMap.get(groupID) || 'Unknown Group';
   }
 
   ngOnDestroy() {

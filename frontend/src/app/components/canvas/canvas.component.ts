@@ -206,14 +206,13 @@ export class CanvasComponent implements OnInit, OnDestroy {
       );
       this.fabricUtils._canvas = this.canvas;
 
-      this.setTraceViewType();
-
       this.configureBoard().then(() => {
         //Use then as configure board is now async
 
         this.socketService.connect(this.user.userID, this.boardID);
         this.initCanvasEventsListener();
         this.initGroupEventsListener();
+        this.setTraceViewType();
       });
       window.onbeforeunload = () => this.ngOnDestroy();
     }

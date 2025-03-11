@@ -35,6 +35,7 @@ import {
   TaskWorkflow,
   WorkflowType,
   TaskWorkflowType,
+  AssignmentType,
 } from 'src/app/models/workflow';
 import { SocketService } from 'src/app/services/socket.service';
 import { PostService } from 'src/app/services/post.service';
@@ -53,6 +54,7 @@ import { UserService } from 'src/app/services/user.service';
 import User, { AuthUser, Role } from 'src/app/models/user';
 import { SocketEvent } from 'src/app/utils/constants';
 import { saveAs } from 'file-saver';
+import { EventBusService } from 'src/app/services/event-bus.service';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -94,6 +96,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   WorkflowType: typeof WorkflowType = WorkflowType;
   taskWorkflowType: typeof TaskWorkflowType = TaskWorkflowType;
   workflowType: WorkflowType = WorkflowType.GENERATION;
+  AssignmentType: typeof AssignmentType = AssignmentType;
+  assignmentType: AssignmentType = AssignmentType.GROUP;
   sourceOptions: (Bucket | Board)[] = [];
   destOptions: (Bucket | Board)[] = [];
 
@@ -111,6 +115,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   taskDestination: Board | Bucket;
   prompt: string;
   assignedGroups: Group[] = [];
+  assignedIndividual: Group;
   commentsRequired = false;
   tagsRequired = false;
   postGeneration = 1;
@@ -147,6 +152,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
   // Store the socket listener
   aiResponseListener: Subscription | undefined;
 
+  groupMap: Map<string, string> = new Map();
+
   @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
   @ViewChild('aiInput') aiInput: ElementRef;
 
@@ -163,6 +170,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
     public groupService: GroupService,
     private http: HttpClient,
     private socketService: SocketService,
+    private eventBus: EventBusService,
     private changeDetectorRef: ChangeDetectorRef,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -172,12 +180,16 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Initialization
-    this.board = this.data.board; // Load the current board from the passed data
-    this.tags = this.data.board.tags; // Load tags associated with the board
-    this.loadGroups(); // Load groups associated with the project
-    this.upvoteLimit = this.data.board.upvoteLimit; // Load the upvote limit for the board
-    this.loadBucketsBoards(); // Load buckets and boards for source/destination options
-    this.loadWorkflows(); // Load existing workflows for the board
+    this.board = this.data.board;
+    this.tags = this.data.board.tags;
+    this.loadGroups().then(() => {
+      this.groupOptions.forEach((group) => {
+        this.groupMap.set(group.groupID, group.name);
+      });
+    });
+    this.upvoteLimit = this.data.board.upvoteLimit;
+    this.loadBucketsBoards();
+    this.loadWorkflows();
     this.user = this.userService.user!;
 
     // Set the selected tab index if provided
@@ -348,6 +360,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
         .runTaskWorkflow(workflow)
         .then(() => {
           workflow.active = true;
+          this.eventBus.emit('createWorkflowTask', workflow);
           this.openSnackBar('Workflow: ' + workflow.name + ' now active!');
         })
         .catch(() => {
@@ -384,6 +397,7 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
         handleConfirm: async () => {
           if (this._isTaskWorkflow(workflow)) {
             await this.workflowService.removeTask(workflow.workflowID);
+            this.eventBus.emit('deleteWorkflowTask', workflow.workflowID);
           } else {
             await this.workflowService.removeDistribution(workflow.workflowID);
           }
@@ -424,10 +438,13 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
 
     // 1. Fetch all posts for the current board
     this.fetchBoardPosts().then((posts) => {
-      const prompt = this.aiPrompt;
+      const currentPrompt = this.aiPrompt;
       this.aiPrompt = ''; // Clear the prompt field
 
-      this.chatHistory.push({ role: 'user', content: prompt });
+      // Construct the complete prompt including chat history
+      const fullPromptHistory = this.constructPromptWithHistory(currentPrompt);
+
+      this.chatHistory.push({ role: 'user', content: currentPrompt });
 
       // Wait for the change detection to run and render the new message
       this.changeDetectorRef.detectChanges();
@@ -436,7 +453,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       // 2. Send data and prompt to the backend via WebSocket
       this.socketService.emit(SocketEvent.AI_MESSAGE, {
         posts,
-        prompt,
+        currentPrompt: currentPrompt,
+        fullPromptHistory: fullPromptHistory,
         boardId: this.board.boardID,
         userId: this.user.userID,
       });
@@ -505,25 +523,59 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
     this.isProcessingAIRequest = false;
   }
 
+  // Helper function to construct the prompt with chat history
+  constructPromptWithHistory(currentPrompt: string): string {
+    let fullPrompt = '';
+
+    // Add each message from the chat history to the prompt
+    this.chatHistory.forEach((message) => {
+      fullPrompt += `${message.role}: ${message.content}\n`;
+    });
+
+    // Add the current prompt at the end
+    fullPrompt += `user: ${currentPrompt}`;
+
+    return fullPrompt;
+  }
+
   downloadChatHistory() {
+    // Generate timestamp in the desired format
+    const timestamp = new Date()
+      .toLocaleDateString('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      })
+      .replace(/\//g, '-')
+      .replace(/, /g, '-');
+
+    const filename = `chat_history-${timestamp}.csv`;
+
     const data = {
       boardId: this.board.boardID,
-      userId: this.user.userID
+      userId: this.user.userID,
+      filename: filename, // Add filename to the data
     };
 
-    this.http.post('chat-history', data, { 
-      responseType: 'blob' 
-    }).subscribe(
-      (response) => {
-        const blob = new Blob([response], { type: 'text/csv' });
-        saveAs(blob, 'chat_history.csv'); 
-        this.openSnackBar('Chat history downloaded successfully!');
-      },
-      (error) => {
-        console.error('Error downloading chat history:', error);
-        this.openSnackBar(`Error downloading chat history: ${error.message}`); 
-      }
-    );
+    this.http
+      .post('chat-history', data, {
+        responseType: 'blob',
+      })
+      .subscribe(
+        (response) => {
+          const blob = new Blob([response], { type: 'text/csv' });
+          saveAs(blob, filename);
+          this.openSnackBar('Chat history downloaded successfully!');
+        },
+        (error) => {
+          console.error('Error downloading chat history:', error);
+          this.openSnackBar(`Error downloading chat history: ${error.message}`);
+        }
+      );
   }
 
   private escapeJsonResponse(response: string): string {
@@ -803,6 +855,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       requiredActions: actions,
       assignedGroups: this.assignedGroups.map((g) => g.groupID),
       type: this.taskWorkflowType.PEER_REVIEW,
+      assignmentType: this.assignmentType,
+      assignedIndividual: this.assignedIndividual,
     };
 
     return workflow;
@@ -839,6 +893,8 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       requiredActions: actions,
       assignedGroups: this.assignedGroups.map((g) => g.groupID),
       type: this.taskWorkflowType.GENERATION,
+      assignmentType: this.assignmentType,
+      assignedIndividual: this.assignedIndividual,
     };
 
     return workflow;
@@ -882,6 +938,10 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       id: this.board.boardID,
       name: 'CK Workspace',
     };
+  }
+
+  getGroupName(groupID: string): string {
+    return this.groupMap.get(groupID) || 'Unknown Group';
   }
 
   ngOnDestroy() {

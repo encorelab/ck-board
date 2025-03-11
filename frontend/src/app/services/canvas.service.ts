@@ -44,13 +44,21 @@ export class CanvasService {
     private fabricUtils: FabricUtils
   ) {}
 
-  async createPost(post: Post) {
+  async createPost(post: Post, boardID: string) {
     const savedPost = await this.postService.create(post);
     if (!savedPost) {
       throw new Error('Failed to create post');
     }
-
-    const fabricPost = new FabricPostComponent(post);
+    const user = await this.userService.user!;
+    const board = await this.boardService.get(boardID);
+    if (!board) {
+      throw new Error('Board not found');
+    }
+    const fabricPost = new FabricPostComponent(
+      user.role,
+      board.permissions,
+      post
+    );
     this.fabricUtils._canvas.add(fabricPost);
     this.socketService.emit(SocketEvent.POST_CREATE, savedPost);
   }
@@ -88,15 +96,25 @@ export class CanvasService {
     return savedPost;
   }
 
-  async createBoardPostFromBucket(post: Post): Promise<Post> {
+  async createBoardPostFromBucket(post: Post, boardID): Promise<Post> {
     const upvotes = await this.upvotesService.getUpvotesByPost(post.postID);
     const comments = await this.commentService.getCommentsByPost(post.postID);
     post.type = PostType.BOARD;
 
-    const fabricPost = new FabricPostComponent(post, {
-      upvotes: upvotes.length,
-      comments: comments.length,
-    });
+    const user = await this.userService.user!;
+    const board = await this.boardService.get(boardID);
+    if (!board) {
+      throw new Error('Board not found');
+    }
+    const fabricPost = new FabricPostComponent(
+      user.role,
+      board.permissions,
+      post,
+      {
+        upvotes: upvotes.length,
+        comments: comments.length,
+      }
+    );
     post = await this.postService.update(post.postID, post);
     if (!post) {
       throw new Error('Failed to update post');

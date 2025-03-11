@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { GroupModel } from '../models/Group';
 import dalGroup from '../repository/dalGroup';
+import Group from '../models/Group';
 
 const router = Router();
 
@@ -20,6 +21,17 @@ router.get('/user/:id', async (req, res) => {
   const groups = await dalGroup.getByUserId(id);
 
   res.status(200).json(groups);
+});
+
+router.post('/multiple', async (req, res) => {
+  try {
+    const groupIDs: string[] = req.body.groupIDs;
+    const groups = await Group.find({ groupID: { $in: groupIDs } }); // Fetch groups from the database
+    res.status(200).json(groups);
+  } catch (error) {
+    console.error("Error fetching multiple groups:", error);
+    res.status(500).json({ error: 'Failed to fetch groups.' });
+  }
 });
 
 router.get('/user/:userID/project/:projectID', async (req, res) => {

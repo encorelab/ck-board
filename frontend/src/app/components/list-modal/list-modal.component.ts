@@ -299,7 +299,10 @@ export class ListModalComponent implements OnInit, OnDestroy {
       displayAttributes: renderAttr,
     };
 
-    await this.canvasService.createBoardPostFromBucket(post);
+    await this.canvasService.createBoardPostFromBucket(
+      post,
+      this.board.boardID
+    );
     htmlPost.bucketOnly = false;
 
     this.Yoffset += 50;

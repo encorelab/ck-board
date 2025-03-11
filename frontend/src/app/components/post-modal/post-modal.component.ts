@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import {
   MatLegacyDialog as MatDialog,
@@ -28,7 +28,7 @@ import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import Upvote from 'src/app/models/upvote';
-import { Board } from 'src/app/models/board';
+import { Board, ViewType } from 'src/app/models/board';
 import { BoardService } from 'src/app/services/board.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { Project } from 'src/app/models/project';
@@ -50,9 +50,11 @@ export class PostModalData {
   post!: Post;
   user!: User;
   board!: Board;
+  currentView?: ViewType;
   commentPress?: boolean;
   onCommentEvent?: Function;
   onTagEvent?: Function;
+  onDeleteEvent?: Function;
   numSavedPosts: number = 0;
   updateNumSavedPosts?: Function;
 }
@@ -62,7 +64,7 @@ export class PostModalData {
   templateUrl: './post-modal.component.html',
   styleUrls: ['./post-modal.component.scss'],
 })
-export class PostModalComponent {
+export class PostModalComponent implements OnInit, OnDestroy {
   tags: Tag[] = [];
   tagOptions: Tag[] = [];
 
@@ -112,6 +114,9 @@ export class PostModalComponent {
   expandedUpvotesView = false;
   expandedUpvotes: any[] = [];
 
+  isMobile: boolean = false;
+  private resizeListener: () => void;
+
   constructor(
     public dialogRef: MatDialogRef<PostModalComponent>,
     public dialog: MatDialog,
@@ -145,7 +150,8 @@ export class PostModalComponent {
       this.editingDesc = linkifyStr(p.desc, {
         defaultProtocol: 'https',
         target: '_blank',
-      }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+      })
+        .replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
         .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
         .replace(/(?:\r\n|\r|\n)/g, '<br>');
       this.tags = p.tags;
@@ -181,20 +187,47 @@ export class PostModalComponent {
     const isTeacher = this.user.role == Role.TEACHER;
     this.showEditDelete =
       (isStudent && data.board.permissions.allowStudentEditAddDeletePost) ||
+      (data.currentView && data.currentView != ViewType.CANVAS) ||
       isTeacher;
     this.canStudentComment =
-      (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher;
+      (isStudent && data.board.permissions.allowStudentCommenting) ||
+      (data.currentView && data.currentView != ViewType.CANVAS) ||
+      isTeacher;
     this.canStudentTag =
-      (isStudent && data.board.permissions.allowStudentTagging) || isTeacher;
+      (isStudent && data.board.permissions.allowStudentTagging) ||
+      (data.currentView && data.currentView != ViewType.CANVAS) ||
+      isTeacher;
     this.showAuthorName =
       (isStudent && data.board.permissions.showAuthorNameStudent) ||
       (isTeacher && data.board.permissions.showAuthorNameTeacher);
+
+    this.checkIfMobile(); // Check on initialization
+    this.resizeListener = () => this.checkIfMobile(); // Create the listener
+    window.addEventListener('resize', this.resizeListener);
   }
 
   ngOnInit(): void {
     this.projectService.get(this.data.board.projectID).then((project) => {
       this.project = project;
     });
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('resize', this.resizeListener); // Remove the listener
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkIfMobile();
+  }
+
+  checkIfMobile() {
+      this.isMobile = window.innerWidth <= 600;
+      if (this.isMobile) {
+          this.dialogRef.addPanelClass('fullscreen-dialog');
+      } else {
+          this.dialogRef.removePanelClass('fullscreen-dialog');
+      }
   }
 
   close(): void {
@@ -209,7 +242,8 @@ export class PostModalComponent {
     if (destType == PostType.BOARD) {
       if (event.checked) {
         this.post = await this.canvasService.createBoardPostFromBucket(
-          this.post
+          this.post,
+          this.data.board.boardID
         );
       } else {
         this.post = (
@@ -247,7 +281,8 @@ export class PostModalComponent {
     this.editingDesc = linkifyStr(this.desc, {
       defaultProtocol: 'https',
       target: '_blank',
-    }).replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
+    })
+      .replace(/ /g, '&nbsp;') // Replace spaces with &nbsp;
       .replace(/\t/g, '&emsp;') // Replace tabs with &emsp;
       .replace(/(?:\r\n|\r|\n)/g, '<br>');
 
@@ -268,6 +303,9 @@ export class PostModalComponent {
         title: 'Confirmation',
         message: 'Are you sure you want to permanently delete this post?',
         handleConfirm: async () => {
+          if (this.data.onDeleteEvent) {
+            this.data.onDeleteEvent(this.post.postID);
+          }
           await this.canvasService.removePost(this.post);
           this.dialogRef.close(DELETE);
         },
@@ -500,6 +538,9 @@ export class PostModalComponent {
   }
 
   private _votingLocked(): boolean {
+    if (this.data.currentView) {
+      return false;
+    }
     return (
       this.user.role == Role.STUDENT &&
       !this.data.board.permissions.allowStudentUpvoting

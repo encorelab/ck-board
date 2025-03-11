@@ -4,6 +4,7 @@ import {
   modelOptions,
   getDiscriminatorModelForClass,
 } from '@typegoose/typegoose';
+import { GroupModel } from './Group';
 
 export enum WorkflowType {
   DISTRIBUTION = 'DISTRIBUTION',
@@ -14,6 +15,7 @@ export enum WorkflowType {
 export enum TaskWorkflowType {
   PEER_REVIEW = 'PEER_REVIEW',
   GENERATION = 'GENERATION',
+  DISTRIBUTION = 'DISTRIBUTION'
 }
 
 export enum DistributionWorkflowType {
@@ -32,6 +34,11 @@ export enum TaskActionType {
   COMMENT = 'COMMENT',
   TAG = 'TAG',
   CREATE_POST = 'CREATE_POST',
+}
+
+export enum AssignmentType {
+  GROUP = 'GROUP',
+  INDIVIDUAL = 'INDIVIDUAL',
 }
 
 export class DistributionWorkflowTypeModel {
@@ -102,6 +109,12 @@ export class TaskWorkflowModel extends WorkflowModel {
 
   @prop({ enum: TaskWorkflowType, type: String, required: false })
   public type?: string;
+
+  @prop({ enum: AssignmentType, type: String, required: true })
+  public assignmentType!: string;
+
+  @prop({ required: false })
+  public assignedIndividual?: GroupModel;
 }
 
 export const Workflow = getModelForClass(WorkflowModel);

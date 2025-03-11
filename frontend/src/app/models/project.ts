@@ -7,6 +7,7 @@ export class PersonalBoardSetting {
 
 export class Project {
   projectID: string;
+  isScoreRun: boolean;
   teacherIDs: string[];
   name: string;
   boards: string[];

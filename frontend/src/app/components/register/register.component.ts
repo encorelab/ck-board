@@ -38,6 +38,7 @@ export class RegisterComponent {
     Validators.maxLength(30),
   ]);
   invalidCredentials = false;
+  emailExists = false;
   matcher = new MyErrorStateMatcher();
 
   constructor(public userService: UserService, private router: Router) {
@@ -58,6 +59,13 @@ export class RegisterComponent {
     this.userService
       .register(user)
       .then(() => this.router.navigate(['dashboard']))
-      .catch(() => (this.invalidCredentials = true));
+      .catch((error) => {
+        // Check the error message from the server
+        if (error && error.message === 'Email already in use.') {
+          this.emailExists = true;
+        } else {
+          this.invalidCredentials = true;
+        }
+      });
   }
 }

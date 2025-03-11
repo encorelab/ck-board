@@ -1,67 +1,126 @@
-<app-toolbar *ngIf="user" [user]="user">
-    <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
-    <button mat-icon-button *ngIf="user.role === Role.TEACHER"
-        (click)="board?.scope === BoardScope.PROJECT_SHARED ? copyEmbedCode() : copyPersonalEmbedCode()"
-        matTooltip="Copy embeddable URL">
-        <mat-icon>file_copy</mat-icon>
-    </button>
-    <span style="flex: 1 1 auto"></span>
-    <app-view-navigation [boardID]="boardID" [currentView]="viewType"></app-view-navigation>
-    <app-toolbar-menu *ngIf="board" navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
+<app-toolbar *ngIf="user && board && !isModalView" [user]="user">
+  <button
+    mat-icon-button
+    *ngIf="projectID"
+    routerLink="{{ '/project/' + projectID }}"
+    matTooltip="Return to Project Dashboard"
+  >
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span style="flex: 1 1 auto"></span>
+
+  <app-view-navigation
+    *ngIf="boardID"
+    [boardID]="boardID"
+    [currentView]="viewType"
+  ></app-view-navigation>
+  <app-toolbar-menu
+    *ngIf="board"
+    navbarMenu
+    [board]="board"
+    [project]="project"
+    (copyEmbedCodeClick)="copyEmbedCode()"
+    (copyPersonalEmbedCodeClick)="copyPersonalEmbedCode()"
+  ></app-toolbar-menu>
 </app-toolbar>
+
 <div class="container d-flex align-items-center justify-content-center">
-    <div class="heading">
-      <button *ngIf="project"
+  <div class="heading">
+    <h1 mat-title style="margin: 0"><span>CK Buckets</span></h1>
+    <span style="flex: 1 1 auto"></span>
+    <button
+      mat-icon-button
+      (click)="refreshBuckets()"
+      matTooltip="Refresh Buckets"
+    >
+      <mat-icon>refresh</mat-icon>
+    </button>
+    <div
+      *ngIf="
+        user.role === Role.TEACHER &&
+        bucketsOnView.length >= 0 &&
+        bucketsOnView.length < maxBucketsOnView
+      "
+    >
+      <button
         mat-icon-button
-        routerLink="{{'/project/'+project.projectID}}"
-        aria-label="Return to Dashboard"
+        matTooltip="Add bucket to view"
+        [matMenuTriggerFor]="bucketsMenu"
+        [hidden]="bucketsOnView.length >= maxBucketsOnView"
       >
-        <mat-icon>arrow_back</mat-icon>
+        <mat-icon class="material-icons-outlined">add</mat-icon>
       </button>
-      <h1 mat-title style="margin: 0"><span>CK Buckets</span></h1>
-      <span style="flex: 1 1 auto"></span>
-      <div *ngIf="user.role === Role.TEACHER && bucketsOnView.length >= 0 && bucketsOnView.length < maxBucketsOnView">
-          <button mat-icon-button matTooltip="Add bucket to view"
-              [matMenuTriggerFor]="bucketsMenu"
-              [hidden]="bucketsOnView.length >= maxBucketsOnView">
-              <mat-icon class="material-icons-outlined">add</mat-icon>
-          </button>
+    </div>
+  </div>
+  <div class="buckets" cdkDropListGroup>
+    <h3
+      *ngIf="buckets.length === 0 && bucketsOnView.length === 0"
+      style="color: grey; text-align: center"
+    >
+      No buckets available
+    </h3>
+
+    <div
+      class="bucket"
+      *ngFor="let bucket of bucketsOnView; let idx = index"
+      cdkDropList
+      [cdkDropListData]="bucket.htmlPosts"
+      [cdkDropListDisabled]="dragDisabled"
+      (cdkDropListDropped)="dragDropPostInBucket($event)"
+      [attr.data-bucket]="bucket.bucketID"
+      cdkDropListSortingDisabled
+    >
+      <div class="header">
+        <h3>{{ bucket.name }}</h3>
+        <button
+          *ngIf="user.role === Role.TEACHER"
+          mat-icon-button
+          (click)="removeBucketFromView(bucket, idx)"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <mat-spinner class="spinner" *ngIf="bucket.loading"></mat-spinner>
+      <h3
+        *ngIf="bucket.htmlPosts && bucket.htmlPosts.length == 0"
+        style="color: grey; margin-top: 10px; text-align: center"
+      >
+        No posts in bucket!
+      </h3>
+      <div class="post-list-view" *ngIf="!bucket.loading">
+        <ng-container *ngIf="bucket.htmlPosts && bucket.htmlPosts.length > 0">
+          <div *ngFor="let post of bucket.htmlPosts">
+            <app-html-post
+              [post]="post"
+              [currentView]="viewType"
+              cdkDrag
+              [cdkDragDisabled]="dragDisabled"
+              style="width: 100%"
+            ></app-html-post>
+          </div>
+        </ng-container>
       </div>
     </div>
-    <div class="buckets" cdkDropListGroup >
-      <h3 *ngIf="buckets.length === 0 && bucketsOnView.length === 0"
-          style="color: grey; text-align: center">
-          No buckets available
-      </h3>
-      
-      <div class="bucket" *ngFor="let bucket of bucketsOnView; let idx = index" cdkDropList [cdkDropListData]="bucket.htmlPosts"
-        (cdkDropListDropped)="dragDropPostInBucket($event)" [attr.data-bucket]="bucket.bucketID" cdkDropListSortingDisabled >
-        <div class="header">
-            <h3>{{ bucket.name }}</h3>
-            <button *ngIf="user.role === Role.TEACHER"
-                mat-icon-button (click)="removeBucketFromView(bucket, idx)">
-                <mat-icon>close</mat-icon>
-            </button>
-        </div>
-        <mat-spinner class="spinner" *ngIf="bucket.loading"></mat-spinner>
-        <h3 *ngIf="bucket.htmlPosts && bucket.htmlPosts.length == 0" style="color: grey; margin-top: 10px;text-align: center;">No posts in bucket!</h3>
-        <div class="post-list-view" *ngIf="!bucket.loading">
-          <ng-container *ngIf="bucket.htmlPosts && bucket.htmlPosts.length > 0" >
-            <div *ngFor="let post of bucket.htmlPosts">
-              <app-html-post [post]="post" cdkDrag style="width: 100%"></app-html-post>
-            </div>
-          </ng-container>
-        </div>
-      </div>
   </div>
 </div>
 <mat-menu #bucketsMenu="matMenu">
-    <button mat-menu-item *ngFor="let bucket of buckets; let idx = index"
-        [value]="bucket" (click)="addBucketToView(bucket, idx)">
-        {{ bucket.name }}
-    </button>
-    <button *ngIf="user.role === Role.TEACHER && !!board && board.scope === BoardScope.PROJECT_SHARED"
-        mat-menu-item (click)="openWorkflowDialog()">
-        Create New Bucket
-    </button>
+  <button
+    mat-menu-item
+    *ngFor="let bucket of buckets; let idx = index"
+    [value]="bucket"
+    (click)="addBucketToView(bucket, idx)"
+  >
+    {{ bucket.name }}
+  </button>
+  <button
+    *ngIf="
+      user.role === Role.TEACHER &&
+      !!board &&
+      board.scope === BoardScope.PROJECT_SHARED
+    "
+    mat-menu-item
+    (click)="openWorkflowDialog()"
+  >
+    Create New Bucket
+  </button>
 </mat-menu>

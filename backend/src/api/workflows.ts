@@ -197,9 +197,16 @@ router.get('/task/boards/:id', async (req, res) => {
 router.delete('/task/:id', async (req, res) => {
   const id = req.params.id;
 
-  await dalWorkflow.remove(WorkflowType.TASK, id);
+  const deletedWorkflow = await dalWorkflow.remove(WorkflowType.TASK, id);
 
-  res.status(200).end();
+  res.status(200).json(deletedWorkflow);
+});
+
+router.get('/task/group/:id', async (req, res) => {
+  const id = req.params.id;
+
+  const workflows = await dalWorkflow.getAllByGroupId(id);
+  res.status(200).json(workflows);
 });
 
 /**
@@ -211,21 +218,30 @@ router.delete('/task/:id', async (req, res) => {
  */
 
 /**
- * Get a workflow's group task for one group.
+ * Get a workflow's group task for one group and user.
  */
-router.get('/task/:workflowID/groupTask/group/:groupID', async (req, res) => {
-  const { workflowID, groupID } = req.params;
-  const representation = req.query.representation as string;
+router.get(
+  '/task/:workflowID/groupTask/group/:groupID/user/:userID',
+  async (req, res) => {
+    const { workflowID, groupID, userID } = req.params;
+    const representation = req.query.representation as string;
 
-  const groupTask = await dalGroupTask.getByWorkflowGroup(workflowID, groupID);
-  if (!groupTask) return res.status(404).end('No group task found.');
+    const groupTask = await dalGroupTask.getByWorkflowGroup(
+      workflowID,
+      groupID,
+      userID
+    );
+    if (!groupTask) return res.status(404).end('No group task found.');
 
-  if (representation == 'expanded') {
-    return res.status(200).json(await dalGroupTask.expandGroupTask(groupTask));
+    if (representation == 'expanded') {
+      return res
+        .status(200)
+        .json(await dalGroupTask.expandGroupTask(groupTask));
+    }
+
+    res.status(200).json(groupTask);
   }
-
-  res.status(200).json(groupTask);
-});
+);
 
 /**
  * Get all groups tasks for a workflow.
@@ -340,9 +356,16 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
 
   try {
     // Remove post from group task
-    const updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, [
-      post,
-    ]);
+    let updatedGroupTask;
+    if (groupTask.userID) {
+      updatedGroupTask = await dalGroupTask.removePosts(
+        groupTaskID,
+        [post],
+        groupTask.userID
+      );
+    } else {
+      updatedGroupTask = await dalGroupTask.removePosts(groupTaskID, [post]);
+    }
 
     // Copy post to destination and make source post of type "LIST"
     const destination = workflow.destinations[0];
@@ -352,23 +375,40 @@ router.post('/task/groupTask/:groupTaskID/submit', async (req, res) => {
     // if post from bucket => delete from bucket
     if (workflow.source.type === ContainerType.WORKFLOW) {
       if (destination.type === ContainerType.BOARD) {
-        await dalPost.update(post, { type: PostType.BOARD });
+        const updatedPost = await dalPost.update(post, {
+          type: PostType.BOARD,
+        });
+        Socket.Instance.emit(
+          SocketEvent.POST_CREATE,
+          updatedPost,
+          workflow.boardID
+        );
       } else {
         await dalPost.update(post, { type: PostType.BUCKET });
+        Socket.Instance.emit(
+          SocketEvent.WORKFLOW_POST_SUBMIT,
+          post,
+          workflow.boardID
+        );
       }
     } else {
       if (workflow.source.type === ContainerType.BOARD) {
         await dalPost.update(post, { type: PostType.LIST });
+        Socket.Instance.emit(
+          SocketEvent.WORKFLOW_POST_SUBMIT,
+          post,
+          workflow.boardID
+        );
       } else if (workflow.source.type === ContainerType.BUCKET) {
         await dalBucket.removePost(workflow.source.id, [post]);
+        Socket.Instance.emit(
+          SocketEvent.WORKFLOW_POST_SUBMIT,
+          post,
+          workflow.boardID
+        );
       }
     }
 
-    Socket.Instance.emit(
-      SocketEvent.WORKFLOW_POST_SUBMIT,
-      post,
-      workflow.boardID
-    );
     return res.status(200).json(updatedGroupTask);
   } catch (e) {
     return res.status(500).end('Unable to submit post!');

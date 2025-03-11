@@ -1,14 +1,16 @@
 import { Server, Socket } from 'socket.io';
 import { SocketEvent } from '../../constants';
-import { sendMessage } from '../../services/vertexAI';
+import { sendMessage } from '../../services/vertexAI'; // Import the unified function
 import { SocketPayload } from '../types/event.types'; // Import the type for SocketPayload
 
 // Define a type for the AI message data
 interface AiMessageData {
   posts: any[]; // Or a more specific type for your posts
-  prompt: string;
+  currentPrompt: string;
+  fullPromptHistory: string;
   boardId: string;
   userId: string;
+  type: 'teacher_agent' | 'idea_agent'; // Add the type field
 }
 
 class AiMessage {
@@ -16,21 +18,50 @@ class AiMessage {
 
   static async handleEvent(
     data: SocketPayload<AiMessageData>
-  ): Promise<{ posts: any[]; prompt: string; boardId: string; userId: string }> {
-    const { posts, prompt, boardId, userId } = data.eventData;
+  ): Promise<{
+    posts: any[];
+    currentPrompt: string;
+    fullPromptHistory: string;
+    boardId: string;
+    userId: string;
+    type: 'teacher_agent' | 'idea_agent';
+  }> {
+    const {
+      posts,
+      currentPrompt,
+      fullPromptHistory: fullPromptHistory,
+      boardId,
+      userId,
+      type,
+    } = data.eventData;
+
     // ... any necessary data processing or validation ...
-    return { posts, prompt, boardId, userId };
+    return {
+      posts,
+      currentPrompt,
+      fullPromptHistory: fullPromptHistory,
+      boardId,
+      userId,
+      type,
+    };
   }
 
   static async handleResult(
     io: Server,
     socket: Socket,
-    result: { posts: any[]; prompt: string; boardId: string; userId: string }
+    result: {
+      posts: any[];
+      currentPrompt: string;
+      fullPromptHistory: string;
+      boardId: string;
+      userId: string;
+      type: 'teacher_agent' | 'idea_agent';
+    }
   ): Promise<void> {
-    const { posts, prompt, boardId, userId } = result;
+    const { posts, currentPrompt, fullPromptHistory, boardId, userId, type } = result;
     socket.data.boardId = boardId;
     socket.data.userId = userId;
-    sendMessage(posts, prompt, socket);
+    sendMessage(posts, currentPrompt, fullPromptHistory, socket, type);
   }
 }
 

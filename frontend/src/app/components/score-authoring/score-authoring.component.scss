@@ -1,0 +1,647 @@
+// score-authoring.component.scss
+
+.toolbar {
+  width: 100%; 
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999; 
+}
+
+.main-content {
+  display: flex; 
+  min-height: calc(100vh - 64px);  
+  margin-top: 64px; 
+}
+
+.activities-pane {
+  width: 250px; 
+  padding: 1rem;
+  border-right: 1px solid #ccc; 
+
+  h3 { 
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  h4 { 
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem; 
+  }
+
+  .classroom-bindings-button {
+    position: static;
+    margin-top: 0.25rem;
+    margin-bottom: 2rem;
+    width: 100%; // Make the button take full width
+  }
+
+  .item-info-section {
+    margin-top: 2rem; // Add some spacing above the section
+
+    h4 {
+      text-align: left; // Center the heading
+      margin-bottom: 1rem; // Add spacing below heading
+    }
+
+    .item-info-grid {
+      display: grid;
+      grid-template-columns: auto auto 1fr; 
+      gap: 0.5rem; 
+      align-items: center;
+      margin-left: 10%;
+
+      .item-label {
+        font-weight: bold;
+        text-align: left; // Left-align labels
+      }
+
+      .item-count {
+        text-align: left; // Left-align counts
+      }
+
+      .add-item-button {
+        .mat-icon {
+          color: black;
+        }
+      }
+    }
+  }
+  .open-tools-buttons {  // Add a class to wrap the buttons
+    margin-top: 1rem;   // Add margin above the div
+
+    button { 
+      display: block;    // Make buttons stack vertically
+      width: auto;      // Make buttons take full width
+      margin-bottom: 1rem; // Add space between buttons
+    }
+  }
+}
+
+.activities-list {
+  div.activity-item { 
+    display: flex; 
+    align-items: center; 
+    cursor: pointer;
+    padding: 0 0 0 0.5rem; 
+    margin-bottom: 0; 
+
+    .activity-buttons {
+      margin-left: auto; 
+      
+      button {
+        margin-left: 0.5rem; 
+      }
+    }
+
+    &[cdkDrag] { // Style for draggable activities
+      cursor: move; /* Show the move cursor when hovering */
+    }
+
+    .drag-handle { /* Styles for the drag handle icon */
+      cursor: move;
+      margin-right: 0.5rem; /* Add some space to the right */
+    }
+  }
+}
+
+.selected { 
+  background-color: #e0e0e0; 
+  border-left: 4px solid #3f51b5; /* Add a thicker left border to highlight */
+  padding-left: 0.25rem; /* Adjust padding to account for the border */
+}
+
+.add-activity-button {
+  position: static;
+  margin-top: 1rem;
+  margin-left: 195px;
+}
+
+.content-and-resources {
+  display: flex;
+  flex: 1; 
+  height: 100%; 
+}
+
+.middle-pane {
+  flex: 1; // Allow middle pane to take up available space
+  padding: 1rem;
+  padding-top: 2.5rem;
+  
+  .add-resource-button {
+    position: absolute;
+    bottom: 2rem; 
+    right: 2rem;
+    z-index: 999;
+  }
+
+  .activity-resources-list {
+    margin-bottom: 2rem;
+
+    .resource-item { /* Add styles for the resource items */
+      display: flex;
+      align-items: center; 
+      height: 40px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+
+      &.canvas { 
+        background-color: #81d4fa; /* Lighter Blue */
+        color: #000; 
+      }
+
+      &.bucketView { 
+        background-color: #80cbc4; /* Lighter Teal */
+        color: #000; 
+      }
+
+      &.workspace { 
+        background-color: #ffcc80; /* Lighter Orange */
+        color: #000; 
+      }
+
+      &.monitor { 
+        background-color: #ef9a9a; /* Lighter Red */
+        color: #000; 
+      }
+
+      &.ideaAgent {
+        background-color: #c5cae9;  // Indigo 
+        color: #000;
+      }
+
+      .drag-handle {
+        cursor: move;
+        margin-right: 0.5rem;
+      }
+
+      .delete-button { /* Add styles for the delete button */
+        margin-left: auto; /* Push the button to the right */
+      }
+    }
+
+  }
+
+  h3, h4 { /* Target both h3 and h4 */
+    text-align: center; 
+  }
+
+  h3 { 
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+  }
+
+  h4 { 
+    font-size: 1.2rem; 
+    font-weight: bold;
+    margin-bottom: 1.5rem; 
+    color: #888; 
+  }
+
+  h5 { 
+    font-size: 1rem; 
+    font-weight: bold;
+    color: #888; 
+    margin-bottom: 0.5rem;
+  }
+
+  mat-expansion-panel-header h5 {
+    margin-bottom: 0;
+  }
+
+  .canvas-container {
+    position: absolute;
+    top: 64px;
+    left: 283px;
+    width: 100%;
+    height: 100%;
+    z-index: 997; // Ensure canvas is on top of everything except resource pane and add button
+  }
+}
+
+.resources-right-pane-container {
+  position: relative; // Required for absolute positioning of children
+  flex: 0 0 400px; // Set a fixed width for the right pane container
+  padding: 1rem;
+
+  .canvas-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000; 
+  }
+}
+
+#authoringResourcesPane {
+  width: 400px;
+}
+
+.resources-pane {
+  position: absolute; // Position the resources pane absolutely
+  top: 0;
+  left: 0;
+  width: 100%; 
+  min-height: 100%; 
+  padding: 1rem;
+
+  background-color: #fff; 
+  border: 1px solid #ccc; 
+  border-radius: 5px; 
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); // Add a subtle shadow
+
+  h3 { 
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  h4 { 
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem; 
+  }
+
+  .close-resource-button {
+    float: right;
+    margin-right: 1.25rem;
+  }
+
+  .available-resources-list {
+    margin-bottom: 2rem;
+    .available-resource-item {
+      cursor: grab; /* Use grab cursor to indicate draggability */
+      padding: 0.5rem;
+      padding-right: 1rem;
+      border: 1px solid #ccc; /* Add a border to resemble material */
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      max-width: 375px;
+
+      &.canvas { 
+        background-color: #81d4fa; /* Lighter Blue */
+        color: #000; 
+      }
+
+      &.bucketView { 
+        background-color: #80cbc4; /* Lighter Teal */
+        color: #000; 
+      }
+
+      &.workspace { 
+        background-color: #ffcc80; /* Lighter Orange */
+        color: #000; 
+      }
+
+      &.monitor { 
+        background-color: #ef9a9a; /* Lighter Red */
+        color: #000; 
+      }
+
+      &.ideaAgent {
+        background-color: #c5cae9;  //  Indigo 100
+        color: #000;
+      }
+    }
+  }
+  .available-teacher-actions-list {
+    .available-resource-item { 
+      cursor: grab; 
+      padding: 0.5rem;
+      border: 1px solid #ccc; 
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+      max-width: 80%; 
+      padding-right: 1rem; 
+      display: flex;
+      align-items: center;
+
+      mat-icon {
+        margin-right: 0.5rem; // Add some space between the icon and the text
+      }
+
+      &:active { 
+        background-color: #e0e0e0;
+      }
+
+      &.activateWorkflow {
+        background-color: #90caf9;  // Slightly darker blue
+        color: #000; 
+      }
+
+      &.activateAiAgent {
+        background-color: #a5d6a7;  // Slightly darker green
+        color: #000; 
+      }
+
+      &.regroupStudents {
+        background-color: #fff59d;  // Slightly darker yellow
+        color: #000; 
+      }
+
+      &.viewCanvas {
+        background-color: #ffcc80;
+        color: #000;
+      }
+
+      &.viewBuckets {
+        background-color: #f48fb1;  // Slightly darker red
+        color: #000; 
+      }
+
+      &.viewTodos {
+        background-color: #b39ddb;  // Slightly darker pink
+        color: #000; 
+      }
+
+      &.viewWorkspace {
+        background-color: #ce93d8;  // Slightly darker purple
+        color: #000; 
+      }
+
+      &.customPrompt {
+        background-color: #bcaaa4;  // Slightly darker brown
+        color: #000; 
+      }
+
+      &.showJoinCode {
+        background-color: #9fa8da; // Consistent with task list
+        color: #000;
+      }
+    }
+  }
+}
+
+.classroom-right-pane-container {
+  position: relative; 
+  flex: 0 0 400px; 
+  padding: 1rem;
+  z-index: 998; // This pane will be above the canvas
+  background-color: #f5f5f5;
+}
+
+.teacher-task-list {
+  .teacher-task-item { 
+    display: flex;
+    align-items: center; 
+    height: 40px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+
+    .task-content {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    &.activateWorkflow { 
+      background-color: #90caf9;  // Slightly darker blue
+      color: #000; 
+    }
+
+    &.activateAiAgent {
+      background-color: #a5d6a7;  // Slightly darker green
+      color: #000; 
+    }
+
+    &.regroupStudents {
+      background-color: #fff59d;  // Slightly darker yellow
+      color: #000; 
+      cursor: pointer;
+    }
+
+    &.viewCanvas {
+      background-color: #ffcc80;
+      color: #000;
+    }
+
+    &.viewBuckets {
+      background-color: #f48fb1;  // Slightly darker red
+      color: #000; 
+    }
+
+    &.viewTodos {
+      background-color: #b39ddb;  // Slightly darker pink
+      color: #000; 
+    }
+
+    &.viewWorkspace {
+      background-color: #ce93d8;  // Slightly darker purple
+      color: #000; 
+    }
+
+    &.customPrompt {
+      background-color: #bcaaa4;  // Slightly darker brown
+      color: #000; 
+    }
+
+    &.showJoinCode {
+      background-color: #9fa8da; // Consistent with task list
+      color: #000;
+    }
+
+    .drag-handle {
+      cursor: move;
+      margin-right: 0.5rem;
+    }
+
+    button { /* Target the delete button */
+      margin-left: auto; // Push the button to the right 
+    }
+
+    .teacher-task-icon {
+      margin: 0 0.5rem;
+    }
+  }
+}
+
+  /* Style for the drop placeholder */
+.cdk-drop-list-dragging .cdk-drop-list-placeholder { 
+  background: #ccc; /* Light gray background */
+  border: dotted 3px #999; /* Dotted border */
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+  
+.groups-list {
+  h3 { 
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  .group-resource-table {
+    display: flex;
+    flex-direction: column; 
+    width: 100%; 
+    margin-top: 3.5rem;
+  }
+
+  .groups-header {
+    display: flex;
+    align-items: center; 
+  }
+
+  .groups-header h3 {
+    margin-right: 0.5rem;
+  }
+
+  .groups-header button { 
+    margin-top: -1rem;
+  }
+
+  .group-header-row {
+    display: flex;
+    margin-left: 1rem;
+  }
+
+  .group-header-cell {
+    flex: 1; 
+    text-align: left;
+    max-width: 40px;
+    transform: rotate(-45deg); /* Rotate the text */
+    white-space: nowrap; 
+  }
+
+  .edit-cell {
+    flex: 0 0 40px;
+    text-align: center;
+    transform: none;
+    margin: 0rem 0rem;
+  }
+
+  .resource-row {
+    display: flex;
+    align-items: center; 
+    margin-bottom: 0; 
+  }
+
+  .resource-label-cell {
+    white-space: nowrap; 
+    margin-right: 1rem; 
+  }
+
+  .group-resource-cell {
+    flex: 1; 
+    height: 40px; 
+    border: 0;
+    cursor: pointer; 
+    margin-right: 5px; 
+    margin-bottom: 5px;
+    max-width: 40px; // Set max-width to create a square
+    border-radius: 5px;
+
+    &.selected {
+      position: relative; // Required for positioning the overlay
+      padding: 0;
+
+      &::before { // Create a pseudo-element overlay
+        content: '';
+        position: absolute;
+        top: 7px;
+        left: 7px;
+        width: 26px;
+        height: 26px;
+        background-color: rgba(0, 0, 0, 0.4); // Semi-transparent black overlay
+        border-radius: 3px;
+      }
+    }
+
+    &.canvas { 
+      background-color: #81d4fa; 
+    }
+
+    &.bucketView { 
+      background-color: #80cbc4; 
+    }
+
+    &.workspace { 
+      background-color: #ffcc80; 
+    }
+
+    &.monitor { 
+      background-color: #ef9a9a; 
+    }
+
+    &.ideaAgent {
+      background-color: #c5cae9;
+      color: #000;
+    }
+  }
+}
+
+.timeline-container {
+  position: fixed; 
+  bottom: 0; 
+  left: 283px; // Adjust based on the width of the activities pane
+  width: calc(100% - 283px); // Adjust based on the width of the activities pane
+  height: 100px; // Adjust as needed
+  background-color: #f5f5f5; // Light gray background
+  border-top: 1px solid #ccc;
+  z-index: 997; // Ensure timeline is on top of everything except resource pane
+}
+
+.middle-pane .canvas-container {
+  // ... other styles ...
+
+  canvas {
+    background-color: #f5f5f5; /* Set a white background */
+  }
+}
+
+.classroom-resources-pane {
+  z-index: 999;
+}
+
+.activity-space-header {
+  display: flex;
+  justify-content: center; // Center the container horizontally
+  align-items: center; // Align items to the center vertically
+  margin-bottom: 1rem;
+
+  .heading-and-settings-container {
+    display: flex;
+    align-items: center; // Align the heading and button vertically
+
+    h4 {
+      margin-bottom: 0; // Remove default margin if needed
+      margin-right: 0.5rem; // Add some space between heading and button
+    }
+  }
+}
+
+:host {
+  display: block;
+  padding: 0 !important; // Remove default padding
+}
+
+.mat-dialog-container {
+  padding: 0 !important; // Remove default padding for dialog container
+}
+
+.mat-dialog-content {
+  margin: 0 !important; // Remove default margin
+  max-height: 100vh; // Allow content to take up full height
+}
+
+mat-tab-group {
+  width: 100%; // Make the tabs take up the full width of the middle pane
+
+  ::ng-deep .mat-tab-header {
+    margin-bottom: 20px;
+  }
+
+  ::ng-deep .mat-tab-label { // Target the tab labels (::ng-deep is needed for shadow DOM piercing)
+    // Example styles:
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+    ::ng-deep .mat-tab-body-wrapper{
+        min-height: 100px;  //THIS IS IMPORTANT, or else it won't show up
+    }
+}

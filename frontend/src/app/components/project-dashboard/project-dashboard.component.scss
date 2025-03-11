@@ -1,7 +1,13 @@
 @use '../../../style/layout/dashboard';
 
-.heading {
-  margin-top: -0.5em;
+.score-heading {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; 
+}
+
+.activity-spaces-heading {
+  color: gray;
 }
 
 .tag-icon {
@@ -11,15 +17,15 @@
   font-size: medium;
 }
 
-.mat-chip {    
+.mat-chip {
   padding: 0 8px;
   min-height: 24px;
   font-size: 12px;
-  background-color: #F56F66;
+  background-color: #f56f66;
 }
 
 #shared-chip {
-  background-color: #8EC8E1;
+  background-color: #8ec8e1;
 }
 
 .board-card-header {
@@ -37,4 +43,23 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+
+.board-card-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center; 
+}
+
+.script-score-run-button {
+  display: block;  
+  width: 400px;     
+  margin: 2rem 0; 
+  padding: 1rem;   
+  font-size: 1.2rem;
+}
+
+.mat-title {
+  display: block; 
 }

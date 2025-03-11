@@ -1,41 +1,89 @@
-<div>
-  <app-toolbar class="toolbar" *ngIf="user && project && board && !embedded" [user]="user" [embedded]="embedded">
-    <span *ngIf="board">CK Monitor - {{ this.board.name }}</span>
-    <button mat-icon-button *ngIf="user.role === Role.TEACHER" (click)="copyEmbedCode()" matTooltip="Copy embeddable URL">
-        <mat-icon>file_copy</mat-icon>
-      </button>
-    <span style="flex: 1 1 auto"></span>
-    
-    <button mat-icon-button routerLink="{{'/project/'+project.projectID+'/board/'+board.boardID}}" matTooltip="Back to Board">
-      <mat-icon>keyboard_return</mat-icon>
+<div class="ck-monitor-container">
+  <app-toolbar
+    class="toolbar"
+    *ngIf="user && project && board && !embedded && !isModalView"
+    [user]="user"
+    [embedded]="embedded"
+  >
+    <button
+      mat-icon-button
+      routerLink="{{ '/project/' + project.projectID }}"
+      matTooltip="Return to Project Dashboard"
+    >
+      <mat-icon>arrow_back</mat-icon>
     </button>
-    <app-view-navigation [boardID]="board.boardID" [currentView]="viewType"></app-view-navigation>
-    <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
+    <span style="flex: 1 1 auto"></span>
+    <app-view-navigation
+      [boardID]="board.boardID"
+      [currentView]="viewType"
+    ></app-view-navigation>
+    <app-toolbar-menu
+      navbarMenu
+      [board]="board"
+      [project]="project"
+    ></app-toolbar-menu>
   </app-toolbar>
-  <mat-sidenav-container class="drawer-container" [ngStyle]="{'padding-top': !embedded ? '56px' : '0px', 'padding-bottom': embedded ? '64px' : '0px' }">
-    <mat-sidenav #drawer mode="side" opened [fixedInViewport]="!embedded ? true : false" [fixedTopGap]="64" style="position: fixed" [ngStyle]="!embedded && {'padding-bottom': '64px' } || null" *ngIf="!studentView">
-      <h2 class="section-title">All Tasks</h2>
+  <mat-sidenav-container
+    class="drawer-container ck-monitor-drawer-container"
+    [class.modal-view]="isModalView"
+    [ngStyle]="{
+      'padding-top': !embedded && !isModalView ? '64px' : '0px',
+      'padding-bottom': embedded && !isModalView ? '64px' : '0px'
+    }"
+  >
+    <mat-sidenav
+      #drawer
+      mode="side"
+      opened
+      [fixedInViewport]="!embedded ? true : false"
+      style="position: relative"
+      [ngStyle]="(!embedded && { 'padding-bottom': '64px' }) || null"
+      *ngIf="!studentView"
+    >
+      <h2 class="section-title">All Workflows</h2>
       <mat-list>
-        <button class="subheader-button" mat-button (click)="showInactive = !showInactive">
-          Pending Tasks ({{ inactiveTaskWorkflows.length }})
-          <mat-icon>{{ showInactive ? 'expand_less' : 'expand_more' }}</mat-icon>
+        <button
+          class="subheader-button"
+          mat-button
+          (click)="showPending = !showPending"
+        >
+          Pending Tasks ({{ pendingTaskWorkflows.length }})
+          <mat-icon>{{ showPending ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
-        <ng-container *ngIf="showInactive">
-          <mat-list-item *ngFor="let workflow of inactiveTaskWorkflows">
+        <ng-container *ngIf="showPending">
+          <mat-list-item *ngFor="let workflow of pendingTaskWorkflows">
             <mat-icon matListIcon>timeline</mat-icon>
-            <h3 matLine> {{workflow.name}} </h3>
-            <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
-            <p matLine class="list-task-prompt">
+            <h3 matLine>{{ workflow.name }}</h3>
+            <p matLine class="list-task-prompt">{{ workflow.prompt }}</p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="
+                workflow.assignmentType === 'GROUP' || !workflow.assignmentType
+              "
+            >
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.INACTIVE">
-                  {{group.groupName}}&nbsp;
+                  {{ group.groupName }}&nbsp;
                 </span>
               </span>
             </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="workflow.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual
+            </p>
             <span style="flex: 1 1 auto"></span>
             <button
-              *ngIf="(runningTask && (runningTask.workflowID !== workflow.workflowID || runningTaskGroupStatus !== GroupTaskStatus.INACTIVE)) || (!runningTask)"
+              *ngIf="
+                (runningTask &&
+                  (runningTask.workflowID !== workflow.workflowID ||
+                    runningTaskGroupStatus !== GroupTaskStatus.INACTIVE)) ||
+                !runningTask
+              "
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -44,7 +92,11 @@
               Monitor Task
             </button>
             <button
-              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID && runningTaskGroupStatus === GroupTaskStatus.INACTIVE"
+              *ngIf="
+                runningTask &&
+                runningTask.workflowID === workflow.workflowID &&
+                runningTaskGroupStatus === GroupTaskStatus.INACTIVE
+              "
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -55,26 +107,48 @@
           </mat-list-item>
         </ng-container>
         <mat-divider></mat-divider>
-        <button class="subheader-button" mat-button (click)="showActive = !showActive">
+        <button
+          class="subheader-button"
+          mat-button
+          (click)="showActive = !showActive"
+        >
           Active Tasks ({{ activeTaskWorkflows.length }})
           <mat-icon>{{ showActive ? 'expand_less' : 'expand_more' }}</mat-icon>
         </button>
         <ng-container *ngIf="showActive">
           <mat-list-item *ngFor="let workflow of activeTaskWorkflows">
             <mat-icon matListIcon>timeline</mat-icon>
-            <h3 matLine> {{workflow.name}} </h3>
-            <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
-            <p matLine class="list-task-prompt"> 
+            <h3 matLine>{{ workflow.name }}</h3>
+            <p matLine class="list-task-prompt">{{ workflow.prompt }}</p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="
+                workflow.assignmentType === 'GROUP' || !workflow.assignmentType
+              "
+            >
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.ACTIVE">
-                  {{group.groupName}}&nbsp;
+                  {{ group.groupName }}&nbsp;
                 </span>
               </span>
             </p>
+            <p
+              matLine
+              class="list-task-prompt"
+              *ngIf="workflow.assignmentType === 'INDIVIDUAL'"
+            >
+              Individual
+            </p>
             <span style="flex: 1 1 auto"></span>
             <button
-              *ngIf="(runningTask && (runningTask.workflowID !== workflow.workflowID || runningTaskGroupStatus !== GroupTaskStatus.ACTIVE)) || (!runningTask)"
+              *ngIf="
+                (runningTask &&
+                  (runningTask.workflowID !== workflow.workflowID ||
+                    runningTaskGroupStatus !== GroupTaskStatus.ACTIVE)) ||
+                !runningTask
+              "
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -83,7 +157,11 @@
               Monitor Task
             </button>
             <button
-              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID && runningTaskGroupStatus === GroupTaskStatus.ACTIVE"
+              *ngIf="
+                runningTask &&
+                runningTask.workflowID === workflow.workflowID &&
+                runningTaskGroupStatus === GroupTaskStatus.ACTIVE
+              "
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -94,26 +172,38 @@
           </mat-list-item>
         </ng-container>
         <mat-divider></mat-divider>
-        <button class="subheader-button" mat-button (click)="showCompleted = !showCompleted">
+
+        <button
+          class="subheader-button"
+          mat-button
+          (click)="showCompleted = !showCompleted"
+        >
           Completed Tasks ({{ completeTaskWorkflows.length }})
-          <mat-icon>{{ showCompleted ? 'expand_less' : 'expand_more' }}</mat-icon>
+          <mat-icon>{{
+            showCompleted ? 'expand_less' : 'expand_more'
+          }}</mat-icon>
         </button>
         <ng-container *ngIf="showCompleted">
           <mat-list-item *ngFor="let workflow of completeTaskWorkflows">
             <mat-icon matListIcon>timeline</mat-icon>
-            <h3 matLine> {{workflow.name}} </h3>
-            <p matLine class="list-task-prompt"> {{workflow.prompt}} </p>
-            <p matLine class="list-task-prompt"> 
+            <h3 matLine>{{ workflow.name }}</h3>
+            <p matLine class="list-task-prompt">{{ workflow.prompt }}</p>
+            <p matLine="list-task-prompt">
               Groups:
               <span *ngFor="let group of taskWorkflowNameMap.get(workflow)">
                 <span *ngIf="group.groupStatus === GroupTaskStatus.COMPLETE">
-                  {{group.groupName}}&nbsp;
+                  {{ group.groupName }}&nbsp;
                 </span>
               </span>
             </p>
             <span style="flex: 1 1 auto"></span>
             <button
-              *ngIf="(runningTask && (runningTask.workflowID !== workflow.workflowID || runningTaskGroupStatus !== GroupTaskStatus.COMPLETE)) || (!runningTask)"
+              *ngIf="
+                (runningTask &&
+                  (runningTask.workflowID !== workflow.workflowID ||
+                    runningTaskGroupStatus !== GroupTaskStatus.COMPLETE)) ||
+                !runningTask
+              "
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -122,7 +212,11 @@
               Monitor Task
             </button>
             <button
-              *ngIf="runningTask && runningTask.workflowID === workflow.workflowID && runningTaskGroupStatus === GroupTaskStatus.COMPLETE"
+              *ngIf="
+                runningTask &&
+                runningTask.workflowID === workflow.workflowID &&
+                runningTaskGroupStatus === GroupTaskStatus.COMPLETE
+              "
               mat-raised-button
               color="primary"
               class="sidebar-button"
@@ -135,41 +229,52 @@
         <mat-divider></mat-divider>
       </mat-list>
       <div class="feature-buttons">
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="toggleTodos()"
-        >
-          {{ todoIsVisible? 'Hide TODOs' : 'View by TODOs' }} 
+        <button mat-raised-button color="primary" (click)="toggleTodos()">
+          {{ todoIsVisible ? 'Hide TODOs' : 'View by TODOs' }}
         </button>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="toggleModels()"
-        >
-          {{ showModels ? 'Hide Learner Models' : 'View Learner Models' }} 
+        <button mat-raised-button color="primary" (click)="toggleModels()">
+          {{ showModels ? 'Hide Learner Models' : 'View Learner Models' }}
         </button>
       </div>
     </mat-sidenav>
     <mat-sidenav-content>
       <div *ngIf="todoIsVisible" style="margin: 10px">
-        <mat-form-field appearance="fill" style="float: right; margin-bottom: 10px">
+        <mat-form-field
+          appearance="fill"
+          style="float: right; margin-bottom: 10px"
+        >
           <mat-label>Enter a date range</mat-label>
-          <mat-date-range-input [formGroup]="todoDeadlineRange" [rangePicker]="picker">
+          <mat-date-range-input
+            [formGroup]="todoDeadlineRange"
+            [rangePicker]="picker"
+          >
             <input
               matStartDate
               formControlName="start"
-              (dateChange)="filterTodosByDeadline(todoDeadlineRange.value.start, todoDeadlineRange.value.end)"
+              (dateChange)="
+                filterTodosByDeadline(
+                  todoDeadlineRange.value.start,
+                  todoDeadlineRange.value.end
+                )
+              "
               placeholder="Start date"
-            >
+            />
             <input
               matEndDate
               formControlName="end"
               placeholder="End date"
-              (dateChange)="filterTodosByDeadline(todoDeadlineRange.value.start, todoDeadlineRange.value.end)"
-            >
+              (dateChange)="
+                filterTodosByDeadline(
+                  todoDeadlineRange.value.start,
+                  todoDeadlineRange.value.end
+                )
+              "
+            />
           </mat-date-range-input>
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
           <mat-hint>MM/DD/YYYY - MM/DD/YYYY</mat-hint>
           <mat-date-range-picker #picker>
             <mat-date-range-picker-actions>
@@ -184,7 +289,12 @@
                 mat-raised-button
                 color="primary"
                 matDateRangePickerApply
-                (click)="filterTodosByDeadline(todoDeadlineRange.value.start, todoDeadlineRange.value.end)"
+                (click)="
+                  filterTodosByDeadline(
+                    todoDeadlineRange.value.start,
+                    todoDeadlineRange.value.end
+                  )
+                "
               >
                 Apply
               </button>
@@ -192,15 +302,28 @@
                 mat-raised-button
                 color="primary"
                 matDateRangePickerApply
-                (click)="setDefaultRange(todoDeadlineRange.value.start, todoDeadlineRange.value.end)"
+                (click)="
+                  setDefaultRange(
+                    todoDeadlineRange.value.start,
+                    todoDeadlineRange.value.end
+                  )
+                "
               >
                 Set as Default
               </button>
             </mat-date-range-picker-actions>
           </mat-date-range-picker>
-        
-          <mat-error *ngIf="todoDeadlineRange.controls.start.hasError('matStartDateInvalid')">Invalid start date</mat-error>
-          <mat-error *ngIf="todoDeadlineRange.controls.end.hasError('matEndDateInvalid')">Invalid end date</mat-error>
+
+          <mat-error
+            *ngIf="
+              todoDeadlineRange.controls.start.hasError('matStartDateInvalid')
+            "
+            >Invalid start date</mat-error
+          >
+          <mat-error
+            *ngIf="todoDeadlineRange.controls.end.hasError('matEndDateInvalid')"
+            >Invalid end date</mat-error
+          >
         </mat-form-field>
         <table
           class="table"
@@ -211,22 +334,29 @@
           matSortDirection="desc"
         >
           <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="name"> Student/Group </th>
-            <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="name">
+              Student/Group
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.name }}</td>
           </ng-container>
 
           <ng-container matColumnDef="goal">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="goal"> Goal </th>
-            <td mat-cell *matCellDef="let element"> {{element.goal}} </td>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="goal">
+              Goal
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.goal }}</td>
           </ng-container>
 
           <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef> Type </th>
+            <th mat-header-cell *matHeaderCellDef>Type</th>
             <td mat-cell *matCellDef="let element">
               <mat-chip-list>
                 <mat-chip
                   *ngFor="let type of element.types"
-                  [ngStyle]="{ 'background-color': todoItemColors[type], 'margin': '2px'}"
+                  [ngStyle]="{
+                    'background-color': todoItemColors[type],
+                    margin: '2px'
+                  }"
                 >
                   {{ todoItemTypes[type] }}
                 </mat-chip>
@@ -235,118 +365,276 @@
           </ng-container>
 
           <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="status"> Status </th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="status">
+              Status
+            </th>
             <td
               mat-cell
               *matCellDef="let element"
               style="font-weight: 500"
-              [ngStyle]="{'color': element.overdue? 'red' : (element.completed? 'green' : 'orange')}"
+              [ngStyle]="{
+                color: element.overdue
+                  ? 'red'
+                  : element.completed
+                  ? 'green'
+                  : 'orange'
+              }"
             >
-              {{element.status}}
+              {{ element.status }}
             </td>
           </ng-container>
 
           <ng-container matColumnDef="deadline">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="deadline"> Deadline </th>
-            <td mat-cell *matCellDef="let element"> {{element.deadline}} </td>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="deadline">
+              Deadline
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.deadline }}</td>
           </ng-container>
 
           <ng-container matColumnDef="completion-quality">
-            <th mat-header-cell *matHeaderCellDef> Completion Quality </th>
-            <td mat-cell *matCellDef="let element"> {{element.quality}} </td>
+            <th mat-header-cell *matHeaderCellDef>Completion Quality</th>
+            <td mat-cell *matCellDef="let element">{{ element.quality }}</td>
           </ng-container>
 
           <ng-container matColumnDef="completion-notes">
-            <th mat-header-cell *matHeaderCellDef> Completion Notes </th>
-            <td mat-cell *matCellDef="let element"> TBD </td>
+            <th mat-header-cell *matHeaderCellDef>Completion Notes</th>
+            <td mat-cell *matCellDef="let element">TBD</td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="todoColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: todoColumns;" class="todoItemRow" (click)="openTodoItemViewModal(row)"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: todoColumns"
+            class="todoItemRow"
+            (click)="openTodoItemViewModal(row)"
+          ></tr>
         </table>
       </div>
       <div *ngIf="showModels">
-        <app-learner-models #learner [board]="board" [project]="project" [studentView]="studentView"></app-learner-models>
+        <app-learner-models
+          #learner
+          [board]="board"
+          [project]="project"
+          [studentView]="studentView"
+        ></app-learner-models>
       </div>
-      <mat-progress-bar style="margin: 20px; width: 95%" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
-      <div class="heading no-workflow-select" *ngIf="!runningTask && !todoIsVisible && !showModels && !studentView">
+      <mat-progress-bar
+        style="margin: 20px; width: 95%"
+        mode="indeterminate"
+        *ngIf="loading"
+      ></mat-progress-bar>
+      <div
+        class="heading no-workflow-select"
+        *ngIf="!runningTask && !todoIsVisible && !showModels && !studentView"
+      >
         No task selected!
-        <mat-progress-bar class="mat-loading-progress-bar" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+        <mat-progress-bar
+          class="mat-loading-progress-bar"
+          mode="indeterminate"
+          *ngIf="loading"
+        ></mat-progress-bar>
       </div>
-      <div style="display: flex; flex-direction: row;">
+      <div style="display: flex; flex-direction: row">
         <div *ngIf="runningTask && !todoIsVisible">
-          <mat-card style="margin: 7px; padding: 16px 4px;">
+          <mat-card style="margin: 7px; padding: 16px 4px">
             <mat-card-title>Task Progress</mat-card-title>
             <div class="mat-elevation-z3 table_style">
-              <table mat-table [dataSource]="runningTaskTableData" class="table">
-
+              <table
+                *ngIf="
+                  runningTask.assignmentType === 'GROUP' ||
+                  !runningTask.assignmentType
+                "
+                mat-table
+                [dataSource]="runningTaskTableData"
+                class="table"
+              >
                 <ng-container matColumnDef="group-name">
-                  <th mat-header-cell *matHeaderCellDef> Group Name </th>
-                  <td mat-cell *matCellDef="let group"> {{group.groupName}} </td>
-                </ng-container>
-
-                <ng-container matColumnDef="members">
-                  <th mat-header-cell *matHeaderCellDef> Members </th>
-                  <td mat-cell *matCellDef="let group"> {{group.groupMembers.join(', ')}}</td>
-                </ng-container>
-
-                <ng-container matColumnDef="progress">
-                  <th mat-header-cell *matHeaderCellDef> Progress </th>
-                  <td mat-cell *matCellDef="let group"> {{group.progress}} % </td>
-                </ng-container>
-
-                <ng-container matColumnDef="action">
-                  <th mat-header-cell *matHeaderCellDef > {{ runningTaskGroupStatus === GroupTaskStatus.INACTIVE ? "" : "Action"}} </th>
-                  <td mat-cell *matCellDef="let group"> 
-                    <button 
-                      *ngIf="runningTaskGroupStatus !== GroupTaskStatus.INACTIVE" mat-icon-button 
-                      (click)="
-                        runningTaskGroupStatus === GroupTaskStatus.COMPLETE 
-                        ? activateGroupTask(group) 
-                        : completeGroupTask(group)"
-                      
-                    >
-                      <mat-icon matTooltip="Re-activate Task" *ngIf="runningTaskGroupStatus === GroupTaskStatus.COMPLETE">
-                        play_circle_outline
-                      </mat-icon>
-                      <mat-icon matTooltip="Cancel Task" *ngIf="runningTaskGroupStatus === GroupTaskStatus.ACTIVE">
-                        cancel
-                      </mat-icon>
-                    </button>  
+                  <th mat-header-cell *matHeaderCellDef>Group Name</th>
+                  <td mat-cell *matCellDef="let group">
+                    {{ group.groupName }}
                   </td>
                 </ng-container>
 
-            
+                <ng-container matColumnDef="members">
+                  <th mat-header-cell *matHeaderCellDef>Members</th>
+                  <td mat-cell *matCellDef="let group">
+                    {{ group.groupMembers.join(', ') }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="progress">
+                  <th mat-header-cell *matHeaderCellDef>Progress</th>
+                  <td mat-cell *matCellDef="let group">
+                    {{ group.progress }} %
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="action">
+                  <th mat-header-cell *matHeaderCellDef>
+                    {{
+                      runningTaskGroupStatus === GroupTaskStatus.INACTIVE
+                        ? ''
+                        : 'Action'
+                    }}
+                  </th>
+                  <td mat-cell *matCellDef="let group">
+                    <button
+                      mat-icon-button
+                      (click)="
+                        group.groupTaskStatus === GroupTaskStatus.COMPLETE
+                          ? activateGroupTask(group)
+                          : completeGroupTask(group)
+                      "
+                    >
+                      <mat-icon
+                        matTooltip="Re-activate Task"
+                        *ngIf="
+                          group.groupTaskStatus === GroupTaskStatus.COMPLETE
+                        "
+                      >
+                        play_circle_outline
+                      </mat-icon>
+                      <mat-icon
+                        matTooltip="Cancel Task"
+                        *ngIf="
+                          group.groupTaskStatus === GroupTaskStatus.ACTIVE ||
+                          group.groupTaskStatus === GroupTaskStatus.INACTIVE
+                        "
+                      >
+                        cancel
+                      </mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
                 <tr mat-header-row *matHeaderRowDef="displayColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayColumns;"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayColumns"></tr>
+              </table>
+              <table
+                *ngIf="runningTask.assignmentType === 'INDIVIDUAL'"
+                mat-table
+                [dataSource]="runningTaskTableData"
+                class="table"
+              >
+                <ng-container matColumnDef="member-name">
+                  <th mat-header-cell *matHeaderCellDef>Member Name</th>
+                  <td mat-cell *matCellDef="let member">
+                    {{ member.groupMembers[0] }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="group-name">
+                  <th mat-header-cell *matHeaderCellDef>Group Name</th>
+                  <td mat-cell *matCellDef="let member">
+                    {{ member.groupName }}
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="progress">
+                  <th mat-header-cell *matHeaderCellDef>Progress</th>
+                  <td mat-cell *matCellDef="let member">
+                    {{ member.progress }} %
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="action">
+                  <th mat-header-cell *matHeaderCellDef>
+                    {{
+                      runningTaskGroupStatus === GroupTaskStatus.INACTIVE
+                        ? ''
+                        : 'Action'
+                    }}
+                  </th>
+                  <td mat-cell *matCellDef="let member">
+                    <button
+                      mat-icon-button
+                      (click)="
+                        member.groupTaskStatus === GroupTaskStatus.COMPLETE
+                          ? activateGroupTask(member)
+                          : completeGroupTask(member)
+                      "
+                    >
+                      <mat-icon
+                        matTooltip="Re-activate Task"
+                        *ngIf="
+                          member.groupTaskStatus === GroupTaskStatus.COMPLETE
+                        "
+                      >
+                        play_circle_outline
+                      </mat-icon>
+                      <mat-icon
+                        matTooltip="Cancel Task"
+                        *ngIf="
+                          member.groupTaskStatus === GroupTaskStatus.ACTIVE ||
+                          member.groupTaskStatus === GroupTaskStatus.INACTIVE
+                        "
+                      >
+                        cancel
+                      </mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr
+                  mat-header-row
+                  *matHeaderRowDef="displayColumnsIndividual"
+                ></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: displayColumnsIndividual"
+                ></tr>
               </table>
             </div>
           </mat-card>
         </div>
         <div *ngIf="runningTask && !todoIsVisible">
-          <mat-card class="example-card" style="width: 350px; margin: 10px auto">
-            <mat-card-title>{{runningTask.name}}</mat-card-title>
+          <mat-card
+            class="example-card"
+            style="width: 350px; margin: 10px auto"
+          >
+            <mat-card-title>{{ runningTask.name }}</mat-card-title>
             <mat-card-content>
-              <p>{{ runningTask.prompt }} </p>
+              <p>{{ runningTask.prompt }}</p>
               <section>
                 <h5>Actions Required:</h5>
-                <ul style="list-style-position: inside; padding-left: 0; font-weight: bold;">
-                  <li *ngIf="hasCommentRequirement(runningTask)">Comment on each post at least once!</li>
-                  <li *ngIf="hasTagRequirement(runningTask)">Tag each post at least once!</li>
+                <ul
+                  style="
+                    list-style-position: inside;
+                    padding-left: 0;
+                    font-weight: bold;
+                  "
+                >
+                  <li *ngIf="hasCommentRequirement(runningTask)">
+                    Comment on each post at least once!
+                  </li>
+                  <li *ngIf="hasTagRequirement(runningTask)">
+                    Tag each post at least once!
+                  </li>
                 </ul>
               </section>
             </mat-card-content>
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 10px">
               <label class="example-margin">Max Progress</label>
-              <mat-progress-bar mode="determinate" [value]="maxGroupProgress"></mat-progress-bar>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="maxGroupProgress"
+              ></mat-progress-bar>
             </div>
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 10px">
               <label class="example-margin">Avg Progress</label>
-              <mat-progress-bar mode="determinate" [value]="averageGroupProgress" color="accent"></mat-progress-bar>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="averageGroupProgress"
+                color="accent"
+              ></mat-progress-bar>
             </div>
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 10px">
               <label class="example-margin">Min Progress</label>
-              <mat-progress-bar mode="determinate" [value]="minGroupProgress" color="accent"></mat-progress-bar>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="minGroupProgress"
+                color="accent"
+              ></mat-progress-bar>
             </div>
           </mat-card>
         </div>

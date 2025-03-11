@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { BoardModel, BoardScope } from '../models/Board';
+import { BoardModel, BoardScope, ViewSettings } from '../models/Board';
 import { ProjectModel } from '../models/Project';
 import { UserModel } from '../models/User';
 import dalBoard from '../repository/dalBoard';
@@ -98,7 +98,11 @@ router.post('/:boardID/copy-configuration', async (req, res) => {
     board.bgImage === undefined ? null : { bgImage: board.bgImage },
     board.tags === undefined ? null : { tags: board.tags },
     board.initialZoom === undefined ? null : { initialZoom: board.initialZoom },
-    board.upvoteLimit === undefined ? null : { upvoteLimit: board.upvoteLimit }
+    board.upvoteLimit === undefined ? null : { upvoteLimit: board.upvoteLimit },
+    board.defaultView === undefined ? null : { defaultView: board.defaultView },
+    board.viewSettings === undefined
+      ? null
+      : { viewSettings: board.viewSettings }
   );
 
   await dalBoard.updateMany(boards, updatedBoard);

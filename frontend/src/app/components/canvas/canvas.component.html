@@ -1,35 +1,37 @@
 <div>
   <div>
-    <app-toolbar *ngIf="user && board && !embedded" [user]="user">
-      <span class="toolbarTitle" *ngIf="board && board.name">{{ board.name }}</span>
+    <app-toolbar *ngIf="user && board && !embedded && !isModalView" [user]="user">
+      <button
+        mat-icon-button
+        routerLink="{{ '/project/' + projectID }}"
+        matTooltip="Return to Project Dashboard"
+      >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
       <button mat-icon-button (click)="openTaskDialog()" matTooltip="Read Task">
         <mat-icon>task</mat-icon>
       </button>
-      <button 
-        mat-icon-button 
-        *ngIf="user.role === Role.TEACHER" 
-        (click)="board.scope === BoardScope.PROJECT_SHARED ? copyEmbedCode() : copyPersonalEmbedCode()" 
-        matTooltip="Copy embeddable URL"
-      >
-        <mat-icon>file_copy</mat-icon>
-      </button>
       <span style="flex: 1 1 auto"></span>
-      <app-view-navigation [boardID]="boardID" [currentView]="viewType"></app-view-navigation>
+      <app-view-navigation
+        [boardID]="boardID"
+        [currentView]="viewType"
+      ></app-view-navigation>
       <div *ngIf="board">
         <app-notification-dropdown
           [user]="user"
           [board]="board"
         ></app-notification-dropdown>
       </div>
-      <app-toolbar-menu navbarMenu [board]="board" [project]="project"></app-toolbar-menu>
+      <app-toolbar-menu
+        navbarMenu
+        [board]="board"
+        [project]="project"
+      ></app-toolbar-menu>
     </app-toolbar>
     <div class="canvas-area">
       <canvas id="canvas" (window:resize)="onResize($event)"></canvas>
       <div class="top-embedded-board-name" *ngIf="user && board && embedded">
         {{ board.name }}
-      </div>
-      <div class="top-nav" *ngIf="!embedded">
-        <a routerLink="{{ '/project/' + projectID }}">Back to Project</a>
       </div>
       <div class="bottom-nav">
         <a>{{ upvoteCounter }} upvotes remaining!</a>
@@ -70,9 +72,9 @@
             matTooltipPosition="before"
             (click)="enablePanMode()"
           >
-          <span style="padding-left: 1px;" class="material-symbols-outlined">
-            arrow_selector_tool
-          </span>
+            <span style="padding-left: 1px" class="material-symbols-outlined">
+              arrow_selector_tool
+            </span>
           </button>
           <button
             *ngIf="mode === modeType.PAN"
@@ -82,7 +84,7 @@
             matTooltipPosition="before"
             (click)="enableEditMode()"
           >
-            <mat-icon style="padding-right: 3px;">pan_tool</mat-icon>
+            <mat-icon style="padding-right: 3px">pan_tool</mat-icon>
           </button>
         </div>
       </div>

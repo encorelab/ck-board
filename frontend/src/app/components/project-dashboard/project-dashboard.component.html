@@ -1,19 +1,26 @@
 <div class="app">
   <app-toolbar [user]="user">
+    <button
+      mat-icon-button
+      routerLink="/dashboard"
+      matTooltip="Return to Dashboard"
+    >
+      <mat-icon>arrow_back</mat-icon>
+    </button>
     <span *ngIf="project">{{ project.name }}</span>
     <span style="flex: 1 1 auto"></span>
     <button
       mat-icon-button
       [matMenuTriggerFor]="addMenu"
       *ngIf="user && user.role === Role.TEACHER"
-      matTooltip="Create Board"
+      matTooltip="Create Activity Space"
     >
       <mat-icon>add</mat-icon>
     </button>
 
     <mat-menu #addMenu="matMenu">
       <button mat-menu-item (click)="openCreateBoardDialog()">
-        Create Board
+        Create Activity Space
       </button>
     </mat-menu>
 
@@ -30,7 +37,7 @@
 
     <mat-menu #projectNavbarMenu="matMenu">
       <button
-        mat-menu-item 
+        mat-menu-item
         *ngIf="user && user.role === Role.STUDENT"
         (click)="openTodoList()"
       >
@@ -43,7 +50,7 @@
       >
       </app-csv-download-button>
       <button
-        mat-menu-item 
+        mat-menu-item
         *ngIf="user && user.role === Role.TEACHER"
         (click)="openProjectTodoList()"
       >
@@ -52,7 +59,7 @@
       </button>
       <button
         *ngIf="user && user.role === Role.TEACHER"
-        mat-menu-item 
+        mat-menu-item
         (click)="openGroupDialog()"
       >
         <mat-icon>group_work</mat-icon>
@@ -74,21 +81,34 @@
     </mat-menu>
   </app-toolbar>
   <div class="content">
-    <div class="heading">
-      <button
-        mat-icon-button
-        routerLink="/dashboard"
-        aria-label="Return to Dashboard"
-      >
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-      <h3 class="mat-title" *ngIf="project">Boards for {{ project.name }}</h3>
+    <div class="score-heading">
+      <div *ngIf="project"> 
+        <button 
+          *ngIf="user && user.role === Role.TEACHER && project.isScoreRun" 
+          mat-raised-button 
+          color="primary" 
+          class="script-score-run-button"
+          (click)="navigateToScoreAuthoring()" 
+        >
+          Script SCORE Run
+        </button>
+      </div>
+    </div>
+    <div *ngIf="project" class="activity-spaces-heading">
+      <h3 class="mat-title" *ngIf="project">Activity Spaces for "{{ project.name }}"</h3> 
     </div>
     <ng-container *ngIf="user.role === Role.TEACHER">
       <div>
-        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showSharedBoards = !showSharedBoards">
-          Shared Project Boards ({{ sharedBoards.length }})
-          <mat-icon>{{ showSharedBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
+        <button
+          *ngIf="project && project.personalBoardSetting.enabled"
+          class="subheader-button"
+          mat-button
+          (click)="showSharedBoards = !showSharedBoards"
+        >
+          Shared Activity Spaces ({{ sharedBoards.length }})
+          <mat-icon>{{
+            showSharedBoards ? 'expand_less' : 'expand_more'
+          }}</mat-icon>
         </button>
         <div *ngIf="showSharedBoards" style="padding: 10px 0px">
           <div class="cards">
@@ -96,38 +116,47 @@
               <mat-card
                 class="card"
                 (click)="handleBoardClick(board.boardID, board.defaultView)"
-                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="
+                  handleBoardClick(board.boardID, board.defaultView)
+                "
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
               >
                 <mat-card-title class="title accent">
-                  <mat-icon style="min-width: fit-content;" color="accent">picture_in_picture</mat-icon>
+                  <mat-icon style="min-width: fit-content" color="accent"
+                    >picture_in_picture</mat-icon
+                  >
                   <span>{{ board.name }}</span>
-                    <button 
-                      *ngIf="user && user.role === Role.TEACHER"
-                      mat-icon-button
-                      [matMenuTriggerFor]="boardOptions"
-                      style="margin:0; padding:0;line-height: inherit;height: inherit;right: 0;position: absolute;"
-                      matTooltip="Board Options"
-                      (click)="$event.stopPropagation();"
-                    >
-                      <mat-icon >
-                        more_vert
-                      </mat-icon>
-                    </button>
+                  <button
+                    *ngIf="user && user.role === Role.TEACHER"
+                    mat-icon-button
+                    [matMenuTriggerFor]="boardOptions"
+                    style="
+                      margin: 0;
+                      padding: 0;
+                      line-height: inherit;
+                      height: inherit;
+                      right: 0;
+                      position: absolute;
+                    "
+                    matTooltip="Board Options"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <mat-icon> more_vert </mat-icon>
+                  </button>
                 </mat-card-title>
                 <button
                   mat-icon-button
                   class="accent"
-                  *ngIf="user && user.role === Role.TEACHER"
+                  *ngIf="!project.isScoreRun && user && user.role === Role.TEACHER"
                   matTooltip="Toggle Visibility"
                   (click)="toggleBoardVisibility($event, board)"
                 >
                   <mat-icon *ngIf="board.visible">visibility</mat-icon>
                   <mat-icon *ngIf="!board.visible">visibility_off</mat-icon>
                 </button>
-                
+
                 <mat-menu #boardOptions="matMenu">
                   <button mat-menu-item (click)="handleEditBoard(board)">
                     Edit
@@ -138,7 +167,11 @@
                 </mat-menu>
                 <mat-card-content>
                   <mat-chip-list>
-                    <mat-chip id="shared-chip" #tooltip="matTooltip" matTooltip="Visible to all project members.">
+                    <mat-chip
+                      id="shared-chip"
+                      #tooltip="matTooltip"
+                      matTooltip="Visible to all project members."
+                    >
                       <mat-icon class="tag-icon">group</mat-icon>
                       Shared
                     </mat-chip>
@@ -150,17 +183,33 @@
         </div>
       </div>
       <div>
-        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showStudentPersonalBoards = !showStudentPersonalBoards">
-          Student Personal Boards ({{ studentPersonalBoards.length }})
-          <mat-icon>{{ showStudentPersonalBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
+        <button
+          *ngIf="project && project.personalBoardSetting.enabled"
+          class="subheader-button"
+          mat-button
+          (click)="showStudentPersonalBoards = !showStudentPersonalBoards"
+        >
+          Student Activity Spaces ({{ studentPersonalBoards.length }})
+          <mat-icon>{{
+            showStudentPersonalBoards ? 'expand_less' : 'expand_more'
+          }}</mat-icon>
         </button>
-        <div *ngIf="project && showStudentPersonalBoards && project.personalBoardSetting.enabled" style="padding: 10px 0px">
+        <div
+          *ngIf="
+            project &&
+            showStudentPersonalBoards &&
+            project.personalBoardSetting.enabled
+          "
+          style="padding: 10px 0px"
+        >
           <div class="cards">
             <ng-container *ngFor="let board of studentPersonalBoards">
               <mat-card
                 class="card"
                 (click)="handleBoardClick(board.boardID, board.defaultView)"
-                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="
+                  handleBoardClick(board.boardID, board.defaultView)
+                "
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
@@ -172,7 +221,7 @@
                 <button
                   mat-icon-button
                   class="accent"
-                  *ngIf="user && user.role === Role.TEACHER"
+                  *ngIf="!project.isScoreRun && user && user.role === Role.TEACHER"
                   matTooltip="Toggle Visibility"
                   (click)="toggleBoardVisibility($event, board)"
                 >
@@ -181,7 +230,10 @@
                 </button>
                 <mat-card-content>
                   <mat-chip-list>
-                    <mat-chip #tooltip="matTooltip" matTooltip="Only visible to teachers and assigned student.">
+                    <mat-chip
+                      #tooltip="matTooltip"
+                      matTooltip="Only visible to teachers and assigned student."
+                    >
                       <mat-icon class="tag-icon">lock</mat-icon>
                       Personal
                     </mat-chip>
@@ -193,17 +245,33 @@
         </div>
       </div>
       <div>
-        <button *ngIf="project && project.personalBoardSetting.enabled" class="subheader-button" mat-button (click)="showTeacherPersonalBoards = !showTeacherPersonalBoards">
-          Teacher Personal Boards ({{ teacherPersonalBoards.length }})
-          <mat-icon>{{ showTeacherPersonalBoards ? 'expand_less' : 'expand_more' }}</mat-icon>
+        <button
+          *ngIf="project && project.personalBoardSetting.enabled"
+          class="subheader-button"
+          mat-button
+          (click)="showTeacherPersonalBoards = !showTeacherPersonalBoards"
+        >
+          Teacher Activity Spaces ({{ teacherPersonalBoards.length }})
+          <mat-icon>{{
+            showTeacherPersonalBoards ? 'expand_less' : 'expand_more'
+          }}</mat-icon>
         </button>
-        <div *ngIf="project && showTeacherPersonalBoards && project.personalBoardSetting.enabled" style="padding: 10px 0px">
+        <div
+          *ngIf="
+            project &&
+            showTeacherPersonalBoards &&
+            project.personalBoardSetting.enabled
+          "
+          style="padding: 10px 0px"
+        >
           <div class="cards">
             <ng-container *ngFor="let board of teacherPersonalBoards">
               <mat-card
                 class="card"
                 (click)="handleBoardClick(board.boardID, board.defaultView)"
-                (keyup.enter)="handleBoardClick(board.boardID, board.defaultView)"
+                (keyup.enter)="
+                  handleBoardClick(board.boardID, board.defaultView)
+                "
                 role="button"
                 tabindex="0"
                 [attr.aria-label]="'View ' + board.name"
@@ -215,24 +283,29 @@
                 <button
                   mat-icon-button
                   class="accent"
-                  *ngIf="user && user.role === Role.TEACHER"
+                  *ngIf="!project.isScoreRun && user && user.role === Role.TEACHER"
                   matTooltip="Toggle Visibility"
                   (click)="toggleBoardVisibility($event, board)"
                 >
                   <mat-icon *ngIf="board.visible">visibility</mat-icon>
                   <mat-icon *ngIf="!board.visible">visibility_off</mat-icon>
                 </button>
-                <button 
-                *ngIf="user && user.role === Role.TEACHER"
-                mat-icon-button
-                [matMenuTriggerFor]="boardOptions"
-                style="margin:0; padding:0;line-height: inherit;height: inherit;right: 0;position: absolute;"
-                matTooltip="Board Options"
-                (click)="$event.stopPropagation();"
+                <button
+                  *ngIf="user && user.role === Role.TEACHER"
+                  mat-icon-button
+                  [matMenuTriggerFor]="boardOptions"
+                  style="
+                    margin: 0;
+                    padding: 0;
+                    line-height: inherit;
+                    height: inherit;
+                    right: 0;
+                    position: absolute;
+                  "
+                  matTooltip="Board Options"
+                  (click)="$event.stopPropagation()"
                 >
-                  <mat-icon >
-                    more_vert
-                  </mat-icon>
+                  <mat-icon> more_vert </mat-icon>
                 </button>
                 <mat-menu #boardOptions="matMenu">
                   <button mat-menu-item (click)="handleEditBoard(board)">
@@ -244,7 +317,10 @@
                 </mat-menu>
                 <mat-card-content>
                   <mat-chip-list>
-                    <mat-chip #tooltip="matTooltip" matTooltip="Only visible to teachers.">
+                    <mat-chip
+                      #tooltip="matTooltip"
+                      matTooltip="Only visible to teachers."
+                    >
                       <mat-icon class="tag-icon">lock</mat-icon>
                       Personal
                     </mat-chip>
@@ -259,7 +335,9 @@
 
     <ng-container *ngIf="user.role === Role.STUDENT">
       <div class="cards">
-        <ng-container *ngFor="let board of studentPersonalBoards.concat(sharedBoards)">
+        <ng-container
+          *ngFor="let board of studentPersonalBoards.concat(sharedBoards)"
+        >
           <mat-card
             class="card"
             (click)="handleBoardClick(board.boardID, board.defaultView)"
@@ -274,11 +352,20 @@
             </mat-card-title>
             <mat-card-content>
               <mat-chip-list>
-                <mat-chip *ngIf="board.scope === BoardScope.PROJECT_SHARED" id="shared-chip" #tooltip="matTooltip" matTooltip="Visible to all project members.">
+                <mat-chip
+                  *ngIf="board.scope === BoardScope.PROJECT_SHARED"
+                  id="shared-chip"
+                  #tooltip="matTooltip"
+                  matTooltip="Visible to all project members."
+                >
                   <mat-icon class="tag-icon">group</mat-icon>
                   Shared
                 </mat-chip>
-                <mat-chip *ngIf="board.scope === BoardScope.PROJECT_PERSONAL" #tooltip="matTooltip" matTooltip="Only visible to you and project teachers.">
+                <mat-chip
+                  *ngIf="board.scope === BoardScope.PROJECT_PERSONAL"
+                  #tooltip="matTooltip"
+                  matTooltip="Only visible to you and project teachers."
+                >
                   <mat-icon class="tag-icon">lock</mat-icon>
                   Personal
                 </mat-chip>

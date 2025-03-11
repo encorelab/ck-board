@@ -4,6 +4,8 @@ import { CanvasComponent } from './components/canvas/canvas.component';
 import { CkBucketsComponent } from './components/ck-buckets/ck-buckets.component';
 import { CkMonitorComponent } from './components/ck-monitor/ck-monitor.component';
 import { CkWorkspaceComponent } from './components/ck-workspace/ck-workspace.component';
+import { ScoreAuthoringComponent } from './components/score-authoring/score-authoring.component';
+import { ScoreRoomcastingEnvironmentComponent } from './components/score-roomcasting-environment/score-roomcasting-environment.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ErrorComponent } from './components/error/error.component';
 import { LoginComponent } from './components/login/login.component';
@@ -15,11 +17,17 @@ import { AuthGuard } from './guards/auth.guard';
 import { BoardGuard } from './guards/board.guard';
 import { ProjectGuard } from './guards/project.guard';
 import { SsoGuard } from './guards/sso.guard';
+import { CkIdeasComponent } from './components/ck-ideas/ck-ideas.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+
 
 const routes: Routes = [
   { path: '', canActivate: [SsoGuard], component: LoginComponent },
   { path: 'login', canActivate: [SsoGuard], component: LoginComponent },
   { path: 'register', canActivate: [SsoGuard], component: RegisterComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   {
     path: 'sso/login/:sso/:sig',
     component: SsoLoginComponent,
@@ -65,9 +73,23 @@ const routes: Routes = [
     canActivate: [AuthGuard, ProjectGuard, BoardGuard],
   },
   {
+    path: 'project/:projectID/board/:boardID/ideas',
+    component: CkIdeasComponent,
+    canActivate: [AuthGuard, ProjectGuard, BoardGuard],
+  },
+  {
     path: 'project/:projectID/todo',
     component: ProjectTodoListModalComponent,
     canActivate: [AuthGuard, ProjectGuard],
+  },
+  {
+    path: 'score-authoring/:projectID',
+    component: ScoreAuthoringComponent,
+    canActivate: [SsoGuard, AuthGuard, ProjectGuard], 
+  },
+  { path: 'roomcast/:projectID', 
+    component: ScoreRoomcastingEnvironmentComponent,
+    canActivate: [SsoGuard, AuthGuard, ProjectGuard] 
   },
   { path: 'error', component: ErrorComponent },
   { path: '**', redirectTo: 'error' },

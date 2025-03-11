@@ -34,6 +34,10 @@ export default [
     default: '',
   },
   {
+    value: 'viewType',
+    default: '',
+  },
+  {
     value: 'agentUserID',
     default: '',
   },

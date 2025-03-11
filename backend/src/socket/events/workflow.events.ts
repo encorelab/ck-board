@@ -7,6 +7,8 @@ import {
 import { SocketPayload } from '../types/event.types';
 import { GroupTaskModel } from '../../models/GroupTask';
 import { GroupModel } from '../../models/Group';
+import { PostModel } from '../../models/Post';
+import workflowTrace from '../trace/workflow.trace';
 
 class WorkflowRunDistribution {
   static type: SocketEvent = SocketEvent.WORKFLOW_RUN_DISTRIBUTION;
@@ -62,6 +64,20 @@ class WorkflowUpdate {
   }
 }
 
+class WorkflowPostSubmit {
+  static type: SocketEvent = SocketEvent.WORKFLOW_POST_SUBMIT;
+
+  static async handleEvent(
+    input: SocketPayload<PostModel>
+  ): Promise<PostModel> {
+    if (input.trace.allowTracing) await workflowTrace.addPost(input, this.type);
+    return input.eventData;
+  }
+
+  static async handleResult(io: Server, socket: Socket, result: PostModel) {
+    socket.to(socket.data.room).emit(this.type, result);
+  }
+}
 class WorkflowDeleteTask {
   static type: SocketEvent = SocketEvent.WORKFLOW_DELETE_TASK;
 
@@ -120,6 +136,7 @@ const workflowEvents = [
   WorkflowRunDistribution,
   WorkflowRunTask,
   WorkflowUpdate,
+  WorkflowPostSubmit,
   WorkflowDeleteTask,
   WorkflowPostAdd,
   WorkflowTaskComplete,

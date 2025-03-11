@@ -176,47 +176,65 @@ export class CanvasComponent implements OnInit, OnDestroy {
     if (this.projectID && this.boardID) {
       this.user = this.userService.user!;
       this.isTeacher = this.user.role === Role.TEACHER;
-        this.canvas = new fabric.Canvas(
-          'canvas',
-          this.embedded
-            ? this.fabricUtils.embeddedCanvasConfig
-            : this.fabricUtils.canvasConfig
-        );
-        this.fabricUtils._canvas = this.canvas;
-      await this.configureBoard();  // Load board data
+      this.canvas = new fabric.Canvas(
+        'canvas',
+        this.embedded
+          ? this.fabricUtils.embeddedCanvasConfig
+          : this.fabricUtils.canvasConfig
+      );
+      this.fabricUtils._canvas = this.canvas;
+      await this.configureBoard(); // Load board data
       this.socketService.connect(this.user.userID, this.boardID);
       this.initCanvasEventsListener();
       this.initGroupEventsListener();
       window.onbeforeunload = () => this.ngOnDestroy();
-
-
     } else {
-        // Fallback to ActivatedRoute (for direct routing)
-        this.activatedRoute.queryParams.subscribe((params) => {
-          if (params.embedded == 'true') {
-            this.embedded = true;
-          }
-        });
+      // Fallback to ActivatedRoute (for direct routing)
+      this.activatedRoute.queryParams.subscribe((params) => {
+        if (params.embedded == 'true') {
+          this.embedded = true;
+        }
+      });
 
-        this.user = this.userService.user!;
-        this.isTeacher = this.user.role === Role.TEACHER;
-        this.canvas = new fabric.Canvas(
-          'canvas',
-          this.embedded
-            ? this.fabricUtils.embeddedCanvasConfig
-            : this.fabricUtils.canvasConfig
-        );
-        this.fabricUtils._canvas = this.canvas;
+      this.user = this.userService.user!;
+      this.isTeacher = this.user.role === Role.TEACHER;
+      this.canvas = new fabric.Canvas(
+        'canvas',
+        this.embedded
+          ? this.fabricUtils.embeddedCanvasConfig
+          : this.fabricUtils.canvasConfig
+      );
+      this.fabricUtils._canvas = this.canvas;
 
-        this.configureBoard().then(() => {  //Use then as configure board is now async
+      this.setTraceViewType();
 
-          this.socketService.connect(this.user.userID, this.boardID);
-          this.initCanvasEventsListener();
-          this.initGroupEventsListener();
+      this.configureBoard().then(() => {
+        //Use then as configure board is now async
 
-        });
-        window.onbeforeunload = () => this.ngOnDestroy();
+        this.socketService.connect(this.user.userID, this.boardID);
+        this.initCanvasEventsListener();
+        this.initGroupEventsListener();
+      });
+      window.onbeforeunload = () => this.ngOnDestroy();
     }
+  }
+
+  async setTraceViewType() {
+    const fetchedBoard = await this.boardService.get(this.boardID);
+    if (!fetchedBoard) {
+      this.router.navigate(['error']);
+      return false; // or true depending on your flow
+    }
+    this.board = fetchedBoard;
+    if (this.board) {
+      this.board.currentView = this.viewType;
+      this.boardService.updateCurrentView(
+        this.board.boardID,
+        this.board.currentView
+      );
+      return true;
+    }
+    return false;
   }
 
   initCanvasEventsListener() {
@@ -505,174 +523,196 @@ export class CanvasComponent implements OnInit, OnDestroy {
     const map = this.activatedRoute.snapshot.paramMap;
 
     if (this.projectID && this.boardID) {
-        //use inputs if available
-        try {
-            const tempBoard = await this.boardService.get(this.boardID); // Await here
-            if (!tempBoard) {
-                // Handle the case where the board is not found.
-                console.error("Board not found:", this.boardID);
-                this.snackbarService.queueSnackbar("Board not found.");
-                this.router.navigate(['/error']); // Redirect, or show error
-                return;  // IMPORTANT: Stop execution
-            }
-            this.board = tempBoard;
-            this.project = await this.projectService.get(this.projectID); //load project
-            if(!this.project){
-                console.error("Project not found:", this.projectID);
-                this.snackbarService.queueSnackbar("Project not found.");
-                this.router.navigate(['/error']); // Redirect, or show error
-                return;  // IMPORTANT: Stop execution
-            }
-
-            this.intermediateBoardConfig(this.board); 
-            this.traceService.setTraceContext(this.projectID, this.boardID); 
-            
-            this.postService.getAllByBoard(this.boardID).then((data) => { //get all posts
-              data.forEach(async (post) => {
-                if (post.type == PostType.BOARD) {
-                  const upvotes = await this.upvotesService.getUpvotesByPost(
-                    post.postID
-                  );
-                  const comments = await this.commentService.getCommentsByPost(
-                    post.postID
-                  );
-
-                  this.canvas.add(
-                    new FabricPostComponent(this.user.role, this.board.permissions, post, {
-                      upvotes: upvotes.length,
-                      comments: comments.length,
-                    })
-                  );
-                }
-              });
-          });
+      //use inputs if available
+      try {
+        const tempBoard = await this.boardService.get(this.boardID); // Await here
+        if (!tempBoard) {
+          // Handle the case where the board is not found.
+          console.error('Board not found:', this.boardID);
+          this.snackbarService.queueSnackbar('Board not found.');
+          this.router.navigate(['/error']); // Redirect, or show error
+          return; // IMPORTANT: Stop execution
         }
-        catch(error: any)
-        {
-            console.error("Error in configure board", error);
-            this.snackbarService.queueSnackbar("Error in configure board");
-            this.router.navigate(['/error']);
-            return;
+        this.board = tempBoard;
+        this.project = await this.projectService.get(this.projectID); //load project
+        if (!this.project) {
+          console.error('Project not found:', this.projectID);
+          this.snackbarService.queueSnackbar('Project not found.');
+          this.router.navigate(['/error']); // Redirect, or show error
+          return; // IMPORTANT: Stop execution
         }
 
-    }
-    else if (map.has('boardID') && map.has('projectID')) { //get from routed params
-        this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
-        this.projectID =
-            this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+        this.intermediateBoardConfig(this.board);
         this.traceService.setTraceContext(this.projectID, this.boardID);
 
-        try {
-            const tempBoard = await this.boardService.get(this.boardID); // Await here
-            if (!tempBoard) {
-                console.error("Board not found for ID:", this.boardID);
-                this.snackbarService.queueSnackbar("Board not found.");
-                this.router.navigate(['/error']);
-                return;
-            }
-            this.board = tempBoard;
+        this.postService.getAllByBoard(this.boardID).then((data) => {
+          //get all posts
+          data.forEach(async (post) => {
+            if (post.type == PostType.BOARD) {
+              const upvotes = await this.upvotesService.getUpvotesByPost(
+                post.postID
+              );
+              const comments = await this.commentService.getCommentsByPost(
+                post.postID
+              );
 
-            this.project = await this.projectService.get(this.projectID); // Await here
-            if (!this.project) {
-              console.error("Project not found for ID:", this.projectID);
-              this.snackbarService.queueSnackbar("Project not found.");
-              this.router.navigate(['/error']);
-              return;
-            }
-
-            this.intermediateBoardConfig(this.board);
-            this.postService.getAllByBoard(this.boardID).then((data) => {
-              data.forEach(async (post) => {
-                if (post.type == PostType.BOARD) {
-                  const upvotes = await this.upvotesService.getUpvotesByPost(
-                    post.postID
-                  );
-                  const comments = await this.commentService.getCommentsByPost(
-                    post.postID
-                  );
-                  this.canvas.add(
-                    new FabricPostComponent(this.user.role, this.board.permissions, post, { //CRITICAL: Role and permissions!
-                      upvotes: upvotes.length,
-                      comments: comments.length,
-                    })
-                  );
-                }
-              });
-            if (
-                !this.isTeacher &&
-                this.board &&
-                !this.board.viewSettings?.allowCanvas
-                ) {
-                this.router.navigateByUrl(
-                    `project/${this.projectID}/board/${
-                    this.boardID
-                    }/${this.board.defaultView?.toLowerCase()}`
-                );
-                }
-            });
-        } catch (error: any) {
-            console.error("Error configuring board (routed):", error);
-            this.snackbarService.queueSnackbar("Error configuring board.");
-            this.router.navigate(['/error']); // Or handle differently
-            return;
-        }
-    } else if (map.has('projectID')) { //personal board
-        this.projectID =
-        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
-        try {
-            const personalBoard = await this.boardService.getPersonal(this.projectID);
-            if (personalBoard) {
-            this.boardID = personalBoard.boardID;
-            this.traceService.setTraceContext(this.projectID, this.boardID);
-            } else {
-                console.error("Personal board not found for projectID:", this.projectID);
-                this.snackbarService.queueSnackbar("Personal board not found");
-                this.router.navigate(['/error']);
-                return;
-            }
-            this.project = await this.projectService.get(this.projectID); // Await here
-            if (!this.project) {
-              console.error("Project not found for ID:", this.projectID);
-              this.snackbarService.queueSnackbar("Project not found.");
-              this.router.navigate(['/error']);
-              return;
-            }
-
-            this.postService.getAllByBoard(this.boardID).then((data) => { //get all posts
-            data.forEach(async (post) => {
-                if (post.type == PostType.BOARD) {
-                const upvotes = await this.upvotesService.getUpvotesByPost(
-                    post.postID
-                );
-                const comments = await this.commentService.getCommentsByPost(
-                    post.postID
-                );
-                this.canvas.add(
-                    new FabricPostComponent(this.user.role, this.board.permissions, post, { //CRITICAL: Role and permissions!
+              this.canvas.add(
+                new FabricPostComponent(
+                  this.user.role,
+                  this.board.permissions,
+                  post,
+                  {
                     upvotes: upvotes.length,
                     comments: comments.length,
-                    })
-                );
-                }
-            });
-            if (personalBoard) this.intermediateBoardConfig(personalBoard);
-            });
+                  }
+                )
+              );
+            }
+          });
+        });
+      } catch (error: any) {
+        console.error('Error in configure board', error);
+        this.snackbarService.queueSnackbar('Error in configure board');
+        this.router.navigate(['/error']);
+        return;
+      }
+    } else if (map.has('boardID') && map.has('projectID')) {
+      //get from routed params
+      this.boardID = this.activatedRoute.snapshot.paramMap.get('boardID') ?? '';
+      this.projectID =
+        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      this.traceService.setTraceContext(this.projectID, this.boardID);
 
+      try {
+        const tempBoard = await this.boardService.get(this.boardID); // Await here
+        if (!tempBoard) {
+          console.error('Board not found for ID:', this.boardID);
+          this.snackbarService.queueSnackbar('Board not found.');
+          this.router.navigate(['/error']);
+          return;
         }
-        catch(error: any){
-            console.error("Error in configure board, personal board", error);
-            this.snackbarService.queueSnackbar("Error in configure board");
-            this.router.navigate(['/error']);
-            return;
+        this.board = tempBoard;
+
+        this.project = await this.projectService.get(this.projectID); // Await here
+        if (!this.project) {
+          console.error('Project not found for ID:', this.projectID);
+          this.snackbarService.queueSnackbar('Project not found.');
+          this.router.navigate(['/error']);
+          return;
         }
 
-    } else { //no project id or board id
-        console.error("Missing required route parameters (projectID and/or boardID)");
-        this.snackbarService.queueSnackbar("Error in configure board");
-        this.router.navigate(['error']); // Or handle differently
-        return; // IMPORTANT
+        this.intermediateBoardConfig(this.board);
+        this.postService.getAllByBoard(this.boardID).then((data) => {
+          data.forEach(async (post) => {
+            if (post.type == PostType.BOARD) {
+              const upvotes = await this.upvotesService.getUpvotesByPost(
+                post.postID
+              );
+              const comments = await this.commentService.getCommentsByPost(
+                post.postID
+              );
+              this.canvas.add(
+                new FabricPostComponent(
+                  this.user.role,
+                  this.board.permissions,
+                  post,
+                  {
+                    //CRITICAL: Role and permissions!
+                    upvotes: upvotes.length,
+                    comments: comments.length,
+                  }
+                )
+              );
+            }
+          });
+          if (
+            !this.isTeacher &&
+            this.board &&
+            !this.board.viewSettings?.allowCanvas
+          ) {
+            this.router.navigateByUrl(
+              `project/${this.projectID}/board/${
+                this.boardID
+              }/${this.board.defaultView?.toLowerCase()}`
+            );
+          }
+        });
+      } catch (error: any) {
+        console.error('Error configuring board (routed):', error);
+        this.snackbarService.queueSnackbar('Error configuring board.');
+        this.router.navigate(['/error']); // Or handle differently
+        return;
+      }
+    } else if (map.has('projectID')) {
+      //personal board
+      this.projectID =
+        this.activatedRoute.snapshot.paramMap.get('projectID') ?? '';
+      try {
+        const personalBoard = await this.boardService.getPersonal(
+          this.projectID
+        );
+        if (personalBoard) {
+          this.boardID = personalBoard.boardID;
+          this.traceService.setTraceContext(this.projectID, this.boardID);
+        } else {
+          console.error(
+            'Personal board not found for projectID:',
+            this.projectID
+          );
+          this.snackbarService.queueSnackbar('Personal board not found');
+          this.router.navigate(['/error']);
+          return;
+        }
+        this.project = await this.projectService.get(this.projectID); // Await here
+        if (!this.project) {
+          console.error('Project not found for ID:', this.projectID);
+          this.snackbarService.queueSnackbar('Project not found.');
+          this.router.navigate(['/error']);
+          return;
+        }
+
+        this.postService.getAllByBoard(this.boardID).then((data) => {
+          //get all posts
+          data.forEach(async (post) => {
+            if (post.type == PostType.BOARD) {
+              const upvotes = await this.upvotesService.getUpvotesByPost(
+                post.postID
+              );
+              const comments = await this.commentService.getCommentsByPost(
+                post.postID
+              );
+              this.canvas.add(
+                new FabricPostComponent(
+                  this.user.role,
+                  this.board.permissions,
+                  post,
+                  {
+                    //CRITICAL: Role and permissions!
+                    upvotes: upvotes.length,
+                    comments: comments.length,
+                  }
+                )
+              );
+            }
+          });
+          if (personalBoard) this.intermediateBoardConfig(personalBoard);
+        });
+      } catch (error: any) {
+        console.error('Error in configure board, personal board', error);
+        this.snackbarService.queueSnackbar('Error in configure board');
+        this.router.navigate(['/error']);
+        return;
+      }
+    } else {
+      //no project id or board id
+      console.error(
+        'Missing required route parameters (projectID and/or boardID)'
+      );
+      this.snackbarService.queueSnackbar('Error in configure board');
+      this.router.navigate(['error']); // Or handle differently
+      return; // IMPORTANT
     }
-}
+  }
 
   // TODO: handle board update from toolbar-menu
   configureZoom() {

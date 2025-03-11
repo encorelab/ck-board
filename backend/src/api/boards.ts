@@ -171,4 +171,29 @@ router.delete('/:id', async (req, res) => {
   res.status(200).json(deletedBoard);
 });
 
+router.patch('/:boardID/currentView', async (req, res) => {
+  const { boardID } = req.params;
+  const { viewType } = req.body; // Expect viewType in the request body
+
+  if (!viewType) {
+    return res.status(400).json({ error: 'viewType is required' });
+  }
+
+  try {
+    // Update the board with the new currentView
+    const updatedBoard = await dalBoard.update(boardID, {
+      currentView: viewType,
+    });
+
+    if (!updatedBoard) {
+      return res.status(404).json({ error: 'Board not found' });
+    }
+
+    res.status(200).json(updatedBoard);
+  } catch (error) {
+    console.error('Error updating currentView:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

@@ -70,8 +70,11 @@ const clearBoard = async (
   eventType: string
 ) => {
   const trace = await createTrace(input.trace);
+  const post = input.eventData.at(0);
   trace.eventType = eventType;
-  trace.event = {};
+  trace.event = {
+    postID: post?.postID,
+  };
 
   await dalTrace.create(trace);
 };

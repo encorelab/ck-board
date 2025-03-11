@@ -20,6 +20,7 @@ import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
 import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
+import { TraceService } from 'src/app/services/trace.service';
 import { HtmlPostComponent } from '../html-post/html-post.component';
 
 @Component({
@@ -65,7 +66,8 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
     private converters: Converters,
     private router: Router,
     private socketService: SocketService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private traceService: TraceService
   ) {
     this.groupEventToHandler = new Map<SocketEvent, Function>([]);
   }
@@ -143,10 +145,17 @@ export class CkBucketsComponent implements OnInit, OnDestroy {
       } else {
         this.board = undefined;
       }
-
+      if (this.board) {
+        this.board.currentView = this.viewType;
+        this.boardService.updateCurrentView(
+          this.board.boardID,
+          this.board.currentView
+        );
+      }
       this.projectService.get(this.projectID).then((project) => {
         this.project = project;
       });
+      this.traceService.setTraceContext(this.projectID, this.boardID);
     }
   }
 

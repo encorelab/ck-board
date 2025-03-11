@@ -310,6 +310,17 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.completeGroupTasks.push(t);
       }
     });
+    this.socketService.connect(this.user.userID, this.board.boardID);
+
+    if (this.board) {
+      this.board.currentView = this.viewType;
+      this.boardService.updateCurrentView(
+        this.board.boardID,
+        this.board.currentView
+      );
+    }
+
+    this.traceService.setTraceContext(this.projectID, this.boardID);
 
     return true;
   }
@@ -970,6 +981,7 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           this.averageGroupProgress = await this._calcAverageProgress(
             this.runningGroupTask
           );
+          this.socketService.emit(SocketEvent.WORKFLOW_POST_SUBMIT, post);
           this.socketService.emit(SocketEvent.WORKFLOW_PROGRESS_UPDATE, [
             this.runningGroupTask.groupTask,
           ]);

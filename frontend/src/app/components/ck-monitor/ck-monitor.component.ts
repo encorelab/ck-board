@@ -56,6 +56,7 @@ import sorting from 'src/app/utils/sorting';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { TodoItemCardModalComponent } from '../todo-item-card-modal/todo-item-card-modal.component';
 import { LearnerService } from 'src/app/services/learner.service';
+import { TraceService } from 'src/app/services/trace.service';
 
 SwiperCore.use([EffectCards]);
 
@@ -209,6 +210,7 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
     private converters: Converters,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private traceService: TraceService,
     public dialog: MatDialog
   ) {
     this.todoDataSource.sortingDataAccessor = (data, sortHeaderId) => {
@@ -253,6 +255,14 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         this.socketService.connect(this.user.userID, this.boardID);
       });
     }
+    
+    if (this.studentView) this.showModels = true;
+    // Assign the viewType to the board's currentView property on initialization
+    if (this.board) {
+      this.board.currentView = this.viewType;
+      // Send the updated viewType to the backend
+      this.boardService.updateCurrentView(this.board.boardID, this.viewType);
+    }
   }
 
   async loadWorkspaceData(): Promise<boolean> {
@@ -286,9 +296,9 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       );
     }
 
-    if (!this.studentView)
-      await this.updateWorkflowData(this.boardID, this.projectID);
-
+    if (!this.studentView) await this.updateWorkflowData(this.boardID, this.projectID);
+    this.socketService.connect(this.user.userID, this.board.boardID);
+    this.traceService.setTraceContext(this.projectID, this.boardID);
     return true;
   }
 

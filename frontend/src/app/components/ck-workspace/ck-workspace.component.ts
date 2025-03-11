@@ -72,8 +72,8 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   @ViewChild(SwiperComponent) swiper: SwiperComponent;
 
   @Input() isModalView = false;
-  @Input() projectID: string; 
-  @Input() boardID: string;  
+  @Input() projectID: string;
+  @Input() boardID: string;
   @Input() embedded: boolean = false;
 
   loading = false;
@@ -203,26 +203,26 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
-    
+
     // Prioritize Input properties.  If they are provided, use them.
     if (this.projectID && this.boardID) {
-        await this.loadWorkspaceData(); // Load with Input IDs
-        this.socketService.connect(this.user.userID, this.boardID); //Moved to after board loaded
+      await this.loadWorkspaceData(); // Load with Input IDs
+      this.socketService.connect(this.user.userID, this.boardID); //Moved to after board loaded
     } else {
       // Fallback to ActivatedRoute ONLY if inputs are not provided.
-       this.activatedRoute.paramMap.subscribe(async params => {
+      this.activatedRoute.paramMap.subscribe(async (params) => {
         this.boardID = params.get('boardID')!;
         this.projectID = params.get('projectID')!;
 
         if (!this.boardID || !this.projectID) {
-          console.error("Missing boardID or projectID in route parameters");
+          console.error('Missing boardID or projectID in route parameters');
           this.router.navigate(['/error']); // Redirect to an error page
           return; // Stop execution
         }
 
         await this.loadWorkspaceData();
         this.socketService.connect(this.user.userID, this.boardID);
-       });
+      });
     }
 
     this.initGroupEventsListener();
@@ -254,32 +254,29 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
     }
   }
 
-
   async loadWorkspaceData(): Promise<boolean> {
     // No longer need to get from route since we prioritize inputs
     if (!this.boardID || !this.projectID) {
-        console.error("boardId or projectId is null");
-        return false;
+      console.error('boardId or projectId is null');
+      return false;
     }
 
     const fetchedBoard = await this.boardService.get(this.boardID);
     if (!fetchedBoard) {
-      console.error("board not found")
+      console.error('board not found');
       this.router.navigate(['error']);
       return false;
     }
-    
+
     this.project = await this.projectService.get(this.projectID);
     //get group may return undefined.
     try {
-        this.group = await this.groupService.getByProjectUser(
-          this.projectID,
-          this.user.userID
-        );
-    }
-    catch (error: any)
-    {
-        console.error("Could not fetch group");
+      this.group = await this.groupService.getByProjectUser(
+        this.projectID,
+        this.user.userID
+      );
+    } catch (error: any) {
+      console.error('Could not fetch group');
     }
 
     this.board = fetchedBoard;
@@ -294,11 +291,16 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
 
     if (!this.isTeacher && !this.board.viewSettings?.allowWorkspace) {
       this.router.navigateByUrl(
-        `project/<span class="math-inline">{this.projectID}/board/</span>{this.boardID}/${this.board.defaultView?.toLowerCase()}`
+        `project/${this.projectID}/board/${
+          this.boardID
+        }/${this.board.defaultView?.toLowerCase()}`
       );
     }
 
-    const tasks = await this.workflowService.getGroupTasks(this.boardID, 'expanded');
+    const tasks = await this.workflowService.getGroupTasks(
+      this.boardID,
+      'expanded'
+    );
     tasks.forEach((t) => {
       if (t.groupTask.status == GroupTaskStatus.INACTIVE) {
         this.inactiveGroupTasks.push(t);

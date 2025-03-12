@@ -677,28 +677,29 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         SocketEvent.WORKFLOW_PROGRESS_UPDATE,
         async (updates) => {
           const found = updates.find(
-            (u) => u.workflow.workflowID == this.runningTask?.workflowID
+            (u) => u.workflowID == this.runningTask?.workflowID
           );
           if (found) {
             const groupTasks =
               await this.workflowService.getGroupTasksByWorkflow(
-                found.workflow.workflowID,
+                found.workflowID,
                 'expanded'
               );
-            groupTasks.sort((a, b) =>
-              this._calcGroupProgress(a) > this._calcGroupProgress(b) ? -1 : 1
-            );
-            this.taskWorkflowGroupMap.set(found.workflow, groupTasks);
-            this.runningTask = found.workflow;
-            this.runningTaskGroupStatus = GroupTaskStatus.ACTIVE;
-            const progressData = await this._calcAverageProgress(groupTasks);
-            await this.updateRunningTaskDataSource(
-              found.workflow,
-              GroupTaskStatus.ACTIVE
-            );
-            this.minGroupProgress = progressData[0];
-            this.averageGroupProgress = progressData[1];
-            this.maxGroupProgress = progressData[2];
+            if (
+              this.runningTask &&
+              this.runningTask?.workflowID == found.workflowID
+            ) {
+              this.taskWorkflowGroupMap.set(this.runningTask, groupTasks);
+              const progressData = await this._calcAverageProgress(groupTasks);
+              await this.updateRunningTaskDataSource(
+                this.runningTask,
+                GroupTaskStatus.ACTIVE
+              );
+
+              this.minGroupProgress = progressData[0];
+              this.averageGroupProgress = progressData[1];
+              this.maxGroupProgress = progressData[2];
+            }
           }
         }
       )

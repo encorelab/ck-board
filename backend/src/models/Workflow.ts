@@ -15,6 +15,7 @@ export enum WorkflowType {
 export enum TaskWorkflowType {
   PEER_REVIEW = 'PEER_REVIEW',
   GENERATION = 'GENERATION',
+  DISTRIBUTION = 'DISTRIBUTION'
 }
 
 export enum DistributionWorkflowType {

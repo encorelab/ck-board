@@ -21,6 +21,7 @@ import dalPost from '../repository/dalPost';
 import dalWorkflow from '../repository/dalWorkflow';
 import dalGroupTask, { GroupTaskExpanded } from '../repository/dalGroupTask';
 import dalVote from '../repository/dalVote';
+import dalGroup from '../repository/dalGroup';
 import { convertPostsFromID } from '../utils/converter';
 import {
   isDistribution,
@@ -167,12 +168,22 @@ class WorkflowManager {
     } else if (assignmentType === AssignmentType.INDIVIDUAL) {
       const assignedIndividual = taskWorkflow.assignedIndividual;
       if (!assignedIndividual) return;
+
+      // Fetch the group to get current members
+      const group = await dalGroup.getById(assignedIndividual.groupID);
+      if (!group) {
+          console.error(`Group not found for ID: ${assignedIndividual.groupID}`);
+          return; // Or throw an error, depending on your error handling
+      }
+      const members = group.members; // Use the *current* members from the group
+
       const split: string[][] = await distribute(
         shuffle(sourcePosts),
-        sourcePosts.length / assignedIndividual.members.length
+        sourcePosts.length / members.length
       );
-      for (let i = 0; i < assignedIndividual?.members.length; i++) {
-        const assignedMember = assignedIndividual.members[i];
+
+      for (let i = 0; i < members.length; i++) { 
+        const assignedMember = members[i]; 
         const posts =
           taskWorkflow?.type === TaskWorkflowType.GENERATION
             ? []

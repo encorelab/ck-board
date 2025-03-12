@@ -28,7 +28,7 @@ import { generateUniqueID, getErrorMessage } from 'src/app/utils/Utils';
 import { Tag } from 'src/app/models/tag';
 import { AddPostComponent } from '../add-post-modal/add-post.component';
 import Upvote from 'src/app/models/upvote';
-import { Board } from 'src/app/models/board';
+import { Board, ViewType } from 'src/app/models/board';
 import { BoardService } from 'src/app/services/board.service';
 import { SnackbarService } from 'src/app/services/snackbar.service';
 import { Project } from 'src/app/models/project';
@@ -50,6 +50,7 @@ export class PostModalData {
   post!: Post;
   user!: User;
   board!: Board;
+  currentView?: ViewType;
   commentPress?: boolean;
   onCommentEvent?: Function;
   onTagEvent?: Function;
@@ -186,11 +187,16 @@ export class PostModalComponent implements OnInit, OnDestroy {
     const isTeacher = this.user.role == Role.TEACHER;
     this.showEditDelete =
       (isStudent && data.board.permissions.allowStudentEditAddDeletePost) ||
+      (data.currentView && data.currentView != ViewType.CANVAS) ||
       isTeacher;
     this.canStudentComment =
-      (isStudent && data.board.permissions.allowStudentCommenting) || isTeacher;
+      (isStudent && data.board.permissions.allowStudentCommenting) ||
+      (data.currentView && data.currentView != ViewType.CANVAS) ||
+      isTeacher;
     this.canStudentTag =
-      (isStudent && data.board.permissions.allowStudentTagging) || isTeacher;
+      (isStudent && data.board.permissions.allowStudentTagging) ||
+      (data.currentView && data.currentView != ViewType.CANVAS) ||
+      isTeacher;
     this.showAuthorName =
       (isStudent && data.board.permissions.showAuthorNameStudent) ||
       (isTeacher && data.board.permissions.showAuthorNameTeacher);
@@ -236,7 +242,8 @@ export class PostModalComponent implements OnInit, OnDestroy {
     if (destType == PostType.BOARD) {
       if (event.checked) {
         this.post = await this.canvasService.createBoardPostFromBucket(
-          this.post
+          this.post,
+          this.data.board.boardID
         );
       } else {
         this.post = (
@@ -531,6 +538,9 @@ export class PostModalComponent implements OnInit, OnDestroy {
   }
 
   private _votingLocked(): boolean {
+    if (this.data.currentView) {
+      return false;
+    }
     return (
       this.user.role == Role.STUDENT &&
       !this.data.board.permissions.allowStudentUpvoting

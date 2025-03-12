@@ -37,7 +37,7 @@ export class UserService {
       const result = await this.http
         .post<TokenResponse>('auth/register', user)
         .toPromise();
-  
+
       if (result) {
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('access_token', result.token);
@@ -157,5 +157,12 @@ export class UserService {
       return JSON.parse(storedUser);
     }
     return null;
+  }
+
+  updateCurrentView(userID: string, viewType: string): Promise<any> {
+    return this.http
+      .patch<any>(`auth/${userID}/currentView`, { viewType })
+      .toPromise()
+      .catch(() => undefined); // Handle undefined case
   }
 }

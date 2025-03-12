@@ -92,6 +92,7 @@
           <div *ngFor="let post of bucket.htmlPosts">
             <app-html-post
               [post]="post"
+              [currentView]="viewType"
               cdkDrag
               [cdkDragDisabled]="dragDisabled"
               style="width: 100%"

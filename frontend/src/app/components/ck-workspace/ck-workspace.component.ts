@@ -310,7 +310,6 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
         this.completeGroupTasks.push(t);
       }
     });
-    this.socketService.connect(this.user.userID, this.board.boardID);
 
     if (this.user) {
       this.user.currentView = this.viewType;

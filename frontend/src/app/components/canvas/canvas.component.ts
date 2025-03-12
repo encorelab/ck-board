@@ -219,17 +219,11 @@ export class CanvasComponent implements OnInit, OnDestroy {
   }
 
   async setTraceViewType() {
-    const fetchedBoard = await this.boardService.get(this.boardID);
-    if (!fetchedBoard) {
-      this.router.navigate(['error']);
-      return false; // or true depending on your flow
-    }
-    this.board = fetchedBoard;
-    if (this.board) {
-      this.board.currentView = this.viewType;
-      this.boardService.updateCurrentView(
-        this.board.boardID,
-        this.board.currentView
+    if (this.user) {
+      this.user.currentView = this.viewType;
+      this.userService.updateCurrentView(
+        this.user.userID,
+        this.user.currentView
       );
       return true;
     }

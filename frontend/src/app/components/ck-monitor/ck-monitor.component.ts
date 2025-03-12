@@ -255,13 +255,13 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
         this.socketService.connect(this.user.userID, this.boardID);
       });
     }
-    
+
     if (this.studentView) this.showModels = true;
-    // Assign the viewType to the board's currentView property on initialization
-    if (this.board) {
-      this.board.currentView = this.viewType;
+    // Assign the viewType to the user's currentView property on initialization
+    if (this.user) {
+      this.user.currentView = this.viewType;
       // Send the updated viewType to the backend
-      this.boardService.updateCurrentView(this.board.boardID, this.viewType);
+      this.userService.updateCurrentView(this.user.userID, this.viewType);
     }
   }
 
@@ -296,7 +296,8 @@ export class CkMonitorComponent implements OnInit, OnDestroy {
       );
     }
 
-    if (!this.studentView) await this.updateWorkflowData(this.boardID, this.projectID);
+    if (!this.studentView)
+      await this.updateWorkflowData(this.boardID, this.projectID);
     this.socketService.connect(this.user.userID, this.board.boardID);
     this.traceService.setTraceContext(this.projectID, this.boardID);
     return true;

@@ -163,9 +163,6 @@ export class BoardModel {
   @prop({ required: false })
   public defaultView?: ViewType;
 
-  @prop({ required: false })
-  public currentView?: ViewType;
-
   @prop({ required: false, type: () => ViewSettings })
   public viewSettings?: ViewSettings;
 }

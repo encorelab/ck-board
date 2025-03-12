@@ -3,6 +3,7 @@ export interface AuthUser {
   email: string;
   username: string;
   role: string;
+  currentView: string;
 }
 
 export interface TokenResponse {

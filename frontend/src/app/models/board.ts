@@ -71,5 +71,6 @@ export class Board {
   visible: boolean;
   defaultTodoDateRange: DateRange | null;
   defaultView: ViewType | undefined | null;
+  currentView: ViewType | undefined | null;
   viewSettings: ViewSettings | undefined | null;
 }

@@ -60,7 +60,7 @@ router.post('/register', async (req, res) => {
 
   const exists = await dalUser.findByEmail(body.email);
   if (exists) {
-    return res.status(400).send({message: 'Email already in use.'});
+    return res.status(400).send({ message: 'Email already in use.' });
   }
 
   const savedUser = await dalUser.create(body);
@@ -107,27 +107,21 @@ router.post('/forgot-password', async (req, res) => {
 
     // 5. Send an email to the user with a link containing the token
     const resetLink = `${
-      process.env.CKBOARD_SERVER_ADDRESS!.startsWith('http')
-        ? ''
-        : 'https://'
+      process.env.CKBOARD_SERVER_ADDRESS!.startsWith('http') ? '' : 'https://'
     }${process.env.CKBOARD_SERVER_ADDRESS!}/reset-password?token=${resetToken}`;
 
     try {
       await generateEmail(email, 'Password Reset Request', resetLink);
-      return res
-        .status(200)
-        .send({
-          success: true,
-          message:
-            'If an account with that email exists, a password reset link has been sent.',
-        });
+      return res.status(200).send({
+        success: true,
+        message:
+          'If an account with that email exists, a password reset link has been sent.',
+      });
     } catch (err) {
-      return res
-        .status(500)
-        .send({
-          success: false,
-          message: 'There was an error sending the password reset email.',
-        });
+      return res.status(500).send({
+        success: false,
+        message: 'There was an error sending the password reset email.',
+      });
     }
   } catch (error) {
     console.error('Error in /forgot-password route:', error);
@@ -245,6 +239,31 @@ router.get('/project/:id', isAuthenticated, async (req, res) => {
 
   const users = await dalUser.findByUserIDs(project.members);
   res.status(200).json(users);
+});
+
+router.patch('/:boardID/currentView', async (req, res) => {
+  const { boardID } = req.params;
+  const { viewType } = req.body; // Expect viewType in the request body
+
+  if (!viewType) {
+    return res.status(400).json({ error: 'viewType is required' });
+  }
+
+  try {
+    // Update the board with the new currentView
+    const updatedBoard = await dalUser.update(boardID, {
+      currentView: viewType,
+    });
+
+    if (!updatedBoard) {
+      return res.status(404).json({ error: 'Board not found' });
+    }
+
+    res.status(200).json(updatedBoard);
+  } catch (error) {
+    console.error('Error updating currentView:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 export default router;

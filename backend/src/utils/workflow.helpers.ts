@@ -72,11 +72,7 @@ export const movePostsToDestination = async (
   destination: Container,
   posts: string[]
 ) => {
-  if (destination.type == ContainerType.BOARD) {
-    const originals: PostModel[] = await convertPostsFromID(posts);
-    const copied: PostModel[] = cloneManyToBoard(destination.id, originals);
-    await dalPost.createMany(copied);
-  } else {
+  if (destination.type != ContainerType.BOARD) {
     await dalBucket.addPost(destination.id, posts);
   }
 };

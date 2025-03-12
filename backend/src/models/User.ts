@@ -1,4 +1,5 @@
 import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
+import { ViewType } from './Board';
 
 export enum Role {
   TEACHER = 'TEACHER',
@@ -27,6 +28,9 @@ export class UserModel {
 
   @prop()
   public resetPasswordExpires?: Date;
+
+  @prop({ required: false })
+  public currentView?: ViewType;
 }
 
 export default getModelForClass(UserModel);

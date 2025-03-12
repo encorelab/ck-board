@@ -109,23 +109,28 @@ export async function addUserToProject(
   return updatedProject;
 }
 
-export async function addUserToWorkflows(groupID: string, userID: string) {
+export const addUserToWorkflows = async (groupID: string, userID: string) => {
   console.log('in the helper function');
   const workflows = await dalWorkflow.getAllByGroupId(groupID);
-  console.log(workflows);
+
   for (const workflow of workflows) {
-    if (!workflow.active) return;
-    let taskExists = true;
-    const groupTask = await dalGroupTask.getByWorkflowGroup(
-      groupID,
-      workflow.workflowID,
-      userID
-    );
-    console.log(groupTask);
-    if (groupTask === null) {
-      taskExists = false;
+    if (!workflow.active) {
+      continue; 
     }
-    console.log(taskExists);
+
+    let taskExists = false; // Initialize as false
+    try {
+      const groupTask = await dalGroupTask.getByWorkflowGroup(
+        groupID,
+        workflow.workflowID,
+        userID
+      );
+      if (groupTask) taskExists = true; //if it does not throw error, then set exists to true.
+    } catch (error) {
+      taskExists = false; //if there is error then the task does not yet exist.
+    }
+    console.log('taskExists: ', taskExists);
+
     if (!taskExists) {
       console.log('task doesnt exist');
       const source = workflow.source;
@@ -135,6 +140,7 @@ export async function addUserToWorkflows(groupID: string, userID: string) {
         string,
         TaskAction[]
       >();
+
       if (workflow.type != TaskWorkflowType.GENERATION) {
         let sourcePosts;
         if (source.type == ContainerType.BOARD) {
@@ -145,7 +151,6 @@ export async function addUserToWorkflows(groupID: string, userID: string) {
           sourcePosts = bucket ? bucket.posts : [];
         }
 
-        // if (taskWorkflow?.type === TaskWorkflowType.GENERATION) sourcePosts = [];
         const commentAction = workflow.requiredActions.find(
           (a) => a.type == TaskActionType.COMMENT
         );
@@ -157,25 +162,34 @@ export async function addUserToWorkflows(groupID: string, userID: string) {
         );
 
         const actions: TaskAction[] = [];
-        if (commentAction)
+        if (commentAction) {
           actions.push({
             type: TaskActionType.COMMENT,
             amountRequired: commentAction.amountRequired,
           });
-        if (tagAction)
+        }
+        if (tagAction) {
           actions.push({
             type: TaskActionType.TAG,
             amountRequired: tagAction.amountRequired,
           });
-        if (!assignedIndividual) return;
+        }
+        if (!assignedIndividual) {
+          continue;
+        }
+
         const split = await distribute(
-          shuffle(sourcePosts),
+     
+          await shuffle(sourcePosts), 
           sourcePosts.length / assignedIndividual.members.length
         );
-        posts = split[0];
-        posts.forEach((post) => {
-          progress.set(post, actions);
-        });
+        if (split && split.length > 0) {
+          // Check if split has data.
+          posts = split[0];
+          posts.forEach((post) => {
+            progress.set(post, actions);
+          });
+        }
       }
       console.log(
         'groupID:',
@@ -204,4 +218,4 @@ export async function addUserToWorkflows(groupID: string, userID: string) {
       await dalGroupTask.create(newGroupTask);
     }
   }
-}
+};

@@ -45,7 +45,9 @@ export class SocketService {
   listen(event: SocketEvent, handler: Function): Subscription {
     try {
       const observable = this.socket.fromEvent<any>(event);
-      return observable.subscribe((value) => handler(value));
+      return observable.subscribe((value) => {
+        handler(value);
+      });
     } catch (error) {
       console.error('Error listening for event:', error);
       // Handle the error appropriately, e.g., by returning an empty observable

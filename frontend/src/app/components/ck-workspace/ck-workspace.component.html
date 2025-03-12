@@ -315,10 +315,16 @@
           </button>
         </div>
         <div class="group-info-and-buttons-container" *ngIf="runningGroupTask">
-          <div class="group-info">
+          <div class="group-info" *ngIf="runningGroupTask.workflow.assignmentType === 'GROUP'">
             <h4 class="group-name">Group: {{ runningGroupTask.group.name }}</h4>
             <ul class="group-members">
               <li *ngFor="let member of members">{{ member.username }}</li>
+            </ul>
+          </div>
+          <div class="group-info" *ngIf="runningGroupTask.workflow.assignmentType === 'INDIVIDUAL'">
+            <h4 class="group-name">Task Assignment:</h4>
+            <ul class="group-members">
+              <li>Work Individually</li>
             </ul>
           </div>
           <div class="view-toggle-buttons" *ngIf="runningGroupTask && runningGroupTask.workflow.type !== TaskWorkflowType.GENERATION">

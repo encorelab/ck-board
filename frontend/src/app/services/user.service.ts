@@ -8,6 +8,7 @@ import { lastValueFrom } from 'rxjs';
 })
 export class UserService {
   redirectUrl: string | null = null;
+  signInWindow: any;
 
   constructor(private http: HttpClient) {}
 
@@ -98,13 +99,31 @@ export class UserService {
   }
 
   async trySsoLogin(attemptedUrl: string): Promise<any> {
+    this.addLoadAttemptedUrlListener(attemptedUrl);
     return this.http
       .get('auth/sso/handshake')
       .toPromise()
       .then((response: any) => {
-        window.location.href = `${response.scoreSsoEndpoint}?sig=${response.sig}&sso=${response.sso}&redirectUrl=${attemptedUrl}`;
+        this.openSignInWindow(response, attemptedUrl);
         return false;
       });
+  }
+
+  addLoadAttemptedUrlListener(attemptedUrl: string): void {
+    window.addEventListener('message', (event) => {
+      if (event.data === 'loadAttemptedUrl') {
+        window.location.href = attemptedUrl;
+        this.signInWindow.close();
+      }
+    });
+  }
+
+  openSignInWindow(response: any, attemptedUrl: string): void {
+    const ssoEndpoint =
+      response.scoreSsoEndpoint +
+      `?sig=${response.sig}&sso=${response.sso}&redirectUrl=${attemptedUrl}`;
+    const params = 'width=800,height=600';
+    this.signInWindow = window.open(ssoEndpoint, 'SCORE Login Window', params);
   }
 
   async ssoLogin(sso: string | null, sig: string | null): Promise<boolean> {

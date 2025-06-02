@@ -127,7 +127,7 @@ listEndpoints();
 // Get project ID from environment variable
 const projectId = process.env.GOOGLE_CLOUD_PROJECT;
 const location = 'northamerica-northeast1'; // Update if needed
-const model = 'gemini-1.5-pro-001';
+const model = 'gemini-1.5-pro-002';
 
 const vertexAI = new VertexAI({ project: projectId, location: location });
 
@@ -212,11 +212,15 @@ function isValidJSON(
 
     for (const key in jsonObject) {
       if (!allowedKeys.includes(key)) {
-        return false;
+        if (jsonObject[key].length != 0) {
+          console.error(`Validation failed: Unexpected key "${key}".`);
+          return false;
+        }
       }
 
       // Validate that the optional keys are arrays
       if (key !== 'response' && !Array.isArray(jsonObject[key])) {
+        console.error(`Validation failed: Key "${key}" is not an array.`);
         return false;
       }
 
@@ -228,6 +232,9 @@ function isValidJSON(
               typeof item.name === 'string' && Array.isArray(item.postIDs)
           )
         ) {
+          console.error(
+            `Validation failed: Key "${key}" has invalid structure.`
+          );
           return false;
         }
       } else if (key === 'create_bucket') {
@@ -526,7 +533,7 @@ async function sendMessage(
         postsToKeyValuePairs(mappedPosts) +
         `\nHere are the buckets:\n` +
         JSON.stringify(mappedBuckets, null, 2) +
-        `\nTopic Context to guide your analysis:\n\n${fullPromptHistory}`, 
+        `\nTopic Context to guide your analysis:\n\n${fullPromptHistory}`,
     };
 
     const promptTemplate = promptTemplates[type];
@@ -562,12 +569,13 @@ async function sendMessage(
             type: type,
           });
         }
-
+        console.log('Raw AI Response:', partialResponse);
         let isValid;
         const noJsonResponse = removeJsonMarkdown(partialResponse);
 
         try {
           const parsedResponse = parseJsonResponse(noJsonResponse);
+          console.log('Parsed AI Response:', parsedResponse);
 
           if (isValidJSON(parsedResponse, type)) {
             finalResponse = parsedResponse;

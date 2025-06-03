@@ -16,9 +16,7 @@ interface AiMessageData {
 class AiMessage {
   static type: SocketEvent = SocketEvent.AI_MESSAGE;
 
-  static async handleEvent(
-    data: SocketPayload<AiMessageData>
-  ): Promise<{
+  static async handleEvent(data: SocketPayload<AiMessageData>): Promise<{
     posts: any[];
     currentPrompt: string;
     fullPromptHistory: string;
@@ -34,6 +32,8 @@ class AiMessage {
       userId,
       type,
     } = data.eventData;
+
+    console.log('AI_MESSAGE received:', { boardId, userId });
 
     // ... any necessary data processing or validation ...
     return {
@@ -58,7 +58,8 @@ class AiMessage {
       type: 'teacher_agent' | 'idea_agent';
     }
   ): Promise<void> {
-    const { posts, currentPrompt, fullPromptHistory, boardId, userId, type } = result;
+    const { posts, currentPrompt, fullPromptHistory, boardId, userId, type } =
+      result;
     socket.data.boardId = boardId;
     socket.data.userId = userId;
     sendMessage(posts, currentPrompt, fullPromptHistory, socket, type);

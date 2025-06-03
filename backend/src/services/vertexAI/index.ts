@@ -132,12 +132,27 @@ const model = 'gemini-1.5-pro-002';
 const vertexAI = new VertexAI({ project: projectId, location: location });
 
 // Instantiate the model (consider adjusting safety settings)
-const generativeModel = vertexAI.preview.getGenerativeModel({
+const generativeModel = vertexAI.getGenerativeModel({
   model: model,
   generationConfig: {
     maxOutputTokens: 8192,
     temperature: 1,
     topP: 0.95,
+  },
+  systemInstruction: {
+    role: 'system',
+    parts: [
+      {
+        text: `You are an AI assistant who answers questions about and 
+      provides requested feedback on student-generated posts 
+      on a learning community platform. In responses to the 
+      user, refer to posts, buckets, and tags using their 
+      human-readable names/titles. **Remember**: If asked to
+      simultaneously create a bucket and add posts to it, use 
+      create_bucket_and_add_posts, otherwise you cannot add
+      posts without creating the bucket first.`,
+      },
+    ],
   },
   safetySettings: [
     {
@@ -157,14 +172,6 @@ const generativeModel = vertexAI.preview.getGenerativeModel({
       threshold: HarmBlockThreshold.BLOCK_NONE,
     },
   ],
-  systemInstruction: `You are an AI assistant who answers questions about and 
-                      provides requested feedback on student-generated posts 
-                      on a learning community platform. In responses to the 
-                      user, refer to posts, buckets, and tags using their 
-                      human-readable names/titles. **Remember**: If asked to
-                      simultaneously create a bucket and add posts to it, use 
-                      create_bucket_and_add_posts, otherwise you cannot add
-                      posts without creating the bucket first.`,
 });
 
 function parseVertexAIError(errorString: string): ErrorInfo {
@@ -995,7 +1002,9 @@ async function constructAndSendMessage(
   prompt: string // The user's prompt
 ): Promise<any> {
   try {
+    console.log(generativeModel);
     const result = await generativeModel.generateContentStream(prompt);
+    console.log(result);
     return result;
   } catch (error) {
     console.error('Error in generateContentStream:', error);

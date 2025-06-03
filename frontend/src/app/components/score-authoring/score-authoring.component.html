@@ -1,11 +1,8 @@
-<!-- score-authoring.component.html -->
-
-<div>
+<div class="authoring-page-wrapper">
   <app-toolbar
     class="toolbar"
     *ngIf="user && project"
     [user]="user"
-    style="width: 100%"
   >
     <button
       mat-icon-button
@@ -19,149 +16,148 @@
     <app-toolbar-menu navbarMenu [project]="project"></app-toolbar-menu>
   </app-toolbar>
 
-  <div class="main-content">
-    <div class="activities-pane">
-      <!--<button mat-raised-button color="primary" class="classroom-bindings-button" (click)="toggleClassroomBindings()">
-          {{ showClassroomBindings ? 'Author Resources' : 'Author Classroom' }} 
-        </button>-->
+  <div class="main-layout-container">
+    <div class="left-pane-column">
       <h3>Activity Phases</h3>
       <div
         class="activities-list"
         cdkDropList
+        [cdkDropListData]="activities"
         (cdkDropListDropped)="dropActivity($event)"
       >
         <div
           *ngFor="let activity of activities"
           (click)="selectActivity(activity)"
-          [class.selected]="
-            selectedActivity?.activityID === activity.activityID
-          "
+          [class.selected]="selectedActivity?.activityID === activity.activityID"
           cdkDrag
+          [cdkDragData]="activity"
+          class="activity-item-wrapper"
         >
           <div class="activity-item">
-            <mat-icon cdkDragHandle class="drag-handle"
-              >drag_indicator</mat-icon
-            >
-            {{ activity.name }}
+            <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+            <span class="activity-name">{{ activity.name }}</span>
             <div class="activity-buttons">
-              <button mat-icon-button (click)="editActivity(activity)">
+              <button mat-icon-button (click)="editActivity(activity); $event.stopPropagation();" matTooltip="Edit Activity">
                 <mat-icon>edit</mat-icon>
               </button>
-              <button mat-icon-button (click)="start(activity)">
+              <button mat-icon-button (click)="start(activity); $event.stopPropagation();" matTooltip="Start Activity (Open Roomcast View)">
                 <mat-icon>play_arrow</mat-icon>
               </button>
             </div>
           </div>
         </div>
-      </div>
-      <button
-        mat-fab
-        color="primary"
-        class="add-activity-button"
-        (click)="openCreateActivityModal()"
-      >
-        <mat-icon>add</mat-icon>
-      </button>
-
-      <div *ngIf="selectedActivity" class="item-info-section">
-        <h4>Buckets & Workflows</h4>
-
-        <div class="item-info-grid">
-          <div class="grid-item">
-            <span class="item-label">Buckets:</span>
-          </div>
-          <div class="grid-item">
-            <span class="item-count">{{ bucketCount }}</span>
-          </div>
-          <div class="grid-item">
-            <button
-              mat-icon-button
-              class="add-item-button"
-              (click)="openWorkflowBucketModal(0)"
-              matTooltip="Create/Modify Buckets"
-            >
-              <mat-icon>edit</mat-icon>
-            </button>
-          </div>
-
-          <div class="grid-item">
-            <span class="item-label">Workflows:</span>
-          </div>
-          <div class="grid-item">
-            <span class="item-count">{{ workflowCount }}</span>
-          </div>
-          <div class="grid-item">
-            <button
-              mat-icon-button
-              class="add-item-button"
-              (click)="openWorkflowBucketModal(1)"
-              matTooltip="Create/Modify Workflows"
-              #editWorkflowsButton
-            >
-              <mat-icon>edit</mat-icon>
-            </button>
-          </div>
+        <div *ngIf="!activities || activities.length === 0" class="empty-list-message">
+            No activities created yet.
         </div>
       </div>
-      <div class="open-tools-buttons">  <button
-        mat-icon-button
-        (click)="openTeacherAgentModal()"
-        matTooltip="Open Teacher Agent"
-      >
-        <mat-icon>smart_toy</mat-icon> Open Teacher Agent
-      </button>
-  
-      <button
-        mat-icon-button
-        (click)="openRoomCasting()"
-        matTooltip="Open Roomcasting Environment"
-      >
-        <mat-icon>cast</mat-icon> Open Roomcasting Environment
-      </button>
-    </div>
-    </div>
 
-    <div class="content-and-resources">
-      <div class="middle-pane">
-        <div class="canvas-container" *ngIf="showClassroomBindings">
-          <canvas id="classroomCanvas"></canvas>
-        </div>
+      <div class="add-activity-button-container">
         <button
           mat-fab
           color="primary"
-          class="add-resource-button"
-          (click)="toggleResourcesPane()"
-          *ngIf="!showResourcesPane && selectedActivity"
+          class="add-activity-button"
+          (click)="openCreateActivityModal()"
+          matTooltip="Add New Activity Phase"
         >
           <mat-icon>add</mat-icon>
         </button>
-        <h3 *ngIf="selectedActivity">{{ selectedActivity.name }}</h3>
+      </div>
+
+      <ng-container *ngIf="selectedActivity">
+        <div class="item-info-section">
+          <h4>Buckets & Workflows</h4>
+          <div class="item-info-grid">
+            <div class="grid-item item-label">Buckets:</div>
+            <div class="grid-item item-count">{{ bucketCount }}</div>
+            <div class="grid-item">
+              <button
+                mat-icon-button
+                class="add-item-button"
+                (click)="openWorkflowBucketModal(0)"
+                matTooltip="Create/Modify Buckets"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+
+            <div class="grid-item item-label">Workflows:</div>
+            <div class="grid-item item-count">{{ workflowCount }}</div>
+            <div class="grid-item">
+              <button
+                mat-icon-button
+                class="add-item-button"
+                (click)="openWorkflowBucketModal(1)"
+                matTooltip="Create/Modify Workflows"
+                #editWorkflowsButton
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="open-tools-buttons">
+        <button
+          mat-stroked-button
+          (click)="openTeacherAgentModal()"
+          matTooltip="Open Teacher Agent Configuration"
+        >
+          <mat-icon>smart_toy</mat-icon> Open Teacher Agent
+        </button>
+        <button
+          mat-stroked-button
+          (click)="openRoomCasting()"
+          matTooltip="Open Roomcasting Environment"
+        >
+          <mat-icon>cast</mat-icon> Open Roomcasting
+        </button>
+      </div>
+    </div>
+
+    <div class="middle-pane-column">
+      <div class="canvas-container" *ngIf="showClassroomBindings">
+        <canvas id="classroomCanvas"></canvas>
+      </div>
+
+      <ng-container *ngIf="selectedActivity; else noActivitySelectedInMiddlePane">
+        <button
+          mat-fab
+          [color]="showResourcesPane ? 'warn' : 'accent'"
+          class="toggle-resources-overlay-button"
+          (click)="toggleResourcesPane()"
+          matTooltip="{{ showResourcesPane ? 'Hide Resources & Actions' : 'Show Resources & Actions' }}"
+        >
+          <mat-icon>{{ showResourcesPane ? 'close' : 'build' }}</mat-icon> </button>
+
+        <h3>{{ selectedActivity.name }}</h3>
         <div class="activity-space-header">
           <div class="heading-and-settings-container">
-            <h4 *ngIf="selectedActivity">
-              Activity Space: {{ selectedBoardName }}
-            </h4>
+            <h4>Activity Space: {{ selectedBoardName }}</h4>
             <button
               *ngIf="selectedActivity"
               mat-icon-button
               class="config-button"
               (click)="openConfigurationModal()"
-              matTooltip="Configure Activity Space"
+              matTooltip="Configure Activity Space Board"
             >
               <mat-icon>settings</mat-icon>
             </button>
           </div>
         </div>
 
-        <h5>Resource Assignments</h5>
+        <h5>Resource Tabs for Activity Space</h5>
         <div
           class="activity-resources-list"
           cdkDropList
+          [cdkDropListData]="selectedActivityResources"
           (cdkDropListDropped)="dropResource($event)"
         >
           <div
             *ngFor="let resource of selectedActivityResources; let i = index"
             cdkDrag
+            [cdkDragData]="resource"
+            class="resource-item-wrapper"
           >
             <div
               class="resource-item"
@@ -171,252 +167,195 @@
               [class.monitor]="resource.monitor"
               [class.ideaAgent]="resource.ideaAgent"
             >
-              <mat-icon cdkDragHandle class="drag-handle"
-                >drag_indicator</mat-icon
-              >
-              Tab {{ i + 1 }}: {{ resource.name }}
+              <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+              <span class="resource-name">Tab {{ i + 1 }}: {{ resource.name }}</span>
               <button
                 mat-icon-button
-                (click)="deleteResource(resource, i)"
+                (click)="deleteResource(resource, i); $event.stopPropagation();"
                 class="delete-button"
+                matTooltip="Delete Resource Tab"
               >
                 <mat-icon>close</mat-icon>
               </button>
             </div>
           </div>
+          <div *ngIf="!selectedActivityResources || selectedActivityResources.length === 0" class="empty-list-message">
+              No resources assigned to this activity space. Drag items from 'Resources & Actions' pane.
+          </div>
         </div>
 
-        <mat-tab-group animationDuration="0ms" [(selectedIndex)]="selectedTabIndex">
+        <mat-tab-group class="authoring-tabs" animationDuration="0ms" [(selectedIndex)]="selectedTabIndex" mat-stretch-tabs="false">
           <mat-tab label="Teacher Tasks">
-              <div cdkDropList class="teacher-task-list" (cdkDropListDropped)="dropTeacherAction($event)">
-                  <div
-                  *ngFor="let task of teacherTasks; let i = index"
-                  cdkDrag
-                  class="teacher-task-item"
-                  [class.activateWorkflow]="task.type === 'activateWorkflow'"
-                  [class.activateAiAgent]="task.type === 'activateAiAgent'"
-                  [class.regroupStudents]="task.type === 'regroupStudents'"
-                  [class.viewCanvas]="task.type === 'viewCanvas'"
-                  [class.viewBuckets]="task.type === 'viewBuckets'"
-                  [class.viewTodos]="task.type === 'viewTodos'"
-                  [class.viewWorkspace]="task.type === 'viewWorkspace'"
-                  [class.customPrompt]="task.type === 'customPrompt'"
-                  [class.showJoinCode]="task.type === 'showJoinCode'"
-                  >
-                      <div
-                          class="task-content"
-                          (click)="handleTeacherTaskClick(task)"
-                      >
-                          <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
-                          Task {{ task.order }}:
-                          <mat-icon class="teacher-task-icon">{{ getIconForTask(task) }}</mat-icon>
-                          <ng-container *ngIf="task.type === 'customPrompt'">Prompt: {{ task.customPrompt }}</ng-container>
-                          <ng-container *ngIf="task.type === 'activateWorkflow'">
-                              Activate Workflow: {{ getWorkflowName(task.workflowID) }}
-                          </ng-container>
-                          <ng-container *ngIf="task.type === 'showJoinCode'">
-                              Show Join Code
-                          </ng-container>
-                          {{ (task.type !== 'customPrompt' && task.type !== 'activateWorkflow' && task.type != 'showJoinCode') ? task.name : '' }}
-                      </div>
-                      <button mat-icon-button (click)="deleteTeacherTask(task, i); $event.stopPropagation();">
-                          <mat-icon>close</mat-icon>
-                      </button>
-                  </div>
-              </div>
-          </mat-tab>
-          <mat-tab label="Active AI Agents">
-              <div class="activity-resources-list" cdkDropList (cdkDropListDropped)="dropAiAgent($event)">
-                  <div *ngFor="let agent of activeAiAgents; let i = index" cdkDrag>
-                      <div class="resource-item" [class.teacher]="agent.type === 'teacher'"
-                          [class.idea_chat]="agent.type === 'idea_chat'"
-                          [class.idea_ambient]="agent.type === 'idea_ambient'"
-                          [class.personal_learning]="agent.type === 'personal_learning'"
-                          [class.group_interaction]="agent.type === 'group_interaction'"
-                          [class.workflow]="agent.type === 'workflow'">
-                          <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
-                          {{ agent.name }}
-                          <button mat-icon-button (click)="deleteAiAgent(agent, i)" class="delete-button">
-                              <mat-icon>close</mat-icon>
-                          </button>
-                      </div>
-                  </div>
-              </div>
-          </mat-tab>
-      </mat-tab-group>
-      </div>
-
-      <div class="resources-right-pane-container">
-        <mat-sidenav
-          #authoringResourcesPane
-          id="authoringResourcesPane"
-          mode="over"
-          position="end"
-          [(opened)]="showResourcesPane"
-        >
-          <div class="resources-pane" *ngIf="!showClassroomBindings">
-            <button
-              mat-icon-button
-              class="close-resource-button"
-              (click)="showResourcesPane = false"
-            >
-              <mat-icon>close</mat-icon>
-            </button>
-            <h3>Resources & Actions</h3>
-            <h4>Resources</h4>
-            <div
-              class="available-resources-list"
-              cdkDropList
-              cdkDropListOrientation="vertical"
-              (cdkDropListDropped)="dropResourceFromAvailable($event)"
-            >
-              <div *ngFor="let resource of availableResources" cdkDrag>
-                <div
-                  class="available-resource-item"
-                  [class.canvas]="resource.type === 'canvas'"
-                  [class.bucketView]="resource.type === 'bucketView'"
-                  [class.workspace]="resource.type === 'workspace'"
-                  [class.monitor]="resource.type === 'monitor'"
-                  [class.ideaAgent]="resource.type === 'ideaAgent'"
-                >
-                  {{ resource.name }}
-                </div>
-              </div>
-            </div>
-
-            <h4>AI Agents</h4>
-            <div
-              class="available-teacher-actions-list"
-              cdkDropList
-              cdkDropListOrientation="vertical"
-              (cdkDropListDropped)="dropAiAgentFromAvailable($event)"
-            >
-              <div *ngFor="let agent of availableAiAgents" cdkDrag>
-                <div
-                  class="available-resource-item"
-                  [class.teacher]="agent.type === 'teacher'"
-                  [class.idea_chat]="agent.type === 'idea'"
-                  [class.personal_learning]="agent.type === 'personal_learning'"
-                  [class.group_interaction]="agent.type === 'group_interaction'"
-                  [class.workflow]="agent.type === 'workflow'"
-                >
-                  {{ agent.name }}
-                </div>
-              </div>
-            </div>
-
-            <h4>Teacher Actions</h4>
-            <div
-              class="available-teacher-actions-list"
-              cdkDropList
-              cdkDropListOrientation="vertical"
-              (cdkDropListDropped)="dropTeacherActionFromAvailable($event)"
-            >
-              <div *ngFor="let action of availableTeacherActions" cdkDrag>
-                <div
-                  class="available-resource-item"
-                  [class.activateWorkflow]="action.type === 'activateWorkflow'"
-                  [class.activateAiAgent]="action.type === 'activateAiAgent'"
-                  [class.regroupStudents]="action.type === 'regroupStudents'"
-                  [class.viewCanvas]="action.type === 'viewCanvas'"
-                  [class.viewBuckets]="action.type === 'viewBuckets'"
-                  [class.viewTodos]="action.type === 'viewTodos'"
-                  [class.viewWorkspace]="action.type === 'viewWorkspace'"
-                  [class.customPrompt]="action.type === 'customPrompt'"
-                  [class.showJoinCode]="action.type === 'showJoinCode'"
-                >
-                  <mat-icon>{{ action.icon }}</mat-icon>
-                  {{ action.name }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </mat-sidenav>
-
-        <div class="groups-list" *ngIf="!showResourcesPane && selectedActivity">
-          <div class="groups-header">
-            <h3>Groups</h3>
-            <button mat-icon-button (click)="openGroupDialog()">
-              <mat-icon>edit</mat-icon>
-            </button>
-          </div>
-          <div class="group-resource-table">
-            <div class="group-header-row">
+            <div cdkDropList class="teacher-task-list" [cdkDropListData]="teacherTasks" (cdkDropListDropped)="dropTeacherAction($event)">
               <div
-                class="group-header-cell"
-                *ngFor="let group of selectedActivityGroups"
+                *ngFor="let task of teacherTasks; let i = index"
+                cdkDrag
+                [cdkDragData]="task"
+                class="teacher-task-item"
+                [ngClass]="task.type"
               >
-                {{ group.name }}
-              </div>
-              <div class="group-header-cell edit-cell">
-                <button
-                  mat-icon-button
-                  (click)="editActivity(selectedActivity!)"
-                >
-                  <mat-icon>edit</mat-icon>
+                <div class="task-content" (click)="handleTeacherTaskClick(task)">
+                  <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                  <span class="task-order">Task {{ task.order }}:</span>
+                  <mat-icon class="teacher-task-icon">{{ getIconForTask(task) }}</mat-icon>
+                  <span class="task-description">
+                    <ng-container *ngIf="task.type === 'customPrompt'">Prompt: {{ task.customPrompt }}</ng-container>
+                    <ng-container *ngIf="task.type === 'activateWorkflow'">
+                        Activate Workflow: {{ getWorkflowName(task.workflowID) }}
+                    </ng-container>
+                    <ng-container *ngIf="task.type === 'showJoinCode'">Show Join Code</ng-container>
+                    {{ (task.type !== 'customPrompt' && task.type !== 'activateWorkflow' && task.type !== 'showJoinCode') ? task.name : '' }}
+                  </span>
+                </div>
+                <button mat-icon-button (click)="deleteTeacherTask(task, i); $event.stopPropagation();" matTooltip="Delete Task">
+                  <mat-icon>close</mat-icon>
                 </button>
               </div>
+              <div *ngIf="!teacherTasks || teacherTasks.length === 0" class="empty-list-message">
+                  No teacher tasks defined. Drag actions from 'Resources & Actions' pane.
+              </div>
             </div>
-            <div
-              class="resource-row"
-              *ngFor="
-                let resource of selectedActivityResources;
-                let resourceIndex = index
-              "
-            >
-              <div
-                class="group-resource-cell"
-                *ngFor="let group of selectedActivityGroups"
-                (click)="toggleResourceGroupAssignment(resource, group)"
-                [class.selected]="isResourceAssignedToGroup(resource, group)"
-                [class.canvas]="resource.canvas"
-                [class.bucketView]="resource.bucketView"
-                [class.workspace]="resource.workspace"
-                [class.monitor]="resource.monitor"
-                [class.ideaAgent]="resource.ideaAgent"
-              ></div>
+          </mat-tab>
+          <mat-tab label="Active AI Agents">
+            <div class="ai-agents-list" cdkDropList [cdkDropListData]="activeAiAgents" (cdkDropListDropped)="dropAiAgent($event)">
+              <div *ngFor="let agent of activeAiAgents; let i = index" cdkDrag [cdkDragData]="agent" class="ai-agent-item-wrapper">
+                <div class="ai-agent-item" [ngClass]="agent.type">
+                  <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                  <span class="agent-name">{{ agent.name }} ({{agent.type}})</span>
+                  <button mat-icon-button (click)="deleteAiAgent(agent, i); $event.stopPropagation();" class="delete-button" matTooltip="Delete Agent">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <div *ngIf="!activeAiAgents || activeAiAgents.length === 0" class="empty-list-message">
+                  No AI agents configured. Drag agents from 'Resources & Actions' pane.
+              </div>
             </div>
+          </mat-tab>
+        </mat-tab-group>
+      </ng-container>
+      <ng-template #noActivitySelectedInMiddlePane>
+        <div class="placeholder-message">
+          <h2>Welcome to SCORE Authoring</h2>
+          <p>Please select an Activity Phase from the left pane to begin configuring its resources, tasks, and groups.</p>
+          <p>If no activities exist, click the <mat-icon>add</mat-icon> button in the left pane to create one.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="right-pane-column">
+      <ng-container *ngIf="!showClassroomBindings">
+        <div class="default-right-pane-content" *ngIf="!showResourcesPane && selectedActivity">
+          <div class="groups-header">
+            <h3>Group Assignments</h3>
+            <button mat-icon-button (click)="openGroupDialog()" matTooltip="Manage Project Groups">
+              <mat-icon>manage_accounts</mat-icon>
+            </button>
+          </div>
+          <ng-container *ngIf="selectedActivityGroups.length > 0 && selectedActivityResources.length > 0; else noGroupsOrResourcesForTableInRightPane">
+            <div class="group-resource-table">
+              <div class="group-header-row">
+                <div class="group-header-cell" *ngFor="let group of selectedActivityGroups">
+                  <span>{{ group.name }}</span>
+                </div>
+              </div>
+              <div class="resource-row" *ngFor="let resource of selectedActivityResources; let resourceIndex = index">
+                <div
+                  class="group-resource-cell"
+                  *ngFor="let group of selectedActivityGroups"
+                  (click)="toggleResourceGroupAssignment(resource, group)"
+                  [class.selected]="isResourceAssignedToGroup(resource, group)"
+                  [ngClass]="{
+                    'canvas': resource.canvas,
+                    'bucketView': resource.bucketView,
+                    'workspace': resource.workspace,
+                    'monitor': resource.monitor,
+                    'ideaAgent': resource.ideaAgent
+                  }"
+                  matTooltip="{{ resource.name }} - {{ isResourceAssignedToGroup(resource, group) ? 'Assigned to ' + group.name : 'Assign to ' + group.name }}"
+                ></div>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #noGroupsOrResourcesForTableInRightPane>
+            <div class="empty-list-message small-text" *ngIf="selectedActivityGroups.length === 0">
+              No groups created for this project yet. Click the <mat-icon>group_add</mat-icon> icon to manage groups.
+            </div>
+            <div class="empty-list-message small-text" *ngIf="selectedActivityResources.length === 0 && selectedActivityGroups.length > 0">
+              No resources assigned to this activity space (in the middle pane). Add resources first to assign them to groups.
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="resources-actions-overlay" *ngIf="showResourcesPane && !showClassroomBindings">
+          <button
+            mat-icon-button
+            class="close-overlay-button"
+            (click)="showResourcesPane = false"
+            matTooltip="Close Resources & Actions"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+          <h3>Resources & Actions</h3>
+
+          <h4>Available Resource Tabs</h4>
+          <div class="available-items-list" cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="dropResourceFromAvailable($event)" [cdkDropListData]="availableResources">
+            <div *ngFor="let resource of availableResources" cdkDrag [cdkDragData]="resource" class="available-resource-item" [ngClass]="resource.type" matTooltip="Drag to 'Resource Tabs for Activity Space' in the middle pane">
+              {{ resource.name }}
+            </div>
+            <div *ngIf="availableResources.length === 0" class="empty-list-message small">All available resource tab types have been assigned to this activity.</div>
+          </div>
+
+          <h4>Available AI Agents</h4>
+          <div class="available-items-list" cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="dropAiAgentFromAvailable($event)" [cdkDropListData]="availableAiAgents">
+            <div *ngFor="let agent of availableAiAgents" cdkDrag [cdkDragData]="agent" class="available-resource-item" [ngClass]="agent.type" matTooltip="Drag to 'Active AI Agents' tab in the middle pane">
+              {{ agent.name }}
+            </div>
+            <div *ngIf="availableAiAgents.length === 0" class="empty-list-message small">No more AI agent types available to add.</div>
+          </div>
+
+          <h4>Available Teacher Actions</h4>
+          <div class="available-items-list" cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="dropTeacherActionFromAvailable($event)" [cdkDropListData]="availableTeacherActions">
+            <div *ngFor="let action of availableTeacherActions" cdkDrag [cdkDragData]="action" class="available-resource-item" [ngClass]="action.type" matTooltip="Drag to 'Teacher Tasks' tab in the middle pane">
+              <mat-icon>{{ action.icon }}</mat-icon>
+              {{ action.name }}
+            </div>
+            <div *ngIf="availableTeacherActions.length === 0" class="empty-list-message small">No teacher actions available.</div>
           </div>
         </div>
-      </div>
+      </ng-container>
 
-      <div
-        class="classroom-right-pane-container"
-        *ngIf="showClassroomBindings && showResourcesPane"
-      >
-        <mat-sidenav
-          #classroomResourcesPane
-          mode="over"
-          position="end"
-          [(opened)]="showResourcesPane"
-        >
-          <div class="resources-pane" *ngIf="showClassroomBindings">
+      <ng-container *ngIf="showClassroomBindings">
+        <div class="classroom-mode-right-pane">
+          <div class="classroom-resources-content" *ngIf="showResourcesPane">
             <button
               mat-icon-button
-              class="close-resource-button"
+              class="close-overlay-button"
               (click)="showResourcesPane = false"
+              matTooltip="Close Classroom Elements"
             >
               <mat-icon>close</mat-icon>
             </button>
-            <h3>Resources</h3>
-
-            <h4>Classroom Objects</h4>
-            <div
-              class="available-resources-list"
-              cdkDropList
-              cdkDropListOrientation="vertical"
-              (cdkDropListDropped)="dropResourceFromAvailable($event)"
-            >
-              <div *ngFor="let resource of availableClassroomObjects" cdkDrag>
-                <div class="available-resource-item">
-                  <mat-icon>{{ resource.icon }}</mat-icon>
-                  {{ resource.name }}
-                </div>
+            <h3>Classroom Elements</h3>
+            <h4>Available Objects</h4>
+            <div class="available-items-list" cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="dropResourceFromAvailable($event)"> <div *ngFor="let resource of availableClassroomObjects" cdkDrag [cdkDragData]="resource" class="available-resource-item" matTooltip="Drag onto the canvas in the middle pane">
+                <mat-icon>{{ resource.icon }}</mat-icon>
+                {{ resource.name }}
               </div>
+              <div *ngIf="!availableClassroomObjects || availableClassroomObjects.length === 0" class="empty-list-message small">No classroom objects defined.</div>
             </div>
           </div>
-        </mat-sidenav>
+          <div *ngIf="!showResourcesPane" class="default-classroom-content">
+            <h4>Classroom Setup Mode</h4>
+            <p>Arrange classroom elements on the canvas in the middle pane.</p>
+            <button mat-stroked-button (click)="showResourcesPane = true">
+              <mat-icon>add_circle_outline</mat-icon> Show Available Elements
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="placeholder-message" *ngIf="!selectedActivity && !showClassroomBindings && !showResourcesPane">
+        Select an Activity Phase from the left pane to manage its group assignments or view available resources.
       </div>
-    </div>
-  </div>
-</div>
+    </div> </div> </div> 

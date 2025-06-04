@@ -163,10 +163,10 @@
   position: relative; // For positioning FAB if it's inside
 
   .toggle-resources-overlay-button {
-    position: absolute; // Positioned relative to .middle-pane-column
-    bottom: 1rem; // Adjusted from 2rem to match padding
-    right: 1rem;  // Adjusted from 2rem to match padding
-    z-index: 990;
+    position: absolute;
+    bottom: 1rem; // Distance from the bottom of .middle-pane-column
+    right: 1rem;  // Distance from the right of .middle-pane-column
+    z-index: 999;   // Ensure it's above scrolling content within this pane
   }
 
   .canvas-container {

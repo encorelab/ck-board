@@ -93,29 +93,14 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   ];
   availableTeacherActions: any[] = [
     { name: 'Activate Workflow', type: 'activateWorkflow', icon: 'timeline' },
-    { name: 'Activate AI Agent', type: 'activateAiAgent', icon: 'smart_toy' },
-    {
-      name: 'Manually Regroup Students',
-      type: 'regroupStudents',
-      icon: 'group_work',
-    },
+    // { name: 'Activate AI Agent', type: 'activateAiAgent', icon: 'smart_toy' },
+    { name: 'View Idea Agent', type: 'viewIdeaAgent', icon: 'psychology' },
+    { name: 'Manually Regroup Students', type: 'regroupStudents', icon: 'group_work'},
     { name: 'View Canvas', type: 'viewCanvas', icon: 'visibility' },
     { name: 'View Buckets', type: 'viewBuckets', icon: 'view_module' },
-    {
-      name: 'View All Tasks, TODOs, & Analytics',
-      type: 'viewTodos',
-      icon: 'assignment',
-    },
-    {
-      name: 'View Personal Workspace',
-      type: 'viewWorkspace',
-      icon: 'monitoring',
-    },
-    {
-      name: 'Custom Teacher Prompt',
-      type: 'customPrompt',
-      icon: 'chat_bubble',
-    },
+    { name: 'View All Tasks, TODOs, & Analytics', type: 'viewTodos', icon: 'assignment'},
+    { name: 'View Personal Workspace', type: 'viewWorkspace', icon: 'monitoring'},
+    { name: 'Custom Teacher Prompt', type: 'customPrompt', icon: 'chat_bubble'},
     { name: 'Show Student Join Code', type: 'showJoinCode', icon: 'qr_code' },
   ];
   availableAiAgents: any[] = [
@@ -269,6 +254,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   async toggleActivityState(activity: Activity, event: MouseEvent) {
     event.stopPropagation();
+    console.log('[SCORE AUTHORING] toggleActivityState called for:', activity.name, 'Current isActive:', activity.isActive);
     if (activity.isActive) {
       await this.stopActivity(activity);
     } else {
@@ -277,124 +263,77 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   }
 
   async startActivity(activityToStart: Activity) {
-    if (!this.project) return;
-
+    console.log('[SCORE AUTHORING] startActivity called for:', activityToStart.name);
+    if (!this.project) {
+        console.error('[SCORE AUTHORING] Project not loaded, cannot start activity.');
+        return;
+    }
     try {
-      // The backend PUT will handle deactivating other activities
-      const updatedStartedActivity = await this.http
-        .put<Activity>(`activities/${activityToStart.activityID}`, {
-          ...activityToStart,
-          isActive: true,
-        })
-        .toPromise();
-
-      if (!updatedStartedActivity) {
-        throw new Error('Failed to update activity to active on the server.');
-      }
-
-      // Update local activities array
-      this.activities.forEach((act) => {
-        act.isActive = act.activityID === updatedStartedActivity.activityID;
-      });
-      // If selectedActivity is not the one we just started, update it
-      if (
-        this.selectedActivity?.activityID !== updatedStartedActivity.activityID
-      ) {
-        this.selectedActivity = updatedStartedActivity;
+      const updatedStartedActivity = await this.http.put<Activity>(`activities/${activityToStart.activityID}`, { ...activityToStart, isActive: true }).toPromise();
+      if (!updatedStartedActivity) throw new Error('Failed to update activity to active on the server.');
+      
+      this.activities.forEach(act => act.isActive = (act.activityID === updatedStartedActivity.activityID));
+      if(this.selectedActivity?.activityID !== updatedStartedActivity.activityID) {
+        this.selectedActivity = this.activities.find(a => a.activityID === updatedStartedActivity.activityID) || null;
       } else if (this.selectedActivity) {
-        // If it was already selected, ensure its isActive is updated
         this.selectedActivity.isActive = true;
       }
 
-      // Fetch fresh resources for the activity being started for the socket message
-      const resourcesForSocket =
-        (await this.http
-          .get<Resource[]>(`resources/activity/${activityToStart.activityID}`)
-          .toPromise()) || [];
-      resourcesForSocket.sort((a, b) => a.order - b.order);
+      const resourcesForSocket = (await this.http.get<Resource[]>(`resources/activity/${activityToStart.activityID}`).toPromise()) || [];
+      resourcesForSocket.sort((a,b) => a.order - b.order);
 
-      const socketPayload = {
-        eventData: {
-          // Ensure payload is wrapped in eventData if roomcasting expects it
-          projectID: this.project.projectID,
-          activityID: activityToStart.activityID,
-          boardID: activityToStart.boardID,
-          resources: resourcesForSocket, // These are the resources for the activity being started
-        },
+      const socketPayloadForStart = { // This is the 'value' for SocketService.emit
+        projectID: this.project.projectID,
+        activityID: activityToStart.activityID,
+        boardID: activityToStart.boardID,
+        resources: resourcesForSocket,
       };
-      console.log(
-        'SCORE Authoring: Attempting to emit RESOURCES_UPDATE with payload:',
-        JSON.stringify(socketPayload, null, 2)
-      );
+      console.log('[SCORE AUTHORING] Attempting to emit RESOURCES_UPDATE. Payload (value for SocketService):', JSON.stringify(socketPayloadForStart, null, 2));
+      this.socketService.emit(SocketEvent.RESOURCES_UPDATE, socketPayloadForStart);
+      console.log('[SCORE AUTHORING] RESOURCES_UPDATE emitted.');
 
-      this.socketService.emit(SocketEvent.RESOURCES_UPDATE, socketPayload);
-
-      console.log('SCORE Authoring: SocketEvent.RESOURCES_UPDATE emitted.');
-
-      this.snackbarService.queueSnackbar(
-        `Activity "${activityToStart.name}" started.`
-      );
-      // No need to call selectActivity if it's already selected and its isActive status is updated.
-      // If it wasn't selected, the above logic handles it.
+      this.snackbarService.queueSnackbar(`Activity "${activityToStart.name}" started.`);
       this.cdr.detectChanges();
     } catch (error) {
-      console.error('Error starting activity:', error);
+      console.error('[SCORE AUTHORING] Error starting activity:', error);
       this.snackbarService.queueSnackbar('Failed to start activity.');
-      // Revert UI if necessary (though backend should be source of truth on next load)
-      const localActivity = this.activities.find(
-        (a) => a.activityID === activityToStart.activityID
-      );
+      const localActivity = this.activities.find(a => a.activityID === activityToStart.activityID);
       if (localActivity) localActivity.isActive = false;
       this.cdr.detectChanges();
     }
   }
 
   async stopActivity(activityToStop: Activity) {
-    if (!this.project) return;
-
+    console.log('[SCORE AUTHORING] stopActivity called for:', activityToStop.name); // <-- ADD THIS
+    if (!this.project) {
+        console.error('[SCORE AUTHORING] Project not loaded, cannot stop activity.');
+        return;
+    }
     try {
-      const updatedStoppedActivity = await this.http
-        .put<Activity>(`activities/${activityToStop.activityID}`, {
-          ...activityToStop,
-          isActive: false,
-        })
-        .toPromise();
+      const updatedStoppedActivity = await this.http.put<Activity>(`activities/${activityToStop.activityID}`, { ...activityToStop, isActive: false }).toPromise();
+      if (!updatedStoppedActivity) throw new Error('Failed to update activity to inactive on the server.');
 
-      if (!updatedStoppedActivity) {
-        throw new Error('Failed to update activity to inactive on the server.');
-      }
-
-      // Update local activity
-      const localActivity = this.activities.find(
-        (a) => a.activityID === updatedStoppedActivity.activityID
-      );
-      if (localActivity) {
-        localActivity.isActive = false;
-      }
-      if (
-        this.selectedActivity?.activityID === updatedStoppedActivity.activityID
-      ) {
+      const localActivity = this.activities.find(a => a.activityID === updatedStoppedActivity.activityID);
+      if (localActivity) localActivity.isActive = false;
+      if (this.selectedActivity?.activityID === updatedStoppedActivity.activityID) {
         this.selectedActivity.isActive = false;
       }
 
-      this.socketService.emit(SocketEvent.ACTIVITY_STOPPED, {
-        eventData: {
-          projectID: this.project.projectID,
-          activityID: activityToStop.activityID,
-        },
-      });
-      this.snackbarService.queueSnackbar(
-        `Activity "${activityToStop.name}" stopped.`
-      );
+      const socketPayloadForStop = { // This is the 'value' for SocketService.emit
+        projectID: this.project.projectID,
+        activityID: activityToStop.activityID, // Send activityID that stopped
+      };
+      console.log('[SCORE AUTHORING] Attempting to emit ACTIVITY_STOPPED. Payload (value for SocketService):', JSON.stringify(socketPayloadForStop, null, 2)); // <-- ADD THIS
+      this.socketService.emit(SocketEvent.ACTIVITY_STOPPED, socketPayloadForStop);
+      console.log('[SCORE AUTHORING] ACTIVITY_STOPPED emitted.'); // <-- ADD THIS
+
+      this.snackbarService.queueSnackbar(`Activity "${activityToStop.name}" stopped.`);
       this.cdr.detectChanges();
     } catch (error) {
-      console.error('Error stopping activity:', error);
+      console.error('[SCORE AUTHORING] Error stopping activity:', error);
       this.snackbarService.queueSnackbar('Failed to stop activity.');
-      // Revert UI if necessary
-      const localActivity = this.activities.find(
-        (a) => a.activityID === activityToStop.activityID
-      );
-      if (localActivity) localActivity.isActive = true; // Revert optimistic update
+      const localActivity = this.activities.find(a => a.activityID === activityToStop.activityID);
+      if (localActivity) localActivity.isActive = true; // Revert optimistic UI update on error
       this.cdr.detectChanges();
     }
   }
@@ -618,27 +557,26 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       case 'viewBuckets':
       case 'viewWorkspace':
       case 'viewTodos':
+      case 'viewIdeaAgent': 
         this.getSelectedBoard().then((board) => {
           if (board) {
-            // Map task.type to componentType
             let componentType = '';
             switch (task.type) {
-              case 'viewCanvas':
-                componentType = 'canvas';
-                break;
-              case 'viewBuckets':
-                componentType = 'bucketView';
-                break;
-              case 'viewTodos':
-                componentType = 'monitor';
-                break;
-              case 'viewWorkspace':
-                componentType = 'workspace';
-                break;
+              case 'viewCanvas': componentType = 'canvas'; break;
+              case 'viewBuckets': componentType = 'bucketView'; break;
+              case 'viewTodos': componentType = 'monitor'; break;
+              case 'viewWorkspace': componentType = 'workspace'; break;
+              case 'viewIdeaAgent': componentType = 'ideaAgentView'; break;
             }
-            this.openViewModal(componentType, this.project, board);
+            if (componentType) { // Ensure componentType is set
+                this.openViewModal(componentType, this.project, board);
+            } else {
+                console.error('Unknown task type for viewing modal:', task.type);
+                this.snackbarService.queueSnackbar('Cannot open view: unknown task type.');
+            }
           } else {
-            console.error('Selected board is undefined');
+            console.error('Selected board is undefined for viewing task:', task.name);
+            this.snackbarService.queueSnackbar('Cannot open view: selected board not found.');
           }
         });
         break;
@@ -652,7 +590,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         this.showJoinCode(task);
         break;
       default:
-        // Handle other task types or do nothing
+        console.warn('Unhandled teacher task type:', task.type);
         break;
     }
   }

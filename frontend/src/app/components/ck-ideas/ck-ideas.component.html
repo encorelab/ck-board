@@ -1,4 +1,4 @@
-<app-toolbar *ngIf="user" [user]="user">
+<app-toolbar *ngIf="user && !embedded" [user]="user">
   <button
     mat-icon-button
     routerLink="{{ '/project/' + projectID }}"

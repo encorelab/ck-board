@@ -12,10 +12,11 @@ import {
   ViewChild,
   ChangeDetectorRef,
   ElementRef,
+  Input, 
 } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
-import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
+// MatLegacySlideToggleModule is not directly used in the template, can be removed if not needed elsewhere
 import { ActivatedRoute, Router } from '@angular/router';
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
@@ -29,8 +30,8 @@ import { ProjectService } from 'src/app/services/project.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
 import { UserService } from 'src/app/services/user.service';
 import Converters from 'src/app/utils/converters';
-import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component';
-import { CanvasService } from 'src/app/services/canvas.service';
+// import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component'; // Not used
+// import { CanvasService } from 'src/app/services/canvas.service'; // Not used
 import { HttpClient } from '@angular/common/http';
 import { saveAs } from 'file-saver';
 import { SnackbarService } from 'src/app/services/snackbar.service';
@@ -47,17 +48,21 @@ interface ChatMessage {
   styleUrls: ['./ck-ideas.component.scss'],
 })
 export class CkIdeasComponent implements OnInit, OnDestroy {
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
 
-  boardID: string | undefined;
-  projectID: string | undefined;
+  @Input() boardID_input?: string; // Use optional if it can also be routed
+  @Input() projectID_input?: string;
+  @Input() embedded: boolean = false;
+
+  // Internal properties to hold the effective IDs
+  boardID?: string;
+  projectID?: string;
 
   ideaBuckets: any[] = [];
-  boards: any[] = [];
-  user: AuthUser;
+  user!: AuthUser;
   board: Board | undefined;
-  project: Project;
+  project!: Project;
   Role: typeof Role = Role;
   ViewType: typeof ViewType = ViewType;
   BoardScope: typeof BoardScope = BoardScope;
@@ -66,7 +71,6 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
 
   viewType = ViewType.IDEAS;
 
-  groupEventToHandler: Map<SocketEvent, Function>;
   unsubListeners: Subscription[] = [];
 
   // AI Chat (Right Pane) Variables
@@ -78,18 +82,16 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   chatHistory: ChatMessage[] = [];
   aiResponseListener: Subscription | undefined;
 
-  // Idea Agent (Left Pane) Variables
-  ideaAgentRawResponse: any | null = null; // Store the raw JSON response
-  ideaAgentFormattedResponse: string | null = null; // Store the HTML formatted response
-  //Add pending variables
+  ideaAgentRawResponse: any | null = null;
+  ideaAgentFormattedResponse: string | null = null;
   pendingIdeaAgentRawResponse: any | null = null;
   pendingIdeaAgentFormattedResponse: string | null = null;
   newSummaryAvailable: boolean = false;
 
-  showRawResponse: boolean = false; // Control which version is displayed
+  showRawResponse: boolean = false;
   isWaitingForIdeaAgent = false;
   waitingIdeaMessage = 'Waiting for AI Response...';
-  selectedContexts: any[] = []; // To store selected buckets/canvas
+  selectedContexts: any[] = [];
   ideaAgentResponseListener: Subscription | undefined;
   topicContext: FormControl = new FormControl('');
 
@@ -98,7 +100,7 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     public boardService: BoardService,
     public projectService: ProjectService,
     public bucketService: BucketService,
-    public canvasService: CanvasService,
+    // public canvasService: CanvasService, // Not used
     public userService: UserService,
     private snackbarService: SnackbarService,
     public dialog: MatDialog,
@@ -110,94 +112,93 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private changeDetectorRef: ChangeDetectorRef,
     private http: HttpClient
-  ) {
-    this.groupEventToHandler = new Map<SocketEvent, Function>([]);
-  }
+  ) {}
 
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
     this.isTeacher = this.user.role === Role.TEACHER;
-    const { boardID, projectID, board } = await this.configureBoard();
-    this.boardID = boardID;
-    this.projectID = projectID;
-    this.board = board;
+
+    if (this.embedded && this.boardID_input && this.projectID_input) {
+        this.boardID = this.boardID_input;
+        this.projectID = this.projectID_input;
+        console.log("[CK-IDEAS Embedded] Initializing with BoardID:", this.boardID, "ProjectID:", this.projectID);
+    } else if (!this.embedded) { // Only use route params if not embedded
+        const map = this.activatedRoute.snapshot.paramMap;
+        this.boardID = map.get('boardID') ?? undefined;
+        this.projectID = map.get('projectID') ?? undefined;
+        console.log("[CK-IDEAS Routed] Initializing with BoardID:", this.boardID, "ProjectID:", this.projectID);
+    } else {
+        console.error("[CK-IDEAS Embedded] Missing boardID_input or projectID_input for embedded mode.");
+        this.snackbarService.queueSnackbar('Error: Required information missing for Idea Agent.');
+        return; // Cannot proceed without IDs
+    }
+
 
     if (this.boardID && this.projectID) {
-      await this.bucketService.getAllByBoard(this.boardID).then((buckets) => {
-        if (buckets) {
-          this.ideaBuckets = buckets;
+      try {
+        this.board = await this.boardService.get(this.boardID);
+        this.project = await this.projectService.get(this.projectID);
+
+        if (!this.board || !this.project) {
+            console.error("[CK-IDEAS] Board or Project data could not be fetched with IDs:", this.boardID, this.projectID);
+            throw new Error("Board or Project data could not be fetched.");
         }
-      });
-      this.socketService.connect(this.user.userID, this.boardID);
+        // Navigation guard only if not embedded
+        if (!this.embedded && !this.isTeacher && this.board.viewSettings && !this.board.viewSettings.allowIdeas) {
+            this.router.navigateByUrl(
+              `project/${this.projectID}/board/${this.boardID}/${this.board.defaultView?.toLowerCase()}`
+            );
+            return;
+        }
 
-      // Default to "None" context and show prompt.  AND disable the button.
-      this.ideaAgentFormattedResponse =
-        '<ol><li>Consider adding a <b>Topic Context</b> <em>(above)</em> to improve relevance of summary</li><li>Select post <b>Source</b> using "+" button <em>(top right)</em></li><li>To regenerate, click the <b>refresh</b> button <em>(in this AI Summary heading)</em></li><li>(If needed) If you get a model error, please refresh the summary or page</li></ol>';
-      this.isWaitingForIdeaAgent = false;
-      this.selectedContexts = ['None'];
+        this.ideaBuckets = (await this.bucketService.getAllByBoard(this.boardID)) || [];
 
-      // Load topic context from local storage
-      const storedContext = localStorage.getItem('topicContext');
-      if (storedContext) {
-        this.topicContext.setValue(storedContext);
+        // Only connect socket if not embedded (or based on specific needs for embedded mode)
+        if (!this.embedded) {
+            this.socketService.connect(this.user.userID, this.boardID);
+        }
+
+        this.ideaAgentFormattedResponse =
+          '<ol><li>Consider adding a <b>Topic Context</b> <em>(above)</em> to improve relevance of summary</li><li>Select post <b>Source</b> using "+" button <em>(top right)</em></li><li>To regenerate, click the <b>refresh</b> button <em>(in this AI Summary heading)</em></li><li>(If needed) If you get a model error, please refresh the summary or page</li></ol>';
+        this.isWaitingForIdeaAgent = false;
+        this.selectedContexts = ['None'];
+
+        const storedContext = localStorage.getItem(`topicContext_${this.boardID}`);
+        if (storedContext) {
+          this.topicContext.setValue(storedContext);
+        }
+        this.waitingIdeaMessage = '';
+
+        this.topicContext.valueChanges.subscribe((value) => {
+          localStorage.setItem(`topicContext_${this.boardID}`, value);
+        });
+
+      } catch (error) {
+        console.error('[CK-IDEAS] Failed to configure board or project:', error);
+        this.snackbarService.queueSnackbar('Error loading Idea Agent data.');
+        if (!this.embedded) this.router.navigate(['/error']); // Navigate to error only if not embedded
       }
     } else {
-      console.error('Failed to configure board!');
-      this.router.navigate(['/error']);
+      console.error('[CK-IDEAS] boardID or projectID is missing after initialization attempt!');
+      this.snackbarService.queueSnackbar('Required information missing for Idea Agent.');
+      if (!this.embedded) this.router.navigate(['/error']);
     }
-    this.waitingIdeaMessage = ''; //Initially blank
-
-    //Listen to topic context changes
-    this.topicContext.valueChanges.subscribe((value) => {
-      localStorage.setItem('topicContext', value);
-    });
-  }
-
-  initGroupEventsListener() {
-    for (const [k, v] of this.groupEventToHandler) {
-      const unsub = this.socketService.listen(k, v);
-      this.unsubListeners.push(unsub);
-    }
-  }
-
-  async configureBoard(): Promise<{
-    boardID?: string;
-    projectID?: string;
-    board?: Board;
-  }> {
-    // Return board
-    const map = this.activatedRoute.snapshot.paramMap;
-    if (map.has('boardID') && map.has('projectID')) {
-      const boardID = map.get('boardID') ?? undefined;
-      const projectID = map.get('projectID') ?? undefined;
-
-      if (boardID && projectID) {
-        const board = await this.boardService.get(boardID);
-        if (board) {
-          if (
-            !this.isTeacher &&
-            board.viewSettings &&
-            !board.viewSettings.allowIdeas
-          ) {
-            this.router.navigateByUrl(
-              `project/<span class="math-inline">{projectID}/board/</span>{boardID}/${board.defaultView?.toLowerCase()}`
-            );
-          }
-          this.projectService.get(projectID).then((project) => {
-            this.project = project;
-          });
-          return { boardID, projectID, board }; // Return the board object
-        } else {
-          return { boardID, projectID, board: undefined }; // Explicitly return undefined
-        }
-      }
-    }
-    return { board: undefined }; // Return undefined board
   }
 
   copyEmbedCode() {
-    const url = window.location.href + '?embedded=true';
-    navigator.clipboard.writeText(url);
+    if (!this.boardID || !this.projectID) {
+        this.snackbarService.queueSnackbar("Cannot copy embed code: board or project ID missing.");
+        return;
+    }
+    // Ensure ViewType.IDEAS.toLowerCase() is correct or use a string literal
+    const ideasViewPath = (this.viewType as ViewType).toString().toLowerCase();
+    const url = `${window.location.origin}/project/${this.projectID}/board/${this.boardID}/${ideasViewPath}?embedded=true`;
+    navigator.clipboard.writeText(url).then(() => {
+        this.snackbarService.queueSnackbar("Embeddable URL copied to clipboard!");
+    }).catch(err => {
+        this.snackbarService.queueSnackbar("Failed to copy URL.");
+        console.error('Failed to copy embed code:', err);
+    });
   }
 
   copyPersonalEmbedCode() {
@@ -753,7 +754,8 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
 
   async ngOnDestroy() {
     this.unsubListeners.forEach((s) => s.unsubscribe());
-    if (this.boardID) {
+    // Only disconnect if not embedded and boardID is present
+    if (this.boardID && !this.embedded && this.user) {
       this.socketService.disconnect(this.user.userID, this.boardID);
     }
     if (this.aiResponseListener) {

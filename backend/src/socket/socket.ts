@@ -1,7 +1,7 @@
-import { Server } from 'http';
-import * as socketIO from 'socket.io';
+import { Server as HttpServer } from 'http'; // Renamed to avoid conflict with socket.io Server
+import alinameSocketIO, { Server as SocketIOServer, Socket as SocketIOSocket } from 'socket.io'; // Use aliased names
 import { SocketEvent } from '../constants';
-import events from './events';
+import events from './events'; // This should be an array of your event handler objects/classes
 import SocketManager from './socketManager';
 import RedisClient from '../utils/redis';
 import { createAdapter } from '@socket.io/redis-adapter';
@@ -9,13 +9,25 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Define a more specific type for your event handlers if possible
+// This helps ensure consistency and better type inference.
+interface IEventHandler {
+  type: SocketEvent;
+  // Using 'any' here for generality, but specific types for P (payload) and R (result) are better.
+  // P is the type of data received in the socket event.
+  // R is the type of data returned by handleEvent and passed to handleResult.
+  handleEvent: (data: any) // Consider SocketPayload<P>
+  => Promise<any>; // Consider Promise<R>
+  handleResult: (io: SocketIOServer, socket: SocketIOSocket, result: any) // Consider result: R
+  => Promise<void>;
+}
+
+
 class Socket {
   private static _instance: Socket;
-
   private _socketManager: SocketManager;
-  private _io: socketIO.Server | null = null;
+  private _io: SocketIOServer | null = null;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {
     this._socketManager = SocketManager.Instance;
   }
@@ -24,78 +36,66 @@ class Socket {
     return this._instance || (this._instance = new this());
   }
 
-  /**
-   * Initializes websocket server which will listen for users
-   * joining boards and handle all board events.
-   *
-   * @param server the http server
-   * @returns void
-   */
-
-  private _initialized = false;
-
-  async init(server: Server, redis: RedisClient) {
+  async init(server: HttpServer, redis: RedisClient) {
     try {
-      const io = new socketIO.Server(server, {
+      const io = new alinameSocketIO.Server(server, {
         transports: ['websocket', 'polling'],
         cors: {
-          origin: process.env.CKBOARD_SERVER_ADDRESS || 'http://localhost:4200', // Specific origin or localhost
+          origin: process.env.CKBOARD_SERVER_ADDRESS || 'http://localhost:4200',
           methods: ['GET', 'POST'],
         },
         adapter: createAdapter(
           RedisClient.getPublisher(),
           RedisClient.getSubscriber()
         ),
-        pingTimeout: 60000, // 60 seconds (adjust as needed)
-        pingInterval: 25000, // 25 seconds (adjust as needed)
+        pingTimeout: 60000,
+        pingInterval: 25000,
       });
 
       this._io = io;
+      console.log('Socket server running on port 8000...'); // Assuming port 8000 or your configured port
 
-      console.log('Socket server running on port 8000...');
-
-      io.on('connection', (socket) => {
+      io.on('connection', (socket: SocketIOSocket) => {
         console.log(
           `New connection: Socket ID ${socket.id}, IP: ${socket.handshake.address}`
         );
-
-        // Log connection details (optional, but useful for debugging)
         console.log('Connection details:', {
           id: socket.id,
           handshake: {
             headers: socket.handshake.headers,
             query: socket.handshake.query,
-            auth: socket.handshake.auth, // If using authentication
+            auth: socket.handshake.auth,
           },
         });
 
+        this._listenForEvents(io, socket);
+
         socket.on('join', (user: string, room: string) => {
+          console.log(`BACKEND: Socket ${socket.id} attempting to join room: ${room} for user: ${user}`);
           socket.data.room = room;
           this._safeJoin(socket, user, room);
-          this._listenForEvents(io, socket);
           this._logUserSocketsAndRooms(user);
         });
 
         socket.on('leave', (user: string, room: string) => {
           socket.leave(room);
           console.log(`Socket ${socket.id} left room ${room}`);
-          events.map((e) => socket.removeAllListeners(e.type.toString()));
-
-          // Remove the specific socketId for the user from the SocketManager
+          // Removing all listeners for specific event types on 'leave' might be too broad
+          // if the socket is still connected and could join other rooms or emit other events.
+          // Standard disconnect handles listener cleanup for that socket.
+          // events.map((e) => socket.removeAllListeners(e.type.toString()));
           this._socketManager.removeBySocketId(socket.id);
           this._logUserSocketsAndRooms(user);
         });
 
         socket.on('disconnect', () => {
-          console.warn(`Socket ${socket.id} disconnected:`);
-
-          // 1. Leave all rooms
-          const rooms = socket.rooms;
+          console.warn(`Socket ${socket.id} disconnected.`);
+          const rooms = Object.keys(socket.rooms); // socket.rooms is a Set, convert to array if needed
           rooms.forEach((room) => {
-            socket.leave(room);
+            if (room !== socket.id) { // Don't try to leave its own ID room
+              socket.leave(room);
+            }
           });
-
-          // 2. Remove from SocketManager
           this._socketManager.removeBySocketId(socket.id);
         });
 
@@ -104,11 +104,10 @@ class Socket {
           io.in(room).disconnectSockets(true);
         });
 
-        // Error handling within the connection handler
         socket.on('error', (error: any) => {
           if (error.code === 'ECONNRESET') {
             console.error(
-              `Socket ${socket.id} connection reset. Attempting to reconnect...`
+              `Socket ${socket.id} connection reset.`
             );
           } else {
             console.error(`Socket ${socket.id} error:`, error);
@@ -116,17 +115,16 @@ class Socket {
         });
       });
 
-      // Connection error handling for the server
-      io.engine.on('connection_error', (err) => {
+      io.engine.on('connection_error', (err: any) => { // Typed err
         console.error('Socket.IO connection error:', {
           code: err.code,
           message: err.message,
           context: err.context,
-          request: {
+          request: err.req ? { // Check if err.req exists
             ip: err.req.ip,
             url: err.req.url,
             headers: err.req.headers,
-          },
+          } : undefined,
           stack: err.stack,
         });
       });
@@ -145,39 +143,40 @@ class Socket {
    */
   emit(event: SocketEvent, eventData: unknown, roomId: string): void {
     if (!this._io) {
-      throw new Error('IO not initialized. Please invoke init() first.');
+      console.error('IO not initialized. Cannot emit event.');
+      return;
+      // throw new Error('IO not initialized. Please invoke init() first.');
     }
-
     this._io.to(roomId).emit(event, eventData);
   }
 
-  /**
-   * Setup socket to listen for all events from connected user,
-   * handle them accordingly, then emit resulting event back to all users.
-   *
-   * @param io socket server
-   * @param socket socket which will act on events
-   * @returns void
-   */
-  private _listenForEvents(io: socketIO.Server, socket: socketIO.Socket) {
-    events.map((event) =>
-      socket.on(event.type, async (data: any) => {
-        const result = await event.handleEvent(data);
-        return await event.handleResult(io, socket, result as never);
-      })
-    );
+  private _listenForEvents(io: SocketIOServer, socket: SocketIOSocket) {
+    // Ensure 'events' array contains objects/classes that conform to IEventHandler (or similar)
+    // where handleEvent's return type matches handleResult's expected result type.
+    console.log(`BACKEND: Attaching listeners for socket ${socket.id}`);
+    (events as IEventHandler[]).forEach((eventHandler: IEventHandler) => { // Cast to IEventHandler[] for better typing
+      socket.on(eventHandler.type, async (data: any) => {
+        console.log(`BACKEND Socket.ts: Socket ${socket.id} received event type: ${eventHandler.type}. Raw Data:`, JSON.stringify(data, null, 2));
+        try {
+          const result = await eventHandler.handleEvent(data);
+          // Now, if there's a type mismatch between what handleEvent returns
+          // and what handleResult expects, TypeScript will give a more specific error.
+          await eventHandler.handleResult(io, socket, result);
+        } catch (error) {
+          console.error(`BACKEND Socket.ts: Error handling socket event ${eventHandler.type} for socket ${socket.id}:`, error);
+          socket.emit('event_error', { event: eventHandler.type, message: error instanceof Error ? error.message : 'An unknown error occurred' });
+        }
+      });
+    });
   }
 
-  /**
-   * Allow user to join new room, while always leaving the previous
-   * room they were in (if applicable).
-   *
-   * @param socket socket which will join/leave room
-   * @param nextRoom new room to join
-   * @returns void
-   */
-  private _safeJoin(socket: socketIO.Socket, user: string, nextRoom: string) {
+  private _safeJoin(socket: SocketIOSocket, user: string, nextRoom: string) {
+    // It's generally safe for a socket to join multiple rooms if needed.
+    // If a socket should only be in one 'primary' room at a time,
+    // you might want to leave previous rooms here.
+    // For now, just joining:
     socket.join(nextRoom);
+    socket.data.room = nextRoom; // Store current primary room on socket.data
     this._socketManager.add(user, socket.id);
     console.log(`Socket ${socket.id} (userID ${user}) joined room ${nextRoom}`);
   }
@@ -195,12 +194,12 @@ class Socket {
 
     console.log(`User ${userId} =>`);
     socketIds.forEach((socketId) => {
-      const socket = this._io?.sockets.sockets.get(socketId);
-      if (socket && socket.data.room) {
-        console.log(`\tSocket ID: ${socketId}, Room: ${socket.data.room}`);
+      const socketInstance = this._io?.sockets.sockets.get(socketId);
+      if (socketInstance) {
+        console.log(`\tSocket ID: ${socketId}, Rooms: ${Array.from(socketInstance.rooms).join(', ') || 'None'}`);
       } else {
         console.log(
-          `\tSocket ID: ${socketId} is not currently connected or has no room.`
+          `\tSocket ID: ${socketId} is not currently connected.`
         );
       }
     });

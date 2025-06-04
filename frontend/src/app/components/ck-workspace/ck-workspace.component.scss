@@ -153,7 +153,6 @@
     right: 2rem;          // Distance from the right of the screen
     z-index: 990;         // Ensure it's above most page content, but below modals/main toolbar if necessary
     background-color: #6c63ff; // Keep existing color
-    // Removed !important from position
   }
 
   // ::ng-deep rules are generally discouraged. Prefer to style components via their own SCSS

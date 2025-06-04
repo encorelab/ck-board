@@ -20,7 +20,7 @@ export class ActivityModel {
   @prop({ required: true, default: 0 })
   public order!: number;
 
-  @prop({ required: false, default: false }) // Added isActive property
+  @prop({ required: false, default: false }) 
   public isActive?: boolean;
 }
 

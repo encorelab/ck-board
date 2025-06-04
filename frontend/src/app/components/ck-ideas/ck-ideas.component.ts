@@ -12,12 +12,12 @@ import {
   ViewChild,
   ChangeDetectorRef,
   ElementRef,
-  Input, 
+  Input,
 } from '@angular/core';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 // MatLegacySlideToggleModule is not directly used in the template, can be removed if not needed elsewhere
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router'; // Import Router
 import { Board, BoardScope, ViewType } from 'src/app/models/board';
 import { Project } from 'src/app/models/project';
 import { AuthUser, Role } from 'src/app/models/user';
@@ -28,7 +28,7 @@ import Post, { PostType } from 'src/app/models/post';
 import { PostService } from 'src/app/services/post.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { UpvotesService } from 'src/app/services/upvotes.service';
-import { UserService } from 'src/app/services/user.service';
+import { UserService } from 'src/app/services/user.service'; // UserService is already here
 import Converters from 'src/app/utils/converters';
 // import { CreateWorkflowModalComponent } from '../create-workflow-modal/create-workflow-modal.component'; // Not used
 // import { CanvasService } from 'src/app/services/canvas.service'; // Not used
@@ -51,11 +51,10 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild('scrollableDiv') private scrollableDiv!: ElementRef;
 
-  @Input() boardID_input?: string; // Use optional if it can also be routed
+  @Input() boardID_input?: string;
   @Input() projectID_input?: string;
   @Input() embedded: boolean = false;
 
-  // Internal properties to hold the effective IDs
   boardID?: string;
   projectID?: string;
 
@@ -63,17 +62,13 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   user!: AuthUser;
   board: Board | undefined;
   project!: Project;
-  Role: typeof Role = Role;
+  Role: typeof Role = Role; // Expose Role enum for template if needed elsewhere
   ViewType: typeof ViewType = ViewType;
-  BoardScope: typeof BoardScope = BoardScope;
-  isTeacher: boolean = false;
+  BoardScope: typeof BoardScope = BoardScope;  
+  isTeacherAndAllowed: boolean = false;
   canvasUsed: boolean = false;
-
   viewType = ViewType.IDEAS;
-
   unsubListeners: Subscription[] = [];
-
-  // AI Chat (Right Pane) Variables
   aiPrompt = '';
   aiResponse = '';
   isWaitingForAIResponse = false;
@@ -81,13 +76,11 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
   waitingMessage = 'Waiting for AI Response...';
   chatHistory: ChatMessage[] = [];
   aiResponseListener: Subscription | undefined;
-
   ideaAgentRawResponse: any | null = null;
   ideaAgentFormattedResponse: string | null = null;
   pendingIdeaAgentRawResponse: any | null = null;
   pendingIdeaAgentFormattedResponse: string | null = null;
   newSummaryAvailable: boolean = false;
-
   showRawResponse: boolean = false;
   isWaitingForIdeaAgent = false;
   waitingIdeaMessage = 'Waiting for AI Response...';
@@ -100,14 +93,13 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     public boardService: BoardService,
     public projectService: ProjectService,
     public bucketService: BucketService,
-    // public canvasService: CanvasService, // Not used
     public userService: UserService,
     private snackbarService: SnackbarService,
     public dialog: MatDialog,
     public commentService: CommentService,
     public upvotesService: UpvotesService,
     private converters: Converters,
-    private router: Router,
+    private router: Router, // Injected Router
     private socketService: SocketService,
     private activatedRoute: ActivatedRoute,
     private changeDetectorRef: ChangeDetectorRef,
@@ -116,13 +108,29 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.user = this.userService.user!;
-    this.isTeacher = this.user.role === Role.TEACHER;
+    
+    if (this.user.role !== Role.TEACHER) {
+      this.isTeacherAndAllowed = false;
+      console.warn("[CK-IDEAS] Access Denied: User is not a teacher.", this.user.username, this.user.role);
+      // If not embedded and user is not a teacher, you might want to navigate them away.
+      // For embedded scenarios, the template will show the access denied message.
+      if (!this.embedded) {
+        this.snackbarService.queueSnackbar("Access Denied: This tool is for teachers only.");
+        // Consider navigating to a default/dashboard page if this component is accessed via a direct route by a non-teacher
+        // Example: this.router.navigate(['/dashboard']);
+      }
+      this.changeDetectorRef.detectChanges(); // Ensure view updates if showing a message
+      return; // Stop further initialization if not a teacher
+    }
+    this.isTeacherAndAllowed = true;
+    // End of role check
 
+    // Prioritize @Input values if embedded, otherwise use route params
     if (this.embedded && this.boardID_input && this.projectID_input) {
         this.boardID = this.boardID_input;
         this.projectID = this.projectID_input;
         console.log("[CK-IDEAS Embedded] Initializing with BoardID:", this.boardID, "ProjectID:", this.projectID);
-    } else if (!this.embedded) { // Only use route params if not embedded
+    } else if (!this.embedded) {
         const map = this.activatedRoute.snapshot.paramMap;
         this.boardID = map.get('boardID') ?? undefined;
         this.projectID = map.get('projectID') ?? undefined;
@@ -130,9 +138,9 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
     } else {
         console.error("[CK-IDEAS Embedded] Missing boardID_input or projectID_input for embedded mode.");
         this.snackbarService.queueSnackbar('Error: Required information missing for Idea Agent.');
-        return; // Cannot proceed without IDs
+        this.isTeacherAndAllowed = false; // Prevent content rendering
+        return;
     }
-
 
     if (this.boardID && this.projectID) {
       try {
@@ -143,17 +151,13 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
             console.error("[CK-IDEAS] Board or Project data could not be fetched with IDs:", this.boardID, this.projectID);
             throw new Error("Board or Project data could not be fetched.");
         }
-        // Navigation guard only if not embedded
-        if (!this.embedded && !this.isTeacher && this.board.viewSettings && !this.board.viewSettings.allowIdeas) {
-            this.router.navigateByUrl(
-              `project/${this.projectID}/board/${this.boardID}/${this.board.defaultView?.toLowerCase()}`
-            );
-            return;
-        }
+        // Navigation guard for non-teacher is now handled by the role check above if not embedded.
+        // If embedded, the parent component should ideally not show the tab/modal to non-teachers.
+        // This internal check is an additional layer.
 
         this.ideaBuckets = (await this.bucketService.getAllByBoard(this.boardID)) || [];
-
-        // Only connect socket if not embedded (or based on specific needs for embedded mode)
+        
+        // Socket connection only if not embedded (or based on specific needs for embedded mode)
         if (!this.embedded) {
             this.socketService.connect(this.user.userID, this.boardID);
         }
@@ -176,11 +180,13 @@ export class CkIdeasComponent implements OnInit, OnDestroy {
       } catch (error) {
         console.error('[CK-IDEAS] Failed to configure board or project:', error);
         this.snackbarService.queueSnackbar('Error loading Idea Agent data.');
-        if (!this.embedded) this.router.navigate(['/error']); // Navigate to error only if not embedded
+        this.isTeacherAndAllowed = false; // Prevent content rendering on error
+        if (!this.embedded) this.router.navigate(['/error']);
       }
     } else {
       console.error('[CK-IDEAS] boardID or projectID is missing after initialization attempt!');
       this.snackbarService.queueSnackbar('Required information missing for Idea Agent.');
+      this.isTeacherAndAllowed = false; // Prevent content rendering
       if (!this.embedded) this.router.navigate(['/error']);
     }
   }

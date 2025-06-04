@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SocketService } from 'src/app/services/socket.service';
 import { UserService } from 'src/app/services/user.service';
-import { AuthUser, Role } from 'src/app/models/user'; // Role is already imported
+import { AuthUser, Role } from 'src/app/models/user';
 import { Resource } from 'src/app/models/resource';
 import { Board } from 'src/app/models/board';
 import { ProjectService } from 'src/app/services/project.service';
@@ -47,8 +47,8 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
   projectID!: string;
   activityID: string | null = null;
   boardID: string | null = null;
-  user!: AuthUser; // public, accessible in template
-  userGroupIDs: string[] = [];
+  user!: AuthUser;
+  userGroupIDs: string[] = []; // This will be refreshed
   project: Project | null = null;
   board: Board | null = null;
 
@@ -58,7 +58,7 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
   isLoading: boolean = true;
   private socketListeners: Subscription[] = [];
 
-  public RoleEnum = Role; // Expose Role enum to the template
+  public RoleEnum = Role;
 
   constructor(
     private route: ActivatedRoute,
@@ -99,23 +99,44 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
       this.project = await this.projectService.get(this.projectID);
       console.log('[ROOMCASTING CLIENT] Project data fetched:', this.project);
 
-      const groups = await this.groupService.getByUserAndProject(this.user.userID, this.projectID);
-      this.userGroupIDs = groups.map((group) => group.groupID);
-      console.log('[ROOMCASTING CLIENT] User Group IDs:', this.userGroupIDs);
+      // Initial fetch of user groups
+      await this.refreshUserGroups();
 
       this.joinProjectRoom();
 
-      await this.fetchInitialActivePhaseDetails();
+      await this.fetchInitialActivePhaseDetails(); // This will call processResourcesForTabs, which now refreshes groups
       this.setupSocketListeners();
 
     } catch (error) {
       console.error('[ROOMCASTING CLIENT] Error initializing roomcasting environment:', error);
       this.snackbarService.queueSnackbar('Error initializing roomcasting environment.');
     } finally {
-      this.isLoading = false;
+      if (this.isLoading) { // Ensure isLoading is set to false if not handled by sub-methods
+          this.isLoading = false;
+      }
       this.cdr.detectChanges();
       console.log('[ROOMCASTING CLIENT] ngOnInit finished. isLoading:', this.isLoading);
     }
+  }
+
+  private async refreshUserGroups(): Promise<void> {
+    if (!this.user || !this.projectID) {
+        console.warn('[ROOMCASTING CLIENT] refreshUserGroups: User or ProjectID missing.');
+        this.userGroupIDs = [];
+        this.cdr.detectChanges(); // Update UI for group count
+        return;
+    }
+    try {
+        console.log('[ROOMCASTING CLIENT] refreshUserGroups: Fetching groups for user:', this.user.userID, 'in project:', this.projectID);
+        const groups = await this.groupService.getByUserAndProject(this.user.userID, this.projectID);
+        this.userGroupIDs = groups.map((group) => group.groupID);
+        console.log('[ROOMCASTING CLIENT] refreshUserGroups: User Group IDs updated:', this.userGroupIDs);
+    } catch (error) {
+        console.error('[ROOMCASTING CLIENT] refreshUserGroups: Error fetching user groups:', error);
+        this.snackbarService.queueSnackbar('Could not update your group memberships.');
+        this.userGroupIDs = []; // Default to empty on error
+    }
+    this.cdr.detectChanges(); // Update UI for group count
   }
 
   private joinProjectRoom(): void {
@@ -149,7 +170,8 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
         this.activityID = activeDetails.activityID;
         this.boardID = activeDetails.boardID;
         this.board = activeDetails.board || null;
-        this.processResourcesForTabs(activeDetails.resources || []);
+        // processResourcesForTabs will now refresh groups internally
+        await this.processResourcesForTabs(activeDetails.resources || []);
         console.log('[ROOMCASTING CLIENT] fetchInitialActivePhaseDetails: Processed active phase. Board:', this.board?.name);
       } else {
         console.log('[ROOMCASTING CLIENT] fetchInitialActivePhaseDetails: No initial active phase found.');
@@ -159,7 +181,9 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
       console.warn('[ROOMCASTING CLIENT] fetchInitialActivePhaseDetails: Could not fetch, or no phase active:', error);
       this.clearActivePhase();
     } finally {
-        this.isLoading = false;
+        if (this.isLoading) {
+            this.isLoading = false;
+        }
         this.cdr.detectChanges();
     }
   }
@@ -169,9 +193,8 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
 
     const resourcesUpdateSub = this.socketService.listen(
       SocketEvent.RESOURCES_UPDATE,
-      (socketPayload: { eventData: ResourcesUpdateSocketPayload } | any) => {
+      async (socketPayload: { eventData: ResourcesUpdateSocketPayload } | any) => { 
         console.log('[ROOMCASTING CLIENT] Socket RESOURCES_UPDATE event received. Raw SocketPayload:', JSON.stringify(socketPayload, null, 2));
-
         const actualEventData = socketPayload?.eventData;
 
         if (actualEventData && actualEventData.projectID === this.projectID) {
@@ -182,27 +205,20 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
           this.activityID = actualEventData.activityID;
           this.boardID = actualEventData.boardID;
 
-          if (this.board?.boardID !== this.boardID && this.boardID) {
-              console.warn(`[ROOMCASTING CLIENT] Board ID changed via socket from ${this.board?.boardID} to ${this.boardID}. Fetching new board details.`);
-              this.http.get<Board | undefined>(`api/boards/${this.boardID}`).toPromise()
-                .then(boardDetails => {
-                    this.board = boardDetails || null;
-                    console.log('[ROOMCASTING CLIENT] Fetched new board details after RESOURCES_UPDATE:', this.board);
-                    this.processResourcesForTabs(actualEventData.resources || []);
-                })
-                .catch(err => {
-                    console.error('[ROOMCASTING CLIENT] Failed to fetch new board details after RESOURCES_UPDATE:', err);
-                    this.board = null;
-                    this.processResourcesForTabs(actualEventData.resources || []);
-                })
-                .finally(() => {
-                    this.isLoading = false;
-                    this.cdr.detectChanges();
-                });
-            return;
+          if ((this.board?.boardID !== this.boardID || !this.board) && this.boardID) {
+              console.warn(`[ROOMCASTING CLIENT] Board ID is ${this.boardID}. Current board is ${this.board?.boardID}. Fetching board details.`);
+              try {
+                const boardDetails = await this.http.get<Board | undefined>(`api/boards/${this.boardID}`).toPromise();
+                this.board = boardDetails || null;
+                console.log('[ROOMCASTING CLIENT] Fetched board details after RESOURCES_UPDATE:', this.board);
+              } catch (err) {
+                console.error('[ROOMCASTING CLIENT] Failed to fetch board details after RESOURCES_UPDATE:', err);
+                this.board = null;
+              }
+              // processResourcesForTabs will be called after board fetch attempt
           }
-
-          this.processResourcesForTabs(actualEventData.resources || []);
+          // processResourcesForTabs will now refresh groups internally
+          await this.processResourcesForTabs(actualEventData.resources || []); 
           this.isLoading = false;
           this.cdr.detectChanges();
         } else {
@@ -219,7 +235,6 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
             console.log('[ROOMCASTING CLIENT] Processing ACTIVITY_STOPPED for activity:', actualEventData.activityID);
             this.clearActivePhase();
             this.snackbarService.queueSnackbar('The teacher has stopped the current activity.');
-            this.cdr.detectChanges();
         } else {
              console.log('[ROOMCASTING CLIENT] Received ACTIVITY_STOPPED but not for this project or data malformed. My projectID:', this.projectID, 'Received SocketPayload:', socketPayload);
         }
@@ -228,15 +243,21 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
     console.log('[ROOMCASTING CLIENT] Listeners set up.');
   }
 
-  private processResourcesForTabs(resources: Resource[]): void {
-    console.log('[ROOMCASTING CLIENT] processResourcesForTabs: Input resources:', JSON.stringify(resources, null, 2));
-    console.log('[ROOMCASTING CLIENT] processResourcesForTabs: Current userGroupIDs:', this.userGroupIDs);
+  private async processResourcesForTabs(resources: Resource[]): Promise<void> { 
+    console.log('[ROOMCASTING CLIENT] processResourcesForTabs: Starting. Input resources count:', resources?.length);
+    this.isLoading = true; // Indicate processing starts
+    this.cdr.detectChanges();
+
+    await this.refreshUserGroups();
+    console.log('[ROOMCASTING CLIENT] processResourcesForTabs: Current userGroupIDs after refresh:', this.userGroupIDs);
+
 
     const newTabs: TabInfo[] = [];
     if (!resources || resources.length === 0) {
         console.log('[ROOMCASTING CLIENT] processResourcesForTabs: No resources to process.');
         this.tabsForUser = [];
         this.selectedTabIndex = 0;
+        this.isLoading = false;
         this.cdr.detectChanges();
         return;
     }
@@ -251,7 +272,9 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
           }
         }
       } else {
-         console.log(`[ROOMCASTING CLIENT] Resource "${resource.name}" has no groupIDs. Defaulting to not shown unless this logic changes.`);
+         console.log(`[ROOMCASTING CLIENT] Resource "${resource.name}" has no specific groupIDs assigned. (Logic for this case might need review based on requirements)`);
+         // Depending on requirements, if groupIDs is empty, it might mean for all, or for none.
+         // Current logic: if no groupIDs, userInAssignedGroup remains false unless other conditions met.
       }
 
       if (userInAssignedGroup) {
@@ -263,15 +286,8 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
         else if (resource.ideaAgent) tabType = 'ideaAgent';
 
         if (tabType) {
-            // For Idea Agent, only add the tab if the user is a teacher.
-            // The content rendering will also check this, but this prevents non-teachers from even seeing the tab.
-            // Alternatively, always add the tab and let HTML handle display (current approach for flexibility).
-            // if (tabType === 'ideaAgent' && this.user.role !== this.RoleEnum.TEACHER) {
-            //   console.log(`[ROOMCASTING CLIENT] processResourcesForTabs: Skipping Idea Agent tab for non-teacher user for resource: ${resource.name}`);
-            // } else {
-              newTabs.push({ type: tabType, label: resource.name, name: resource.name, order: resource.order });
-              console.log(`[ROOMCASTING CLIENT] processResourcesForTabs: Adding tab for user: ${resource.name} (Type: ${tabType}, Order: ${resource.order})`);
-            // }
+            newTabs.push({ type: tabType, label: resource.name, name: resource.name, order: resource.order });
+            console.log(`[ROOMCASTING CLIENT] processResourcesForTabs: Adding tab for user: ${resource.name} (Type: ${tabType}, Order: ${resource.order})`);
         }
       } else {
         console.log(`[ROOMCASTING CLIENT] processResourcesForTabs: User not in assigned groups for resource: ${resource.name}. GroupIDs: ${resource.groupIDs}`);
@@ -290,6 +306,7 @@ export class ScoreRoomcastingEnvironmentComponent implements OnInit, OnDestroy {
       this.selectedTabIndex = 0;
       console.log('[ROOMCASTING CLIENT] processResourcesForTabs: No tabs for user, selectedTabIndex reset to 0.');
     }
+    this.isLoading = false; // Processing finished
     this.cdr.detectChanges();
   }
 

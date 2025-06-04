@@ -35,8 +35,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
   styleUrls: ['./score-view-modal.component.scss'],
 })
 export class ScoreViewModalComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('viewContainer', { read: ViewContainerRef, static: true }) // Added static: true for AfterViewInit access
-  viewContainer!: ViewContainerRef; // Added definite assignment
+  @ViewChild('viewContainer', { read: ViewContainerRef, static: true }) 
+  viewContainer!: ViewContainerRef; 
 
   @Input() projectID: string;
   @Input() boardID: string;

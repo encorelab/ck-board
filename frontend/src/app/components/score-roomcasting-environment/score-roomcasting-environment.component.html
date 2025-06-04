@@ -1,52 +1,111 @@
-<mat-toolbar *ngIf="user && project" class="toolbar" style="width: 100%">
-    <span *ngIf="board">SCORE Roomcasting - {{ project.name }} - {{board.name}}</span>
-    <span style="flex: 1 1 auto"></span>
+<div class="roomcasting-wrapper">
+  <mat-toolbar *ngIf="user && project" class="roomcasting-toolbar" color="primary">
+    <button
+      mat-icon-button
+      [routerLink]="['/project', projectID]"
+      matTooltip="Return to Project Dashboard"
+      aria-label="Return to Project Dashboard"
+      class="roomcast-back-button"
+    >
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span class="toolbar-title-container">
+      <mat-icon class="toolbar-icon">cast_connected</mat-icon>
+      <span class="toolbar-project-name">SCORE Roomcasting - {{ project?.name }}</span>
+      <span *ngIf="board" class="toolbar-board-name"> | {{ board?.name }}</span>
+    </span>
+    <span class="toolbar-spacer"></span>
+    <span class="user-greeting">Welcome, {{ user?.username }}! (Role: {{user?.role}})</span>
   </mat-toolbar>
-<mat-tab-group *ngIf="user" animationDuration="0ms">
-  <mat-tab *ngIf="availableTabs['canvas']">
-    <ng-template mat-tab-label>
-      <span (click)="setActiveTab('canvas')">Canvas</span>
-    </ng-template>
-     <div *ngIf="isTabActive('canvas') && boardID">
-        <app-canvas [projectID]="projectID" [boardID]="boardID" [embedded]="true"></app-canvas>
-     </div>
-  </mat-tab>
 
-  <mat-tab *ngIf="availableTabs['bucketView']">
-   <ng-template mat-tab-label>
-      <span (click)="setActiveTab('bucketView')">Bucket View</span>
-    </ng-template>
-    <div *ngIf="isTabActive('bucketView') && boardID">
-        <app-ck-buckets [projectID]="projectID" [boardID]="boardID"  [embedded]="true"></app-ck-buckets>
-    </div>
-  </mat-tab>
+  <div class="roomcasting-content">
+    <mat-tab-group
+      class="roomcasting-tab-group"
+      animationDuration="0ms"
+      [(selectedIndex)]="selectedTabIndex"
+      (selectedTabChange)="onTabChanged($event)"
+      *ngIf="tabsForUser.length > 0; else noResourcesAssigned"
+    >
+      <mat-tab *ngFor="let tab of tabsForUser; let i = index" [label]="tab.label">
+        <ng-template matTabContent>
+          <div class="tab-content-wrapper">
+            <ng-container *ngIf="selectedTabIndex === i">
+              <!-- Canvas -->
+              <app-canvas
+                *ngIf="tab.type === 'canvas' && projectID && boardID"
+                [projectID]="projectID"
+                [boardID]="boardID"
+                [embedded]="true"
+                class="embedded-resource-component"
+              ></app-canvas>
 
-    <mat-tab *ngIf="availableTabs['workspace']">
-     <ng-template mat-tab-label>
-        <span (click)="setActiveTab('workspace')">Workspace</span>
-     </ng-template>
-     <div *ngIf="isTabActive('workspace') && boardID">
-        <app-ck-workspace [projectID]="projectID" [boardID]="boardID"  [embedded]="true"></app-ck-workspace> </div>
-  </mat-tab>
+              <!-- Bucket View -->
+              <app-ck-buckets
+                *ngIf="tab.type === 'bucketView' && projectID && boardID"
+                [projectID]="projectID"
+                [boardID]="boardID"
+                [embedded]="true"
+                class="embedded-resource-component"
+              ></app-ck-buckets>
 
-    <mat-tab *ngIf="availableTabs['monitor']">
-     <ng-template mat-tab-label>
-          <span (click)="setActiveTab('monitor')">Monitor</span>
-     </ng-template>
-        <div *ngIf="isTabActive('monitor') && boardID">
-            <app-ck-monitor [projectID]="projectID" [boardID]="boardID" [embedded]="true"></app-ck-monitor> </div>
-  </mat-tab>
+              <!-- Workspace -->
+              <app-ck-workspace
+                *ngIf="tab.type === 'workspace' && projectID && boardID"
+                [projectID]="projectID"
+                [boardID]="boardID"
+                [embedded]="true"
+                class="embedded-resource-component"
+              ></app-ck-workspace>
 
-    <mat-tab *ngIf="availableTabs['ideaAgent']">
-    <ng-template mat-tab-label>
-        <span (click)="setActiveTab('ideaAgent')">Idea Agent</span>
-    </ng-template>
-        <div *ngIf="isTabActive('ideaAgent') && boardID">
-            Content3
-             </div>
-  </mat-tab>
+              <!-- Monitor -->
+              <app-ck-monitor
+                *ngIf="tab.type === 'monitor' && projectID && boardID"
+                [projectID]="projectID"
+                [boardID]="boardID"
+                [embedded]="true"
+                class="embedded-resource-component"
+              ></app-ck-monitor>
+
+              <!-- Idea Agent -->
+              <ng-container *ngIf="tab.type === 'ideaAgent' && projectID && boardID">
+                <app-ck-ideas
+                  *ngIf="user.role === RoleEnum.TEACHER; else noIdeaAgentPermission"
+                  [projectID_input]="projectID"
+                  [boardID_input]="boardID"
+                  [embedded]="true"
+                  class="embedded-resource-component"
+                ></app-ck-ideas>
+                <ng-template #noIdeaAgentPermission>
+                  <div class="permission-denied-message">
+                    <mat-icon class="permission-icon">lock_outline</mat-icon>
+                    <h2>Access Restricted</h2>
+                    <p>You do not have the necessary permissions to view the Idea Agent.</p>
+                    <p>This tool is available for users with the Teacher role.</p>
+                  </div>
+                </ng-template>
+              </ng-container>
+
+            </ng-container>
+          </div>
+        </ng-template>
+      </mat-tab>
     </mat-tab-group>
 
-<div *ngIf="!user">
-    Loading...
+    <ng-template #noResourcesAssigned>
+      <div class="placeholder-container">
+        <mat-icon class="placeholder-icon">hourglass_empty</mat-icon>
+        <h2 *ngIf="projectID && !isLoading">Waiting for teacher to start an activity phase...</h2>
+        <p *ngIf="projectID && !isLoading">Once an activity starts, your assigned resources will appear here as tabs.</p>
+        <mat-progress-bar mode="indeterminate" *ngIf="isLoading && (!tabsForUser || tabsForUser.length === 0)"></mat-progress-bar>
+        <p *ngIf="!projectID && !isLoading" class="error-message">
+            Could not load project information. Please ensure you have accessed this page correctly.
+        </p>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<div *ngIf="!user && isLoading" class="loading-overlay">
+  <mat-spinner diameter="50"></mat-spinner>
+  <p>Loading Roomcasting Environment...</p>
 </div>

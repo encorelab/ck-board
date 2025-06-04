@@ -1,647 +1,566 @@
 // score-authoring.component.scss
 
+:host {
+  display: block; // Ensures the component takes up block-level space
+  height: 100vh;  // Makes the host component viewport height
+  overflow: hidden; // Prevents the host itself from scrolling due to fixed toolbar
+}
+
 .toolbar {
-  width: 100%; 
+  width: 100%;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 999; 
+  z-index: 1001; // Ensure toolbar is above layout container content
 }
 
-.main-content {
-  display: flex; 
-  min-height: calc(100vh - 64px);  
-  margin-top: 64px; 
+.main-layout-container {
+  display: flex;
+  height: calc(100vh - 64px); // Adjust 64px if toolbar height differs
+  margin-top: 64px; // Offset for the fixed toolbar
+  width: 100%;
 }
 
-.activities-pane {
-  width: 250px; 
+// LEFT PANE COLUMN
+.left-pane-column {
+  flex: 0 0 250px; // Fixed width for left pane
+  height: 100%;     // Full height of its parent (.main-layout-container)
+  overflow-y: auto; // Scrollable if content exceeds height
   padding: 1rem;
-  border-right: 1px solid #ccc; 
+  border-right: 1px solid #ccc;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column; // To manage spacing of children like the FAB container
 
-  h3 { 
+  h3 {
     font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 1rem;
+    flex-shrink: 0;
   }
 
-  h4 { 
+  h4 {
     font-size: 1.2rem;
     font-weight: bold;
-    margin-bottom: 0.5rem; 
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
   }
 
-  .classroom-bindings-button {
-    position: static;
-    margin-top: 0.25rem;
-    margin-bottom: 2rem;
-    width: 100%; // Make the button take full width
-  }
+  .activities-list {
+    margin-bottom: 1rem; // Space before the add button container
+    flex-grow: 1; // Allow list to take available space if other elements are fixed height
+    overflow-y: auto; // Should scroll independently if it becomes too long before the pane itself scrolls
 
-  .item-info-section {
-    margin-top: 2rem; // Add some spacing above the section
+    .activity-item-wrapper {
+      // Styles for selected state (if applied to wrapper)
+      // &.selected { background-color: #f0f0f0; }
 
-    h4 {
-      text-align: left; // Center the heading
-      margin-bottom: 1rem; // Add spacing below heading
-    }
+      .activity-item {
+        display: flex;
+        align-items: center; // Vertically align items if text wraps
+        cursor: pointer;
+        padding: 0.5rem 0.25rem;
+        margin-bottom: 0.1rem;
+        min-height: 40px; // Ensure a minimum height for items
+        border-radius: 4px;
 
-    .item-info-grid {
-      display: grid;
-      grid-template-columns: auto auto 1fr; 
-      gap: 0.5rem; 
-      align-items: center;
-      margin-left: 10%;
+        .drag-handle {
+          flex-shrink: 0;
+          cursor: move;
+          margin-right: 0.5rem;
+          color: #757575;
+        }
 
-      .item-label {
-        font-weight: bold;
-        text-align: left; // Left-align labels
+        .activity-name {
+          flex-grow: 1;
+          word-break: break-word; // Allow text to wrap
+          line-height: 1.4;
+          padding-right: 0.5rem; // Space before buttons
+        }
+
+        .activity-buttons {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center; // Align buttons vertically
+          margin-left: auto; // Pushes buttons to the very right
+
+          button {
+            margin-left: 0.25rem;
+          }
+        }
       }
-
-      .item-count {
-        text-align: left; // Left-align counts
-      }
-
-      .add-item-button {
-        .mat-icon {
-          color: black;
+      // Selected style for the activity item itself
+      &.selected { // This applies to activity-item-wrapper
+        .activity-item { // Target the inner item for visual changes
+          background-color: #e0e0e0;
+          border-left: 4px solid #3f51b5; // Highlight color
+          padding-left: calc(0.25rem + 0.5rem - 4px); // Adjust padding for border
         }
       }
     }
-  }
-  .open-tools-buttons {  // Add a class to wrap the buttons
-    margin-top: 1rem;   // Add margin above the div
-
-    button { 
-      display: block;    // Make buttons stack vertically
-      width: auto;      // Make buttons take full width
-      margin-bottom: 1rem; // Add space between buttons
+    .empty-list-message {
+      padding: 1rem;
+      text-align: center;
+      color: #757575;
     }
   }
-}
 
-.activities-list {
-  div.activity-item { 
-    display: flex; 
-    align-items: center; 
-    cursor: pointer;
-    padding: 0 0 0 0.5rem; 
-    margin-bottom: 0; 
+  .add-activity-button-container {
+    display: flex;
+    justify-content: flex-end; // Aligns FAB to the right
+    padding-top: 1rem; // Spacing above the button
+    margin-top: auto; // Pushes this container to the bottom if .activities-list doesn't grow fully
+    flex-shrink: 0;
+  }
+  // .add-activity-button {} // FAB's own styles are usually self-contained
 
-    .activity-buttons {
-      margin-left: auto; 
-      
-      button {
-        margin-left: 0.5rem; 
+  .item-info-section {
+    margin-top: 2rem;
+    flex-shrink: 0;
+    h4 {
+      text-align: left;
+      margin-bottom: 1rem;
+    }
+    .item-info-grid {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      gap: 0.5rem;
+      align-items: center;
+      .item-label { font-weight: bold; text-align: left; }
+      .item-count { text-align: left; }
+      .add-item-button .mat-icon { color: black; }
+    }
+  }
+
+  .open-tools-buttons {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+    flex-shrink: 0;
+    button {
+      display: flex; // Use flex for icon and text alignment
+      align-items: center;
+      width: 100%;
+      margin-bottom: 1rem;
+      text-align: left; // Text within button
+      justify-content: flex-start; // Align content (icon+text) to the start
+      mat-icon { margin-right: 8px;}
+      &:last-child {
+        margin-bottom: 0;
       }
     }
-
-    &[cdkDrag] { // Style for draggable activities
-      cursor: move; /* Show the move cursor when hovering */
-    }
-
-    .drag-handle { /* Styles for the drag handle icon */
-      cursor: move;
-      margin-right: 0.5rem; /* Add some space to the right */
-    }
   }
 }
 
-.selected { 
-  background-color: #e0e0e0; 
-  border-left: 4px solid #3f51b5; /* Add a thicker left border to highlight */
-  padding-left: 0.25rem; /* Adjust padding to account for the border */
-}
-
-.add-activity-button {
-  position: static;
-  margin-top: 1rem;
-  margin-left: 195px;
-}
-
-.content-and-resources {
-  display: flex;
-  flex: 1; 
-  height: 100%; 
-}
-
-.middle-pane {
-  flex: 1; // Allow middle pane to take up available space
+// MIDDLE PANE COLUMN
+.middle-pane-column {
+  flex: 1; // Takes up remaining flexible space
+  height: 100%;
+  overflow-y: auto;
   padding: 1rem;
-  padding-top: 2.5rem;
-  
-  .add-resource-button {
-    position: absolute;
-    bottom: 2rem; 
-    right: 2rem;
-    z-index: 999;
-  }
+  box-sizing: border-box;
+  position: relative; // For positioning FAB if it's inside
 
-  .activity-resources-list {
-    margin-bottom: 2rem;
-
-    .resource-item { /* Add styles for the resource items */
-      display: flex;
-      align-items: center; 
-      height: 40px;
-      margin-bottom: 5px;
-      border-radius: 5px;
-
-      &.canvas { 
-        background-color: #81d4fa; /* Lighter Blue */
-        color: #000; 
-      }
-
-      &.bucketView { 
-        background-color: #80cbc4; /* Lighter Teal */
-        color: #000; 
-      }
-
-      &.workspace { 
-        background-color: #ffcc80; /* Lighter Orange */
-        color: #000; 
-      }
-
-      &.monitor { 
-        background-color: #ef9a9a; /* Lighter Red */
-        color: #000; 
-      }
-
-      &.ideaAgent {
-        background-color: #c5cae9;  // Indigo 
-        color: #000;
-      }
-
-      .drag-handle {
-        cursor: move;
-        margin-right: 0.5rem;
-      }
-
-      .delete-button { /* Add styles for the delete button */
-        margin-left: auto; /* Push the button to the right */
-      }
-    }
-
-  }
-
-  h3, h4 { /* Target both h3 and h4 */
-    text-align: center; 
-  }
-
-  h3 { 
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 0.25rem;
-  }
-
-  h4 { 
-    font-size: 1.2rem; 
-    font-weight: bold;
-    margin-bottom: 1.5rem; 
-    color: #888; 
-  }
-
-  h5 { 
-    font-size: 1rem; 
-    font-weight: bold;
-    color: #888; 
-    margin-bottom: 0.5rem;
-  }
-
-  mat-expansion-panel-header h5 {
-    margin-bottom: 0;
+  .toggle-resources-overlay-button {
+    position: fixed;
+    bottom: 1rem; // Distance from the bottom of .middle-pane-column
+    right: 420px;  // Distance from the right of screen
+    z-index: 999;   // Ensure it's above scrolling content within this pane
   }
 
   .canvas-container {
-    position: absolute;
-    top: 64px;
-    left: 283px;
+    position: relative; // Changed from absolute, will flow with content or be explicitly sized
     width: 100%;
+    // height: 400px; // Example height, or make it responsive
+    height: calc(100% - 150px); // Example: try to fill space not taken by tabs/headers
+    min-height: 300px; // Ensure it has some space
+    margin-bottom: 1rem;
+    z-index: 10; // Below the FAB
+
+    canvas {
+      background-color: #f5f5f5;
+      border: 1px solid #ddd;
+      width: 100%;
+      height: 100%;
+    }
+    // Conditional display handled by *ngIf in HTML
+  }
+
+  h3 { text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 0.25rem; }
+  .activity-space-header {
+    display: flex;
+    justify-content: center; // Centers the .heading-and-settings-container
+    align-items: center;     // Vertically aligns it if it has a fixed height or wraps
+    margin-bottom: 1rem;
+    width: 100%; // Ensure it takes available width to properly center its content
+
+    .heading-and-settings-container {
+      display: flex;
+      align-items: center; // Vertically aligns the h4 and the button
+      // justify-content: center; // Optional: if you want to center within this container too
+                               // Or remove if you want h4 to naturally align left within this box
+
+      h4 {
+        margin: 0 0.5rem 0 0; // Top, Right (spacing before button), Bottom, Left
+        line-height: 1.4;     // Allows text to wrap gracefully
+        flex-shrink: 1;       // Allows the h4 to shrink if space is tight (e.g., very long board name)
+        min-width: 0;         // Important for flex-shrink to work effectively on text elements
+        font-size: 1.2rem;
+        font-weight: normal;
+        color: #555;
+      }
+
+      .config-button { // This is the <button mat-icon-button>
+        flex-shrink: 0; // Prevents the button from shrinking
+        // The button will naturally sit to the right of the h4 due to flex layout
+        // and the h4's margin-right.
+      }
+    }
+  }
+  h5 { text-align: left; font-size: 1.1rem; font-weight: bold; color: #333; margin-bottom: 0.5rem; margin-top: 3rem; }
+
+  .activity-resources-list {
+    margin-bottom: 1.5rem; // Space before tabs
+    min-height: 60px; // Ensure drop area is visible even if empty
+    border: 1px dashed #ddd; // Visual cue for drop list if empty
+    padding: 0.5rem;
+    border-radius: 4px;
+
+    .resource-item-wrapper {
+      margin-bottom: 5px;
+      &:last-child { margin-bottom: 0; }
+      .resource-item {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        border-radius: 4px;
+        padding: 0 0.75rem; // Increased padding
+        background-color: #f0f0f0; // Default background for items
+        border: 1px solid #e0e0e0;
+
+        &.canvas { background-color: #81d4fa; color: #000; border-color: darken(#81d4fa, 10%); }
+        &.bucketView { background-color: #80cbc4; color: #000; border-color: darken(#80cbc4, 10%); }
+        &.workspace { background-color: #ffcc80; color: #000; border-color: darken(#ffcc80, 10%); }
+        &.monitor { background-color: #ef9a9a; color: #000; border-color: darken(#ef9a9a, 10%); }
+        &.ideaAgent { background-color: #c5cae9; color: #000; border-color: darken(#c5cae9, 10%); }
+
+        .drag-handle { cursor: move; margin-right: 0.75rem; color: #757575; }
+        .resource-name { flex-grow: 1; font-weight: 500; }
+        .delete-button { margin-left: auto; }
+      }
+    }
+    .empty-list-message {
+      padding: 1rem;
+      text-align: center;
+      color: #757575;
+    }
+  }
+
+  mat-tab-group {
+    width: 100%;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 1rem;
+
+    ::ng-deep .mat-tab-header { margin-bottom: 1rem; } // Keep some space
+    ::ng-deep .mat-tab-label { font-size: 1rem; font-weight: 500; padding: 0 16px !important;} // Adjusted padding
+    ::ng-deep .mat-tab-body-wrapper {
+        min-height: 150px;
+        padding-top: 1rem; // Add padding to tab content area
+    }
+  }
+
+  .teacher-task-list, .ai-agents-list {
+    min-height: 100px; // Ensure drop area is visible even if empty
+    border: 1px dashed #ddd; // Visual cue for drop list if empty
+    padding: 0.5rem;
+    border-radius: 4px;
+
+    .teacher-task-item, .ai-agent-item { // Common styling if item structures are similar
+      display: flex;
+      align-items: center;
+      height: 40px;
+      margin-bottom: 5px;
+      border-radius: 4px;
+      padding: 0 0.75rem;
+      border: 1px solid #e0e0e0;
+      &:last-child { margin-bottom: 0; }
+
+      .drag-handle { cursor: move; margin-right: 0.75rem; color: #757575; flex-shrink: 0; }
+      .task-content, .agent-name { flex-grow: 1; display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .task-order { margin-right: 0.5em; font-style: italic; color: #666;}
+      .task-description { flex-grow: 1; }
+      .teacher-task-icon { margin: 0 0.5rem; flex-shrink: 0; }
+      .delete-button { margin-left: 0.5rem; flex-shrink: 0; }
+    }
+
+    // Specific task backgrounds
+    .teacher-task-item {
+      &.activateWorkflow { background-color: #90caf9; color: #000; border-color: darken(#90caf9,10%);}
+      &.activateAiAgent { background-color: #a5d6a7; color: #000; border-color: darken(#a5d6a7,10%);}
+      &.regroupStudents { background-color: #fff59d; color: #000; border-color: darken(#fff59d,10%);}
+      &.viewCanvas { background-color: #ffcc80; color: #000; border-color: darken(#ffcc80,10%);}
+      &.viewBuckets { background-color: #f48fb1; color: #000; border-color: darken(#f48fb1,10%);}
+      &.viewTodos { background-color: #b39ddb; color: #000; border-color: darken(#b39ddb,10%);}
+      &.viewWorkspace { background-color: #ce93d8; color: #000; border-color: darken(#ce93d8,10%);}
+      &.customPrompt { background-color: #bcaaa4; color: #000; border-color: darken(#bcaaa4,10%);}
+      &.showJoinCode { background-color: #9fa8da; color: #000; border-color: darken(#9fa8da,10%);}
+    }
+    // Specific AI agent backgrounds (if any, using type as class)
+    .ai-agent-item {
+        // Example: &.teacher { background-color: #somecolor; }
+        background-color: #f0f0f0; // Default
+    }
+     .empty-list-message {
+      padding: 1rem;
+      text-align: center;
+      color: #757575;
+    }
+  }
+  .placeholder-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 100%;
-    z-index: 997; // Ensure canvas is on top of everything except resource pane and add button
+    font-size: 1.2rem;
+    color: #999;
+    text-align: center;
   }
 }
 
-.resources-right-pane-container {
-  position: relative; // Required for absolute positioning of children
-  flex: 0 0 400px; // Set a fixed width for the right pane container
-  padding: 1rem;
+// RIGHT PANE COLUMN
+.right-pane-column {
+  flex: 0 0 400px;
+  height: 100%;
+  position: relative;
+  box-sizing: border-box;
+  background-color: #f0f0f0;
+  border-left: 1px solid #ccc;
 
-  .canvas-overlay {
+  .default-right-pane-content {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 1rem;
+    box-sizing: border-box;
+
+    .groups-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      h3 { margin: 0; font-size: 1.5rem; font-weight: bold; }
+    }
+
+    .group-resource-table {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      .group-header-row {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 0.5rem;
+      }
+
+      // Common width and spacing definition for both header and data cells
+      .group-header-cell,
+      .group-resource-cell {
+        flex-grow: 0;     // Prevent cells from growing beyond their basis
+        flex-shrink: 1;   // Allow cells to shrink if space is limited
+        flex-basis: 40px;  // Target width for each cell
+        max-width: 40px;  // Enforce maximum width
+        min-width: 40px;  // Minimum width before content gets too crushed (adjust as needed)
+        margin-right: 8px; // Consistent horizontal gap between cells
+        box-sizing: border-box;
+
+        &:last-child {
+          margin-right: 0; // No margin for the last cell in a row
+        }
+      }
+
+      // Specific styles for .group-header-cell
+      .group-header-cell {
+        font-size: 0.85em;
+        font-weight: 500;
+        color: #333;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        min-height: 94px;       // For rotated text and row alignment
+        padding: 0 0 5px 25px;   // Padding for positioning the span's rotation origin
+        position: relative;
+
+        span {
+          display: inline-block;
+          white-space: nowrap;
+          overflow: visible;
+          transform-origin: bottom left;
+          transform: rotate(-60deg);
+          line-height: 1.2;
+          // Consider adding max-width to the span if very long names need truncation
+          // e.g., max-width: 65px; text-overflow: ellipsis; overflow: hidden;
+          // However, ellipsis on rotated text can be tricky.
+        }
+      }
+
+      .resource-row {
+        display: flex;
+        align-items: center;
+        height: 40px;         // Matches new cell height
+        margin-bottom: 7px;   // Vertical gap between rows
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      // Specific styles for .group-resource-cell
+      .group-resource-cell {
+        height: 40px;         // Matches its flex-basis for a square look
+        border: 1px solid #e0e0e0;
+        cursor: pointer;
+        border-radius: 6px;
+        position: relative;
+        background-color: #f9f9f9;
+
+        &.selected::before {
+          content: '✔';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 26px;
+          color: rgba(0, 0, 0, 0.7);
+        }
+
+        &.canvas { background-color: lighten(#81d4fa, 15%); }
+        &.bucketView { background-color: lighten(#80cbc4, 15%); }
+        &.workspace { background-color: lighten(#ffcc80, 15%); }
+        &.monitor { background-color: lighten(#ef9a9a, 15%); }
+        &.ideaAgent { background-color: lighten(#c5cae9, 10%); }
+
+        &:hover {
+          border-color: #3f51b5;
+        }
+      }
+    }
+    .empty-list-message, .placeholder-message { // Combined for brevity
+      padding: 1rem;
+      text-align: center;
+      color: #757575;
+      &.small-text { font-size: 0.9em; }
+    }
+  }
+
+  .resources-actions-overlay,
+  .classroom-mode-right-pane .classroom-resources-content {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #000; 
-  }
-}
+    background-color: #ffffff;
+    z-index: 1000;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    overflow-y: auto; // Already present, ensuring it's here
+    padding: 1rem; // Already present
+    box-sizing: border-box; // Already present
 
-#authoringResourcesPane {
-  width: 400px;
-}
-
-.resources-pane {
-  position: absolute; // Position the resources pane absolutely
-  top: 0;
-  left: 0;
-  width: 100%; 
-  min-height: 100%; 
-  padding: 1rem;
-
-  background-color: #fff; 
-  border: 1px solid #ccc; 
-  border-radius: 5px; 
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); // Add a subtle shadow
-
-  h3 { 
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-  }
-
-  h4 { 
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem; 
-  }
-
-  .close-resource-button {
-    float: right;
-    margin-right: 1.25rem;
-  }
-
-  .available-resources-list {
-    margin-bottom: 2rem;
-    .available-resource-item {
-      cursor: grab; /* Use grab cursor to indicate draggability */
-      padding: 0.5rem;
-      padding-right: 1rem;
-      border: 1px solid #ccc; /* Add a border to resemble material */
-      border-radius: 4px;
-      margin-bottom: 0.5rem;
-      max-width: 375px;
-
-      &.canvas { 
-        background-color: #81d4fa; /* Lighter Blue */
-        color: #000; 
-      }
-
-      &.bucketView { 
-        background-color: #80cbc4; /* Lighter Teal */
-        color: #000; 
-      }
-
-      &.workspace { 
-        background-color: #ffcc80; /* Lighter Orange */
-        color: #000; 
-      }
-
-      &.monitor { 
-        background-color: #ef9a9a; /* Lighter Red */
-        color: #000; 
-      }
-
-      &.ideaAgent {
-        background-color: #c5cae9;  //  Indigo 100
-        color: #000;
-      }
-    }
-  }
-  .available-teacher-actions-list {
-    .available-resource-item { 
-      cursor: grab; 
-      padding: 0.5rem;
-      border: 1px solid #ccc; 
-      border-radius: 4px;
-      margin-bottom: 0.5rem;
-      max-width: 80%; 
-      padding-right: 1rem; 
-      display: flex;
-      align-items: center;
-
-      mat-icon {
-        margin-right: 0.5rem; // Add some space between the icon and the text
-      }
-
-      &:active { 
-        background-color: #e0e0e0;
-      }
-
-      &.activateWorkflow {
-        background-color: #90caf9;  // Slightly darker blue
-        color: #000; 
-      }
-
-      &.activateAiAgent {
-        background-color: #a5d6a7;  // Slightly darker green
-        color: #000; 
-      }
-
-      &.regroupStudents {
-        background-color: #fff59d;  // Slightly darker yellow
-        color: #000; 
-      }
-
-      &.viewCanvas {
-        background-color: #ffcc80;
-        color: #000;
-      }
-
-      &.viewBuckets {
-        background-color: #f48fb1;  // Slightly darker red
-        color: #000; 
-      }
-
-      &.viewTodos {
-        background-color: #b39ddb;  // Slightly darker pink
-        color: #000; 
-      }
-
-      &.viewWorkspace {
-        background-color: #ce93d8;  // Slightly darker purple
-        color: #000; 
-      }
-
-      &.customPrompt {
-        background-color: #bcaaa4;  // Slightly darker brown
-        color: #000; 
-      }
-
-      &.showJoinCode {
-        background-color: #9fa8da; // Consistent with task list
-        color: #000;
-      }
-    }
-  }
-}
-
-.classroom-right-pane-container {
-  position: relative; 
-  flex: 0 0 400px; 
-  padding: 1rem;
-  z-index: 998; // This pane will be above the canvas
-  background-color: #f5f5f5;
-}
-
-.teacher-task-list {
-  .teacher-task-item { 
-    display: flex;
-    align-items: center; 
-    height: 40px;
-    margin-bottom: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-
-    .task-content {
-      flex-grow: 1;
-      display: flex;
-      align-items: center;
-    }
-
-    &.activateWorkflow { 
-      background-color: #90caf9;  // Slightly darker blue
-      color: #000; 
-    }
-
-    &.activateAiAgent {
-      background-color: #a5d6a7;  // Slightly darker green
-      color: #000; 
-    }
-
-    &.regroupStudents {
-      background-color: #fff59d;  // Slightly darker yellow
-      color: #000; 
-      cursor: pointer;
-    }
-
-    &.viewCanvas {
-      background-color: #ffcc80;
-      color: #000;
-    }
-
-    &.viewBuckets {
-      background-color: #f48fb1;  // Slightly darker red
-      color: #000; 
-    }
-
-    &.viewTodos {
-      background-color: #b39ddb;  // Slightly darker pink
-      color: #000; 
-    }
-
-    &.viewWorkspace {
-      background-color: #ce93d8;  // Slightly darker purple
-      color: #000; 
-    }
-
-    &.customPrompt {
-      background-color: #bcaaa4;  // Slightly darker brown
-      color: #000; 
-    }
-
-    &.showJoinCode {
-      background-color: #9fa8da; // Consistent with task list
-      color: #000;
-    }
-
-    .drag-handle {
-      cursor: move;
-      margin-right: 0.5rem;
-    }
-
-    button { /* Target the delete button */
-      margin-left: auto; // Push the button to the right 
-    }
-
-    .teacher-task-icon {
-      margin: 0 0.5rem;
-    }
-  }
-}
-
-  /* Style for the drop placeholder */
-.cdk-drop-list-dragging .cdk-drop-list-placeholder { 
-  background: #ccc; /* Light gray background */
-  border: dotted 3px #999; /* Dotted border */
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-}
-  
-.groups-list {
-  h3 { 
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-  }
-
-  .group-resource-table {
-    display: flex;
-    flex-direction: column; 
-    width: 100%; 
-    margin-top: 3.5rem;
-  }
-
-  .groups-header {
-    display: flex;
-    align-items: center; 
-  }
-
-  .groups-header h3 {
-    margin-right: 0.5rem;
-  }
-
-  .groups-header button { 
-    margin-top: -1rem;
-  }
-
-  .group-header-row {
-    display: flex;
-    margin-left: 1rem;
-  }
-
-  .group-header-cell {
-    flex: 1; 
-    text-align: left;
-    max-width: 40px;
-    transform: rotate(-45deg); /* Rotate the text */
-    white-space: nowrap; 
-  }
-
-  .edit-cell {
-    flex: 0 0 40px;
-    text-align: center;
-    transform: none;
-    margin: 0rem 0rem;
-  }
-
-  .resource-row {
-    display: flex;
-    align-items: center; 
-    margin-bottom: 0; 
-  }
-
-  .resource-label-cell {
-    white-space: nowrap; 
-    margin-right: 1rem; 
-  }
-
-  .group-resource-cell {
-    flex: 1; 
-    height: 40px; 
-    border: 0;
-    cursor: pointer; 
-    margin-right: 5px; 
-    margin-bottom: 5px;
-    max-width: 40px; // Set max-width to create a square
-    border-radius: 5px;
-
-    &.selected {
-      position: relative; // Required for positioning the overlay
-      padding: 0;
-
-      &::before { // Create a pseudo-element overlay
-        content: '';
+    .close-overlay-button {
         position: absolute;
-        top: 7px;
-        left: 7px;
-        width: 26px;
-        height: 26px;
-        background-color: rgba(0, 0, 0, 0.4); // Semi-transparent black overlay
-        border-radius: 3px;
+        top: 0.75rem;
+        right: 0.75rem;
+        z-index: 1001;
+    }
+    h3 { font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; padding-right: 40px; }
+    h4 { font-size: 1.2rem; font-weight: 500; margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #eee; padding-bottom: 0.25rem;}
+    &:first-of-type h4 { margin-top: 0;}
+
+    .available-items-list {
+      margin-bottom: 1.5rem;
+      &:last-child { margin-bottom: 0; }
+      .available-resource-item {
+        cursor: grab;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 0.5rem;
+        box-sizing: border-box;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+
+        &:hover {
+            border-color: #3f51b5;
+            background-color: #f5f5f5;
+        }
+        &:active { background-color: #e0e0e0; }
+
+        mat-icon { margin-right: 0.75rem; color: #666; }
+
+        &.canvas, &.viewCanvas { background-color: #e1f5fe; border-left: 3px solid #4fc3f7;}
+        &.bucketView, &.viewBuckets { background-color: #e0f2f1; border-left: 3px solid #4db6ac;}
+        &.workspace, &.viewWorkspace { background-color: #fff3e0; border-left: 3px solid #ffb74d;}
+        &.monitor { background-color: #ffebee; border-left: 3px solid #e57373;}
+        &.viewTodos { background-color: #ede7f6; border-left: 3px solid #9575cd;}
+        &.idea { background-color: #eaecf7; border-left: 3px solid #7986cb;}
+        &.teacher { background-color: #e8f5e9; border-left: 3px solid #81c784;}
+        &.idea_chat { background-color: #e8eaf6; border-left: 3px solid #7986cb;}
+        &.personal_learning { background-color: #fffde7; border-left: 3px solid #fff176;}
+        &.group_interaction { background-color: #f3e5f5; border-left: 3px solid #ba68c8;}
+        &.workflow { background-color: #e0f7fa; border-left: 3px solid #26c6da; }
+        &.activateWorkflow { background-color: #e3f2fd; border-left: 3px solid #64b5f6;}
+        &.activateAiAgent { background-color: #e8f5e9; border-left: 3px solid #81c784;}
+        &.regroupStudents { background-color: #fffde7; border-left: 3px solid #fff176;}
+        &.customPrompt { background-color: #efebe9; border-left: 3px solid #a1887f;}
+        &.showJoinCode { background-color: #e8eaf6; border-left: 3px solid #9fa8da;}
       }
-    }
-
-    &.canvas { 
-      background-color: #81d4fa; 
-    }
-
-    &.bucketView { 
-      background-color: #80cbc4; 
-    }
-
-    &.workspace { 
-      background-color: #ffcc80; 
-    }
-
-    &.monitor { 
-      background-color: #ef9a9a; 
-    }
-
-    &.ideaAgent {
-      background-color: #c5cae9;
-      color: #000;
+      .empty-list-message.small { font-size: 0.9em; padding: 0.5rem; text-align: center; color: #999; }
     }
   }
+
+  .classroom-mode-right-pane {
+    .default-classroom-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        height: 100%; // ensure it takes full height to center content
+        h4 { margin-bottom: 1rem; }
+        p { margin-bottom: 1.5rem; color: #666; }
+        button mat-icon { margin-right: 8px; }
+    }
+  }
+   .placeholder-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 1.1rem;
+      color: #999;
+      text-align: center;
+      padding: 2rem;
+    }
+}
+
+.cdk-drop-list-dragging .cdk-drop-list-placeholder {
+  background: #e0e0e0;
+  border: 2px dashed #999;
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  border-radius: 4px;
 }
 
 .timeline-container {
-  position: fixed; 
-  bottom: 0; 
-  left: 283px; // Adjust based on the width of the activities pane
-  width: calc(100% - 283px); // Adjust based on the width of the activities pane
+  position: fixed;
+  bottom: 0;
+  left: 250px;
+  width: calc(100% - 250px);
   height: 100px; // Adjust as needed
-  background-color: #f5f5f5; // Light gray background
-  border-top: 1px solid #ccc;
-  z-index: 997; // Ensure timeline is on top of everything except resource pane
-}
-
-.middle-pane .canvas-container {
-  // ... other styles ...
-
-  canvas {
-    background-color: #f5f5f5; /* Set a white background */
-  }
-}
-
-.classroom-resources-pane {
-  z-index: 999;
-}
-
-.activity-space-header {
-  display: flex;
-  justify-content: center; // Center the container horizontally
-  align-items: center; // Align items to the center vertically
-  margin-bottom: 1rem;
-
-  .heading-and-settings-container {
-    display: flex;
-    align-items: center; // Align the heading and button vertically
-
-    h4 {
-      margin-bottom: 0; // Remove default margin if needed
-      margin-right: 0.5rem; // Add some space between heading and button
-    }
-  }
-}
-
-:host {
-  display: block;
-  padding: 0 !important; // Remove default padding
-}
-
-.mat-dialog-container {
-  padding: 0 !important; // Remove default padding for dialog container
-}
-
-.mat-dialog-content {
-  margin: 0 !important; // Remove default margin
-  max-height: 100vh; // Allow content to take up full height
-}
-
-mat-tab-group {
-  width: 100%; // Make the tabs take up the full width of the middle pane
-
-  ::ng-deep .mat-tab-header {
-    margin-bottom: 20px;
-  }
-
-  ::ng-deep .mat-tab-label { // Target the tab labels (::ng-deep is needed for shadow DOM piercing)
-    // Example styles:
-    font-size: 1.1rem;
-    font-weight: bold;
-  }
-    ::ng-deep .mat-tab-body-wrapper{
-        min-height: 100px;  //THIS IS IMPORTANT, or else it won't show up
-    }
+  background-color: #fafafa;
+  border-top: 1px solid #dbdbdb;
+  z-index: 997;
+  box-sizing: border-box;
+  // Add content styling for timeline here
 }

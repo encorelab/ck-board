@@ -1,6 +1,10 @@
 @import './../../../../node_modules/swiper/swiper.min.css';
 @import './../../../../node_modules/swiper/swiper-bundle.min.css';
 
+// Assuming this is the content of ck-workspace.component.scss
+// If :host is used, these styles would be inside it.
+// If not, .ck-workspace-container is the top-level scope provided.
+
 .ck-workspace-container {
   .spinner {
     margin: 70px auto;
@@ -13,7 +17,7 @@
     top: 0;
     left: 0;
     right: 0;
-    z-index: 999;
+    z-index: 999; // Main toolbar is above most things
   }
 
   .list-task-prompt {
@@ -36,13 +40,13 @@
     margin-top: 20px;
   }
 
-  .drawer-container {
-    position: absolute;
+  .drawer-container { // This is mat-sidenav-container
+    position: absolute; // Relative to .ck-workspace-container or viewport if .ck-workspace-container is static
     left: 0;
     right: 0;
     bottom: 0;
-    top: 0;
-    overflow: none;
+    top: 0; // This makes it fill the parent, or viewport if parent is body
+    // overflow: none; // This is not a valid value, should be hidden or auto/scroll for children
     min-height: calc(100vh);
   }
 
@@ -52,18 +56,15 @@
   }
 
   mat-sidenav {
-    height: 100%; /*  Fill the container */
-
-    /* Use media queries for responsive width */
-    width: 90%; /* Default to 90% for mobile */
+    height: 100%;
+    width: 90%;
 
     @media (max-width: 599px) {
       width: 100%;
     }
 
     @media (min-width: 600px) {
-      /* 'sm' breakpoint and up */
-      width: 30%; /* 30% on desktop */
+      width: 30%;
     }
   }
 
@@ -72,18 +73,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow-y: auto;
+    overflow-y: auto; // This is the main scrolling area
+    position: relative; // Important if any children use position:absolute relative to this
 
-    padding-top: 64px;
+    padding-top: 64px; // For the fixed toolbar
 
     @media (max-width: 599px) {
       padding-top: 56px;
     }
   }
 
-  .workflow-create-post {
+  .workflow-create-post { // This seems like another FAB, ensure its positioning is also considered
     background-color: #6c63ff;
-    position: absolute;
+    position: absolute; // Relative to its nearest positioned ancestor
     bottom: 20px;
     right: 20px;
   }
@@ -139,37 +141,41 @@
 
   .swiper-container {
     width: 60%;
-    max-width: 600px; /*  Keep the max-width  */
+    max-width: 600px;
     margin-left: auto;
     margin-right: auto;
     position: relative;
   }
 
   .create-post-fab {
-    position: absolute !important; // Position absolutely within the container
-    bottom: 100px;
-    right: 40px;
-    z-index: 10; // Ensure it's above the cards
-    background-color: #6c63ff;
+    position: fixed;      // Position relative to the viewport
+    bottom: 2rem;         // Distance from the bottom of the screen
+    right: 2rem;          // Distance from the right of the screen
+    z-index: 990;         // Ensure it's above most page content, but below modals/main toolbar if necessary
+    background-color: #6c63ff; // Keep existing color
+    // Removed !important from position
   }
 
+  // ::ng-deep rules are generally discouraged. Prefer to style components via their own SCSS
+  // or use ::host-context or other encapsulation-respecting methods if possible.
+  // For now, keeping them as they were in your provided SCSS.
   ::ng-deep .mat-toolbar-single-row button[mat-icon-button] {
     z-index: 3;
   }
 
   // Target the app-html-post component *inside* the Swiper slides.
   ::ng-deep .swiper-slide app-html-post {
-    width: 100%; // Make sure it takes the full width of its container.
-    max-width: 100%; // Prevent it from exceeding the container.
-    box-sizing: border-box; // Include padding and border in the width calculation.
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .refresh-button-container {
     width: 100%;
     display: flex;
     margin-top: 1rem;
-    align-items: center; // Vertical alignment
-    justify-content: space-between; // Key for positioning
+    align-items: center;
+    justify-content: space-between;
   }
 
   .group-info-and-buttons-container {

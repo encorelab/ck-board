@@ -1,66 +1,198 @@
-@import '../../../styles.scss';
+@import '../../../styles.scss'; // Your global styles
 
-$controls-bg-color: whitesmoke;
-$controls-border-radius: 0.75em;
-
-.top-nav {
-  padding: 1em;
-  position: absolute;
-  top: 1em;
-  left: 1em;
-  background-color: $controls-bg-color;
-  border-radius: $controls-border-radius;
-  border: 1px solid $accent;
+:host {
+  display: block;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; // Prevent scrolling on the host itself
 }
 
-.top-embedded-board-name{
-  padding: 0.6em; 
-  position: absolute; 
-  top: 0.5em; 
-  left: 0.5em; 
-  font-weight: bold; 
-  background-color: white; 
-  color: #6c63ff; 
-  border-radius: 0.5em; 
-  font-size: 1em;
-}
-
-.bottom-nav {
-  padding: 1em;
-  position: absolute;
-  bottom: 1em;
-  left: 1em;
-  background-color: $controls-bg-color;
-  border-radius: $controls-border-radius;
-  border: 1px solid $accent;
-}
-
-.toolbarTitle {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.toolSection {
-  position: absolute;
-  padding: 1em;
-  right: 1em;
-}
-
-.toolField {
-  width: 100%;
+.roomcasting-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  height: 100%;
+  width: 100%;
+  background-color: #f4f6f8; // Light background for the whole page
+}
 
-  button {
-    margin-bottom: 1em;
+.roomcasting-toolbar {
+  flex-shrink: 0; // Prevent toolbar from shrinking
+  position: fixed; // Keep toolbar at the top
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000; // Ensure it's above other content
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .toolbar-title-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .toolbar-icon {
+    margin-right: 10px;
+    font-size: 28px; // Slightly larger icon
+  }
+
+  .toolbar-project-name {
+    font-size: 1.1em;
+    font-weight: 500;
+  }
+
+  .toolbar-board-name {
+    font-size: 0.9em;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.85); // Slightly lighter for board name
+    margin-left: 5px;
+  }
+
+  .toolbar-spacer {
+    flex: 1 1 auto;
+  }
+  .user-greeting {
+    font-size: 0.9em;
+    margin-right: 16px;
   }
 }
 
-.embeddableLogo{
-  height: 36px;
-  width: auto;
-  margin-right: 8px;
-  vertical-align: middle;
+.roomcasting-content {
+  flex-grow: 1; // Allows this container to fill remaining vertical space
+  padding-top: 64px; // Height of the toolbar (adjust if your toolbar height is different)
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // Prevent this container from scrolling, tabs will handle it
 }
+
+.roomcasting-tab-group {
+  // ::ng-deep .mat-tab-header {
+  //   background-color: #ffffff; // White background for tab headers
+  //   border-bottom: 1px solid #e0e0e0;
+  // }
+
+  // ::ng-deep .mat-tab-label {
+  //   font-weight: 500;
+  //   min-width: 120px !important; // Ensure tabs have a decent min width
+  //   padding: 0 20px !important;
+  // }
+
+  // ::ng-deep .mat-tab-label-active {
+  //   color: mat-color($primary-palette, default) !important; // Use your primary color
+  //   font-weight: 700;
+  // }
+
+  // ::ng-deep .mat-ink-bar {
+  //   background-color: mat-color($primary-palette, default) !important;
+  //   height: 3px !important;
+  // }
+
+  // The tab group itself should allow its content to grow
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+  height: 100%; // Fill the .roomcasting-content area
+
+  // This targets the content area of the selected tab
+  ::ng-deep .mat-tab-body-wrapper {
+    flex-grow: 1;
+    display: flex; // Allows child to flex-grow
+    overflow: hidden; // Important: Prevents double scrollbars if child also scrolls
+  }
+}
+
+.tab-content-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto; // Allow individual tab content to scroll if it overflows
+  padding: 1rem; // Padding around the embedded component
+  box-sizing: border-box;
+  display: flex; // If the child component needs to fill space
+  flex-direction: column; // If the child component needs to fill space
+}
+
+.embedded-resource-component {
+  width: 100%;
+  height: 100%;
+  flex-grow: 1; // Make the embedded component fill the tab content wrapper
+  display: block; // Or flex, depending on the component's internal layout needs
+}
+
+.idea-agent-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: #e9e9e9;
+  border-radius: 8px;
+  padding: 2rem;
+  color: #555;
+  font-style: italic;
+}
+
+.placeholder-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 2rem;
+  color: #757575;
+
+  .placeholder-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    color: #bdbdbd;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    margin-bottom: 8px;
+    color: #555;
+  }
+
+  p {
+    font-size: 1em;
+    max-width: 400px;
+    line-height: 1.5;
+  }
+
+  mat-progress-bar {
+    width: 80%;
+    max-width: 300px;
+    margin-top: 20px;
+  }
+  .error-message {
+    color: #f44336;
+    font-weight: 500;
+  }
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; // Above everything else
+
+  p {
+    margin-top: 16px;
+    font-size: 1.1em;
+    color: #333;
+  }
+}
+
+// Override Angular Material tab header styles if needed (more specific selectors)
+// This is often better than ::ng-deep if you can target it this way.
+// .roomcasting-tab-group.mat-tab-group .mat-tab-header {
+//   background-color: #ffffff;
+// }

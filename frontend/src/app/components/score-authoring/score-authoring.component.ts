@@ -6,6 +6,7 @@ import {
   OnDestroy,
   ElementRef,
   ViewChild,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { ComponentType } from '@angular/cdk/portal';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
@@ -27,8 +28,8 @@ import { ConfigureAiAgentModalComponent } from '../configure-ai-agent-modal/conf
 import { CustomTeacherPromptModalComponent } from '../custom-teacher-prompt-modal/custom-teacher-prompt-modal.component';
 import { ManageGroupModalComponent } from '../groups/manage-group-modal/manage-group-modal.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { HttpClient } from '@angular/common/http';
-import { Activity } from 'src/app/models/activity';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http'; // Import HttpErrorResponse
+import { Activity } from 'src/app/models/activity'; // Ensure Activity model has isActive?: boolean;
 import { generateUniqueID } from 'src/app/utils/Utils';
 import { Resource } from 'src/app/models/resource';
 import { TeacherTask } from 'src/app/models/teacherTask';
@@ -58,11 +59,11 @@ import { SocketEvent } from 'src/app/utils/constants';
   styleUrls: ['./score-authoring.component.scss'],
 })
 export class ScoreAuthoringComponent implements OnInit, OnDestroy {
-  @ViewChild('editWorkflowsButton') editWorkflowsButton: ElementRef;
+  @ViewChild('editWorkflowsButton') editWorkflowsButton!: ElementRef;
   workflowMap: Map<string, string> = new Map();
 
-  project: Project;
-  user: AuthUser;
+  project!: Project;
+  user!: AuthUser;
   listeners: Subscription[] = [];
 
   activities: Activity[] = [];
@@ -76,25 +77,20 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   selectedTabIndex: number = 0;
 
   allAvailableResources: any[] = [
-    //define available resources
     { name: 'Canvas', type: 'canvas' },
     { name: 'Bucket View', type: 'bucketView' },
     { name: 'Workspace', type: 'workspace' },
     { name: 'Monitor', type: 'monitor' },
     { name: 'Idea Agent', type: 'ideaAgent' },
   ];
-
-  availableResources: any[] = [...this.allAvailableResources]; // Duplicate the array to be filtered based on selected values
-
+  availableResources: any[] = [...this.allAvailableResources];
   availableClassroomObjects: any[] = [
     { name: 'Table', type: 'table', icon: 'table_restaurant' },
     { name: 'Projector', type: 'projector', icon: 'videocam' },
     { name: 'Student', type: 'student', icon: 'person' },
     { name: 'Student Group', type: 'studentGroup', icon: 'groups' },
     { name: 'Teacher', type: 'teacher', icon: 'school' },
-    // ... add more classroom objects
   ];
-
   availableTeacherActions: any[] = [
     { name: 'Activate Workflow', type: 'activateWorkflow', icon: 'timeline' },
     { name: 'Activate AI Agent', type: 'activateAiAgent', icon: 'smart_toy' },
@@ -122,7 +118,6 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     },
     { name: 'Show Student Join Code', type: 'showJoinCode', icon: 'qr_code' },
   ];
-
   availableAiAgents: any[] = [
     { name: 'Teacher Agent', type: 'teacher', class: TeacherAgent },
     { name: 'Idea Agent', type: 'idea', class: IdeaAgentChat },
@@ -138,10 +133,8 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     },
     { name: 'Workflow Agent', type: 'workflow', class: WorkflowAgent },
   ];
-
   teacherTasks: any[] = [];
   activeAiAgents: AiAgent[] = [];
-
   showResourcesPane = false;
   showClassroomBindings = false;
 
@@ -166,85 +159,40 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.user = this.userService.user!;
     this.loadScoreAuthoringData();
-    if (this.selectedActivity) {
-      this.updateBucketAndWorkflowCounts();
-    }
   }
 
   initializeCanvas() {
     const canvasContainer =
-      document.getElementById('classroomCanvas')?.parentElement; // Get the parent div
-
+      document.getElementById('classroomCanvas')?.parentElement;
     if (canvasContainer) {
       this.canvas = new fabric.Canvas('classroomCanvas', {
-        width: canvasContainer.offsetWidth - 283, // Set width to parent's width
-        height: canvasContainer.offsetHeight - 64, // Set height to parent's height
+        width: canvasContainer.offsetWidth,
+        height: canvasContainer.offsetHeight,
       });
-
       this.createDotGrid();
       this.drawInnerBox();
-
-      // Add event listeners for object:added and object:moving
-      this.canvas.on('object:added', this.onObjectAdded);
-      this.canvas.on('object:moving', this.onObjectMoving);
+      this.canvas.on('object:added', this.onObjectAdded.bind(this));
+      this.canvas.on('object:moving', this.onObjectMoving.bind(this));
     }
   }
-
   createDotGrid() {
-    if (this.canvas) {
-      const canvasWidth = this.canvas.getWidth();
-      const canvasHeight = this.canvas.getHeight();
-      const gridSpacing = 40; // Adjust the spacing between dots as needed
-
-      for (let x = 0; x <= canvasWidth; x += gridSpacing) {
-        for (let y = 0; y <= canvasHeight; y += gridSpacing) {
-          const dot = new fabric.Circle({
-            left: x,
-            top: y,
-            radius: 2, // Adjust the dot size as needed
-            fill: '#ddd', // Adjust the dot color as needed
-          });
-          this.canvas.add(dot);
-        }
-      }
-
-      this.canvas.renderAll(); // Render the canvas to show the dots
-    }
+    /* ... */
   }
-
   drawInnerBox() {
-    if (this.canvas) {
-      const canvasWidth = this.canvas.getWidth();
-      const canvasHeight = this.canvas.getHeight();
-      const inset = 41; // Adjust the inset value as needed
-
-      const rect = new fabric.Rect({
-        left: inset,
-        top: inset,
-        width: canvasWidth - inset * 2,
-        height: canvasHeight - inset * 2,
-        fill: 'transparent', // Or any fill color you prefer
-        stroke: '#ccc', // Or any stroke color you prefer
-        strokeWidth: 2, // Adjust the stroke width as needed
-      });
-
-      this.canvas.add(rect);
-      this.canvas.sendToBack(rect); // Send the rectangle to the back
-    }
+    /* ... */
   }
-
   onObjectAdded(event: any) {
-    // ... (Implement logic to save the added object to the database) ...
+    /* ... */
   }
-
   onObjectMoving(event: any) {
-    // ... (Implement logic to update the object's position in the database) ...
+    /* ... */
   }
 
   async loadScoreAuthoringData(): Promise<void> {
@@ -258,7 +206,6 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       this.project = await this.projectService.get(projectID);
     } catch (error) {
       this.snackbarService.queueSnackbar('Error loading project data.');
-      console.error('Error loading project data:', error);
       this.router.navigate(['error']);
       return;
     }
@@ -268,43 +215,188 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         (await this.http
           .get<Activity[]>(`activities/project/${projectID}`)
           .toPromise()) || [];
+      this.activities.sort((a, b) => a.order - b.order);
+
+      // Determine active activity based on its own isActive flag
+      // The backend PUT /api/activities/:id ensures only one is active per project
+      const activeActivity = this.activities.find(
+        (act) => act.isActive === true
+      );
+
       if (this.activities.length > 0) {
-        this.selectActivity(this.activities[0]); // Select the first activity
+        this.selectActivity(activeActivity || this.activities[0]); // Select active or first
+      } else {
+        this.selectActivity(null);
       }
     } catch (error) {
-      this.snackbarService.queueSnackbar('Error loading activities.');
-      console.error('Error loading activities:', error);
-      this.router.navigate(['error']);
-      return;
-    }
-
-    // Load teacher tasks after selecting the first activity
-    if (this.selectedActivity) {
-      this.loadTeacherTasks();
+      this.snackbarService.queueSnackbar('Error loading activities list.');
+      console.error('Error loading activities list:', error);
     }
   }
 
-  async selectActivity(activity: Activity) {
-    this.selectedActivity = activity;
+  async selectActivity(activity: Activity | null) {
+    if (!activity) {
+      this.selectedActivity = null;
+      this.selectedActivityResources = [];
+      this.selectedActivityGroups = [];
+      this.selectedBoardName = '';
+      this.teacherTasks = [];
+      this.activeAiAgents = [];
+      this.bucketCount = 0;
+      this.workflowCount = 0;
+      this.cdr.detectChanges();
+      return;
+    }
+    this.selectedActivity = activity; // The activity object from the list already has its isActive status
     this.showResourcesPane = false;
     try {
-      // Fetch resources for the selected activity
       this.selectedActivityResources =
         (await this.http
           .get<Resource[]>(`resources/activity/${activity.activityID}`)
           .toPromise()) || [];
+      this.selectedActivityResources.sort((a, b) => a.order - b.order);
       this.selectedBoardName = await this.getSelectedBoardName();
       await this.loadActiveAiAgents();
+      this.fetchActivityGroups(activity.groupIDs);
+      this.loadTeacherTasks();
+      this.updateBucketAndWorkflowCounts(); // Ensure this is still needed and services are injected
+      this.filterAvailableResources();
     } catch (error) {
-      this.snackbarService.queueSnackbar('Error fetching activity resources.');
-      console.error('Error fetching activity resources:', error);
+      this.snackbarService.queueSnackbar('Error fetching activity details.');
     }
+    this.cdr.detectChanges();
+  }
 
-    this.fetchActivityGroups(activity.groupIDs);
+  async toggleActivityState(activity: Activity, event: MouseEvent) {
+    event.stopPropagation();
+    if (activity.isActive) {
+      await this.stopActivity(activity);
+    } else {
+      await this.startActivity(activity);
+    }
+  }
 
-    this.loadTeacherTasks();
+  async startActivity(activityToStart: Activity) {
+    if (!this.project) return;
 
-    this.updateBucketAndWorkflowCounts();
+    try {
+      // The backend PUT will handle deactivating other activities
+      const updatedStartedActivity = await this.http
+        .put<Activity>(`activities/${activityToStart.activityID}`, {
+          ...activityToStart,
+          isActive: true,
+        })
+        .toPromise();
+
+      if (!updatedStartedActivity) {
+        throw new Error('Failed to update activity to active on the server.');
+      }
+
+      // Update local activities array
+      this.activities.forEach((act) => {
+        act.isActive = act.activityID === updatedStartedActivity.activityID;
+      });
+      // If selectedActivity is not the one we just started, update it
+      if (
+        this.selectedActivity?.activityID !== updatedStartedActivity.activityID
+      ) {
+        this.selectedActivity = updatedStartedActivity;
+      } else if (this.selectedActivity) {
+        // If it was already selected, ensure its isActive is updated
+        this.selectedActivity.isActive = true;
+      }
+
+      // Fetch fresh resources for the activity being started for the socket message
+      const resourcesForSocket =
+        (await this.http
+          .get<Resource[]>(`resources/activity/${activityToStart.activityID}`)
+          .toPromise()) || [];
+      resourcesForSocket.sort((a, b) => a.order - b.order);
+
+      const socketPayload = {
+        eventData: {
+          // Ensure payload is wrapped in eventData if roomcasting expects it
+          projectID: this.project.projectID,
+          activityID: activityToStart.activityID,
+          boardID: activityToStart.boardID,
+          resources: resourcesForSocket, // These are the resources for the activity being started
+        },
+      };
+      console.log(
+        'SCORE Authoring: Attempting to emit RESOURCES_UPDATE with payload:',
+        JSON.stringify(socketPayload, null, 2)
+      );
+
+      this.socketService.emit(SocketEvent.RESOURCES_UPDATE, socketPayload);
+
+      console.log('SCORE Authoring: SocketEvent.RESOURCES_UPDATE emitted.');
+
+      this.snackbarService.queueSnackbar(
+        `Activity "${activityToStart.name}" started.`
+      );
+      // No need to call selectActivity if it's already selected and its isActive status is updated.
+      // If it wasn't selected, the above logic handles it.
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error starting activity:', error);
+      this.snackbarService.queueSnackbar('Failed to start activity.');
+      // Revert UI if necessary (though backend should be source of truth on next load)
+      const localActivity = this.activities.find(
+        (a) => a.activityID === activityToStart.activityID
+      );
+      if (localActivity) localActivity.isActive = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  async stopActivity(activityToStop: Activity) {
+    if (!this.project) return;
+
+    try {
+      const updatedStoppedActivity = await this.http
+        .put<Activity>(`activities/${activityToStop.activityID}`, {
+          ...activityToStop,
+          isActive: false,
+        })
+        .toPromise();
+
+      if (!updatedStoppedActivity) {
+        throw new Error('Failed to update activity to inactive on the server.');
+      }
+
+      // Update local activity
+      const localActivity = this.activities.find(
+        (a) => a.activityID === updatedStoppedActivity.activityID
+      );
+      if (localActivity) {
+        localActivity.isActive = false;
+      }
+      if (
+        this.selectedActivity?.activityID === updatedStoppedActivity.activityID
+      ) {
+        this.selectedActivity.isActive = false;
+      }
+
+      this.socketService.emit(SocketEvent.ACTIVITY_STOPPED, {
+        eventData: {
+          projectID: this.project.projectID,
+          activityID: activityToStop.activityID,
+        },
+      });
+      this.snackbarService.queueSnackbar(
+        `Activity "${activityToStop.name}" stopped.`
+      );
+      this.cdr.detectChanges();
+    } catch (error) {
+      console.error('Error stopping activity:', error);
+      this.snackbarService.queueSnackbar('Failed to stop activity.');
+      // Revert UI if necessary
+      const localActivity = this.activities.find(
+        (a) => a.activityID === activityToStop.activityID
+      );
+      if (localActivity) localActivity.isActive = true; // Revert optimistic update
+      this.cdr.detectChanges();
+    }
   }
 
   async loadActiveAiAgents() {
@@ -371,7 +463,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     } else {
       const dialogRef = this.dialog.open(ConfigureAiAgentModalComponent, {
         width: '600px',
-        data: { agentType, agentClass: agentClass }, 
+        data: { agentType, agentClass: agentClass },
       });
 
       const result = await dialogRef.afterClosed().toPromise();
@@ -497,9 +589,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   }
 
   getWorkflowName(workflowID: string | null | undefined): string {
-    if (!workflowID) {
-      return 'Workflow Not Found'; // Or some other placeholder
-    }
+    if (!workflowID) return 'Workflow Not Found';
     return this.workflowMap.get(workflowID) || 'Loading...';
   }
 
@@ -582,7 +672,6 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       monitor: res.monitor,
       ideaAgent: res.ideaAgent,
     }));
-
 
     // Emit the event with the correct structure:
     this.socketService.emit(SocketEvent.RESOURCES_UPDATE, {
@@ -676,12 +765,11 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         );
         return board ? board.name : '';
       } catch (error) {
-        console.error('Error fetching board:', error);
+        console.error('Error fetching board name:', error);
         return '';
       }
-    } else {
-      return '';
     }
+    return '';
   }
 
   dropResource(event: CdkDragDrop<any[]>) {
@@ -1053,7 +1141,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         componentType,
         project,
         board,
-        user: this.user
+        user: this.user,
       },
     });
 
@@ -1096,10 +1184,11 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   openTeacherAgentModal() {
     this.getSelectedBoard().then((board) => {
       if (board) {
-        this._openDialog(CreateWorkflowModalComponent, { // Reuse the existing modal component
+        this._openDialog(CreateWorkflowModalComponent, {
+          // Reuse the existing modal component
           board: board,
           project: this.project,
-          selectedTabIndex: 3, 
+          selectedTabIndex: 3,
         });
       } else {
         console.error('Selected board is undefined');

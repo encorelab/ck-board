@@ -7,8 +7,9 @@
     >
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <span *ngIf="project">{{ project.name }}</span>
+    <span *ngIf="project" class="project-title-in-toolbar">{{ project.name }}</span>
     <span style="flex: 1 1 auto"></span>
+
     <button
       mat-icon-button
       [matMenuTriggerFor]="addMenu"
@@ -45,10 +46,9 @@
         Todo List
       </button>
       <app-csv-download-button
-        [projectID]="this.projectID"
+        [projectID]="projectID"
         *ngIf="user && user.role === Role.TEACHER"
-      >
-      </app-csv-download-button>
+      />
       <button
         mat-menu-item
         *ngIf="user && user.role === Role.TEACHER"
@@ -82,20 +82,30 @@
   </app-toolbar>
   <div class="content">
     <div class="score-heading">
-      <div *ngIf="project"> 
-        <button 
-          *ngIf="user && user.role === Role.TEACHER && project.isScoreRun" 
-          mat-raised-button 
-          color="primary" 
-          class="script-score-run-button"
-          (click)="navigateToScoreAuthoring()" 
+      <div *ngIf="project" class="action-buttons-container">
+        <button
+          *ngIf="user && user.role === Role.TEACHER && project.isScoreRun"
+          mat-raised-button
+          color="primary"
+          class="dashboard-action-button script-score-run-button"
+          (click)="navigateToScoreAuthoring()"
         >
           Script SCORE Run
+        </button>
+        <button
+          *ngIf="user && project"
+          color="accent"
+          class="dashboard-action-button roomcast-nav-button"
+          [routerLink]="['/roomcast', project.projectID]"
+          matTooltip="Open Roomcasting Environment for this project"
+        >
+          <mat-icon>cast_connected</mat-icon>
+          <span>Open Roomcast</span>
         </button>
       </div>
     </div>
     <div *ngIf="project" class="activity-spaces-heading">
-      <h3 class="mat-title" *ngIf="project">Activity Spaces for "{{ project.name }}"</h3> 
+      <h3 class="mat-title">Activity Spaces for "{{ project.name }}"</h3>
     </div>
     <ng-container *ngIf="user.role === Role.TEACHER">
       <div>

@@ -304,7 +304,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   }
 
   async stopActivity(activityToStop: Activity) {
-    console.log('[SCORE AUTHORING] stopActivity called for:', activityToStop.name); // <-- ADD THIS
+    console.log('[SCORE AUTHORING] stopActivity called for:', activityToStop.name);
     if (!this.project) {
         console.error('[SCORE AUTHORING] Project not loaded, cannot stop activity.');
         return;
@@ -323,9 +323,9 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
         projectID: this.project.projectID,
         activityID: activityToStop.activityID, // Send activityID that stopped
       };
-      console.log('[SCORE AUTHORING] Attempting to emit ACTIVITY_STOPPED. Payload (value for SocketService):', JSON.stringify(socketPayloadForStop, null, 2)); // <-- ADD THIS
+      console.log('[SCORE AUTHORING] Attempting to emit ACTIVITY_STOPPED. Payload (value for SocketService):', JSON.stringify(socketPayloadForStop, null, 2));
       this.socketService.emit(SocketEvent.ACTIVITY_STOPPED, socketPayloadForStop);
-      console.log('[SCORE AUTHORING] ACTIVITY_STOPPED emitted.'); // <-- ADD THIS
+      console.log('[SCORE AUTHORING] ACTIVITY_STOPPED emitted.');
 
       this.snackbarService.queueSnackbar(`Activity "${activityToStop.name}" stopped.`);
       this.cdr.detectChanges();

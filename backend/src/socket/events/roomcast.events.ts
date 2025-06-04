@@ -73,7 +73,6 @@ class RoomcastUpdate {
   }
 }
 
-// HANDLER FOR ACTIVITY_STOPPED (remains the same)
 class ActivityStoppedUpdate {
   static type: SocketEvent = SocketEvent.ACTIVITY_STOPPED;
 

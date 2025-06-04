@@ -63,3 +63,63 @@
 .mat-title {
   display: block; 
 }
+
+.action-buttons-container {
+  display: flex;
+  justify-content: center; // Center the button(s) within this container
+  align-items: center;
+  gap: 16px; // Space between buttons when there are two
+  margin-bottom: 1rem; // Or your desired spacing
+  // You might want to give this container a max-width if you want the
+  // single button to not span the entire page width but still be "wide".
+  // For example:
+  // max-width: 600px;
+  // margin-left: auto;
+  // margin-right: auto;
+}
+
+.dashboard-action-button {
+  padding: 0.8rem 1.6rem; // Slightly larger padding
+  font-size: 1.1rem;    // Slightly larger font
+  line-height: 1.5;
+  border-radius: 6px; // Softer corners
+  display: inline-flex; // For icon and text alignment
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  // Default width for when two buttons are present or a base width
+  min-width: 200px; // Adjust as needed for two-button layout
+  flex-grow: 0;     // Don't grow by default
+  flex-shrink: 0;
+
+  mat-icon {
+    margin-right: 8px;
+  }
+
+  // When this button is the only child in its container
+  &:only-child {
+    // Make it wider, similar to how the "Script SCORE Run" button might appear alone
+    width: 400px; // Match the original script-score-run-button width
+    max-width: 90%; // Ensure it doesn't overflow on very small screens
+    // If you used flex-grow:1 for the container, then width: 100% would work here.
+    // Since we are using a fixed width, this is more direct.
+  }
+}
+
+// If you have specific styles for script-score-run-button that define its width,
+// ensure .dashboard-action-button:only-child overrides or matches it.
+// .script-score-run-button {
+//   // Original styles if any, e.g., specific width if not handled by :only-child
+// }
+
+// .roomcast-nav-button {
+//   // Specific styles for roomcast button if needed beyond .dashboard-action-button
+// }
+
+// Ensure the .score-heading doesn't constrain the width too much
+// if the buttons are to be wide.
+.score-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center; // This will center the .action-buttons-container if it has a max-width
+}

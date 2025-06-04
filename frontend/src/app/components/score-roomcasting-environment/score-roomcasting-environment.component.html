@@ -1,5 +1,14 @@
 <div class="roomcasting-wrapper">
   <mat-toolbar *ngIf="user && project" class="roomcasting-toolbar" color="primary">
+    <button
+      mat-icon-button
+      [routerLink]="['/project', projectID]"
+      matTooltip="Return to Project Dashboard"
+      aria-label="Return to Project Dashboard"
+      class="roomcast-back-button"
+    >
+      <mat-icon>arrow_back</mat-icon>
+    </button>
     <span class="toolbar-title-container">
       <mat-icon class="toolbar-icon">cast_connected</mat-icon>
       <span class="toolbar-project-name">SCORE Roomcasting - {{ project?.name }}</span>

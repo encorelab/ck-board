@@ -944,19 +944,22 @@ export class CkWorkspaceComponent implements OnInit, OnDestroy {
           const destinationType =
             PostType[this.runningGroupTask?.workflow.destinations[0].type];
           post.type = destinationType;
+          // 1. Create and assign displayAttributes for ALL posts unconditionally.
+          const displayAttributes: DisplayAttributes = {
+            position: {
+              left: 150,
+              top: 150,
+            },
+            lock: !this.board.permissions.allowStudentMoveAny,
+            fillColor: this.defaultPostFill(),
+          };
+          post.displayAttributes = displayAttributes;
+
+          // 2. The if/else block now only needs to handle properties that are different, like the boardID.
           if (destinationType === PostType.BUCKET) {
             post.boardID = this.board.boardID;
           } else {
-            const displayAttributes: DisplayAttributes = {
-              position: {
-                left: 150,
-                top: 150,
-              },
-              lock: !this.board.permissions.allowStudentMoveAny,
-              fillColor: this.defaultPostFill(),
-            };
             post.boardID = this.runningGroupTask?.workflow.destinations[0].id;
-            post.displayAttributes = displayAttributes;
           }
           const htmlPost = await this.converters.toHTMLPost(post);
           this.submittedPosts.push(htmlPost);

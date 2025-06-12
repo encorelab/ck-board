@@ -144,6 +144,10 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   showResourcesPane = false;
   showClassroomBindings = false;
+  
+  // Add drag state tracking for UI feedback
+  isDragging = false;
+  draggedResourceType = '';
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -684,6 +688,14 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
     }
   }
 
+  moveResource(event: CdkDragDrop<any[]>) {
+    moveItemInArray(
+      this.availableResources,
+      event.previousIndex,
+      event.currentIndex
+    );
+  }
+
   dropResource(event: CdkDragDrop<any[]>) {
     moveItemInArray(
       this.selectedActivityResources,
@@ -695,7 +707,7 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
 
   dropResourceFromAvailable(event: CdkDragDrop<any[]>) {
     const resource = this.availableResources[event.previousIndex];
-
+    console.log('resource', resource);
     this.createResource(resource)
       .then((newResource) => {
         this.availableResources.splice(event.previousIndex, 1);
@@ -711,7 +723,28 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
       });
   }
 
+  handleResourceDrop(event: CdkDragDrop<any[]>) {
+    console.log(event.previousContainer.id, event.container.id);
+    if (event.previousContainer.id === 'available-resources-list' && 
+        event.container.id === 'resource-tab-drop-zone') {
+      this.dropResourceFromAvailable(event);
+    }
+    else if (event.previousContainer.id === 'resource-tab-drop-zone' && 
+        event.container.id === 'resource-tab-drop-zone') {
+      console.log('resource drop within resource tab');
+      this.dropResource(event);
+    }
+    else if (event.previousContainer.id === 'available-resources-list' && 
+        event.container.id === 'available-resources-list') {
+      this.moveResource(event);
+    }else if (event.previousContainer.id === 'resource-tab-drop-zone' && 
+        event.container.id === 'available-resources-list') {
+      this.deleteResource(event.item.data, event.previousIndex);
+    }
+  }
+
   async createResource(resourceData: any): Promise<any> {
+    console.log('resourceData', resourceData);
     try {
       const newResourceData = {
         resourceID: generateUniqueID(), // Add resourceID
@@ -1315,5 +1348,26 @@ export class ScoreAuthoringComponent implements OnInit, OnDestroy {
   signOut(): void {
     this.userService.logout();
     this.router.navigate(['login']);
+  }
+
+  // drag event handlers
+  onDragStarted(event: any) {
+    this.isDragging = true;
+    this.draggedResourceType = event.source.data?.type || '';
+    console.log('Drag started:', this.draggedResourceType);
+  }
+
+  onDragEnded(event: any) {
+    this.isDragging = false;
+    this.draggedResourceType = '';
+    console.log('Drag ended');
+  }
+
+  onDragEntered(event: any) {
+    console.log('Drag entered resource drop zone');
+  }
+
+  onDragExited(event: any) {
+    console.log('Drag exited resource drop zone');
   }
 }

@@ -150,8 +150,13 @@
         <div
           class="activity-resources-list"
           cdkDropList
+          id="resource-tab-drop-zone"
           [cdkDropListData]="selectedActivityResources"
-          (cdkDropListDropped)="dropResource($event)"
+          [cdkDropListConnectedTo]="showResourcesPane ? ['available-resources-list'] : []"
+          (cdkDropListDropped)="handleResourceDrop($event)"
+          (cdkDropListEntered)="onDragEntered($event)"
+          (cdkDropListExited)="onDragExited($event)"
+          [class.is-dragging]="isDragging"
         >
           <div
             *ngFor="let resource of selectedActivityResources; let i = index"
@@ -175,6 +180,24 @@
                 class="delete-button"
                 matTooltip="Delete Resource Tab"
               >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            
+            <!-- drag preview -->
+            <div *cdkDragPreview class="drag-preview-resource-tab" [ngClass]="[resource.canvas ? 'canvas' : '', resource.bucketView ? 'bucketView' : '', resource.workspace ? 'workspace' : '', resource.monitor ? 'monitor' : '', resource.ideaAgent ? 'ideaAgent' : '']">
+              <mat-icon class="drag-handle">drag_indicator</mat-icon>
+              <span class="resource-name">{{ resource.name }}</span>
+              <button mat-icon-button class="delete-button" disabled>
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            
+            <!-- placeholder for drop zone -->
+            <div *cdkDragPlaceholder class="drag-placeholder-resource-tab">
+              <mat-icon class="drag-handle">drag_indicator</mat-icon>
+              <span class="resource-name">{{ resource.name }}</span>
+              <button mat-icon-button class="delete-button" disabled>
                 <mat-icon>close</mat-icon>
               </button>
             </div>
@@ -299,13 +322,45 @@
           <h3>Resources & Actions</h3>
 
           <h4>Available Resource Tabs</h4>
-          <div class="available-items-list" cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="dropResourceFromAvailable($event)" [cdkDropListData]="availableResources">
-            <div *ngFor="let resource of availableResources" cdkDrag [cdkDragData]="resource" class="available-resource-item" [ngClass]="resource.type" matTooltip="Drag to 'Resource Tabs for Activity Space' in the middle pane">
+          <div 
+            class="available-items-list" 
+            cdkDropList 
+            id="available-resources-list"
+            cdkDropListOrientation="vertical" 
+            (cdkDropListDropped)="handleResourceDrop($event)" 
+            [cdkDropListData]="availableResources"
+            [cdkDropListConnectedTo]="['resource-tab-drop-zone']">
+            <div *ngFor="let resource of availableResources" 
+                 cdkDrag 
+                 [cdkDragData]="resource" 
+                 class="available-resource-item" 
+                 [ngClass]="resource.type" 
+                 matTooltip="Drag to 'Resource Tabs for Activity Space' in the middle pane"
+                 (cdkDragStarted)="onDragStarted($event)"
+                 (cdkDragEnded)="onDragEnded($event)">
               {{ resource.name }}
+              
+                <!-- drag preview -->
+               <div *cdkDragPreview class="drag-preview-resource-tab" [ngClass]="resource.type">
+                 <mat-icon class="drag-handle">drag_indicator</mat-icon>
+                 <span class="resource-name">{{ resource.name }}</span>
+                 <button mat-icon-button class="delete-button" disabled>
+                   <mat-icon>close</mat-icon>
+                 </button>
+               </div>
+               
+               <!-- placeholder for drop zone -->
+               <div *cdkDragPlaceholder class="drag-placeholder-resource-tab">
+                 <mat-icon class="drag-handle">drag_indicator</mat-icon>
+                 <span class="resource-name">{{ resource.name }}</span>
+                 <button mat-icon-button class="delete-button" disabled>
+                   <mat-icon>close</mat-icon>
+                 </button>
+               </div>
             </div>
             <div *ngIf="availableResources.length === 0" class="empty-list-message small">All available resource tab types have been assigned to this activity.</div>
           </div>
-
+          
           <h4>Available AI Agents</h4>
           <div class="available-items-list" cdkDropList cdkDropListOrientation="vertical" (cdkDropListDropped)="dropAiAgentFromAvailable($event)" [cdkDropListData]="availableAiAgents">
             <div *ngFor="let agent of availableAiAgents" cdkDrag [cdkDragData]="agent" class="available-resource-item" [ngClass]="agent.type" matTooltip="Drag to 'Active AI Agents' tab in the middle pane">

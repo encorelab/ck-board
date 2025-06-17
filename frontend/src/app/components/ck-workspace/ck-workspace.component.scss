@@ -1,72 +1,73 @@
 @import './../../../../node_modules/swiper/swiper.min.css';
 @import './../../../../node_modules/swiper/swiper-bundle.min.css';
 
-.spinner {
-  margin: 70px auto;
-  background: transparent;
-}
-
-.toolbar {
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
-}
-
-.list-task-prompt {
-  color: gray;
-}
-
-.no-task-selected {
-  margin-top: 20px; 
-  text-align: center;
-  width: 100%;
-  font-size: 24px;    
-  font-weight: bold; 
-  color: #666; 
-}
-
-
-.no-posts-message {
-  width: 100%;
-  text-align: center;
-  color: gray;
-  margin-top: 20px;
-}
-
-.drawer-container {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 0;
-  overflow: none;
-  min-height: calc(100vh);
-}
-
-.subheader-button {
-  width: 100%;
-  text-align: left !important;
-}
-
-mat-sidenav {
-  height: 100%; /*  Fill the container */
-
-  /* Use media queries for responsive width */
-  width: 90%; /* Default to 90% for mobile */
-
-  @media (max-width: 599px) {
-     width: 100%;
+.ck-workspace-container {
+  .spinner {
+    margin: 70px auto;
+    background: transparent;
   }
 
-  @media (min-width: 600px) { /* 'sm' breakpoint and up */
-    width: 30%;  /* 30% on desktop */
+  .toolbar {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
   }
-}
 
-mat-sidenav-content {
+  .list-task-prompt {
+    color: gray;
+  }
+
+  .no-task-selected {
+    margin-top: 20px;
+    text-align: center;
+    width: 100%;
+    font-size: 24px;
+    font-weight: bold;
+    color: #666;
+  }
+
+  .no-posts-message {
+    width: 100%;
+    text-align: center;
+    color: gray;
+    margin-top: 20px;
+  }
+
+  .drawer-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    overflow: none;
+    min-height: calc(100vh);
+  }
+
+  .subheader-button {
+    width: 100%;
+    text-align: left !important;
+  }
+
+  mat-sidenav {
+    height: 100%; /*  Fill the container */
+
+    /* Use media queries for responsive width */
+    width: 90%; /* Default to 90% for mobile */
+
+    @media (max-width: 599px) {
+      width: 100%;
+    }
+
+    @media (min-width: 600px) {
+      /* 'sm' breakpoint and up */
+      width: 30%; /* 30% on desktop */
+    }
+  }
+
+  mat-sidenav-content {
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -75,52 +76,49 @@ mat-sidenav-content {
 
     padding-top: 64px;
 
-      @media (max-width: 599px) {
-        padding-top: 56px;
+    @media (max-width: 599px) {
+      padding-top: 56px;
     }
+  }
 
-}
+  .workflow-create-post {
+    background-color: #6c63ff;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+  }
 
-
-.workflow-create-post{
-  background-color: #6c63ff;
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-}
-
-.task-view {
+  .task-view {
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 16px;
-}
+  }
 
-.task-title {
+  .task-title {
     font-size: 24px;
     font-weight: bold;
     text-align: center;
-}
+  }
 
-.task-prompt {
+  .task-prompt {
     font-size: 18px;
     font-weight: normal;
     text-align: center;
     color: gray;
-}
+  }
 
-.task-requirements {
+  .task-requirements {
     ul {
-        list-style-position: inside;
-        padding-left: 0;
-        text-align: center;
-        font-weight: bold;
-
+      list-style-position: inside;
+      padding-left: 0;
+      text-align: center;
+      font-weight: bold;
     }
-}
+  }
 
-.progress-bars {
+  .progress-bars {
     width: 100%;
     max-width: 600px;
 
@@ -128,71 +126,72 @@ mat-sidenav-content {
       margin-bottom: 10px;
     }
 
-    > div:last-child { // Target the *last* div child
-      margin-bottom: 40px; 
+    > div:last-child {
+      // Target the *last* div child
+      margin-bottom: 40px;
     }
-}
+  }
 
-.view-toggle-buttons{
+  .view-toggle-buttons {
     margin-top: 1rem;
     margin-bottom: 1rem;
-}
+  }
 
-.swiper-container {
-  width: 60%;
-  max-width: 600px; /*  Keep the max-width  */
-  margin-left: auto;  
-  margin-right: auto;
-  position: relative;
-}
+  .swiper-container {
+    width: 60%;
+    max-width: 600px; /*  Keep the max-width  */
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+  }
 
-.create-post-fab {
-  position: absolute !important;   // Position absolutely within the container
-  bottom: 100px;    
-  right: 40px;     
-  z-index: 10;       // Ensure it's above the cards
-  background-color: #6c63ff;
-}
+  .create-post-fab {
+    position: absolute !important; // Position absolutely within the container
+    bottom: 100px;
+    right: 40px;
+    z-index: 10; // Ensure it's above the cards
+    background-color: #6c63ff;
+  }
 
+  ::ng-deep .mat-toolbar-single-row button[mat-icon-button] {
+    z-index: 3;
+  }
 
-::ng-deep .mat-toolbar-single-row button[mat-icon-button] {
-  z-index: 3;
-}
+  // Target the app-html-post component *inside* the Swiper slides.
+  ::ng-deep .swiper-slide app-html-post {
+    width: 100%; // Make sure it takes the full width of its container.
+    max-width: 100%; // Prevent it from exceeding the container.
+    box-sizing: border-box; // Include padding and border in the width calculation.
+  }
 
-// Target the app-html-post component *inside* the Swiper slides.
-::ng-deep .swiper-slide app-html-post {
-  width: 100%;       // Make sure it takes the full width of its container.
-  max-width: 100%;  // Prevent it from exceeding the container.
-  box-sizing: border-box; // Include padding and border in the width calculation.
-}
-
-.refresh-button-container {
-  width: 100%;
-  display: flex;
-  margin-top: 1rem;
-  align-items: center; // Vertical alignment
-  justify-content: space-between; // Key for positioning
-}
-
-.group-info-and-buttons-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  margin-top: 3rem; 
-  gap: 1rem;
-    .group-info {
+  .refresh-button-container {
     width: 100%;
-    max-width: 600px;
-    text-align: center;
+    display: flex;
+    margin-top: 1rem;
+    align-items: center; // Vertical alignment
+    justify-content: space-between; // Key for positioning
+  }
+
+  .group-info-and-buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 3rem;
+    gap: 1rem;
+    .group-info {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
       .group-name {
         font-size: 18px;
         font-weight: bold;
         margin-bottom: 8px;
       }
       .group-members {
-          list-style-position: inside;
-          padding-left: 0;
+        list-style-position: inside;
+        padding-left: 0;
       }
+    }
   }
 }

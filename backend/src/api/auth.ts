@@ -267,10 +267,7 @@ router.get('/generate-api-key/:id', isAuthenticated, async (req, res) => {
     apiKeyPrefix: apiKeyPrefix,
   });
 
-  console.log(newUser);
-
   const updatedUser = await dalUser.findByUserID(userId);
-  console.log(updatedUser);
 
   res.status(200).json(apiKey);
 });
@@ -306,8 +303,6 @@ router.delete('/delete-api-key/:id', isAuthenticated, async (req, res) => {
     apiKey: '',
     apiKeyPrefix: '',
   });
-
-  console.log('success');
 
   res.status(200).json(true);
 });

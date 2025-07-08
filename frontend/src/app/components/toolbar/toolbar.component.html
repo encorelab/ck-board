@@ -1,22 +1,82 @@
 <mat-toolbar color="primary" role="toolbar" aria-label="Top Toolbar">
   <ng-content></ng-content>
 
-    <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="Your Profile" *ngIf="showSignOut">
-      <mat-icon>account_circle</mat-icon>
+  <button
+    mat-icon-button
+    [matMenuTriggerFor]="userMenu"
+    matTooltip="Your Profile"
+    *ngIf="showSignOut"
+  >
+    <mat-icon>account_circle</mat-icon>
+  </button>
+  <mat-menu #userMenu="matMenu">
+    <div class="user-info" style="text-align: center; padding: 10px">
+      <mat-icon style="font-size: 48px; width: 48px; height: 48px"
+        >account_circle</mat-icon
+      >
+      <h3 style="margin: 8px 0">{{ user.username }}</h3>
+      <p style="margin: 4px 0; color: gray">{{ user.role }}</p>
+    </div>
+    <mat-divider></mat-divider>
+    <button
+      *ngIf="apiKeyGenerated === false"
+      mat-menu-item
+      (click)="generateApiKey()"
+    >
+      <mat-icon>api</mat-icon>
+      <span>Generate an API Key</span>
     </button>
-    <mat-menu #userMenu="matMenu">
-      <div class="user-info" style="text-align: center; padding: 10px;">
-        <mat-icon style="font-size: 48px; width: 48px; height: 48px;">account_circle</mat-icon>
-        <h3 style="margin: 8px 0;">{{ user.username }}</h3>
-        <p style="margin: 4px 0; color: gray;">{{ user.role }}</p>
-      </div>
-      <mat-divider></mat-divider>
-      <button mat-menu-item (click)="signOut()">
-        <mat-icon>exit_to_app</mat-icon>
-        <span>Sign Out</span>
-      </button>
-    </mat-menu>
+    <button
+      *ngIf="apiKeyGenerated === true"
+      mat-menu-item
+      (click)="regenerateApiKey()"
+    >
+      <span
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+        "
+      >
+        <span style="flex: 1"
+          ><mat-icon>api</mat-icon>Regenerate an API Key</span
+        >
+
+        <!-- Delete icon button styled independently -->
+        <span
+          (click)="$event.stopPropagation(); deleteApiKey()"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            margin-left: 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            box-sizing: content-box;
+          "
+          (mouseenter)="hovering = true"
+          (mouseleave)="hovering = false"
+          [ngStyle]="{
+            backgroundColor: hovering ? '#f8d7da' : 'transparent'
+          }"
+        >
+          <mat-icon style="color: red; overflow: visible; margin: 0"
+            >delete</mat-icon
+          >
+        </span>
+      </span>
+    </button>
+
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="signOut()">
+      <mat-icon>exit_to_app</mat-icon>
+      <span>Sign Out</span>
+    </button>
+  </mat-menu>
 
   <ng-content select="[navbarMenu]"></ng-content>
-
 </mat-toolbar>

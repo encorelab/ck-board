@@ -11,6 +11,7 @@ import { ProjectModel } from '../models/Project';
 import { NotFoundError } from '../errors/client.errors';
 import { addUserToProject } from './project.helpers';
 import { ApplicationError } from '../errors/base.errors';
+import bcrypt from 'bcrypt';
 
 export interface Token {
   email: string;
@@ -49,13 +50,28 @@ export const isAuthenticated = async (
   next: NextFunction
 ) => {
   try {
+    const apiKey = req.header('x-api-key');
+    if (apiKey) {
+      const keyPrefix = apiKey.substring(0, 5);
+      const user = await dalUser.findByPrefix(keyPrefix);
+      if (!user || !user.apiKey) return res.status(403).end('Invalid API key!');
+      if (await bcrypt.compare(apiKey, user.apiKey)) {
+        res.locals.user = {
+          email: user.email,
+          username: user.username,
+          userID: user.userID,
+          role: user.role,
+        };
+        return next();
+      }
+    }
+
     if (!req.headers.authorization) {
       return res.status(400).end('No authorization header found!');
     }
 
     const token = req.headers.authorization.replace('Bearer ', '');
     res.locals.user = verify(token, getJWTSecret()) as Token;
-
     next();
   } catch (e) {
     return res.status(403).end('Unable to authenticate!');

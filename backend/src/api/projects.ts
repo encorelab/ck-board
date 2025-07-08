@@ -124,6 +124,13 @@ router.get('/users/:id', async (req, res) => {
   res.status(200).json(projects);
 });
 
+router.get('/', async (req, res) => {
+  const id = res.locals.user.userID;
+
+  const projects = await dalProject.getByUserId(id);
+  res.status(200).json(projects);
+});
+
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   const deletedProject = await dalProject.remove(id);

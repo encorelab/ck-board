@@ -68,7 +68,9 @@ export const update = async (id: string, user: Partial<UserModel>) => {
   }
 };
 
-export const findByPasswordResetToken = async (token: string): Promise<UserModel | null> => {
+export const findByPasswordResetToken = async (
+  token: string
+): Promise<UserModel | null> => {
   try {
     const user: UserModel | null = await User.findOne({
       resetPasswordToken: token,
@@ -103,15 +105,45 @@ export const updatePassword = async (
   }
 };
 
+export const findByPrefix = async (
+  apiPrefix: string
+): Promise<UserModel | null> => {
+  try {
+    const user: UserModel | null = await User.findOne({
+      apiKeyPrefix: apiPrefix,
+    });
+    return user;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const deleteFields = async (
+  id: string,
+  fieldsToDelete: Partial<UserModel>
+): Promise<UserModel | null> => {
+  try {
+    const updated = await User.findOneAndUpdate(
+      { userID: id },
+      { $unset: fieldsToDelete }
+    );
+    return updated;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
 const dalUser = {
   findByUserID,
   findByUserIDs,
   findByUsername,
   findByEmail,
+  findByPrefix,
   create,
   update,
   findByPasswordResetToken,
-  updatePassword
+  updatePassword,
+  deleteFields,
 };
 
 export default dalUser;

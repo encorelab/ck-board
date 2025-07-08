@@ -1,0 +1,25 @@
+<h1 mat-dialog-title>Your API Key</h1>
+<div mat-dialog-content>
+  Make sure to save your API key!
+  <div>
+    <span style="color: red"
+      >You will not be able to access your API key after this. The only option
+      is to generate a new one!</span
+    >
+  </div>
+  <div class="api-key-container">
+    <input
+      #apiKeyInput
+      type="text"
+      [value]="apiKey"
+      readonly
+      class="api-key-box"
+    />
+    <button (click)="copyApiKey()" class="copy-button">
+      <mat-icon>content_copy</mat-icon>
+    </button>
+  </div>
+</div>
+<div mat-dialog-actions>
+  <button mat-button mat-dialog-close>Confirm</button>
+</div>

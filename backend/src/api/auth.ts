@@ -18,7 +18,7 @@ import {
 import { UserModel } from '../models/User';
 import dalProject from '../repository/dalProject';
 import { generateEmail } from '../utils/email';
-import { generateUniqueID } from '../utils/Utils';
+import { generateApiKey, generateUniqueID } from '../utils/Utils';
 
 const router = Router();
 
@@ -239,6 +239,72 @@ router.get('/project/:id', isAuthenticated, async (req, res) => {
 
   const users = await dalUser.findByUserIDs(project.members);
   res.status(200).json(users);
+});
+
+router.get('/generate-api-key/:id', isAuthenticated, async (req, res) => {
+  console.log('here');
+  const userId = req.params.id;
+
+  // 1. Find the user by the id
+  const user = await dalUser.findByUserID(userId);
+
+  if (!user) {
+    return res.status(400).send({ message: 'User not authorized' });
+  }
+
+  // 2. Generate the api key
+  const apiKey = generateApiKey();
+
+  // 3. Hash the api key
+  const hashedApiKey = await bcrypt.hash(apiKey, 10);
+
+  // 4. Get an api key prefix
+  const apiKeyPrefix = apiKey.substring(0, 5);
+
+  // 5. Update the user's api key and prefix
+  const newUser = await dalUser.update(userId, {
+    apiKey: hashedApiKey,
+    apiKeyPrefix: apiKeyPrefix,
+  });
+
+  const updatedUser = await dalUser.findByUserID(userId);
+
+  res.status(200).json(apiKey);
+});
+
+router.get('/check-api-key/:id', isAuthenticated, async (req, res) => {
+  const userId = req.params.id;
+
+  const user = await dalUser.findByUserID(userId);
+
+  if (!user) {
+    return res.status(400).send({ message: 'User not authorized' });
+  }
+
+  if (user.apiKey != undefined) {
+    return res.status(200).json(true);
+  } else {
+    return res.status(200).json(false);
+  }
+});
+
+router.delete('/delete-api-key/:id', isAuthenticated, async (req, res) => {
+  const userId = req.params.id;
+
+  // 1. Find the user by the id
+  const user = await dalUser.findByUserID(userId);
+
+  if (!user) {
+    return res.status(400).send({ message: 'User not authorized' });
+  }
+
+  // 2. Delete the user's api key and prefix
+  await dalUser.deleteFields(userId, {
+    apiKey: '',
+    apiKeyPrefix: '',
+  });
+
+  res.status(200).json(true);
 });
 
 router.patch('/:boardID/currentView', async (req, res) => {

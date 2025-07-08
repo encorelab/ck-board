@@ -77,6 +77,7 @@ import { ShowJoinCodeComponent } from './components/show-join-code/show-join-cod
 import { ScoreRoomcastingEnvironmentComponent } from './components/score-roomcasting-environment/score-roomcasting-environment.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { GenerateApiModalComponent } from './generate-api-modal/generate-api-modal.component';
 
 const config: SocketIoConfig = {
   url: environment.socketUrl,
@@ -143,6 +144,7 @@ export function tokenGetter() {
     ScoreRoomcastingEnvironmentComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
+    GenerateApiModalComponent,
   ],
   entryComponents: [
     ScoreViewModalComponent,

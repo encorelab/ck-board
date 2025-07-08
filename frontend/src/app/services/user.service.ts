@@ -122,6 +122,34 @@ export class UserService {
       });
   }
 
+  async generateApiKey(): Promise<string> {
+    return this.http
+      .get(`auth/generate-api-key/` + this.user?.userID)
+      .toPromise()
+      .then((result: any) => {
+        if (result) {
+          return result;
+        }
+      });
+  }
+
+  async deleteApiKey() {
+    return this.http
+      .delete(`auth/delete-api-key/` + this.user?.userID)
+      .toPromise();
+  }
+
+  async checkApiKey(): Promise<boolean> {
+    return this.http
+      .get(`auth/check-api-key/` + this.user?.userID)
+      .toPromise()
+      .then((result: any) => {
+        if (result) {
+          return result;
+        }
+      });
+  }
+
   logout() {
     localStorage.removeItem('user');
     localStorage.removeItem('access_token');

@@ -31,6 +31,12 @@ export class UserModel {
 
   @prop({ required: false })
   public currentView?: ViewType;
+
+  @prop({ required: false })
+  public apiKey?: string;
+
+  @prop({ required: false })
+  public apiKeyPrefix?: string;
 }
 
 export default getModelForClass(UserModel);

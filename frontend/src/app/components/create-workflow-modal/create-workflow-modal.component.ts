@@ -450,7 +450,6 @@ export class CreateWorkflowModalComponent implements OnInit, OnDestroy {
       this.changeDetectorRef.detectChanges();
       this.scrollToBottom();
 
-      console.log(this.board.boardID, this.user.userID);
       // 2. Send data and prompt to the backend via WebSocket
       this.socketService.emit(SocketEvent.AI_MESSAGE, {
         posts,

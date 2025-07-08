@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthUser } from 'src/app/models/user';
+import { AuthUser, Role } from 'src/app/models/user';
 import { UserService } from 'src/app/services/user.service';
 import { Board, BoardScope } from 'src/app/models/board'; // Import Board and BoardScope
 import { Project } from 'src/app/models/project'; // Import Project
@@ -32,6 +32,8 @@ export class ToolbarComponent implements OnInit {
   apiKeyGenerated = false;
 
   hovering = false;
+
+  Role: typeof Role = Role;
 
   constructor(
     private userService: UserService,

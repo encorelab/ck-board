@@ -19,7 +19,7 @@
     </div>
     <mat-divider></mat-divider>
     <button
-      *ngIf="apiKeyGenerated === false"
+      *ngIf="apiKeyGenerated === false && user.role === Role.TEACHER"
       mat-menu-item
       (click)="generateApiKey()"
     >
@@ -27,7 +27,7 @@
       <span>Generate an API Key</span>
     </button>
     <button
-      *ngIf="apiKeyGenerated === true"
+      *ngIf="apiKeyGenerated === true && user.role === Role.TEACHER"
       mat-menu-item
       (click)="regenerateApiKey()"
     >

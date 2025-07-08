@@ -242,7 +242,6 @@ router.get('/project/:id', isAuthenticated, async (req, res) => {
 });
 
 router.get('/generate-api-key/:id', isAuthenticated, async (req, res) => {
-  console.log('here');
   const userId = req.params.id;
 
   // 1. Find the user by the id

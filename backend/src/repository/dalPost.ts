@@ -7,13 +7,27 @@ import { Options } from '../utils/api.helpers';
 import dalBucket from './dalBucket';
 import dalComment from './dalComment';
 import dalVote from './dalVote';
-import User, { Role } from '../models/User'; 
+import User, { Role } from '../models/User';
 import { STUDENT_POST_COLOR, TEACHER_POST_COLOR } from '../utils/Utils';
 
 export const getById = async (id: string) => {
   try {
     const post = await Post.findOne({ postID: id });
     return post;
+  } catch (err) {
+    throw new Error(JSON.stringify(err, null, ' '));
+  }
+};
+
+export const getByUserId = async (id: string, type?: any) => {
+  try {
+    let posts;
+    if (type) {
+      posts = await Post.find({ userID: id, type: type });
+    } else {
+      posts = await Post.find({ userID: id });
+    }
+    return posts;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
   }
@@ -28,14 +42,25 @@ export const getManyById = async (ids: string[]) => {
   }
 };
 
-export const getByBoard = async (boardID: string, type?: any) => {
+export const getByBoard = async (
+  boardID: string,
+  type?: any,
+  amount?: any,
+  userId?: any
+) => {
   try {
-    let posts;
-    if (type) {
-      posts = await Post.find({ boardID: boardID, type: type });
-    } else {
-      posts = await Post.find({ boardID });
+    const request: any = { boardID };
+    if (type) request.type = type;
+    if (userId) request.userID = userId;
+
+    let postRequest = Post.find(request).sort({ updatedAt: -1 });
+
+    if (amount) {
+      postRequest = postRequest.limit(amount);
     }
+
+    const posts = await postRequest.exec();
+
     return posts;
   } catch (err) {
     throw new Error(JSON.stringify(err, null, ' '));
@@ -68,12 +93,17 @@ export const create = async (post: PostModel) => {
   // 1. Determine the correct default color by looking up the user's role.
   let defaultFillColor = STUDENT_POST_COLOR; // Default to the most common color.
   try {
-    const user = await User.findOne({ userID: post.userID }).select('role').lean();
+    const user = await User.findOne({ userID: post.userID })
+      .select('role')
+      .lean();
     if (user?.role === Role.TEACHER) {
       defaultFillColor = TEACHER_POST_COLOR;
     }
   } catch (e) {
-    console.error("Could not fetch user role for default color. Falling back to default.", e);
+    console.error(
+      'Could not fetch user role for default color. Falling back to default.',
+      e
+    );
   }
 
   // 2. Define the complete default structure using our dynamic color.
@@ -87,10 +117,10 @@ export const create = async (post: PostModel) => {
   // The incoming 'post' values will overwrite our defaults if they exist.
   post.displayAttributes = {
     ...defaultDisplayAttributes, // Establishes our smart defaults (including the correct color)
-    ...post.displayAttributes,  // Client-provided attributes (like a specific color) overwrite the defaults
+    ...post.displayAttributes, // Client-provided attributes (like a specific color) overwrite the defaults
     position: {
       ...defaultDisplayAttributes.position, // Ensures position object has defaults
-      ...(post.displayAttributes?.position), // Client-provided position values overwrite default position
+      ...post.displayAttributes?.position, // Client-provided position values overwrite default position
     },
   };
   try {
@@ -183,6 +213,7 @@ const dalPost = {
   remove,
   removeByBoard,
   update,
+  getByUserId,
 };
 
 export default dalPost;
